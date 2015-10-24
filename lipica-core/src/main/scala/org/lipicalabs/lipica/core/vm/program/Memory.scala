@@ -25,7 +25,7 @@ class Memory {
 	}
 
 	/**
-	 * ƒƒ‚ƒŠ‚ğ’Ç‰Á“I‚ÉŠm•Û‚µ‚Ü‚·B
+	 * ãƒ¡ãƒ¢ãƒªã‚’è¿½åŠ çš„ã«ç¢ºä¿ã—ã¾ã™ã€‚
 	 */
 	def extend(address: Int, size: Int): Unit = {
 		if (size <= 0) return
@@ -46,7 +46,7 @@ class Memory {
 	}
 
 	/**
-	 * “n‚³‚ê‚½”Ô’n‚©‚çn‚ß‚ÄA“n‚³‚ê‚½ƒTƒCƒY‚Ìƒf[ƒ^‚ğ“Ç‚İæ‚Á‚Ä•Ô‚µ‚Ü‚·B
+	 * æ¸¡ã•ã‚ŒãŸç•ªåœ°ã‹ã‚‰å§‹ã‚ã¦ã€æ¸¡ã•ã‚ŒãŸã‚µã‚¤ã‚ºã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿å–ã£ã¦è¿”ã—ã¾ã™ã€‚
 	 */
 	def read(address: Int, size: Int): Array[Byte] = {
 		if (size <= 0) return Array.emptyByteArray
@@ -71,7 +71,7 @@ class Memory {
 	}
 
 	/**
-	 * “n‚³‚ê‚½”Ô’n‚É‘Î‚µ‚ÄA“n‚³‚ê‚½ƒoƒCƒg”z—ñ‚ÌÅ‰‚©‚çAw’è‚³‚ê‚½ƒoƒCƒg”•ª‚¾‚¯‘‚«‚İ‚Ü‚·B
+	 * æ¸¡ã•ã‚ŒãŸç•ªåœ°ã«å¯¾ã—ã¦ã€æ¸¡ã•ã‚ŒãŸãƒã‚¤ãƒˆé…åˆ—ã®æœ€åˆã‹ã‚‰ã€æŒ‡å®šã•ã‚ŒãŸãƒã‚¤ãƒˆæ•°åˆ†ã ã‘æ›¸ãè¾¼ã¿ã¾ã™ã€‚
 	 */
 	def write(address: Int, data: Array[Byte], aDataSize: Int, limited: Boolean): Unit = {
 		val dataSize = if (data.length < aDataSize) data.length else aDataSize
@@ -102,7 +102,7 @@ class Memory {
 	}
 
 	/**
-	 * ƒƒ‚ƒŠã‚Ì”Ô’n‚©‚ç‚PƒoƒCƒg‚ğ“Ç‚İæ‚Á‚Ä•Ô‚µ‚Ü‚·B
+	 * ãƒ¡ãƒ¢ãƒªä¸Šã®ç•ªåœ°ã‹ã‚‰ï¼‘ãƒã‚¤ãƒˆã‚’èª­ã¿å–ã£ã¦è¿”ã—ã¾ã™ã€‚
 	 */
 	def readByte(address: Int): Byte = {
 		val (chunkIndex, chunkOffset) = computeChunkIndexAndOffset(address)
@@ -112,7 +112,7 @@ class Memory {
 	}
 
 	/**
-	 * ƒƒ‚ƒŠã‚Ì”Ô’n‚©‚ç‚Pƒ[ƒh‚ğ“Ç‚İæ‚Á‚Ä•Ô‚µ‚Ü‚·B
+	 * ãƒ¡ãƒ¢ãƒªä¸Šã®ç•ªåœ°ã‹ã‚‰ï¼‘ãƒ¯ãƒ¼ãƒ‰ã‚’èª­ã¿å–ã£ã¦è¿”ã—ã¾ã™ã€‚
 	 */
 	def readWord(address: Int): DataWord = {
 		DataWord(read(address, 32))
@@ -177,6 +177,6 @@ class Memory {
 }
 
 object Memory {
-	private val CHUNK_SIZE = 1024
-	private val WORD_SIZE = DataWord.NUM_BYTES
+	private[program] val CHUNK_SIZE = 1024
+	private[program] val WORD_SIZE = DataWord.NUM_BYTES
 }
