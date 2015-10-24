@@ -1,9 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.base.Bloom
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
