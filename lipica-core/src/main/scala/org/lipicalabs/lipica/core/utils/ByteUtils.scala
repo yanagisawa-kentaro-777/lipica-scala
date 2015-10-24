@@ -108,4 +108,9 @@ object ByteUtils {
 		data(posByte) = result
 	}
 
+	def oneByteToHexString(value: Byte): String = {
+		val result = Integer.toString(value & 0xFF, 16)
+		if (result.length == 1) "0" + result else result
+	}
+
 }

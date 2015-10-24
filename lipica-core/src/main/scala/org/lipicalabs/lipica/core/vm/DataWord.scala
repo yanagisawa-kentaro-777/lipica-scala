@@ -5,7 +5,6 @@ import java.nio.ByteBuffer
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.ByteUtils
-import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
  * 32バイト＝256ビットの数値を表すクラスです。
@@ -192,7 +191,7 @@ class DataWord private(private val data: Array[Byte]) extends Comparable[DataWor
 	 */
 	def exp(another: DataWord): DataWord = {
 		//TODO 性能。
-		DataWord(this.value.modPow(another.value, _2_256))
+		DataWord(this.value.modPow(another.value, MAX_PLUS_ONE))
 	}
 
 	/**
@@ -282,10 +281,10 @@ class DataWord private(private val data: Array[Byte]) extends Comparable[DataWor
 
 object DataWord {
 
-	private val NUM_BYTES = 32
+	val NUM_BYTES = 32
 	val Zero = DataWord.apply(new Array[Byte](NUM_BYTES))
-	private val _2_256: BigInt = BigInt(2).pow(256)
-	val MaxValue: BigInt = _2_256 - BigInt(1)
+	private val MAX_PLUS_ONE: BigInt = BigInt(2).pow(NUM_BYTES * 8)
+	val MaxValue: BigInt = MAX_PLUS_ONE - BigInt(1)
 
 
 	def regularize(src: Array[Byte]): Array[Byte] = {
