@@ -63,6 +63,4 @@ lazy val lipicaCore =
 		)
 
 
-
-
 lazy val all = lipicaCore
