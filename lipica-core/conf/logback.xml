@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+	</appender>
+	<appender name="ROOT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/misc.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/misc%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="EXT_LIB" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/ext_lib.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/ext_lib%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="HTTP_LOGGER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/http.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/http%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="ARBITER_TRACE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/arbiter_trace.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/arbiter_trace%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<root level="WARN">
+		<appender-ref ref="EXT_LIB"/>
+	</root>
+	<logger name="com.mithril.arbiter" level="DEBUG" additivity="false">
+		<appender-ref ref="ARBITER_TRACE"/>
+	</logger>
+	<logger name="HTTP_LOGGER" level="INFO" additivity="false">
+		<appender-ref ref="HTTP_LOGGER"/>
+		<appender-ref ref="CONSOLE"/>
+	</logger>
+
+</configuration>

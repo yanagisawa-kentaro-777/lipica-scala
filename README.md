@@ -1,0 +1,3 @@
+# lipica-scala
+
+Lipica Project
