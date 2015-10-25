@@ -70,5 +70,17 @@ class TransactionTest extends Specification {
 		}
 	}
 
+	//TODO use https://github.com/ethereum/tests/blob/develop/TransactionTests/ttTransactionTest.json test cases.
+
+
+	"test (1)" should {
+		"be right" in {
+			val tx = Transaction(Hex.decodeHex("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3".toCharArray))
+
+			Hex.encodeHexString(tx.getSender) mustEqual "31bb58672e8bf7684108feeacf424ab62b873824"
+			//TODO etc.
+			ok
+		}
+	}
 
 }
