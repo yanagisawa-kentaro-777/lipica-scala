@@ -383,7 +383,7 @@ object RBACCodec {
 		@tailrec
 		private def decodeListItemsRecursively(data: Array[Byte], pos: Int, len: Int, consumed: Int, items: ArrayBuffer[DecodedResult]): Either[Exception, DecodedSeq] = {
 			if (len <= consumed) {
-				return Right(DecodedSeq(pos, items.toSeq))
+				return Right(DecodedSeq(pos, items.toIndexedSeq))
 			}
 			decode(data, pos) match {
 				case Right(item) =>

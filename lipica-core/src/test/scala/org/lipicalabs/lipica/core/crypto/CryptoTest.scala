@@ -17,7 +17,6 @@ import org.specs2.runner.JUnitRunner
 class CryptoTest extends Specification {
 	sequential
 
-
 	"test (1)" should {
 		"be right" in {
 			val privateKey = new BigInteger("cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8", 16)
@@ -38,6 +37,5 @@ class CryptoTest extends Specification {
 			publicKey mustEqual "caa3d5086b31529bb00207eabf244a0a6c54d807d2ac0ec1f3b1bdde0dbf8130c115b1eaf62ce0f8062bcf70c0fefbc97cec79e7faffcc844a149a17fcd7bada"
 		}
 	}
-
 
 }

@@ -1,3 +1,3 @@
 # lipica-scala
 
-Lipica Project
+A decentralized Turing-complete application platform.

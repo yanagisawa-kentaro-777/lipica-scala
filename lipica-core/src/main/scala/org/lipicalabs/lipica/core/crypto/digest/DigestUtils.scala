@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.crypto.digest
 
 import java.security.MessageDigest
 
+import org.lipicalabs.lipica.core.utils.RBACCodec
 import org.spongycastle.crypto.digests.RIPEMD160Digest
 
 object DigestUtils {
@@ -32,6 +33,12 @@ object DigestUtils {
 		digest.update(data, 0, data.length)
 		digest.doFinal(result, 0)
 		result
+	}
+
+	def computeNewAddress(address: Array[Byte], nonce: Array[Byte]): Array[Byte] = {
+		val encodedSender = RBACCodec.Encoder.encode(address)
+		val encodedNonce = RBACCodec.Encoder.encode(BigInt(1, nonce))
+		sha3omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)))
 	}
 
 }
