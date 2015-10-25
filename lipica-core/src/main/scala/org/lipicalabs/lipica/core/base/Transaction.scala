@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory
  */
 class Transaction {
 
+	//TODO refactor.
+
 	import Transaction._
 
 	/* SHA3 hash of the RBAC encoded transaction */
