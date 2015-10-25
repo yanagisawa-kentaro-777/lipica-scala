@@ -85,15 +85,16 @@ class Transaction {
 	private var parsed = false
 
 	def rlpParse(): Unit = {
-		val decodedTxList = RBACCodec.Decoder.decode(rlpEncoded).right.get
-		val transaction = decodedTxList.items.head.items
+		val transaction = RBACCodec.Decoder.decode(rlpEncoded).right.get.items
+		//val transaction = decodedTxList.items.head.items
 		this.nonce = transaction.head.bytes
 		this.manaPrice = transaction(1).bytes
 		this.manaLimit = transaction(2).bytes
 		this.receiveAddress = transaction(3).bytes
 		this.value = transaction(4).bytes
 		this.data = transaction(5).bytes
-		if (transaction(6).bytes ne null) {
+		val sixthElem = transaction(6).bytes
+		if ((sixthElem ne null) && sixthElem.nonEmpty) {
 			val v = transaction(6).bytes(0)
 			val r = transaction(7).bytes
 			val s = transaction(8).bytes
@@ -142,12 +143,12 @@ class Transaction {
 		receiveAddress
 	}
 
-	def getGasPrice: Array[Byte] = {
+	def getManaPrice: Array[Byte] = {
 		if (!parsed) rlpParse()
 		if (this.manaPrice == null) zeroByteArray else manaPrice
 	}
 
-	def getGasLimit: Array[Byte] = {
+	def getManaLimit: Array[Byte] = {
 		if (!parsed) rlpParse()
 		manaLimit
 	}
@@ -238,7 +239,7 @@ class Transaction {
 
 
 		val (v, r, s) =
-			if (signature != null) {
+			if (signature ne null) {
 				val v = RBACCodec.Encoder.encode(signature.v)
 				val r = RBACCodec.Encoder.encode(ByteUtils.asUnsignedByteArray(signature.r))
 				val s = RBACCodec.Encoder.encode(ByteUtils.asUnsignedByteArray(signature.s))
