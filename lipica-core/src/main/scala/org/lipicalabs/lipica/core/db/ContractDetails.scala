@@ -6,5 +6,6 @@ package org.lipicalabs.lipica.core.db
  * YANAGISAWA, Kentaro
  */
 trait ContractDetails {
-	//TODO
+	//TODO 未実装。
+	//TODO これを実装したら、Storageにも実装を保管すること。
 }

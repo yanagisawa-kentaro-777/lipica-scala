@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.utils.ByteUtils
 import org.lipicalabs.lipica.core.vm.DataWord
-import org.lipicalabs.lipica.core.vm.program.listener.ProgramListener
+import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
 import scala.collection.mutable
 
@@ -11,7 +11,7 @@ import scala.collection.mutable
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-class Memory {
+class Memory extends ProgramListenerAware {
 
 	import scala.collection.JavaConversions._
 	import Memory._
@@ -20,7 +20,7 @@ class Memory {
 	private var softSize = 0
 	private var traceListener: ProgramListener = null
 
-	def setTraceListener(traceListener: ProgramListener): Unit = {
+	override def setTraceListener(traceListener: ProgramListener): Unit = {
 		this.traceListener = traceListener
 	}
 

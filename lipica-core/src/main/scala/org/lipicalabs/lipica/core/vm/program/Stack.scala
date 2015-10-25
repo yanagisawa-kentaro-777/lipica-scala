@@ -17,7 +17,7 @@ class Stack extends ProgramListenerAware {
 
 	private val stack = new java.util.Stack[DataWord]
 
-	def setTraceListener(traceListener: ProgramListener): Unit = {
+	override def setTraceListener(traceListener: ProgramListener): Unit = {
 		this.traceListener = traceListener
 	}
 
