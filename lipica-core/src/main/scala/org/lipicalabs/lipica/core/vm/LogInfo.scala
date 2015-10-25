@@ -23,7 +23,7 @@ case class LogInfo(address: Array[Byte], topics: Seq[DataWord], data: Array[Byte
 	def getBloom: Bloom = {
 		var result = Bloom.create(DigestUtils.sha3(address))
 		for (eachTopic <- this.topics) {
-			result = result or Bloom.create(eachTopic.computeSha3OfData)
+			result = result | Bloom.create(eachTopic.computeSha3OfData)
 		}
 		result
 	}

@@ -4,6 +4,7 @@ import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
+ * バイト配列を利用してビットの並びを表現するデータ構造の実装です。
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
@@ -14,7 +15,7 @@ class Bloom private(private val data: Array[Byte]) {
 		java.util.Arrays.copyOf(this.data, this.data.length)
 	}
 
-	def or(another: Bloom): Bloom = {
+	def `|`(another: Bloom): Bloom = {
 		val newData = copyData
 		this.data.indices.foreach { i =>
 			newData(i) = (this.data(i) | another.data(i)).toByte

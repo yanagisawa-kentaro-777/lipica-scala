@@ -13,62 +13,62 @@ import org.lipicalabs.lipica.core.vm.DataWord
  */
 trait Repository {
 
-	def createAccount(addr: Array[Byte]): AccountState
+	def createAccount(address: Array[Byte]): AccountState
 
 	/**
 	 * アカウントの存否確認を行います。
-	 * @param addr 検査対象のアカウント。
+	 * @param address 検査対象のアカウント。
 	 */
-	def existsAccount(addr: Array[Byte]): Boolean
+	def existsAccount(address: Array[Byte]): Boolean
 
 	/**
 	 * アカウントを取得します。
 	 */
-	def getAccountState(addr: Array[Byte]): AccountState
+	def getAccountState(address: Array[Byte]): AccountState
 
 	/**
 	 * アカウントを削除します。
 	 */
-	def delete(addr: Array[Byte]): Unit
+	def delete(address: Array[Byte]): Unit
 
 	/**
 	 * 指定されたアカウントのnonceを１増やします。
 	 */
-	def increaseNonce(addr: Array[Byte]): BigInt
+	def increaseNonce(address: Array[Byte]): BigInt
 
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。
 	 */
-	def getNonce(addr: Array[Byte]): BigInt
+	def getNonce(address: Array[Byte]): BigInt
 
 	/**
 	 * 指定されたアカウントに対応するコンタクト明細を取得して返します。
 	 */
-	def getContractDetails(addr: Array[Byte]): ContractDetails
+	def getContractDetails(address: Array[Byte]): ContractDetails
 
-	def saveCode(addr: Array[Byte], code: Array[Byte]): Unit
+	def saveCode(address: Array[Byte], code: Array[Byte]): Unit
 
-	def getCode(addr: Array[Byte]): Array[Byte]
+	def getCode(address: Array[Byte]): Array[Byte]
 
 	/**
 	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
 	 */
-	def addStorageRow(addr: Array[Byte], key: DataWord, value: DataWord): Unit
+	def addStorageRow(address: Array[Byte], key: DataWord, value: DataWord): Unit
 
 	/**
 	 * 指定されたアカウントにおいて、キーに対応する値を取得して返します。
 	 */
-	def getStorageValue(addr: Array[Byte], key: DataWord): DataWord
+	def getStorageValue(address: Array[Byte], key: DataWord): DataWord
 
 	/**
 	 * 指定されたアカウントの残高を返します。
 	 */
-	def getBalance(addr: Array[Byte]): BigInt
+	def getBalance(address: Array[Byte]): BigInt
 
 	/**
 	 * 指定されたアカウントの残高に、指定された値を足します。
 	 */
-	def addBalance(addr: Array[Byte], value: BigInt): BigInt
+	def addBalance(address: Array[Byte], value: BigInt): BigInt
 
 	/**
 	 * このアカウントのアドレスすべての集合を返します。
@@ -99,7 +99,7 @@ trait Repository {
 
 	def updateBatch(accountStates: Map[ByteArrayWrapper, AccountState], contractDetails: Map[ByteArrayWrapper, ContractDetails])
 
-	def loadAccount(addr: Array[Byte], cacheAccounts: Map[ByteArrayWrapper, AccountState], cacheDetails: Map[ByteArrayWrapper, ContractDetails])
+	def loadAccount(address: Array[Byte], cacheAccounts: Map[ByteArrayWrapper, AccountState], cacheDetails: Map[ByteArrayWrapper, ContractDetails])
 
 	def getSnapshotTo(root: Array[Byte]): Repository
 
