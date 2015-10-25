@@ -42,12 +42,18 @@ trait Repository {
 	def getNonce(address: Array[Byte]): BigInt
 
 	/**
-	 * 指定されたアカウントに対応するコンタクト明細を取得して返します。
+	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
 	 */
 	def getContractDetails(address: Array[Byte]): ContractDetails
 
+	/**
+	 * 指定されたアカウントに対して、コードを保存します。
+	 */
 	def saveCode(address: Array[Byte], code: Array[Byte]): Unit
 
+	/**
+	 * 指定されたアカウントに結び付けられたコードを読み取ります。
+	 */
 	def getCode(address: Array[Byte]): Array[Byte]
 
 	/**

@@ -5,6 +5,8 @@ import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 
 /**
+ * Lipicaシステムにあらかじめ組み込まれている
+ * コントラクト（自動エージェント）の実装です。
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
@@ -21,6 +23,9 @@ object PrecompiledContracts {
 		param1 + ((data.length + 31) / 32) * param2
 	}
 
+	/**
+	 * 渡されたデータそれ自身を返すコントラクト。
+	 */
 	object Identity extends PrecompiledContract {
 		override def manaForData(data: Array[Byte]): Long = {
 			computeManaByWords(data, 15, 3)
@@ -28,6 +33,9 @@ object PrecompiledContracts {
 		override def execute(data: Array[Byte]): Array[Byte] = data
 	}
 
+	/**
+	 * 渡されたデータのSHA256ダイジェスト値を計算して返すコントラクト。
+	 */
 	object Sha256 extends PrecompiledContract {
 		override def manaForData(data: Array[Byte]): Long = {
 			computeManaByWords(data, 60, 12)
@@ -38,6 +46,9 @@ object PrecompiledContracts {
 		}
 	}
 
+	/**
+	 * 渡されたデータのRIPEMPD160ダイジェスト値を計算して返すコントラクト。
+	 */
 	object Ripempd160 extends PrecompiledContract {
 		override def manaForData(data: Array[Byte]): Long = {
 			computeManaByWords(data, 600, 120)

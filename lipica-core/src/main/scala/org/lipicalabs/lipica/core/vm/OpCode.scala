@@ -239,7 +239,7 @@ object OpCode {
 	object CodeCopy extends OpCode(0x39, 3, 0, VeryLowTier)
 
 	/**
-	 * 0x3a：現在の環境におけるマナ価格を取得する。
+	 * 0x3a：１マナの価格を返します。
 	 */
 	object ManaPrice extends OpCode(0x3a, 0, 1, VeryLowTier)
 
