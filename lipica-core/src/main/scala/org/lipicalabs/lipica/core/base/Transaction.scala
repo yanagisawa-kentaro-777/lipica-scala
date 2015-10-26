@@ -124,18 +124,18 @@ class Transaction {
 
 	def getRawHash: Array[Byte] = {
 		if (!parsed) rlpParse()
-		val plainMsg: Array[Byte] = this.getEncodedRaw
+		val plainMsg = this.getEncodedRaw
 		DigestUtils.sha3(plainMsg)
 	}
 
 	def getNonce: Array[Byte] = {
 		if (!parsed) rlpParse()
-		if (nonce == null) zeroByteArray else nonce
+		if (isNullOrEmpty(nonce)) zeroByteArray else nonce
 	}
 
 	def getValue: Array[Byte] = {
 		if (!parsed) rlpParse()
-		if (value eq null) zeroByteArray else value
+		if (isNullOrEmpty(value)) zeroByteArray else value
 	}
 
 	def getReceiveAddress: Array[Byte] = {
@@ -145,7 +145,7 @@ class Transaction {
 
 	def getManaPrice: Array[Byte] = {
 		if (!parsed) rlpParse()
-		if (this.manaPrice == null) zeroByteArray else manaPrice
+		if (isNullOrEmpty(this.manaPrice)) zeroByteArray else manaPrice
 	}
 
 	def getManaLimit: Array[Byte] = {
@@ -154,7 +154,7 @@ class Transaction {
 	}
 
 	private def nonZeroDataBytes: Int = {
-		if (data == null) return 0
+		if (isNullOrEmpty(data)) return 0
 		this.data.count(each => each != 0)
 	}
 
@@ -175,7 +175,7 @@ class Transaction {
 
 	def isContractCreation: Boolean = {
 		if (!parsed) rlpParse()
-		this.receiveAddress == null || (this.receiveAddress sameElements zeroByteArray)
+		isNullOrEmpty(this.receiveAddress) || (this.receiveAddress sameElements zeroByteArray)
 	}
 
 	def getKey: ECKey = {
@@ -315,5 +315,8 @@ object Transaction {
 		create(to, amount, nonce, DEFAULT_MANA_PRICE, DEFAULT_BALANCE_MANA)
 	}
 
+	private def isNullOrEmpty(bytes: Array[Byte]): Boolean = {
+		(bytes eq null) || bytes.isEmpty
+	}
 
 }

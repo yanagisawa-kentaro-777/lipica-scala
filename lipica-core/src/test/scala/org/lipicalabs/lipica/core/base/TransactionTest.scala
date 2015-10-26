@@ -78,8 +78,15 @@ class TransactionTest extends Specification {
 			val tx = Transaction(Hex.decodeHex("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3".toCharArray))
 
 			Hex.encodeHexString(tx.getSender) mustEqual "31bb58672e8bf7684108feeacf424ab62b873824"
-			//TODO etc.
-			ok
+			tx.getData.isEmpty mustEqual true
+			Hex.encodeHexString(tx.getManaLimit) mustEqual "5208"
+			Hex.encodeHexString(tx.getManaPrice) mustEqual "01"
+			Hex.encodeHexString(tx.getNonce) mustEqual "00"
+			Hex.encodeHexString(tx.getReceiveAddress) mustEqual "000000000000000000000000000b9331677e6ebf"
+			Hex.encodeHexString(tx.getValue) mustEqual "0a"
+			Hex.encodeHexString(Array(tx.getSignature.v)) mustEqual "1c"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.r)) mustEqual "98ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4a"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.s)) mustEqual "8887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3"
 		}
 	}
 
