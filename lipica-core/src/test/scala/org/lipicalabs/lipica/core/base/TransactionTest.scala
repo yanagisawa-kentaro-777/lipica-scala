@@ -70,9 +70,33 @@ class TransactionTest extends Specification {
 		}
 	}
 
+	"test new transaction (1)" should {
+		"be right" in {
+			val tx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, testValue, testData)
+
+			BigInt(1, tx.getNonce) mustEqual BigInt(0)
+			BigInt(1, tx.getManaPrice) mustEqual BigInt(1, testManaPrice)
+			BigInt(1, tx.getManaLimit) mustEqual BigInt(1, testManaLimit)
+			Hex.encodeHexString(tx.getReceiveAddress) mustEqual Hex.encodeHexString(testReceiveAddress)
+			BigInt(1, tx.getValue) mustEqual BigInt(1, testValue)
+			tx.getData.isEmpty mustEqual true
+			(tx.getSignature eq null) mustEqual true
+
+			Hex.encodeHexString(tx.getEncodedRaw) mustEqual RLP_ENCODED_RAW_TX
+			Hex.encodeHexString(tx.getHash) mustEqual HASH_UNSIGNED_TX
+			Hex.encodeHexString(tx.getEncoded) mustEqual RLP_ENCODED_UNSIGNED_TX
+
+			tx.sign(Hex.decodeHex(KEY.toCharArray))
+
+			Hex.encodeHexString(tx.getHash) mustEqual HASH_SIGNED_TX
+			Hex.encodeHexString(tx.getEncoded) mustEqual RLP_ENCODED_SIGNED_TX
+			tx.getSignature.v mustEqual 27
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.r)) mustEqual "eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.s)) mustEqual "14a569d327dcda4b29f74f93c0e9729d2f49ad726e703f9cd90dbb0fbf6649f1"
+		}
+	}
+
 	//TODO use https://github.com/ethereum/tests/blob/develop/TransactionTests/ttTransactionTest.json test cases.
-
-
 	"test (1)" should {
 		"be right" in {
 			val tx = Transaction(Hex.decodeHex("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3".toCharArray))
