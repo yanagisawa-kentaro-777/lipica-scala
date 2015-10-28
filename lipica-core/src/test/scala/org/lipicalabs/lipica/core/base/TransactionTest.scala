@@ -141,4 +141,57 @@ class TransactionTest extends Specification {
 		}
 	}
 
+	"test (2)" should {
+		"be right" in {
+			val tx = Transaction(Hex.decodeHex("f86d80018259d894095e7baea6a6c7c4c2dfeb977efac326af552d870a8e0358ac39584bc98a7c979f984b031ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804".toCharArray))
+
+			Hex.encodeHexString(tx.getSender) mustEqual "ce26839c9bd0e87e38897bb97fca8b340fd12a53"
+			Hex.encodeHexString(tx.getData) mustEqual "0358ac39584bc98a7c979f984b03"
+			Hex.encodeHexString(tx.getManaLimit) mustEqual "59d8"
+			Hex.encodeHexString(tx.getManaPrice) mustEqual "01"
+			Hex.encodeHexString(tx.getNonce) mustEqual "00"
+			Hex.encodeHexString(tx.getReceiveAddress) mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
+			Hex.encodeHexString(tx.getValue) mustEqual "0a"
+			Hex.encodeHexString(Array(tx.getSignature.v)) mustEqual "1b"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.r)) mustEqual "48b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.s)) mustEqual "efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804"
+		}
+	}
+
+	"test (3)" should {
+		"be right" in {
+			val tx = Transaction(Hex.decodeHex("f87c80018261a894095e7baea6a6c7c4c2dfeb977efac326af552d870a9d00000000000000000000000000010000000000000000000000000000001ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804".toCharArray))
+
+			Hex.encodeHexString(tx.getSender) mustEqual "8131688854fe0dca411aa19572a01fe3e3e4fa74"
+			Hex.encodeHexString(tx.getData) mustEqual "0000000000000000000000000001000000000000000000000000000000"//TODO doubt
+			Hex.encodeHexString(tx.getManaLimit) mustEqual "61a8"
+			Hex.encodeHexString(tx.getManaPrice) mustEqual "01"
+			Hex.encodeHexString(tx.getNonce) mustEqual "00"
+			Hex.encodeHexString(tx.getReceiveAddress) mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
+			Hex.encodeHexString(tx.getValue) mustEqual "0a"
+			Hex.encodeHexString(Array(tx.getSignature.v)) mustEqual "1b"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.r)) mustEqual "48b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.s)) mustEqual "efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804"
+		}
+	}
+
+	"test (4)" should {
+		"be right" in {
+			val tx = Transaction(Hex.decodeHex("f87c80018261a894095e7baea6a6c7c4c2dfeb977efac326af552d870a9d00100000000000000000000000000000000000000000000000000000001ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804".toCharArray))
+
+			Hex.encodeHexString(tx.getSender) mustEqual "ead53a9560ea38feb0bc2cad8ef65e5d8f990fc1"
+			Hex.encodeHexString(tx.getData) mustEqual "0010000000000000000000000000000000000000000000000000000000"//TODO doubt
+			Hex.encodeHexString(tx.getManaLimit) mustEqual "61a8"
+			Hex.encodeHexString(tx.getManaPrice) mustEqual "01"
+			Hex.encodeHexString(tx.getNonce) mustEqual "00"
+			Hex.encodeHexString(tx.getReceiveAddress) mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
+			Hex.encodeHexString(tx.getValue) mustEqual "0a"
+			Hex.encodeHexString(Array(tx.getSignature.v)) mustEqual "1b"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.r)) mustEqual "48b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353"
+			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.getSignature.s)) mustEqual "efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804"
+		}
+	}
+
+	//TODO 形を変えて戻して同じであることを確認するテスト。
+
 }
