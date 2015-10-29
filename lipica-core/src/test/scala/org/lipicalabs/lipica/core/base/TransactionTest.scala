@@ -192,6 +192,59 @@ class TransactionTest extends Specification {
 		}
 	}
 
-	//TODO 形を変えて戻して同じであることを確認するテスト。
+	"test various data" should {
+		"be right" in {
+			val seed = System.currentTimeMillis
+			System.out.println("Seed=%,d".format(seed))
+			val random = new java.util.Random(seed)
+			(0 until 1026).foreach {i => {
+				val data = generateBytes(random, i)
+				val originalTx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, testValue, data)
+				val encoded = originalTx.getEncoded
 
+				val rebuiltTx = Transaction(encoded)
+
+				java.util.Arrays.equals(rebuiltTx.getData, data) mustEqual true
+
+				BigInt(1, rebuiltTx.getNonce) mustEqual BigInt(0)
+				BigInt(1, rebuiltTx.getManaPrice) mustEqual BigInt(1, testManaPrice)
+				BigInt(1, rebuiltTx.getManaLimit) mustEqual BigInt(1, testManaLimit)
+				Hex.encodeHexString(rebuiltTx.getReceiveAddress) mustEqual Hex.encodeHexString(testReceiveAddress)
+				BigInt(1, rebuiltTx.getValue) mustEqual BigInt(1, testValue)
+				(rebuiltTx.getSignature eq null) mustEqual true
+			}}
+			ok
+		}
+	}
+
+	"test various values" should {
+		"be right" in {
+			val seed = System.currentTimeMillis
+			System.out.println("Seed=%,d".format(seed))
+			val random = new java.util.Random(seed)
+			Seq(0L, 1L, Int.MaxValue.toLong - 1L, Int.MaxValue.toLong, Int.MaxValue.toLong + 1L, Long.MaxValue - 1L, Long.MaxValue).foreach {eachValue => {
+				val value = ByteUtils.asUnsignedByteArray(BigInt(eachValue))
+				val originalTx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, value, testData)
+				val encoded = originalTx.getEncoded
+
+				val rebuiltTx = Transaction(encoded)
+
+				BigInt(1, rebuiltTx.getValue).toLong mustEqual eachValue
+
+				BigInt(1, rebuiltTx.getNonce) mustEqual BigInt(0)
+				BigInt(1, rebuiltTx.getManaPrice) mustEqual BigInt(1, testManaPrice)
+				BigInt(1, rebuiltTx.getManaLimit) mustEqual BigInt(1, testManaLimit)
+				Hex.encodeHexString(rebuiltTx.getReceiveAddress) mustEqual Hex.encodeHexString(testReceiveAddress)
+				java.util.Arrays.equals(rebuiltTx.getData, testData) mustEqual true
+				(rebuiltTx.getSignature eq null) mustEqual true
+			}}
+			ok
+		}
+	}
+
+	private def generateBytes(random: java.util.Random, length: Int): Array[Byte] = {
+		val result = new Array[Byte](length)
+		random.nextBytes(result)
+		result
+	}
 }
