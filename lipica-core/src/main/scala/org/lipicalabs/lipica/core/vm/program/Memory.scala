@@ -7,6 +7,7 @@ import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, Pro
 import scala.collection.mutable
 
 /**
+ * Lipica VMのメモリを表すクラスです。
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
