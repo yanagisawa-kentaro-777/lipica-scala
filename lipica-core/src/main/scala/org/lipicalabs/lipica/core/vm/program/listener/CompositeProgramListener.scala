@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program.listener
 
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.immutable.Queue
@@ -15,7 +16,7 @@ class CompositeProgramListener extends ProgramListener {
 
 	override def onMemoryExtend(delta: Int): Unit = this.listeners.foreach(_.onMemoryExtend(delta))
 
-	override def onMemoryWrite(address: Int, data: Array[Byte], size: Int) = this.listeners.foreach(_.onMemoryWrite(address, data, size))
+	override def onMemoryWrite(address: Int, data: ImmutableBytes, size: Int) = this.listeners.foreach(_.onMemoryWrite(address, data, size))
 
 	override def onStoragePut(key: DataWord, value: DataWord) = this.listeners.foreach(_.onStoragePut(key, value))
 

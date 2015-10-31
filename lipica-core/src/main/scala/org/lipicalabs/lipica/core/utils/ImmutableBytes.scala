@@ -23,6 +23,10 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 
 	def toByteArray: Array[Byte] = java.util.Arrays.copyOfRange(this.bytes, 0, this.bytes.length)
 
+	def copyTo(srcPos: Int, dest: Array[Byte], destPos: Int, len: Int): Unit = {
+		System.arraycopy(this.bytes, srcPos, dest, destPos, len)
+	}
+
 	def sha3: ImmutableBytes = new ImmutableBytes(DigestUtils.sha3(this.bytes))
 
 	def firstIndex(p: (Byte) => Boolean): Int = {

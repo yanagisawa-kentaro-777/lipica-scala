@@ -4,7 +4,6 @@ Result
 Program
 VM
 
-Memoryの実装を、ImmutableBytesにする。
 ImmutableBytesのテスト充実。
 
 Blockのモデル。

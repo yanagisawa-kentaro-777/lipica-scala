@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.utils.ByteUtils
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.trace.ProgramTraceListener
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
@@ -137,21 +137,21 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	/** メモリ操作 */
 	def getMemSize: Int = this.memory.size
 
-	def memorySave(addr: DataWord, value: Array[Byte], limited: Boolean): Unit = {
+	def memorySave(addr: DataWord, value: ImmutableBytes, limited: Boolean): Unit = {
 		this.memory.write(addr.intValue, value, value.length, limited)
 	}
 	private def memorySave(addr: DataWord, value: DataWord, limited: Boolean): Unit = {
-		memorySave(addr, value.data.toByteArray, limited)
+		memorySave(addr, value.data, limited)
 	}
 	def memorySave(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = false)
 	def memorySaveLimited(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = true)
-	def memorySave(addr: Int, allocSize: Int, value: Array[Byte]): Unit = {
+	def memorySave(addr: Int, allocSize: Int, value: ImmutableBytes): Unit = {
 		this.memory.extendAndWrite(addr, allocSize, value)
 	}
 	def memoryLoad(addr: DataWord): DataWord = {
 		this.memory.readWord(addr.intValue)
 	}
-	def memoryChunk(offset: Int, size: Int): Array[Byte] = {
+	def memoryChunk(offset: Int, size: Int): ImmutableBytes = {
 		this.memory.read(offset, size)
 	}
 	def memoryExpand(outDataOffset: DataWord, outDataSize: DataWord): Unit = {

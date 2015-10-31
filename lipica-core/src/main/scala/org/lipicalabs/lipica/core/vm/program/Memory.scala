@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.utils.ByteUtils
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
@@ -49,8 +49,8 @@ class Memory extends ProgramListenerAware {
 	/**
 	 * 渡された番地から始めて、渡されたサイズのデータを読み取って返します。
 	 */
-	def read(address: Int, size: Int): Array[Byte] = {
-		if (size <= 0) return Array.emptyByteArray
+	def read(address: Int, size: Int): ImmutableBytes = {
+		if (size <= 0) return ImmutableBytes.empty
 
 		extend(address, size)
 
@@ -68,13 +68,13 @@ class Memory extends ProgramListenerAware {
 			toGrab -= copied
 			start += copied
 		}
-		data
+		ImmutableBytes(data)
 	}
 
 	/**
 	 * 渡された番地に対して、渡されたバイト配列の最初から、指定されたバイト数分だけ書き込みます。
 	 */
-	def write(address: Int, data: Array[Byte], aDataSize: Int, limited: Boolean): Unit = {
+	def write(address: Int, data: ImmutableBytes, aDataSize: Int, limited: Boolean): Unit = {
 		val dataSize = if (data.length < aDataSize) data.length else aDataSize
 
 		if (!limited) extend(address, dataSize)
@@ -106,7 +106,7 @@ class Memory extends ProgramListenerAware {
 	 * メモリを指定された容量だけ確保してから、
 	 * 指定された位置に渡されたデータを書き込みます。
 	 */
-	def extendAndWrite(address: Int, allocSize: Int, data: Array[Byte]): Unit = {
+	def extendAndWrite(address: Int, allocSize: Int, data: ImmutableBytes): Unit = {
 		extend(address, allocSize)
 		write(address, data, data.length, limited = false)
 	}
@@ -170,10 +170,10 @@ class Memory extends ProgramListenerAware {
 		}
 	}
 
-	private def captureMax(chunkIndex: Int, chunkOffset: Int, size: Int, src: Array[Byte], srcPos: Int): Int = {
+	private def captureMax(chunkIndex: Int, chunkOffset: Int, size: Int, src: ImmutableBytes, srcPos: Int): Int = {
 		val chunk = chunks.get(chunkIndex)
 		val toCapture = java.lang.Math.min(size, chunk.length - chunkOffset)
-		System.arraycopy(src, srcPos, chunk, chunkOffset, toCapture)
+		src.copyTo(srcPos, chunk, chunkOffset, toCapture)
 		toCapture
 	}
 

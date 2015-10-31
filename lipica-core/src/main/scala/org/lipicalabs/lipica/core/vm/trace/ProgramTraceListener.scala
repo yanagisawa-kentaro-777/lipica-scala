@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.vm.trace
 
 import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAdaptor
 
@@ -20,7 +21,7 @@ class ProgramTraceListener extends ProgramListenerAdaptor {
 		}
 	}
 
-	override def onMemoryWrite(address: Int, data: Array[Byte], size: Int): Unit = {
+	override def onMemoryWrite(address: Int, data: ImmutableBytes, size: Int): Unit = {
 		if (this.enabled) {
 			this.actions = this.actions.memoryWrite(address, data, size)
 		}

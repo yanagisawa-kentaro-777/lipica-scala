@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program.listener
 
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -11,7 +12,7 @@ class ProgramListenerAdaptor extends ProgramListener {
 
 	override def onMemoryExtend(delta: Int): Unit = ()
 
-	override def onMemoryWrite(address: Int, data: Array[Byte], size: Int): Unit = ()
+	override def onMemoryWrite(address: Int, data: ImmutableBytes, size: Int): Unit = ()
 
 	override def onStorageClear(): Unit = ()
 

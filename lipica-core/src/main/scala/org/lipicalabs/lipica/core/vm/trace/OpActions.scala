@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.trace
 
-import org.apache.commons.codec.binary.Hex
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.trace.OpActions._
 
@@ -32,8 +32,8 @@ case class OpActions(private val stack: Queue[Action], private val memory: Queue
 		new OpActions(this.stack, this.memory :+ action, this.storage)
 	}
 
-	def memoryWrite(address: Int, data: Array[Byte], size: Int): OpActions = {
-		val action = Action(Write).addParam("address", address).addParam("data", Hex.encodeHexString(data).substring(0, size * 2))
+	def memoryWrite(address: Int, data: ImmutableBytes, size: Int): OpActions = {
+		val action = Action(Write).addParam("address", address).addParam("data", data.toHexString.substring(0, size * 2))
 		new OpActions(this.stack, this.memory :+ action, this.storage)
 	}
 

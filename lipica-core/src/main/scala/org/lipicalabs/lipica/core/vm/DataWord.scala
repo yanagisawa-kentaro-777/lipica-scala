@@ -310,13 +310,11 @@ object DataWord {
 		}
 	}
 
-	def apply(src: Array[Byte]): DataWord = {
-		new DataWord(wrap(src))
-	}
+	def apply(data: ImmutableBytes): DataWord = new DataWord(data)
 
-	def apply(buffer: ByteBuffer): DataWord = {
-		DataWord.apply(buffer.array)
-	}
+	def apply(src: Array[Byte]): DataWord = new DataWord(wrap(src))
+
+	def apply(buffer: ByteBuffer): DataWord = DataWord.apply(buffer.array)
 
 	def apply(value: Int): DataWord = {
 		DataWord(ByteBuffer.allocate(4).putInt(value))

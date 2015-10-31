@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -34,7 +35,7 @@ class MemoryTest extends Specification {
 	"save to memory (1)" should {
 		"be right" in {
 			val memory = new Memory
-			val data = Array[Byte](1, 1, 1, 1)
+			val data = ImmutableBytes(Array[Byte](1, 1, 1, 1))
 			memory.write(0, data, data.length, limited = false)
 
 			memory.chunksAsSeq.size mustEqual 1
@@ -55,7 +56,7 @@ class MemoryTest extends Specification {
 			val memory = new Memory
 
 			(0 until 10000).foreach {i => {
-				val data = Array[Byte]((i % 256).toByte)
+				val data = ImmutableBytes(Array[Byte]((i % 256).toByte))
 				memory.write(i, data, data.length, limited = false)
 			}}
 			(0 until 10000).foreach {i => {
