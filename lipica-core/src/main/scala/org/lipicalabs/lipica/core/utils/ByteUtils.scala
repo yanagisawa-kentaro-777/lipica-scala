@@ -113,4 +113,8 @@ object ByteUtils {
 		if (result.length == 1) "0" + result else result
 	}
 
+	def isNullOrEmpty(bytes: Array[Byte]): Boolean = {
+		(bytes eq null) || bytes.isEmpty
+	}
+
 }

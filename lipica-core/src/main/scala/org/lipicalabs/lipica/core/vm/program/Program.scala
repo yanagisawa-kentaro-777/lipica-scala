@@ -18,8 +18,8 @@ object Program {
 	private val manaLogger = LoggerFactory.getLogger("mana")
 
 	/**
-	 * LVM�̊֐��Ăяo���̌��E�ƂȂ�[���B
-	 * JVM�ɂ� -Xss10M ���x���K�v�ɂȂ�B
+	 * LVMの関数呼び出しの限界となる深さ。
+	 * JVMには -Xss10M 程度が必要になる。
 	 */
 	private val MaxDepth = 1024
 

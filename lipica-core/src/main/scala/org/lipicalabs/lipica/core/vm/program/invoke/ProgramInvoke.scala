@@ -29,7 +29,7 @@ trait ProgramInvoke {
 
 	def getDataValue(indexData: DataWord): DataWord
 
-	def getDatacopy(offsetData: DataWord, lengthData: DataWord): Array[Byte]
+	def getDataCopy(offsetData: DataWord, lengthData: DataWord): Array[Byte]
 
 	def getPrevHash: DataWord
 

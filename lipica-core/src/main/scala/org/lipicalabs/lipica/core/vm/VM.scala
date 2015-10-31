@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.vm.program.Program
 import org.slf4j.LoggerFactory
 
 /**
- * Lipca VMを表すクラスです。
+ * Lipca VM繧定｡ｨ縺吶け繝ｩ繧ｹ縺ｧ縺吶�
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro

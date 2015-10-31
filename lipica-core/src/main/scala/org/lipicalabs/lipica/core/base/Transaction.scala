@@ -94,7 +94,7 @@ trait TransactionLike {
 	}
 
 	def isContractCreation: Boolean = {
-		isNullOrEmpty(this.receiveAddress) || (this.receiveAddress sameElements zeroByteArray)
+		ByteUtils.isNullOrEmpty(this.receiveAddress) || (this.receiveAddress sameElements zeroByteArray)
 	}
 
 	def getKey: Option[ECKey] = {
@@ -152,7 +152,7 @@ trait TransactionLike {
 	}
 
 	private def nonZeroDataBytes: Int = {
-		if (isNullOrEmpty(data)) return 0
+		if (ByteUtils.isNullOrEmpty(data)) return 0
 		this.data.count(each => each != 0)
 	}
 }
@@ -354,10 +354,6 @@ object Transaction {
 
 	def createDefault(to: String, amount: BigInteger, nonce: BigInteger): TransactionLike = {
 		create(to, amount, nonce, DEFAULT_MANA_PRICE, DEFAULT_BALANCE_MANA)
-	}
-
-	def isNullOrEmpty(bytes: Array[Byte]): Boolean = {
-		(bytes eq null) || bytes.isEmpty
 	}
 
 	def launderEmptyToZero(bytes: Array[Byte]): Array[Byte] = {
