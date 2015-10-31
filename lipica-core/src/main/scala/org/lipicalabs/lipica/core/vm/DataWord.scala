@@ -288,6 +288,7 @@ object DataWord {
 
 
 	def regularize(src: Array[Byte]): Array[Byte] = {
+		//TODO delete
 		if (src eq null) {
 			new Array[Byte](NUM_BYTES)
 		} else if (src.length <= NUM_BYTES) {
@@ -300,17 +301,13 @@ object DataWord {
 	}
 
 	def wrap(src: Array[Byte]): ImmutableBytes = {
-		val bytes =
-			if (src eq null) {
-				new Array[Byte](NUM_BYTES)
-			} else if (src.length <= NUM_BYTES) {
-				val data = new Array[Byte](NUM_BYTES)
-				System.arraycopy(src, 0, data, NUM_BYTES - src.length, src.length)
-				data
-			} else {
-				throw new IllegalArgumentException("Byte array too long: %d < %d".format(NUM_BYTES, src.length))
-			}
-		ImmutableBytes(bytes)
+		if (src eq null) {
+			ImmutableBytes.create(NUM_BYTES)
+		} else if (src.length <= NUM_BYTES) {
+			ImmutableBytes.expand(src, 0, src.length, NUM_BYTES)
+		} else {
+			throw new IllegalArgumentException("Byte array too long: %d < %d".format(NUM_BYTES, src.length))
+		}
 	}
 
 	def apply(src: Array[Byte]): DataWord = {

@@ -88,11 +88,40 @@ object ImmutableBytes {
 
 	val empty = new ImmutableBytes(Array.emptyByteArray)
 
-	def apply(bytes: Array[Byte]): ImmutableBytes = {
-		if (ByteUtils.isNullOrEmpty(bytes)) {
+	def expand(original: Array[Byte], from: Int, until: Int, newLength: Int): ImmutableBytes = {
+		if (newLength <= 0) {
+			empty
+		} else if (original eq null) {
+			new ImmutableBytes(new Array[Byte](newLength))
+		} else {
+			val data = new Array[Byte](newLength)
+			val len = until - from
+			System.arraycopy(original, 0, data, newLength - len, len)
+			new ImmutableBytes(data)
+		}
+	}
+
+	def apply(original: Array[Byte], from: Int, until: Int): ImmutableBytes = {
+		if (ByteUtils.isNullOrEmpty(original) || (until <= from)) {
 			empty
 		} else {
-			new ImmutableBytes(java.util.Arrays.copyOf(bytes, bytes.length))
+			val data = java.util.Arrays.copyOfRange(original, from, until)
+			new ImmutableBytes(data)
+		}
+	}
+
+	def apply(original: Array[Byte]): ImmutableBytes = {
+		if (original eq null) {
+			return empty
+		}
+		apply(original, 0, original.length)
+	}
+
+	def create(length: Int): ImmutableBytes = {
+		if (length <= 0) {
+			empty
+		} else {
+			new ImmutableBytes(new Array[Byte](length))
 		}
 	}
 
