@@ -103,6 +103,15 @@ class Memory extends ProgramListenerAware {
 	}
 
 	/**
+	 * メモリを指定された容量だけ確保してから、
+	 * 指定された位置に渡されたデータを書き込みます。
+	 */
+	def extendAndWrite(address: Int, allocSize: Int, data: Array[Byte]): Unit = {
+		extend(address, allocSize)
+		write(address, data, data.length, limited = false)
+	}
+
+	/**
 	 * メモリ上の番地から１バイトを読み取って返します。
 	 */
 	def readByte(address: Int): Byte = {

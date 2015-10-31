@@ -1,0 +1,4 @@
+Memoryのテストを拡充する。
+MemoryおよびDataWordの実装を、ImmutableBytesにする。
+
+自動テスト。

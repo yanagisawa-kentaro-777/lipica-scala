@@ -74,6 +74,18 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	def stackPushZero(): Unit = stackPush(DataWord.Zero)
 	def stackPushOne(): Unit = stackPush(DataWord.One)
 
+	def verifyStackSize(requiredSize: Int): Unit = {
+		if (this.stack.size < requiredSize) {
+			throw Exception.tooSmallStack(requiredSize, this.stack.size)
+		}
+	}
+	def verifyStackOverflow(argsReqs: Int, returnReqs: Int): Unit = {
+		val requiredSize = this.stack.size - argsReqs + returnReqs
+		if (MaxStackSize < requiredSize) {
+			throw Exception.stackOverflow(MaxStackSize, requiredSize)
+		}
+	}
+
 	/**
 	 * スタックから値をpopして返します。
 	 */
@@ -117,18 +129,36 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 
 	//TODO setHReturn
 
-	def verifyStackSize(requiredSize: Int): Unit = {
-		if (this.stack.size < requiredSize) {
-			throw Exception.tooSmallStack(requiredSize, this.stack.size)
+
+	/** メモリ操作 */
+	def getMemSize: Int = this.memory.size
+
+	def memorySave(addr: DataWord, value: Array[Byte], limited: Boolean): Unit = {
+		this.memory.write(addr.intValue, value, value.length, limited)
+	}
+	private def memorySave(addr: DataWord, value: DataWord, limited: Boolean): Unit = {
+		memorySave(addr, value.copyData, limited)
+	}
+	def memorySave(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = false)
+	def memorySaveLimited(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = true)
+	def memorySave(addr: Int, allocSize: Int, value: Array[Byte]): Unit = {
+		this.memory.extendAndWrite(addr, allocSize, value)
+	}
+	def memoryLoad(addr: DataWord): DataWord = {
+		this.memory.readWord(addr.intValue)
+	}
+	def memoryChunk(offset: Int, size: Int): Array[Byte] = {
+		this.memory.read(offset, size)
+	}
+	def memoryExpand(outDataOffset: DataWord, outDataSize: DataWord): Unit = {
+		allocateMemory(outDataOffset.intValue, outDataSize.intValue)
+	}
+	def allocateMemory(offset: Int, size: Int): Unit = {
+		if (0 < size) {
+			this.memory.extend(offset, size)
 		}
 	}
 
-	def verifyStackOverflow(argsReqs: Int, returnReqs: Int): Unit = {
-		val requiredSize = this.stack.size - argsReqs + returnReqs
-		if (MaxStackSize < requiredSize) {
-			throw Exception.stackOverflow(MaxStackSize, requiredSize)
-		}
-	}
 
 	private def precompile(): Unit = {
 		var i = 0
