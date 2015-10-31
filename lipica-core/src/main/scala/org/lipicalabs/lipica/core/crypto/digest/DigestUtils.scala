@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.crypto.digest
 
 import java.security.MessageDigest
 
-import org.lipicalabs.lipica.core.utils.RBACCodec
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 import org.spongycastle.crypto.digests.RIPEMD160Digest
 
 object DigestUtils {
@@ -13,9 +13,14 @@ object DigestUtils {
 		digest.digest
 	}
 
-	def sha3omit12(data: Array[Byte]): Array[Byte] = {
+	def sha3omit12Bytes(data: Array[Byte]): Array[Byte] = {
 		val digest = sha3(data)
 		java.util.Arrays.copyOfRange(digest, 12, digest.length)
+	}
+
+	def sha3omit12(data: Array[Byte]): ImmutableBytes = {
+		val digest = sha3(data)
+		ImmutableBytes(digest, 12, digest.length)
 	}
 
 	def sha256(data: Array[Byte]): Array[Byte] = {
@@ -35,9 +40,9 @@ object DigestUtils {
 		result
 	}
 
-	def computeNewAddress(address: Array[Byte], nonce: Array[Byte]): Array[Byte] = {
+	def computeNewAddress(address: ImmutableBytes, nonce: ImmutableBytes): ImmutableBytes = {
 		val encodedSender = RBACCodec.Encoder.encode(address)
-		val encodedNonce = RBACCodec.Encoder.encode(BigInt(1, nonce))
+		val encodedNonce = RBACCodec.Encoder.encode(nonce.toPositiveBigInt)
 		sha3omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)))
 	}
 

@@ -224,6 +224,7 @@ object RBACCodec {
 		private def toBytes(input: Any): Array[Byte] = {
 			input match {
 				case v: Array[Byte] => v
+				case v: ImmutableBytes => v.toByteArray
 				case v: String => v.getBytes(StandardCharsets.UTF_8)
 				case v: Long =>
 					if (v == 0L) {

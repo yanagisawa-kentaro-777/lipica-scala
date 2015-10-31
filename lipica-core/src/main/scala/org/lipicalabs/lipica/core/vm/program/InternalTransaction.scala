@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.base.{Transaction, TransactionLike}
-import org.lipicalabs.lipica.core.utils.{RBACCodec, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * 2015/10/31 15:36
  * YANAGISAWA, Kentaro
  */
-class InternalTransaction(private val parentHash: Array[Byte], val deep: Int, val index: Int, _nonce: Array[Byte], _manaPrice: DataWord, _manaLimit: DataWord, override val sendAddress: Array[Byte], _receiveAddress: Array[Byte], _value: Array[Byte], _data: Array[Byte], val note: String) extends TransactionLike {
+class InternalTransaction(private val parentHash: Array[Byte], val deep: Int, val index: Int, _nonce: Array[Byte], _manaPrice: DataWord, _manaLimit: DataWord, override val sendAddress: ImmutableBytes, _receiveAddress: Array[Byte], _value: Array[Byte], _data: Array[Byte], val note: String) extends TransactionLike {
 
 	private val core = Transaction(_nonce, _manaPrice.data.toByteArray, _manaLimit.data.toByteArray, _receiveAddress, _value, _data)
 

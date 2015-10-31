@@ -34,7 +34,6 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		ImmutableBytes.expand(newData, 0, newData.length, newLength)
 	}
 
-
 	def firstIndex(p: (Byte) => Boolean): Int = {
 		this.bytes.indices.foreach {i => {
 			if (p(this.bytes(i))) {
@@ -43,6 +42,8 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		}}
 		-1
 	}
+
+	def count(p: (Byte) => Boolean): Int = this.bytes.count(p)
 
 	def asPositiveInt(index: Int): Int = this.bytes(index) & 0xFF
 
@@ -97,6 +98,8 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 object ImmutableBytes {
 
 	val empty = new ImmutableBytes(Array.emptyByteArray)
+
+	val zero = new ImmutableBytes(Array[Byte](0))
 
 	def expand(original: Array[Byte], from: Int, until: Int, newLength: Int): ImmutableBytes = {
 		if (newLength <= 0) {

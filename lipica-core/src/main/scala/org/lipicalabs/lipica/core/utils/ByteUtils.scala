@@ -129,6 +129,10 @@ object ByteUtils {
 		(bytes eq null) || bytes.isEmpty
 	}
 
+	def isNullOrEmpty(bytes: ImmutableBytes): Boolean = {
+		(bytes eq null) || bytes.isEmpty
+	}
+
 	def launderNullToEmpty(bytes: Array[Byte]): Array[Byte] = {
 		if (bytes eq null) {
 			Array.emptyByteArray

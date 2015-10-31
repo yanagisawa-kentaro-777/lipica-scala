@@ -4,10 +4,15 @@ Result
 Program
 VM
 
+DataWord.regularize
+Transaction#apply
+Transactionの詰め
+ImmutableBytesの普及。
 ImmutableBytesのテスト充実。
 
 Blockのモデル。
 
 trieを完成させる。
 
+sbt の all。
 自動テスト。
