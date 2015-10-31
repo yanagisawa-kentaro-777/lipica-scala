@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
+import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.utils.ByteUtils
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
@@ -20,7 +21,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 
 	private val memory = setupProgramListener(new Memory)
 	val stack = setupProgramListener(new Stack)
-	private val storage = setupProgramListener(Storage(invoke))
+	val storage = setupProgramListener(Storage(invoke))
 
 	/**
 	 * JUMPDEST命令がある箇所の索引。
@@ -158,6 +159,55 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 			this.memory.extend(offset, size)
 		}
 	}
+
+	def suicide(obtainerAddress: DataWord): Unit = {
+		val owner = getOwnerAddress.last20Bytes
+		val obtainer = obtainerAddress.last20Bytes
+		val balance = this.storage.getBalance(owner)
+		if (logger.isInfoEnabled) {
+			logger.info("Transfer to [%s] heritage: [%s]".format(Hex.encodeHexString(obtainer), balance))
+		}
+		//TODO 未実装！！！
+//		addInternalTx(null, null, owner, obtainer, balance, null, "suicide")
+//		transfer(this.storage, owner, obtainer, balance)
+//		getResult.addDeleteAccount(getOwnerAddress)
+	}
+
+
+	def getCodeAt(address: DataWord): Array[Byte] = {
+		val code = this.invoke.getRepository.getCode(address.last20Bytes)
+		ByteUtils.launderNullToEmpty(code)
+	}
+	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
+
+	//TODO getBlockHash
+
+	def getBalance(address: DataWord): DataWord = {
+		val balance = this.storage.getBalance(address.last20Bytes)
+		DataWord(balance.toByteArray)
+	}
+
+	def getOriginAddress = this.invoke.getOriginalAddress
+	def getCallerAddress = this.invoke.getCallerAddress
+	def getManaPrice = this.invoke.getMinManaPrice
+	//TODO def getMana
+	def getCallValue = this.invoke.getCallValue
+	def getDataSize = this.invoke.getDataSize
+	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
+	def getDataCopy(offset: DataWord, length: DataWord): Array[Byte] = this.invoke.getDataCopy(offset, length)
+	def storageLoad(key: DataWord): DataWord = {
+		this.storage.getStorageValue(getOwnerAddress.last20Bytes, key)
+	}
+	def getPrevHash = this.invoke.getPrevHash
+	def getCoinbase = this.invoke.getCoinbase
+	def getTimestamp = this.invoke.getTimestamp
+	def getNumber = this.invoke.getNumber
+	def getDifficulty = this.invoke.getDifficulty
+	def getManaLimit = this.invoke.getManaLimit
+
+	//TODO getResult 以降
+
+	def memoryToString: String = this.memory.toString
 
 
 	private def precompile(): Unit = {
