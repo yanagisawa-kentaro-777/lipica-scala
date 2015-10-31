@@ -460,6 +460,11 @@ object OpCode {
 	/**
 	 * バイトコード表す１バイトから、オペコードオブジェクトを引くための連想配列。
 	 */
-	val byteToOpCodeObjMap: Map[Byte, OpCode] = all.map(each => each.opcode -> each).toMap
+	private val byteToOpCodeObjMap: Map[Byte, OpCode] = all.map(each => each.opcode -> each).toMap
+
+	/**
+	 * バイトコード表す１バイトから、オペコードオブジェクトを引いて返します。
+	 */
+	def code(code: Byte): Option[OpCode] = this.byteToOpCodeObjMap.get(code)
 
 }

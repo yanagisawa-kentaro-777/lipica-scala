@@ -283,6 +283,7 @@ object DataWord {
 
 	val NUM_BYTES = 32
 	val Zero = DataWord.apply(new Array[Byte](NUM_BYTES))
+	val One = DataWord(1)
 	private val MAX_PLUS_ONE: BigInt = BigInt(2).pow(NUM_BYTES * 8)
 	val MaxValue: BigInt = MAX_PLUS_ONE - BigInt(1)
 
