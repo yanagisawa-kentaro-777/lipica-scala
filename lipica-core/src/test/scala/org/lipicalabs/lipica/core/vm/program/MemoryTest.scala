@@ -50,6 +50,25 @@ class MemoryTest extends Specification {
 		}
 	}
 
+	"write and read" should {
+		"be right" in {
+			val memory = new Memory
+
+			(0 until 10000).foreach {i => {
+				val data = Array[Byte]((i % 256).toByte)
+				memory.write(i, data, data.length, limited = false)
+			}}
+			(0 until 10000).foreach {i => {
+				val data = memory.read(i, 1)
+				val oneByte = memory.readByte(i)
+				data.length mustEqual 1
+				data(0) mustEqual oneByte
+				(data(0) & 0xFF) mustEqual (i % 256)
+			}}
+			ok
+		}
+	}
+
 
 	private def checkMemoryExtend(dataSize: Int) {
 		val memory = new Memory

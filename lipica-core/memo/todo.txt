@@ -4,8 +4,7 @@ Result
 Program
 VM
 
-Memoryのテストを拡充する。
-MemoryおよびDataWordの実装を、ImmutableBytesにする。
+Memoryの実装を、ImmutableBytesにする。
 ImmutableBytesのテスト充実。
 
 Blockのモデル。
