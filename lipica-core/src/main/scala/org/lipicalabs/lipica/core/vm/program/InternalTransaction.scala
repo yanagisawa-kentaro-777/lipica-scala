@@ -9,9 +9,9 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * 2015/10/31 15:36
  * YANAGISAWA, Kentaro
  */
-class InternalTransaction(private val parentHash: Array[Byte], val deep: Int, val index: Int, _nonce: Array[Byte], _manaPrice: DataWord, _manaLimit: DataWord, override val sendAddress: ImmutableBytes, _receiveAddress: Array[Byte], _value: Array[Byte], _data: Array[Byte], val note: String) extends TransactionLike {
+class InternalTransaction(private val parentHash: Array[Byte], val deep: Int, val index: Int, _nonce: ImmutableBytes, _manaPrice: DataWord, _manaLimit: DataWord, override val sendAddress: ImmutableBytes, _receiveAddress: ImmutableBytes, _value: ImmutableBytes, _data: ImmutableBytes, val note: String) extends TransactionLike {
 
-	private val core = Transaction(_nonce, _manaPrice.data.toByteArray, _manaLimit.data.toByteArray, _receiveAddress, _value, _data)
+	private val core = Transaction(_nonce, _manaPrice.data, _manaLimit.data, _receiveAddress, _value, _data)
 
 	private var rejected = false
 

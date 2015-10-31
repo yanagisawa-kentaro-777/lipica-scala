@@ -23,13 +23,13 @@ class TransactionTest extends Specification {
 	private val HASH_SIGNED_TX = "5d3466b457f3480945474de8e2df3c01ceaa55a12d0347d2e17a3f3444651f86"
 	private val RLP_ENCODED_SIGNED_TX: String = "f86b8085e8d4a510008227109413978aee95f38490e9769c39b2773ed763d9cd5f872386f26fc10000801ba0eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4a014a569d327dcda4b29f74f93c0e9729d2f49ad726e703f9cd90dbb0fbf6649f1"
 	private val KEY: String = "c85ef7d79691fe79573b1a7064c19c1a9819ebdbd1faaab1a8ec92344438aaf4"
-	private val testNonce: Array[Byte] = Hex.decodeHex("".toCharArray)
-	private val testManaPrice: Array[Byte] = ByteUtils.asUnsignedByteArray(BigInt(1000000000000L))
-	private val testManaLimit: Array[Byte] = ByteUtils.asUnsignedByteArray(BigInt(10000))
-	private val testReceiveAddress: Array[Byte] = Hex.decodeHex("13978aee95f38490e9769c39b2773ed763d9cd5f".toCharArray)
-	private val testValue: Array[Byte] = ByteUtils.asUnsignedByteArray(BigInt(10000000000000000L))
-	private val testData: Array[Byte] = Hex.decodeHex("".toCharArray)
-	private val testInit: Array[Byte] = Hex.decodeHex("".toCharArray)
+	private val testNonce: ImmutableBytes = ImmutableBytes("")
+	private val testManaPrice: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(1000000000000L))
+	private val testManaLimit: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(10000))
+	private val testReceiveAddress: ImmutableBytes = ImmutableBytes("13978aee95f38490e9769c39b2773ed763d9cd5f")
+	private val testValue: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(10000000000000000L))
+	private val testData: ImmutableBytes = ImmutableBytes("")
+	private val testInit: ImmutableBytes = ImmutableBytes("")
 
 	"test transaction from signed RBAC" should {
 		"be right" in {
@@ -37,10 +37,10 @@ class TransactionTest extends Specification {
 			txSigned.hash.toHexString mustEqual HASH_SIGNED_TX
 			txSigned.encodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 			txSigned.nonce.toPositiveBigInt mustEqual BigInt(0)
-			txSigned.manaPrice.toPositiveBigInt mustEqual BigInt(1, testManaPrice)
-			txSigned.manaLimit.toPositiveBigInt mustEqual BigInt(1, testManaLimit)
-			txSigned.receiveAddress.toHexString mustEqual Hex.encodeHexString(testReceiveAddress)
-			txSigned.value.toPositiveBigInt mustEqual BigInt(1, testValue)
+			txSigned.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
+			txSigned.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+			txSigned.receiveAddress.toHexString mustEqual testReceiveAddress.toHexString
+			txSigned.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
 			txSigned.data.isEmpty mustEqual true
 			txSigned.signatureOption.get.v mustEqual 27
 			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(txSigned.signatureOption.get.r)) mustEqual "eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4"
@@ -58,10 +58,10 @@ class TransactionTest extends Specification {
 			tx.encodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 
 			tx.nonce.toPositiveBigInt mustEqual BigInt(0)
-			tx.manaPrice.toPositiveBigInt mustEqual BigInt(1, testManaPrice)
-			tx.manaLimit.toPositiveBigInt mustEqual BigInt(1, testManaLimit)
-			tx.receiveAddress.toHexString mustEqual Hex.encodeHexString(testReceiveAddress)
-			tx.value.toPositiveBigInt mustEqual BigInt(1, testValue)
+			tx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
+			tx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+			tx.receiveAddress.toHexString mustEqual testReceiveAddress.toHexString
+			tx.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
 			tx.data.isEmpty mustEqual true
 
 			tx.signatureOption.get.v mustEqual 27
@@ -75,10 +75,10 @@ class TransactionTest extends Specification {
 			val tx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, testValue, testData)
 
 			tx.nonce.toPositiveBigInt mustEqual BigInt(0)
-			tx.manaPrice.toPositiveBigInt mustEqual BigInt(1, testManaPrice)
-			tx.manaLimit.toPositiveBigInt mustEqual BigInt(1, testManaLimit)
-			tx.receiveAddress.toHexString mustEqual Hex.encodeHexString(testReceiveAddress)
-			tx.value.toPositiveBigInt mustEqual BigInt(1, testValue)
+			tx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
+			tx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+			tx.receiveAddress.toHexString mustEqual testReceiveAddress.toHexString
+			tx.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
 			tx.data.isEmpty mustEqual true
 			tx.signatureOption.isEmpty mustEqual true
 
@@ -98,25 +98,25 @@ class TransactionTest extends Specification {
 
 	"test new transaction (2)" should {
 		"be right" in {
-			val privKeyBytes = Hex.decodeHex("c85ef7d79691fe79573b1a7064c19c1a9819ebdbd1faaab1a8ec92344438aaf4".toCharArray)
+			val privKeyBytes = ImmutableBytes("c85ef7d79691fe79573b1a7064c19c1a9819ebdbd1faaab1a8ec92344438aaf4")
 			val RLP_TX_UNSIGNED = "eb8085e8d4a510008227109413978aee95f38490e9769c39b2773ed763d9cd5f872386f26fc1000080808080"
 			val RLP_TX_SIGNED = "f86b8085e8d4a510008227109413978aee95f38490e9769c39b2773ed763d9cd5f872386f26fc10000801ba0eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4a014a569d327dcda4b29f74f93c0e9729d2f49ad726e703f9cd90dbb0fbf6649f1"
 			val HASH_TX_UNSIGNED = "b747c9318ba950fb2a002683fe9d8874eb17cad6e98831f2ae08a9e5c1753710"
 			val HASH_TX_SIGNED = "5d3466b457f3480945474de8e2df3c01ceaa55a12d0347d2e17a3f3444651f86"
 
-			val nonce = ByteUtils.asUnsignedByteArray(BigInt(0))
-			val manaPrice = Hex.decodeHex("e8d4a51000".toCharArray)
-			val mana = Hex.decodeHex("2710".toCharArray)
-			val receiveAddress = Hex.decodeHex("13978aee95f38490e9769c39b2773ed763d9cd5f".toCharArray)
-			val value = Hex.decodeHex("2386f26fc10000".toCharArray)
-			val data = Array.emptyByteArray
+			val nonce = ImmutableBytes.asUnsignedByteArray(BigInt(0))
+			val manaPrice = ImmutableBytes("e8d4a51000")
+			val mana = ImmutableBytes("2710")
+			val receiveAddress = ImmutableBytes("13978aee95f38490e9769c39b2773ed763d9cd5f")
+			val value = ImmutableBytes("2386f26fc10000")
+			val data = ImmutableBytes.empty
 
 			val tx = Transaction(nonce, manaPrice, mana, receiveAddress, value, data)
 
 			tx.encodedBytes.toHexString mustEqual RLP_TX_UNSIGNED
 			tx.hash.toHexString mustEqual HASH_TX_UNSIGNED
 
-			tx.sign(ImmutableBytes(privKeyBytes))
+			tx.sign(privKeyBytes)
 
 			tx.encodedBytes.toHexString mustEqual RLP_TX_SIGNED
 			tx.hash.toHexString mustEqual HASH_TX_SIGNED
@@ -198,19 +198,19 @@ class TransactionTest extends Specification {
 			System.out.println("Seed=%,d".format(seed))
 			val random = new java.util.Random(seed)
 			(0 until 1026).foreach {i => {
-				val data = generateBytes(random, i)
+				val data = ImmutableBytes(generateBytes(random, i))
 				val originalTx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, testValue, data)
 				val encoded = originalTx.encodedBytes
 
 				val rebuiltTx = Transaction(encoded)
 
-				rebuiltTx.data mustEqual ImmutableBytes(data)
+				rebuiltTx.data mustEqual data
 
 				rebuiltTx.nonce.toPositiveBigInt mustEqual BigInt(0)
-				rebuiltTx.manaPrice.toPositiveBigInt mustEqual BigInt(1, testManaPrice)
-				rebuiltTx.manaLimit.toPositiveBigInt mustEqual BigInt(1, testManaLimit)
-				rebuiltTx.receiveAddress.toHexString mustEqual Hex.encodeHexString(testReceiveAddress)
-				rebuiltTx.value.toPositiveBigInt mustEqual BigInt(1, testValue)
+				rebuiltTx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
+				rebuiltTx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+				rebuiltTx.receiveAddress.toHexString mustEqual testReceiveAddress.toHexString
+				rebuiltTx.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
 				rebuiltTx.signatureOption.isEmpty mustEqual true
 			}}
 			ok
@@ -222,7 +222,7 @@ class TransactionTest extends Specification {
 			val seed = System.currentTimeMillis
 			System.out.println("Seed=%,d".format(seed))
 			Seq(0L, 1L, Int.MaxValue.toLong - 1L, Int.MaxValue.toLong, Int.MaxValue.toLong + 1L, Long.MaxValue - 1L, Long.MaxValue).foreach {eachValue => {
-				val value = ByteUtils.asUnsignedByteArray(BigInt(eachValue))
+				val value = ImmutableBytes.asUnsignedByteArray(BigInt(eachValue))
 				val originalTx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, value, testData)
 				val encoded = originalTx.encodedBytes
 
@@ -231,10 +231,10 @@ class TransactionTest extends Specification {
 				rebuiltTx.value.toPositiveBigInt.toLong mustEqual eachValue
 
 				rebuiltTx.nonce.toPositiveBigInt mustEqual BigInt(0)
-				rebuiltTx.manaPrice.toPositiveBigInt mustEqual BigInt(1, testManaPrice)
-				rebuiltTx.manaLimit.toPositiveBigInt mustEqual BigInt(1, testManaLimit)
-				rebuiltTx.receiveAddress.toHexString mustEqual Hex.encodeHexString(testReceiveAddress)
-				rebuiltTx.data mustEqual ImmutableBytes(testData)
+				rebuiltTx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
+				rebuiltTx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+				rebuiltTx.receiveAddress.toHexString mustEqual testReceiveAddress.toHexString
+				rebuiltTx.data mustEqual testData
 				rebuiltTx.signatureOption.isEmpty mustEqual true
 			}}
 			ok

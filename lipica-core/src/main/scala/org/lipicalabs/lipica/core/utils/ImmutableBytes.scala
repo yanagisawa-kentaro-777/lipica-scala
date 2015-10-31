@@ -55,6 +55,8 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 
 	def toSignedBigInt: BigInt = BigInt(this.bytes)
 
+	def toSignedBigInteger: java.math.BigInteger = new java.math.BigInteger(this.bytes)
+
 	override def compareTo(another: ImmutableBytes): Int = {
 		val min = this.bytes.length.min(another.bytes.length)
 		(0 until min).foreach {
@@ -136,6 +138,10 @@ object ImmutableBytes {
 		} else {
 			apply(Hex.decodeHex(s.toCharArray))
 		}
+	}
+
+	def asUnsignedByteArray(value: BigInt): ImmutableBytes = {
+		new ImmutableBytes(ByteUtils.asUnsignedByteArray(value))
 	}
 
 	def create(length: Int): ImmutableBytes = {

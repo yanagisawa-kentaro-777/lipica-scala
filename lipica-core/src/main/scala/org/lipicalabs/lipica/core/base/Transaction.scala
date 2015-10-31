@@ -3,7 +3,6 @@ package org.lipicalabs.lipica.core.base
 import java.math.BigInteger
 import java.security.SignatureException
 
-import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
@@ -264,11 +263,11 @@ class EncodedTransaction(private val _encodedBytes: ImmutableBytes) extends Tran
 			val transaction = RBACCodec.Decoder.decode(this.encodedBytes).right.get.items
 			//val transaction = decodedTxList.items.head.items
 
-			val nonce = ImmutableBytes(launderEmptyToZero(transaction.head.bytes))
-			val manaPrice = ImmutableBytes(launderEmptyToZero(transaction(1).bytes))
+			val nonce = launderEmptyToZero(ImmutableBytes(transaction.head.bytes))
+			val manaPrice = launderEmptyToZero(ImmutableBytes(transaction(1).bytes))
 			val manaLimit = ImmutableBytes(transaction(2).bytes)
 			val receiveAddress = ImmutableBytes(transaction(3).bytes)
-			val value = ImmutableBytes(launderEmptyToZero(transaction(4).bytes))
+			val value = launderEmptyToZero(ImmutableBytes(transaction(4).bytes))
 			val data = ImmutableBytes(transaction(5).bytes)
 			val sixthElem = transaction(6).bytes
 			this.parsed =
@@ -329,35 +328,34 @@ object Transaction {
 	private val DEFAULT_MANA_PRICE = BigInt("10000000000000")
 	private val DEFAULT_BALANCE_MANA = BigInt("21000")
 
-	val zeroByteArray = Array[Byte](0)
-
 	def apply(rawData: ImmutableBytes): TransactionLike = {
 		new EncodedTransaction(rawData)
 	}
 
-	def apply(nonce: Array[Byte], manaPrice: Array[Byte], manaLimit: Array[Byte], receiveAddress: Array[Byte], value: Array[Byte], data: Array[Byte]): TransactionLike = {
-		new UnsignedTransaction(ImmutableBytes(launderEmptyToZero(nonce)), ImmutableBytes(launderEmptyToZero(value)), ImmutableBytes(receiveAddress), ImmutableBytes(launderEmptyToZero(manaPrice)), ImmutableBytes(manaLimit), ImmutableBytes(data))
+	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes): TransactionLike = {
+		new UnsignedTransaction(launderEmptyToZero(nonce), launderEmptyToZero(value), receiveAddress, launderEmptyToZero(manaPrice), manaLimit, data)
 	}
 
-	def apply(nonce: Array[Byte], manaPrice: Array[Byte], manaLimit: Array[Byte], receiveAddress: Array[Byte], value: Array[Byte], data: Array[Byte], r: Array[Byte], s: Array[Byte], v: Byte): TransactionLike = {
-		val signature: ECKey.ECDSASignature = new ECKey.ECDSASignature(new BigInteger(r), new BigInteger(s))
+	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
+		val signature: ECKey.ECDSASignature = new ECKey.ECDSASignature(r.toSignedBigInteger, s.toSignedBigInteger)
 		signature.v = v
-		new SignedTransaction(ImmutableBytes(launderEmptyToZero(nonce)), ImmutableBytes(launderEmptyToZero(value)), ImmutableBytes(receiveAddress), ImmutableBytes(launderEmptyToZero(manaPrice)), ImmutableBytes(manaLimit), ImmutableBytes(data), signature)
+		new SignedTransaction(launderEmptyToZero(nonce), launderEmptyToZero(value), receiveAddress, launderEmptyToZero(manaPrice), manaLimit, data, signature)
 	}
 
 	def create(to: String, amount: BigInt, nonce: BigInt, manaPrice: BigInt, manaLimit: BigInt): TransactionLike = {
-		Transaction.apply(ByteUtils.asUnsignedByteArray(nonce), ByteUtils.asUnsignedByteArray(manaPrice), ByteUtils.asUnsignedByteArray(manaLimit), Hex.decodeHex(to.toCharArray), ByteUtils.asUnsignedByteArray(amount), null)
+		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), ImmutableBytes.asUnsignedByteArray(manaPrice), ImmutableBytes.asUnsignedByteArray(manaLimit), ImmutableBytes(to), ImmutableBytes.asUnsignedByteArray(amount), ImmutableBytes.empty)
 	}
 
 	def createDefault(to: String, amount: BigInteger, nonce: BigInteger): TransactionLike = {
 		create(to, amount, nonce, DEFAULT_MANA_PRICE, DEFAULT_BALANCE_MANA)
 	}
 
-	def launderEmptyToZero(bytes: Array[Byte]): Array[Byte] = {
+	def launderEmptyToZero(bytes: ImmutableBytes): ImmutableBytes = {
 		if ((bytes eq null) || bytes.isEmpty) {
-			zeroByteArray
+			ImmutableBytes.zero
 		} else {
 			bytes
 		}
 	}
+
 }
