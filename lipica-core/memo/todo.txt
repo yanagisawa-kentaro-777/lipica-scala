@@ -1,8 +1,11 @@
+Trace
 Result
 InternalTx
 
 Memoryのテストを拡充する。
 MemoryおよびDataWordの実装を、ImmutableBytesにする。
 Blockのモデル。
+
+trieを完成させる。
 
 自動テスト。

@@ -2,6 +2,8 @@ package org.lipicalabs.lipica.core.vm.program.listener
 
 import org.lipicalabs.lipica.core.vm.DataWord
 
+import scala.collection.immutable.Queue
+
 /**
  * Created by IntelliJ IDEA.
  * 2015/10/31 14:37
@@ -9,7 +11,7 @@ import org.lipicalabs.lipica.core.vm.DataWord
  */
 class CompositeProgramListener extends ProgramListener {
 
-	private var listeners: Seq[ProgramListener]  = Seq.empty
+	private var listeners: Seq[ProgramListener]  = Queue.empty
 
 	override def onMemoryExtend(delta: Int): Unit = this.listeners.foreach(_.onMemoryExtend(delta))
 
