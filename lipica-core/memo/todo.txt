@@ -12,5 +12,4 @@ db.ContractDetails -> Storage。
 
 trieを完成させる。（TODOもなくす。）
 
-sbt の all。
 自動テスト。

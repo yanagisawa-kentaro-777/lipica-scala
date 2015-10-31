@@ -38,7 +38,7 @@ concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 
 // プロジェクト定義。
 
-lazy val lipicaCore =
+lazy val core =
 	(project in file("lipica-core"))
 		.settings(classDiagramSettings)
 		.settings(
@@ -63,4 +63,9 @@ lazy val lipicaCore =
 		)
 
 
-lazy val all = lipicaCore
+
+lazy val all =
+	(project in file(".")).
+		settings(
+			name := "lipica"
+		) aggregate(core)
