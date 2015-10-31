@@ -271,6 +271,12 @@ object RBACCodec {
 					} else {
 						Array((v & 0xff).asInstanceOf[Byte])
 					}
+				case v: Boolean =>
+					if (v) {
+						toBytes(1.asInstanceOf[Byte])
+					} else {
+						toBytes(0.asInstanceOf[Byte])
+					}
 				case v: BigInt =>
 					if (v == BIGINT_ZERO) {
 						Array.empty
