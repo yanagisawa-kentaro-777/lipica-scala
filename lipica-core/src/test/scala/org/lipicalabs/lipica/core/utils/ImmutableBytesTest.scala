@@ -37,7 +37,7 @@ sequential
 
 	"elements (2)" should {
 		"be right" in {
-			val test = ImmutableBytes(null)
+			val test = ImmutableBytes(null.asInstanceOf[Array[Byte]])
 			test.length mustEqual 0
 			test.toString mustEqual ""
 			(test equals test) mustEqual true

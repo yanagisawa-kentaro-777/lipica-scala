@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.vm
 import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Lipicaシステムにあらかじめ組み込まれている
@@ -15,7 +16,7 @@ object PrecompiledContracts {
 
 	trait PrecompiledContract {
 		def manaForData(data: Array[Byte]): Long
-		def execute(data: Array[Byte]): Array[Byte]
+		def execute(data: ImmutableBytes): ImmutableBytes
 	}
 
 	private def computeManaByWords(data: Array[Byte], param1: Int, param2: Int): Int = {
@@ -30,7 +31,7 @@ object PrecompiledContracts {
 		override def manaForData(data: Array[Byte]): Long = {
 			computeManaByWords(data, 15, 3)
 		}
-		override def execute(data: Array[Byte]): Array[Byte] = data
+		override def execute(data: ImmutableBytes): ImmutableBytes = data
 	}
 
 	/**
@@ -40,9 +41,12 @@ object PrecompiledContracts {
 		override def manaForData(data: Array[Byte]): Long = {
 			computeManaByWords(data, 60, 12)
 		}
-		override def execute(data: Array[Byte]): Array[Byte] = {
-			if (data eq null) return DigestUtils.sha256(Array.emptyByteArray)
-			DigestUtils.sha256(data)
+		override def execute(data: ImmutableBytes): ImmutableBytes = {
+			if (data eq null) {
+				ImmutableBytes(DigestUtils.sha256(Array.emptyByteArray))
+			} else {
+				data.sha256
+			}
 		}
 	}
 
@@ -53,31 +57,36 @@ object PrecompiledContracts {
 		override def manaForData(data: Array[Byte]): Long = {
 			computeManaByWords(data, 600, 120)
 		}
-		override def execute(data: Array[Byte]): Array[Byte] = {
-			if (data eq null) return DigestUtils.ripemd160(Array.emptyByteArray)
-			DataWord.regularize(DigestUtils.ripemd160(data))
+		override def execute(data: ImmutableBytes): ImmutableBytes = {
+			if (data eq null) {
+				val bytes = DigestUtils.ripemd160(Array.emptyByteArray)
+				ImmutableBytes.expand(bytes, 0, bytes.length, DataWord.NUM_BYTES)
+			} else {
+				data.ripemd160(DataWord.NUM_BYTES)
+			}
 		}
 	}
 
 	object ECRecover extends PrecompiledContract {
 		override def manaForData(data: Array[Byte]): Long = 3000
-		override def execute(data: Array[Byte]): Array[Byte] = {
+		override def execute(data: ImmutableBytes):ImmutableBytes = {
 			val h = new Array[Byte](32)
 			val v = new Array[Byte](32)
 			val r = new Array[Byte](32)
 			val s = new Array[Byte](32)
 
 			try {
-				System.arraycopy(data, 0, h, 0, 32)
-				System.arraycopy(data, 32, v, 0, 32)
-				System.arraycopy(data, 64, r, 0, 32)
+				data.copyTo(0, h, 0, 32)
+				data.copyTo(32, v, 0, 32)
+				data.copyTo(64, r, 0, 32)
 				val sLength: Int = if (data.length < 128) data.length - 96 else 32
-				System.arraycopy(data, 96, s, 0, sLength)
+				data.copyTo(96, s, 0, sLength)
 				val signature = ECDSASignature.fromComponents(r, s, v(31))
 				val key = ECKey.signatureToKey(h, signature.toBase64)
-				DataWord.regularize(key.getAddress)
+				val addr = key.getAddress
+				ImmutableBytes.expand(addr, 0, addr.length, DataWord.NUM_BYTES)
 			} catch {
-				case any: Throwable => DataWord.regularize(Array.emptyByteArray)
+				case any: Throwable => ImmutableBytes.empty
 			}
 		}
 	}

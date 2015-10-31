@@ -28,6 +28,12 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	}
 
 	def sha3: ImmutableBytes = new ImmutableBytes(DigestUtils.sha3(this.bytes))
+	def sha256: ImmutableBytes = new ImmutableBytes(DigestUtils.sha256(this.bytes))
+	def ripemd160(newLength: Int): ImmutableBytes = {
+		val newData = DigestUtils.ripemd160(this.bytes)
+		ImmutableBytes.expand(newData, 0, newData.length, newLength)
+	}
+
 
 	def firstIndex(p: (Byte) => Boolean): Int = {
 		this.bytes.indices.foreach {i => {
@@ -119,6 +125,14 @@ object ImmutableBytes {
 			return empty
 		}
 		apply(original, 0, original.length)
+	}
+
+	def apply(s: String): ImmutableBytes = {
+		if (s eq null) {
+			empty
+		} else {
+			apply(Hex.decodeHex(s.toCharArray))
+		}
 	}
 
 	def create(length: Int): ImmutableBytes = {
