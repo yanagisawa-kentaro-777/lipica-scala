@@ -4,7 +4,6 @@ Result
 Program
 VM
 
-DataWord.regularize
 Transaction#apply
 Transaction‚Ì‹l‚ß
 ImmutableBytes‚Ì•‹yB

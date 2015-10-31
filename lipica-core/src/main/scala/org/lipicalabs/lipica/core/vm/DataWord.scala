@@ -21,10 +21,6 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	def value: BigInt = this.data.toPositiveBigInt
 	def sValue: BigInt = this.data.toSignedBigInt
 
-//	def copyData: Array[Byte] = {
-//		java.util.Arrays.copyOf(this.data, this.data.length)
-//	}
-
 	def computeSHA3OfData: ImmutableBytes = this.data.sha3
 
 	def intValue: Int = {
@@ -285,20 +281,6 @@ object DataWord {
 	val One = DataWord(1)
 	private val MAX_PLUS_ONE: BigInt = BigInt(2).pow(NUM_BYTES * 8)
 	val MaxValue: BigInt = MAX_PLUS_ONE - BigInt(1)
-
-
-	def regularize(src: Array[Byte]): Array[Byte] = {
-		//TODO delete
-		if (src eq null) {
-			new Array[Byte](NUM_BYTES)
-		} else if (src.length <= NUM_BYTES) {
-			val data = new Array[Byte](NUM_BYTES)
-			System.arraycopy(src, 0, data, NUM_BYTES - src.length, src.length)
-			data
-		} else {
-			throw new IllegalArgumentException("Byte array too long: %d < %d".format(NUM_BYTES, src.length))
-		}
-	}
 
 	def wrap(src: Array[Byte]): ImmutableBytes = {
 		if (src eq null) {
