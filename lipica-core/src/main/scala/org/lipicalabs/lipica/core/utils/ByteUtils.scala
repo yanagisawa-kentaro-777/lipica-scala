@@ -16,41 +16,11 @@ object ByteUtils {
 		}
 		result
 	}
-
-	/**
-	 * 渡されたバイト配列の中で、
-	 * ゼロでない最初の値が出現する箇所の添字を返します。
-	 * すべてがゼロである場合には負の値を返します。
-	 */
-	def firstNonZeroByte(data: Array[Byte]): Int = {
-		data.indices.foreach {
-			i => {
-				if (data(i) != 0) {
-					return i
-				}
-			}
-		}
-		-1
-	}
-
+	
 	/**
 	 * 渡されたバイト配列から、先頭の連続するゼロを除外した
 	 * バイト配列を返します。
 	 */
-	def stripLeadingZeroes(data: Array[Byte]): Array[Byte] = {
-		val from = firstNonZeroByte(data)
-		from match {
-			case -1 =>
-				Array.emptyByteArray
-			case 0 =>
-				data
-			case _ =>
-				val result = new Array[Byte](data.length - from)
-				System.arraycopy(data, from, result, 0, data.length - from)
-				result
-		}
-	}
-
 	def stripLeadingZeroes(data: ImmutableBytes): ImmutableBytes = {
 		val from = data.firstIndex(_ != 0)
 		from match {

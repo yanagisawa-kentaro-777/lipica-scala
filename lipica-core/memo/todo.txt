@@ -4,8 +4,7 @@ Result
 Program
 VM
 
-ImmutableBytesの普及。
-ImmutableBytesのテスト充実。
+ImmutableBytesの普及。（trie方面）
 
 AccountStateのモデル。
 Blockのモデル。

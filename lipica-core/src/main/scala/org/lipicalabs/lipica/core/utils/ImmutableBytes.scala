@@ -11,20 +11,51 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
  */
 class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[ImmutableBytes] {
 
+	/** このバイト配列の長さを返します。 */
 	val length: Int = this.bytes.length
+
+	/** このバイト配列の長さを返します。 */
 	val size: Int = this.length
+
+	/** このバイト配列の添字を走査するためのRangeを返します。*/
 	def indices: Range = this.bytes.indices
 
+	/** このバイト配列の長さがゼロであれば真を返します。 */
 	def isEmpty: Boolean = {
 		this.length == 0
 	}
+	/** このバイト配列の長さがゼロでなければ真を返します。 */
+	def nonEmpty: Boolean = {
+		0 < this.length
+	}
 
+	/**
+	 * 指定された添字の要素を返します。
+	 */
 	def apply(index: Int): Byte = this.bytes(index)
 
+	/**
+	 * 指定された添字の要素を、正の整数として返します。
+	 */
+	def asPositiveInt(index: Int): Int = this.bytes(index) & 0xFF
+
+	/**
+	 * このオブジェクトをArray[Byte]に変換して返します。
+	 */
 	def toByteArray: Array[Byte] = java.util.Arrays.copyOfRange(this.bytes, 0, this.bytes.length)
 
+	/**
+	 * このオブジェクトの内容を、渡されたバイト配列にコピーします。
+	 */
 	def copyTo(srcPos: Int, dest: Array[Byte], destPos: Int, len: Int): Unit = {
 		System.arraycopy(this.bytes, srcPos, dest, destPos, len)
+	}
+
+	/**
+	 * このオブジェクトの指定された範囲を、新たなインスタンスとして返します。
+	 */
+	def copyOfRange(from: Int, until: Int): ImmutableBytes = {
+		new ImmutableBytes(java.util.Arrays.copyOfRange(this.bytes, from, until))
 	}
 
 	def sha3: ImmutableBytes = new ImmutableBytes(DigestUtils.sha3(this.bytes))
@@ -34,6 +65,9 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		ImmutableBytes.expand(newData, 0, newData.length, newLength)
 	}
 
+	/**
+	 * 渡された条件を満たす最初の添字を返します。
+	 */
 	def firstIndex(p: (Byte) => Boolean): Int = {
 		this.bytes.indices.foreach {i => {
 			if (p(this.bytes(i))) {
@@ -43,18 +77,24 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		-1
 	}
 
+	/**
+	 * 渡された条件を満たす要素の個数を返します。
+	 */
 	def count(p: (Byte) => Boolean): Int = this.bytes.count(p)
 
-	def asPositiveInt(index: Int): Int = this.bytes(index) & 0xFF
-
-	def copyOfRange(from: Int, until: Int): ImmutableBytes = {
-		new ImmutableBytes(java.util.Arrays.copyOfRange(this.bytes, from, until))
-	}
-
+	/**
+	 * このオブジェクトのバイト配列を、正のBigIntとして返します。
+	 */
 	def toPositiveBigInt: BigInt = BigInt(1, this.bytes)
 
+	/**
+	 * このオブジェクトのバイト配列を、符号付きのBigIntとして返します。
+	 */
 	def toSignedBigInt: BigInt = BigInt(this.bytes)
 
+	/**
+	 * このオブジェクトのバイト配列を、符号付きのBigIntegerとして返します。
+	 */
 	def toSignedBigInteger: java.math.BigInteger = new java.math.BigInteger(this.bytes)
 
 	override def compareTo(another: ImmutableBytes): Int = {
