@@ -6,6 +6,8 @@ VM
 
 Memoryのテストを拡充する。
 MemoryおよびDataWordの実装を、ImmutableBytesにする。
+DataWord#warpの実装。
+ImmutableBytesのテスト充実。
 
 Blockのモデル。
 

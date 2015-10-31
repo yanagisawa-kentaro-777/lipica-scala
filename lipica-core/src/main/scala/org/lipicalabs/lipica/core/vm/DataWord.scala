@@ -3,8 +3,7 @@ package org.lipicalabs.lipica.core.vm
 import java.nio.ByteBuffer
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.ByteUtils
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 
 /**
  * 32バイト＝256ビットの数値を表すクラスです。
@@ -12,21 +11,21 @@ import org.lipicalabs.lipica.core.utils.ByteUtils
  * @since 2015, Oct. 17
  * @author YANAGISAWA, Kentaro
  */
-class DataWord private(private val data: Array[Byte]) extends Comparable[DataWord] {
+class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 
 	import DataWord._
 
-	def last20Bytes: Array[Byte] = java.util.Arrays.copyOfRange(this.data, NUM_BYTES - 20, data.length)
-	def getDataWithoutLeadingZeros: Array[Byte] = ByteUtils.stripLeadingZeroes(this.data)
+	def last20Bytes: ImmutableBytes = this.data.copyOfRange(NUM_BYTES - 20, data.length)
+	def getDataWithoutLeadingZeros: ImmutableBytes = ByteUtils.stripLeadingZeroes(this.data)
 
-	def value: BigInt = BigInt(1, this.data)
-	def sValue: BigInt = BigInt(this.data)
+	def value: BigInt = this.data.toPositiveBigInt
+	def sValue: BigInt = this.data.toSignedBigInt
 
-	def copyData: Array[Byte] = {
-		java.util.Arrays.copyOf(this.data, this.data.length)
-	}
+//	def copyData: Array[Byte] = {
+//		java.util.Arrays.copyOf(this.data, this.data.length)
+//	}
 
-	def computeSha3OfData: Array[Byte] = DigestUtils.sha3(this.data)
+	def computeSHA3OfData: ImmutableBytes = this.data.sha3
 
 	def intValue: Int = {
 		var result = 0
@@ -224,17 +223,17 @@ class DataWord private(private val data: Array[Byte]) extends Comparable[DataWor
 			} else {
 				0
 			}
-		val newArray = this.copyData
+		val newArray = this.data.toByteArray
 		((NUM_BYTES - 1) until k by -1).foreach {
 			i => {
 				newArray(newArray.length - 1 - i) = mask
 			}
 		}
-		new DataWord(newArray)
+		new DataWord(ImmutableBytes(newArray))
 	}
 
 	def occupiedBytes: Int = {
-		val idx = ByteUtils.firstNonZeroByte(this.data)
+		val idx = this.data.firstIndex(_ != 0)
 		if (idx < 0) {
 			0
 		} else {
@@ -245,27 +244,27 @@ class DataWord private(private val data: Array[Byte]) extends Comparable[DataWor
 	override def equals(any: Any): Boolean = {
 		any match {
 			case null => false
-			case another: DataWord => java.util.Arrays.equals(this.data, another.data)
+			case another: DataWord => this.data == another.data
 			case _ => false
 		}
 	}
 
-	override def hashCode: Int = java.util.Arrays.hashCode(this.data)
+	override def hashCode: Int = this.data.hashCode
 
 	override def compareTo(another: DataWord): Int = {
-		ByteUtils.compareBytes(this.data, another.data)
+		this.data compareTo another.data
 	}
 
 	override def toString: String = toHexString
 
-	def toHexString: String = Hex.encodeHexString(this.data)
+	def toHexString: String = this.data.toHexString
 
 	def toPrefixString: String = {
 		val pref = getDataWithoutLeadingZeros
 		if (pref.isEmpty) {
 			return ""
 		}
-		val result =  Hex.encodeHexString(pref)
+		val result =  pref.toHexString
 		if (pref.length < 7) {
 			result
 		} else {
@@ -273,7 +272,7 @@ class DataWord private(private val data: Array[Byte]) extends Comparable[DataWor
 		}
 	}
 
-	def shortHex: String = "0x" + Hex.encodeHexString(getDataWithoutLeadingZeros).toUpperCase
+	def shortHex: String = "0x" + getDataWithoutLeadingZeros.toHexString.toUpperCase
 
 	def isHex(s: String): Boolean = toHexString == s
 
@@ -300,8 +299,22 @@ object DataWord {
 		}
 	}
 
+	def wrap(src: Array[Byte]): ImmutableBytes = {
+		val bytes =
+			if (src eq null) {
+				new Array[Byte](NUM_BYTES)
+			} else if (src.length <= NUM_BYTES) {
+				val data = new Array[Byte](NUM_BYTES)
+				System.arraycopy(src, 0, data, NUM_BYTES - src.length, src.length)
+				data
+			} else {
+				throw new IllegalArgumentException("Byte array too long: %d < %d".format(NUM_BYTES, src.length))
+			}
+		ImmutableBytes(bytes)
+	}
+
 	def apply(src: Array[Byte]): DataWord = {
-		new DataWord(regularize(src))
+		new DataWord(wrap(src))
 	}
 
 	def apply(buffer: ByteBuffer): DataWord = {

@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.utils
 
 import org.apache.commons.codec.binary.Hex
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 
 /**
  * 不可変なバイト配列クラスの実装です。
@@ -14,9 +15,34 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	val size: Int = this.length
 	def indices: Range = this.bytes.indices
 
+	def isEmpty: Boolean = {
+		this.length == 0
+	}
+
 	def apply(index: Int): Byte = this.bytes(index)
 
+	def toByteArray: Array[Byte] = java.util.Arrays.copyOfRange(this.bytes, 0, this.bytes.length)
+
+	def sha3: ImmutableBytes = new ImmutableBytes(DigestUtils.sha3(this.bytes))
+
+	def firstIndex(p: (Byte) => Boolean): Int = {
+		this.bytes.indices.foreach {i => {
+			if (p(this.bytes(i))) {
+				return i
+			}
+		}}
+		-1
+	}
+
 	def asPositiveInt(index: Int): Int = this.bytes(index) & 0xFF
+
+	def copyOfRange(from: Int, until: Int): ImmutableBytes = {
+		new ImmutableBytes(java.util.Arrays.copyOfRange(this.bytes, from, until))
+	}
+
+	def toPositiveBigInt: BigInt = BigInt(1, this.bytes)
+
+	def toSignedBigInt: BigInt = BigInt(this.bytes)
 
 	override def compareTo(another: ImmutableBytes): Int = {
 		val min = this.bytes.length.min(another.bytes.length)
@@ -39,6 +65,8 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		}
 	}
 
+	override def hashCode: Int = java.util.Arrays.hashCode(this.bytes)
+
 	override def equals(o: Any): Boolean = {
 		try {
 			val another = o.asInstanceOf[ImmutableBytes]
@@ -50,7 +78,10 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 			case any: Throwable => false
 		}
 	}
-	override def toString: String = Hex.encodeHexString(this.bytes)
+
+	def toHexString: String = Hex.encodeHexString(this.bytes)
+
+	override def toString: String = toHexString
 }
 
 object ImmutableBytes {

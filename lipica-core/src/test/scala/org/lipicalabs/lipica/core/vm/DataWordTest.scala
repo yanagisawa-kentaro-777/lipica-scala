@@ -240,7 +240,7 @@ class DataWordTest extends Specification {
 			val x = DataWord(a)
 			val y = DataWord(b)
 			val result = x * y
-			result.copyData.length mustEqual 32
+			result.data.length mustEqual 32
 		}
 	}
 

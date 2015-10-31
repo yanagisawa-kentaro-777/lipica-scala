@@ -51,6 +51,18 @@ object ByteUtils {
 		}
 	}
 
+	def stripLeadingZeroes(data: ImmutableBytes): ImmutableBytes = {
+		val from = data.firstIndex(_ != 0)
+		from match {
+			case -1 =>
+				ImmutableBytes.empty
+			case 0 =>
+				data
+			case _ =>
+				data.copyOfRange(from, data.length)
+		}
+	}
+
 	def bigIntegerToBytes(b: java.math.BigInteger, numBytes: Int): Array[Byte] = {
 		if (b == null) return null
 		val bytes  = new Array[Byte](numBytes)

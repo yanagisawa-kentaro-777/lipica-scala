@@ -23,7 +23,7 @@ case class LogInfo(address: Array[Byte], topics: Seq[DataWord], data: Array[Byte
 	def getBloom: Bloom = {
 		var result = Bloom.create(DigestUtils.sha3(address))
 		for (eachTopic <- this.topics) {
-			result = result | Bloom.create(eachTopic.computeSha3OfData)
+			result = result | Bloom.create(eachTopic.computeSHA3OfData.toByteArray)
 		}
 		result
 	}
@@ -32,7 +32,7 @@ case class LogInfo(address: Array[Byte], topics: Seq[DataWord], data: Array[Byte
 		val topicsString = new StringBuilder
 		topicsString.append("[")
 		this.topics.foreach { each =>
-			val eachString = Hex.encodeHexString(each.copyData)
+			val eachString = each.toHexString
 			topicsString.append(eachString).append(" ")
 		}
 		topicsString.append("]")

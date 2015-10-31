@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.utils.ByteUtils
 import org.lipicalabs.lipica.core.vm.trace.ProgramTraceListener
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
@@ -142,7 +141,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 		this.memory.write(addr.intValue, value, value.length, limited)
 	}
 	private def memorySave(addr: DataWord, value: DataWord, limited: Boolean): Unit = {
-		memorySave(addr, value.copyData, limited)
+		memorySave(addr, value.data.toByteArray, limited)
 	}
 	def memorySave(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = false)
 	def memorySaveLimited(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = true)
@@ -167,9 +166,9 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	def suicide(obtainerAddress: DataWord): Unit = {
 		val owner = getOwnerAddress.last20Bytes
 		val obtainer = obtainerAddress.last20Bytes
-		val balance = this.storage.getBalance(owner)
+		val balance = this.storage.getBalance(owner.toByteArray)
 		if (logger.isInfoEnabled) {
-			logger.info("Transfer to [%s] heritage: [%s]".format(Hex.encodeHexString(obtainer), balance))
+			logger.info("Transfer to [%s] heritage: [%s]".format(obtainer.toHexString, balance))
 		}
 		//TODO 未実装！！！
 //		addInternalTx(null, null, owner, obtainer, balance, null, "suicide")
@@ -179,7 +178,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 
 
 	def getCodeAt(address: DataWord): Array[Byte] = {
-		val code = this.invoke.getRepository.getCode(address.last20Bytes)
+		val code = this.invoke.getRepository.getCode(address.last20Bytes.toByteArray)
 		ByteUtils.launderNullToEmpty(code)
 	}
 	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
@@ -187,7 +186,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	//TODO getBlockHash
 
 	def getBalance(address: DataWord): DataWord = {
-		val balance = this.storage.getBalance(address.last20Bytes)
+		val balance = this.storage.getBalance(address.last20Bytes.toByteArray)
 		DataWord(balance.toByteArray)
 	}
 
@@ -200,7 +199,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
 	def getDataCopy(offset: DataWord, length: DataWord): Array[Byte] = this.invoke.getDataCopy(offset, length)
 	def storageLoad(key: DataWord): DataWord = {
-		this.storage.getStorageValue(getOwnerAddress.last20Bytes, key)
+		this.storage.getStorageValue(getOwnerAddress.last20Bytes.toByteArray, key)
 	}
 	def getPrevHash = this.invoke.getPrevHash
 	def getCoinbase = this.invoke.getCoinbase
