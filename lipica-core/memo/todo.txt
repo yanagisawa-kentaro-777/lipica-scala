@@ -1,4 +1,5 @@
-各種ListenerとResult
+Result
+InternalTx
 
 Memoryのテストを拡充する。
 MemoryおよびDataWordの実装を、ImmutableBytesにする。

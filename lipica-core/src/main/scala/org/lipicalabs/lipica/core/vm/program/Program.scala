@@ -2,9 +2,10 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.utils.ByteUtils
+import org.lipicalabs.lipica.core.vm.trace.ProgramTraceListener
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
-import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAware
+import org.lipicalabs.lipica.core.vm.program.listener.{CompositeProgramListener, ProgramListenerAware}
 import org.slf4j.LoggerFactory
 
 /**
@@ -15,6 +16,11 @@ import org.slf4j.LoggerFactory
 class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 
 	import Program._
+
+	/** 各種リスナ。 */
+	private var listener: ProgramOutListener = null
+	private val traceListener = new ProgramTraceListener
+	private val programListener = CompositeProgramListener(Some(this.traceListener))
 
 	/** プログラムカウンタ。 */
 	private var pc = 0
@@ -35,13 +41,11 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	/** 前回実行されたオペコード。 */
 	private var previouslyExecutedOp = 0
 
-	//TODO traceの実装。
-
 
 	precompile()
 
 	private def setupProgramListener[T <: ProgramListenerAware](traceListenerAware: T): T = {
-		//TODO programListener および trace listener について未実装。
+		traceListenerAware.setTraceListener(this.traceListener)
 		traceListenerAware
 	}
 
@@ -228,6 +232,10 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 		}
 	}
 
+	def setListener(programOutListener: ProgramOutListener): Unit = {
+		this.listener = programOutListener
+	}
+
 }
 
 object Program {
@@ -268,4 +276,8 @@ object Program {
 
 	}
 
+}
+
+trait ProgramOutListener {
+	def output(s: String)
 }
