@@ -27,8 +27,8 @@ class InternalTransaction(private val parentHash: Array[Byte], val deep: Int, va
 	}
 	def isRejected: Boolean = this.rejected
 
-	private var rbacBytes: Array[Byte] = null
-	override def encodedBytes: Array[Byte] = {
+	private var rbacBytes: ImmutableBytes = null
+	override def encodedBytes: ImmutableBytes = {
 		if (this.rbacBytes eq null) {
 			val thisNonce = nonce
 			val encodedNonce =
@@ -49,14 +49,14 @@ class InternalTransaction(private val parentHash: Array[Byte], val deep: Int, va
 			val encodedIndex = RBACCodec.Encoder.encode(index)
 			val encodedRejected = RBACCodec.Encoder.encode(rejected)
 
-			this.rbacBytes = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNonce, encodedParentHash, encodedSenderAddress, encodedReceiveAddress, encodedValue, encodedManaPrice, encodedManaLimit, encodedData, encodedNote, encodedDeep, encodedIndex, encodedRejected))
+			this.rbacBytes = ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNonce, encodedParentHash, encodedSenderAddress, encodedReceiveAddress, encodedValue, encodedManaPrice, encodedManaLimit, encodedData, encodedNote, encodedDeep, encodedIndex, encodedRejected)))
 		}
 		this.rbacBytes
 	}
 
 	override def encodedRawBytes = this.encodedBytes
 
-	override def sign(privateKeyBytes: Array[Byte]) = {
+	override def sign(privateKeyBytes: ImmutableBytes) = {
 		throw new UnsupportedOperationException("Cannot sign an internal transaction.")
 	}
 	override val signatureOption = None

@@ -4,7 +4,6 @@ import java.math.BigInteger
 import java.security.SignatureException
 
 import org.apache.commons.codec.binary.Hex
-import org.apache.commons.lang3.ArrayUtils
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
@@ -61,7 +60,7 @@ trait TransactionLike {
 	 * */
 	def data: ImmutableBytes
 
-	def sign(privateKeyBytes: Array[Byte]): Unit
+	def sign(privateKeyBytes: ImmutableBytes): Unit
 
 	/**
 	 *  the elliptic curve signature
@@ -69,22 +68,22 @@ trait TransactionLike {
 	 * */
 	def signatureOption: Option[ECDSASignature]
 
-	def encodedBytes: Array[Byte]
+	def encodedBytes: ImmutableBytes
 
-	def encodedRawBytes: Array[Byte]
+	def encodedRawBytes: ImmutableBytes
 
 	/**
 	 * このトランザクションにかかるマナの量を返します。
 	 */
 	def transactionCost: Long = {
 		val nonZeroes = nonZeroDataBytes
-		val zeroVals = ArrayUtils.getLength(data) - nonZeroes
+		val zeroVals = data.length - nonZeroes
 		ManaCost.TRANSACTION + zeroVals * ManaCost.TX_ZERO_DATA + nonZeroes * ManaCost.TX_NO_ZERO_DATA
 	}
 
-	def hash: Array[Byte] = DigestUtils.sha3(encodedBytes)
+	def hash: ImmutableBytes = encodedBytes.sha3
 
-	def rawHash: Array[Byte] = DigestUtils.sha3(encodedRawBytes)
+	def rawHash: ImmutableBytes = encodedRawBytes.sha3
 
 	def getContractAddress: ImmutableBytes = {
 		if (!isContractCreation) return null
@@ -98,25 +97,25 @@ trait TransactionLike {
 	def getKey: Option[ECKey] = {
 		val hash = rawHash
 		this.signatureOption.map {
-			signature => ECKey.recoverFromSignature(signature.v, signature, hash, true)
+			signature => ECKey.recoverFromSignature(signature.v, signature, hash.toByteArray, true)
 		}
 	}
 
-	override def hashCode: Int = java.util.Arrays.hashCode(this.hash)
+	override def hashCode: Int = this.hash.hashCode
 
 	override def equals(o: Any): Boolean = {
 		try {
-			o.asInstanceOf[TransactionLike].hash sameElements this.hash
+			o.asInstanceOf[TransactionLike].hash == this.hash
 		} catch {
 			case any: Throwable => false
 		}
 	}
 
-	protected[base] def encode: Array[Byte] = encode(withSignature = true)
+	protected[base] def encode: ImmutableBytes = encode(withSignature = true)
 
-	protected[base] def encodeRaw: Array[Byte] = encode(withSignature = false)
+	protected[base] def encodeRaw: ImmutableBytes = encode(withSignature = false)
 
-	private def encode(withSignature: Boolean): Array[Byte] = {
+	private def encode(withSignature: Boolean): ImmutableBytes = {
 		val nonce =
 			if ((this.nonce eq null) || (this.nonce == ImmutableBytes.zero)) {
 				RBACCodec.Encoder.encode(null)
@@ -143,9 +142,9 @@ trait TransactionLike {
 						val s = RBACCodec.Encoder.encode(Array.emptyByteArray)
 						(v, r, s)
 				}
-			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data, v, r, s))
+			ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data, v, r, s)))
 		} else {
-			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data))
+			ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data)))
 		}
 	}
 
@@ -167,16 +166,16 @@ class UnsignedTransaction(
 
 	import Transaction._
 
-	private var encoded: Array[Byte] = null
-	override def encodedBytes: Array[Byte] = {
+	private var encoded: ImmutableBytes = null
+	override def encodedBytes: ImmutableBytes = {
 		if (this.encoded eq null) {
 			this.encoded = encode
 		}
 		this.encoded
 	}
 
-	private var encodedRaw: Array[Byte] = null
-	override def encodedRawBytes: Array[Byte] = {
+	private var encodedRaw: ImmutableBytes = null
+	override def encodedRawBytes: ImmutableBytes = {
 		if (this.encodedRaw eq null) {
 			this.encodedRaw = encodeRaw
 		}
@@ -187,7 +186,7 @@ class UnsignedTransaction(
 	override def sendAddress: ImmutableBytes = {
 		try {
 			if (this._sendAddress eq null) {
-				val key = ECKey.signatureToKey(rawHash, signatureOption.get.toBase64)
+				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
 				this._sendAddress = ImmutableBytes(key.getAddress)
 			}
 			this._sendAddress
@@ -199,10 +198,10 @@ class UnsignedTransaction(
 	}
 
 	private var signature: ECDSASignature = null
-	def sign(privateKeyBytes: Array[Byte]): Unit = {
+	def sign(privateKeyBytes: ImmutableBytes): Unit = {
 		val hash = this.rawHash
-		val key = ECKey.fromPrivate(privateKeyBytes).decompress
-		this.signature = key.sign(hash)
+		val key = ECKey.fromPrivate(privateKeyBytes.toByteArray).decompress
+		this.signature = key.sign(hash.toByteArray)
 		this.encoded = null
 	}
 	override def signatureOption: Option[ECDSASignature] = Option(this.signature)
@@ -222,18 +221,18 @@ class SignedTransaction(
 
 	override val signatureOption: Option[ECDSASignature] = Option(signature)
 
-	override def sign(privateKeyBytes: Array[Byte]): Unit = ()
+	override def sign(privateKeyBytes: ImmutableBytes): Unit = ()
 
-	private var encoded: Array[Byte] = null
-	override def encodedBytes: Array[Byte] = {
+	private var encoded: ImmutableBytes = null
+	override def encodedBytes: ImmutableBytes = {
 		if (this.encoded eq null) {
 			this.encoded = encode
 		}
 		this.encoded
 	}
 
-	private var encodedRaw: Array[Byte] = null
-	override def encodedRawBytes: Array[Byte] = {
+	private var encodedRaw: ImmutableBytes = null
+	override def encodedRawBytes: ImmutableBytes = {
 		if (this.encodedRaw eq null) {
 			this.encodedRaw = encodeRaw
 		}
@@ -244,7 +243,7 @@ class SignedTransaction(
 	override def sendAddress: ImmutableBytes = {
 		try {
 			if (this._sendAddress eq null) {
-				val key = ECKey.signatureToKey(rawHash, signatureOption.get.toBase64)
+				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
 				this._sendAddress = ImmutableBytes(key.getAddress)
 			}
 			this._sendAddress
@@ -256,7 +255,7 @@ class SignedTransaction(
 	}
 }
 
-class EncodedTransaction(private val _encodedBytes: Array[Byte]) extends TransactionLike {
+class EncodedTransaction(private val _encodedBytes: ImmutableBytes) extends TransactionLike {
 	import Transaction._
 
 	private var parsed: TransactionLike = null
@@ -287,7 +286,7 @@ class EncodedTransaction(private val _encodedBytes: Array[Byte]) extends Transac
 		this.parsed
 	}
 
-	override def encodedBytes: Array[Byte] = {
+	override def encodedBytes: ImmutableBytes = {
 		if (this.parsed eq null) {
 			this._encodedBytes
 		} else {
@@ -295,15 +294,15 @@ class EncodedTransaction(private val _encodedBytes: Array[Byte]) extends Transac
 		}
 	}
 
-	private var encodedRaw: Array[Byte] = null
-	override def encodedRawBytes: Array[Byte] = {
+	private var encodedRaw: ImmutableBytes = null
+	override def encodedRawBytes: ImmutableBytes = {
 		if (this.encodedRaw eq null) {
 			this.encodedRaw = parse.encodeRaw
 		}
 		this.encodedRaw
 	}
 
-	override def sign(privateKeyBytes: Array[Byte]): Unit = parse.sign(privateKeyBytes)
+	override def sign(privateKeyBytes: ImmutableBytes): Unit = parse.sign(privateKeyBytes)
 
 	override def nonce: ImmutableBytes = parse.nonce
 
@@ -332,7 +331,7 @@ object Transaction {
 
 	val zeroByteArray = Array[Byte](0)
 
-	def apply(rawData: Array[Byte]): TransactionLike = {
+	def apply(rawData: ImmutableBytes): TransactionLike = {
 		new EncodedTransaction(rawData)
 	}
 

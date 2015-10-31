@@ -33,9 +33,9 @@ class TransactionTest extends Specification {
 
 	"test transaction from signed RBAC" should {
 		"be right" in {
-			val txSigned = Transaction(Hex.decodeHex(RLP_ENCODED_SIGNED_TX.toCharArray))
-			Hex.encodeHexString(txSigned.hash) mustEqual HASH_SIGNED_TX
-			Hex.encodeHexString(txSigned.encodedBytes) mustEqual RLP_ENCODED_SIGNED_TX
+			val txSigned = Transaction(ImmutableBytes(RLP_ENCODED_SIGNED_TX))
+			txSigned.hash.toHexString mustEqual HASH_SIGNED_TX
+			txSigned.encodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 			txSigned.nonce.toPositiveBigInt mustEqual BigInt(0)
 			txSigned.manaPrice.toPositiveBigInt mustEqual BigInt(1, testManaPrice)
 			txSigned.manaLimit.toPositiveBigInt mustEqual BigInt(1, testManaLimit)
@@ -50,12 +50,12 @@ class TransactionTest extends Specification {
 
 	"test transaction from unsigned RBAC" should {
 		"be right" in {
-			val tx = Transaction(Hex.decodeHex(RLP_ENCODED_UNSIGNED_TX.toCharArray))
-			Hex.encodeHexString(tx.hash) mustEqual HASH_UNSIGNED_TX
-			Hex.encodeHexString(tx.encodedBytes) mustEqual RLP_ENCODED_UNSIGNED_TX
-			tx.sign(Hex.decodeHex(KEY.toCharArray))
-			Hex.encodeHexString(tx.hash) mustEqual HASH_SIGNED_TX
-			Hex.encodeHexString(tx.encodedBytes) mustEqual RLP_ENCODED_SIGNED_TX
+			val tx = Transaction(ImmutableBytes(RLP_ENCODED_UNSIGNED_TX))
+			tx.hash.toHexString mustEqual HASH_UNSIGNED_TX
+			tx.encodedBytes.toHexString mustEqual RLP_ENCODED_UNSIGNED_TX
+			tx.sign(ImmutableBytes(KEY))
+			tx.hash.toHexString mustEqual HASH_SIGNED_TX
+			tx.encodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 
 			tx.nonce.toPositiveBigInt mustEqual BigInt(0)
 			tx.manaPrice.toPositiveBigInt mustEqual BigInt(1, testManaPrice)
@@ -82,14 +82,14 @@ class TransactionTest extends Specification {
 			tx.data.isEmpty mustEqual true
 			tx.signatureOption.isEmpty mustEqual true
 
-			Hex.encodeHexString(tx.encodedRawBytes) mustEqual RLP_ENCODED_RAW_TX
-			Hex.encodeHexString(tx.hash) mustEqual HASH_UNSIGNED_TX
-			Hex.encodeHexString(tx.encodedBytes) mustEqual RLP_ENCODED_UNSIGNED_TX
+			tx.encodedRawBytes.toHexString mustEqual RLP_ENCODED_RAW_TX
+			tx.hash.toHexString mustEqual HASH_UNSIGNED_TX
+			tx.encodedBytes.toHexString mustEqual RLP_ENCODED_UNSIGNED_TX
 
-			tx.sign(Hex.decodeHex(KEY.toCharArray))
+			tx.sign(ImmutableBytes(KEY))
 
-			Hex.encodeHexString(tx.hash) mustEqual HASH_SIGNED_TX
-			Hex.encodeHexString(tx.encodedBytes) mustEqual RLP_ENCODED_SIGNED_TX
+			tx.hash.toHexString mustEqual HASH_SIGNED_TX
+			tx.encodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 			tx.signatureOption.get.v mustEqual 27
 			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.signatureOption.get.r)) mustEqual "eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4"
 			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(tx.signatureOption.get.s)) mustEqual "14a569d327dcda4b29f74f93c0e9729d2f49ad726e703f9cd90dbb0fbf6649f1"
@@ -113,20 +113,20 @@ class TransactionTest extends Specification {
 
 			val tx = Transaction(nonce, manaPrice, mana, receiveAddress, value, data)
 
-			Hex.encodeHexString(tx.encodedBytes) mustEqual RLP_TX_UNSIGNED
-			Hex.encodeHexString(tx.hash) mustEqual HASH_TX_UNSIGNED
+			tx.encodedBytes.toHexString mustEqual RLP_TX_UNSIGNED
+			tx.hash.toHexString mustEqual HASH_TX_UNSIGNED
 
-			tx.sign(privKeyBytes)
+			tx.sign(ImmutableBytes(privKeyBytes))
 
-			Hex.encodeHexString(tx.encodedBytes) mustEqual RLP_TX_SIGNED
-			Hex.encodeHexString(tx.hash) mustEqual HASH_TX_SIGNED
+			tx.encodedBytes.toHexString mustEqual RLP_TX_SIGNED
+			tx.hash.toHexString mustEqual HASH_TX_SIGNED
 		}
 	}
 
 	//TODO use https://github.com/ethereum/tests/blob/develop/TransactionTests/ttTransactionTest.json test cases.
 	"test (1)" should {
 		"be right" in {
-			val tx = Transaction(Hex.decodeHex("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3".toCharArray))
+			val tx = Transaction(ImmutableBytes("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3"))
 
 			tx.sendAddress.toHexString mustEqual "31bb58672e8bf7684108feeacf424ab62b873824"
 			tx.data.isEmpty mustEqual true
@@ -143,7 +143,7 @@ class TransactionTest extends Specification {
 
 	"test (2)" should {
 		"be right" in {
-			val tx = Transaction(Hex.decodeHex("f86d80018259d894095e7baea6a6c7c4c2dfeb977efac326af552d870a8e0358ac39584bc98a7c979f984b031ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804".toCharArray))
+			val tx = Transaction(ImmutableBytes("f86d80018259d894095e7baea6a6c7c4c2dfeb977efac326af552d870a8e0358ac39584bc98a7c979f984b031ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804"))
 
 			tx.sendAddress.toHexString mustEqual "ce26839c9bd0e87e38897bb97fca8b340fd12a53"
 			tx.data.toHexString mustEqual "0358ac39584bc98a7c979f984b03"
@@ -160,7 +160,7 @@ class TransactionTest extends Specification {
 
 	"test (3)" should {
 		"be right" in {
-			val tx = Transaction(Hex.decodeHex("f87c80018261a894095e7baea6a6c7c4c2dfeb977efac326af552d870a9d00000000000000000000000000010000000000000000000000000000001ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804".toCharArray))
+			val tx = Transaction(ImmutableBytes("f87c80018261a894095e7baea6a6c7c4c2dfeb977efac326af552d870a9d00000000000000000000000000010000000000000000000000000000001ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804"))
 
 			tx.sendAddress.toHexString mustEqual "8131688854fe0dca411aa19572a01fe3e3e4fa74"
 			tx.data.toHexString mustEqual "0000000000000000000000000001000000000000000000000000000000"//TODO doubt
@@ -177,7 +177,7 @@ class TransactionTest extends Specification {
 
 	"test (4)" should {
 		"be right" in {
-			val tx = Transaction(Hex.decodeHex("f87c80018261a894095e7baea6a6c7c4c2dfeb977efac326af552d870a9d00100000000000000000000000000000000000000000000000000000001ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804".toCharArray))
+			val tx = Transaction(ImmutableBytes("f87c80018261a894095e7baea6a6c7c4c2dfeb977efac326af552d870a9d00100000000000000000000000000000000000000000000000000000001ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804"))
 
 			tx.sendAddress.toHexString mustEqual "ead53a9560ea38feb0bc2cad8ef65e5d8f990fc1"
 			tx.data.toHexString mustEqual "0010000000000000000000000000000000000000000000000000000000"//TODO doubt

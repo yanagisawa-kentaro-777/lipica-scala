@@ -343,6 +343,10 @@ object RBACCodec {
 			override val bytes = Array.empty[Byte]
 		}
 
+		def decode(data: ImmutableBytes): Either[Exception, DecodedResult] = {
+			decode(data.toByteArray)
+		}
+
 		def decode(data: Array[Byte]): Either[Exception, DecodedResult] = {
 			decode(data, 0)
 		}

@@ -5,11 +5,12 @@ Program
 VM
 
 Transaction#apply
-Transactionの詰め
 ImmutableBytesの普及。
 ImmutableBytesのテスト充実。
 
+AccountStateのモデル。
 Blockのモデル。
+db.ContractDetails -> Storage。
 
 trieを完成させる。
 
