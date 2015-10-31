@@ -1,0 +1,7 @@
+https://github.com/scoverage/sbt-scoverage
+http://qiita.com/TAKAyuki_atkwsk/items/aab57901713b5288cd9f
+
+http://www.todesking.com/blog/2014-11-18-scala-with-circleci-and-coveralls/
+https://github.com/scoverage/sbt-coveralls
+
+https://coveralls.io/
