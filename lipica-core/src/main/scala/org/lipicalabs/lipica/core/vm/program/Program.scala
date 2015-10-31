@@ -166,7 +166,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	def suicide(obtainerAddress: DataWord): Unit = {
 		val owner = getOwnerAddress.last20Bytes
 		val obtainer = obtainerAddress.last20Bytes
-		val balance = this.storage.getBalance(owner.toByteArray)
+		val balance = this.storage.getBalance(owner)
 		if (logger.isInfoEnabled) {
 			logger.info("Transfer to [%s] heritage: [%s]".format(obtainer.toHexString, balance))
 		}
@@ -178,7 +178,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 
 
 	def getCodeAt(address: DataWord): Array[Byte] = {
-		val code = this.invoke.getRepository.getCode(address.last20Bytes.toByteArray)
+		val code = this.invoke.getRepository.getCode(address.last20Bytes)
 		ByteUtils.launderNullToEmpty(code)
 	}
 	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
@@ -186,7 +186,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	//TODO getBlockHash
 
 	def getBalance(address: DataWord): DataWord = {
-		val balance = this.storage.getBalance(address.last20Bytes.toByteArray)
+		val balance = this.storage.getBalance(address.last20Bytes)
 		DataWord(balance.toByteArray)
 	}
 
@@ -199,7 +199,7 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
 	def getDataCopy(offset: DataWord, length: DataWord): Array[Byte] = this.invoke.getDataCopy(offset, length)
 	def storageLoad(key: DataWord): DataWord = {
-		this.storage.getStorageValue(getOwnerAddress.last20Bytes.toByteArray, key)
+		this.storage.getStorageValue(getOwnerAddress.last20Bytes, key)
 	}
 	def getPrevHash = this.invoke.getPrevHash
 	def getCoinbase = this.invoke.getCoinbase

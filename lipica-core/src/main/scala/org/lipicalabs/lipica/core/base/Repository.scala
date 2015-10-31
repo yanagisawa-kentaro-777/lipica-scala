@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.db.ContractDetails
-import org.lipicalabs.lipica.core.utils.ByteArrayWrapper
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -13,73 +13,73 @@ import org.lipicalabs.lipica.core.vm.DataWord
  */
 trait Repository {
 
-	def createAccount(address: Array[Byte]): AccountState
+	def createAccount(address: ImmutableBytes): AccountState
 
 	/**
 	 * アカウントの存否確認を行います。
 	 * @param address 検査対象のアカウント。
 	 */
-	def existsAccount(address: Array[Byte]): Boolean
+	def existsAccount(address: ImmutableBytes): Boolean
 
 	/**
 	 * アカウントを取得します。
 	 */
-	def getAccountState(address: Array[Byte]): AccountState
+	def getAccountState(address: ImmutableBytes): AccountState
 
 	/**
 	 * アカウントを削除します。
 	 */
-	def delete(address: Array[Byte]): Unit
+	def delete(address: ImmutableBytes): Unit
 
 	/**
 	 * 指定されたアカウントのnonceを１増やします。
 	 */
-	def increaseNonce(address: Array[Byte]): BigInt
+	def increaseNonce(address: ImmutableBytes): BigInt
 
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。
 	 */
-	def getNonce(address: Array[Byte]): BigInt
+	def getNonce(address: ImmutableBytes): BigInt
 
 	/**
 	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
 	 */
-	def getContractDetails(address: Array[Byte]): ContractDetails
+	def getContractDetails(address: ImmutableBytes): ContractDetails
 
 	/**
 	 * 指定されたアカウントに対して、コードを保存します。
 	 */
-	def saveCode(address: Array[Byte], code: Array[Byte]): Unit
+	def saveCode(address: ImmutableBytes, code: Array[Byte]): Unit
 
 	/**
 	 * 指定されたアカウントに結び付けられたコードを読み取ります。
 	 */
-	def getCode(address: Array[Byte]): Array[Byte]
+	def getCode(address: ImmutableBytes): Array[Byte]
 
 	/**
 	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
 	 */
-	def addStorageRow(address: Array[Byte], key: DataWord, value: DataWord): Unit
+	def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord): Unit
 
 	/**
 	 * 指定されたアカウントにおいて、キーに対応する値を取得して返します。
 	 */
-	def getStorageValue(address: Array[Byte], key: DataWord): DataWord
+	def getStorageValue(address: ImmutableBytes, key: DataWord): DataWord
 
 	/**
 	 * 指定されたアカウントの残高を返します。
 	 */
-	def getBalance(address: Array[Byte]): BigInt
+	def getBalance(address: ImmutableBytes): BigInt
 
 	/**
 	 * 指定されたアカウントの残高に、指定された値を足します。
 	 */
-	def addBalance(address: Array[Byte], value: BigInt): BigInt
+	def addBalance(address: ImmutableBytes, value: BigInt): BigInt
 
 	/**
 	 * このアカウントのアドレスすべての集合を返します。
 	 */
-	def getAccountKeys: Set[Array[Byte]]
+	def getAccountKeys: Set[ImmutableBytes]
 
 	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: Array[Byte])
 
@@ -103,9 +103,9 @@ trait Repository {
 
 	def getRoot: Array[Byte]
 
-	def updateBatch(accountStates: Map[ByteArrayWrapper, AccountState], contractDetails: Map[ByteArrayWrapper, ContractDetails])
+	def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails])
 
-	def loadAccount(address: Array[Byte], cacheAccounts: Map[ByteArrayWrapper, AccountState], cacheDetails: Map[ByteArrayWrapper, ContractDetails])
+	def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails])
 
 	def getSnapshotTo(root: Array[Byte]): Repository
 
