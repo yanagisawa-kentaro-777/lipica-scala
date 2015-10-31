@@ -2,8 +2,10 @@ logLevel := Level.Warn
 
 resolvers += Classpaths.sbtPluginReleases
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.3.3")
+// Plugin for scoverage:
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.4")
 
+// Plugin for publishing scoverage results to coveralls:
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.0.0")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.6.8")
