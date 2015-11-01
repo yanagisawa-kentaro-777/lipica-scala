@@ -281,10 +281,6 @@ object Value {
 		}
 	}
 
-//	def fromEncodedBytes(encodedBytes: Array[Byte]): Value = {
-//		new Value(None, Option(encodedBytes))
-//	}
-
 	def fromEncodedBytes(encodedBytes: ImmutableBytes): Value = {
 		new Value(None, Option(encodedBytes))
 	}
