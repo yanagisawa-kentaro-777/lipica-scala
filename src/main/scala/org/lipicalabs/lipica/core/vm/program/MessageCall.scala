@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.vm.DataWord
 
 sealed trait MessageType
 
-object MsgType {
+object MessageType {
 	object Call extends MessageType
 	object Stateless extends MessageType
 	object Post extends MessageType
@@ -17,7 +17,7 @@ object MsgType {
  * @author YANAGISAWA, Kentaro
  */
 class MessageCall private(val msgType: MessageType, val mana: DataWord, val codeAddress: DataWord, val endowment: DataWord,
-                          val inDataOffs: DataWord, val inDataSize: DataWord, val outDataOffs: DataWord, val outDataSize: DataWord) {
+                          val inDataOffset: DataWord, val inDataSize: DataWord, val outDataOffset: DataWord, val outDataSize: DataWord) {
 	//
 }
 

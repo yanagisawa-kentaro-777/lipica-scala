@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.base.{Repository, TransactionLike}
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
@@ -152,7 +153,6 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 		this.result.setHReturn(v)
 	}
 
-
 	/** メモリ操作 */
 	def getMemSize: Int = this.memory.size
 
@@ -181,17 +181,24 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 			this.memory.extend(offset, size)
 		}
 	}
-	/**
-	 * テスト用に、メモリの中身をコピーして返します。
-	 */
+	/** テスト用に、メモリの中身をコピーして返します。 */
 	private[vm] def getMemoryContent: ImmutableBytes = {
 		this.memory.read(0, memory.size)
 	}
-	/**
-	 * テスト用に、メモリの中身を渡された内容に書き換えます。
-	 */
+	/** テスト用に、メモリの中身を渡された内容に書き換えます。 */
 	private[vm] def initMemory(data: ImmutableBytes): Unit = {
 		this.memory.write(0, data, data.length, limited = false)
+	}
+
+	/** ストレージ操作。 */
+	def storageSave(key: DataWord, value: DataWord): Unit = {
+		this.storage.addStorageRow(getOwnerAddress.last20Bytes, key, value)
+	}
+	def storageSave(key: ImmutableBytes, value: ImmutableBytes): Unit = {
+		storageSave(DataWord(key), DataWord(value))
+	}
+	def storageLoad(key: DataWord): DataWord = {
+		this.storage.getStorageValue(getOwnerAddress.last20Bytes, key)
 	}
 
 	def suicide(obtainerAddress: DataWord): Unit = {
@@ -207,11 +214,35 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 		result.addDeleteAccount(getOwnerAddress)
 	}
 
+	//TODO createContract
+	//TODO callToAddress
 
+	def spendMana(manaValue: Long, cause: String): Unit = {
+		manaLogger.info("[%s] Spent for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+		if ((getMana.longValue - manaValue) < 0) {
+			throw Exception.notEnoughSpendingMana(cause, manaValue, this)
+		}
+		this.result.spendMana(manaValue)
+	}
+	def spendAllMana(): Unit = {
+		spendMana(getMana.longValue, "Spending all remaining")
+	}
+	def refundMana(manaValue: Long, cause: String): Unit = {
+		manaLogger.info("[%s] Refund for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+		this.result.refundMana(manaValue)
+	}
+	def futureRefundMana(manaValue: Long): Unit = {
+		logger.info("Future refund added: %,d".format(manaValue))
+		this.result.addFutureRefund(manaValue)
+	}
+	def resetFutureRefund(): Unit = this.result.resetFutureRefund()
+
+	def getCode: Array[Byte] = this.ops
 	def getCodeAt(address: DataWord): Array[Byte] = {
 		val code = this.invoke.getRepository.getCode(address.last20Bytes)
 		ByteUtils.launderNullToEmpty(code)
 	}
+
 	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
 
 	//TODO getBlockHash
@@ -232,9 +263,6 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 	def getDataSize = this.invoke.getDataSize
 	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
 	def getDataCopy(offset: DataWord, length: DataWord): Array[Byte] = this.invoke.getDataCopy(offset, length)
-	def storageLoad(key: DataWord): DataWord = {
-		this.storage.getStorageValue(getOwnerAddress.last20Bytes, key)
-	}
 	def getPrevHash = this.invoke.getPrevHash
 	def getCoinbase = this.invoke.getCoinbase
 	def getTimestamp = this.invoke.getTimestamp
@@ -299,6 +327,61 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 		}
 	}
 
+	def callToPrecompiledAddress(message: MessageCall, contract: PrecompiledContract): Unit = {
+		if (getCallDeep == MaxDepth) {
+			//スタックの深さが限界。
+			stackPushZero()
+			this.refundMana(message.mana.longValue, "Call deep limit reached.")
+			return
+		}
+
+		val track = this.storage.startTracking
+		val senderAddress = this.getOwnerAddress.last20Bytes
+		val codeAddress = message.codeAddress.last20Bytes
+		val contextAddress =
+			if (message.msgType == MessageType.Stateless) {
+				senderAddress
+			} else {
+				codeAddress
+			}
+
+		//手数料。
+		val endowment = message.endowment.value
+		val senderBalance = track.getBalance(senderAddress)
+		if (senderBalance < endowment) {
+			//手数料を払えない。
+			stackPushZero()
+			this.refundMana(message.mana.longValue, "Refund mana from message call.")
+			return
+		}
+
+		val data = this.memoryChunk(message.inDataOffset.intValue, message.inDataSize.intValue)
+		//手数料を取る。
+		Repository.transfer(track, senderAddress, contextAddress, message.endowment.value)
+
+		if (byTestingSuite) {
+			//テストなので、生成されたコールを蓄積する。
+			this.result.addCallCreate(data, message.codeAddress.last20Bytes, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
+			stackPushOne()
+			return
+		}
+		//データに応じたコストを計算する。
+		val requiredMana = contract.manaForData(data)
+		if (message.mana.longValue < requiredMana) {
+			//支払えない。
+			this.refundMana(0, "Call pre-compiled.")
+			this.stackPushZero()
+			track.rollback()
+		} else {
+			this.refundMana(message.mana.longValue - requiredMana, "call pre-compiled")
+			//実行する。
+			val out = contract.execute(data)
+			this.memorySave(message.outDataOffset, out, limited = false)
+			this.stackPushOne()
+			track.commit()
+		}
+	}
+
 	def setListener(programOutListener: ProgramOutListener): Unit = {
 		this.listener = programOutListener
 	}
@@ -340,6 +423,10 @@ object Program {
 		//
 	}
 
+	class OutOfManaException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+		//
+	}
+
 	object Exception {
 
 		def stackOverflow(allowedMaxSize: Int, requiredSize: Int): StackTooLargeException = {
@@ -352,6 +439,10 @@ object Program {
 
 		def badJumpDestination(pc: Int): BadJumpDestinationException = {
 			new BadJumpDestinationException("Bad jump destination: %s.".format(pc))
+		}
+
+		def notEnoughSpendingMana(cause: String, manaValue: Long, program: Program): OutOfManaException = {
+			new OutOfManaException("Not enough mana for '%s' cause spending: invokeMana[%d], mana[%d], usedMana[%d];", cause, program.invoke.getMana.longValue, manaValue, program.result.manaUsed)
 		}
 
 	}

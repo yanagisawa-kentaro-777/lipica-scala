@@ -15,11 +15,11 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 object PrecompiledContracts {
 
 	trait PrecompiledContract {
-		def manaForData(data: Array[Byte]): Long
+		def manaForData(data:ImmutableBytes): Long
 		def execute(data: ImmutableBytes): ImmutableBytes
 	}
 
-	private def computeManaByWords(data: Array[Byte], param1: Int, param2: Int): Int = {
+	private def computeManaByWords(data: ImmutableBytes, param1: Int, param2: Int): Int = {
 		if (data eq null) return param1
 		param1 + ((data.length + 31) / 32) * param2
 	}
@@ -28,7 +28,7 @@ object PrecompiledContracts {
 	 * 渡されたデータそれ自身を返すコントラクト。
 	 */
 	object Identity extends PrecompiledContract {
-		override def manaForData(data: Array[Byte]): Long = {
+		override def manaForData(data: ImmutableBytes): Long = {
 			computeManaByWords(data, 15, 3)
 		}
 		override def execute(data: ImmutableBytes): ImmutableBytes = data
@@ -38,7 +38,7 @@ object PrecompiledContracts {
 	 * 渡されたデータのSHA256ダイジェスト値を計算して返すコントラクト。
 	 */
 	object Sha256 extends PrecompiledContract {
-		override def manaForData(data: Array[Byte]): Long = {
+		override def manaForData(data: ImmutableBytes): Long = {
 			computeManaByWords(data, 60, 12)
 		}
 		override def execute(data: ImmutableBytes): ImmutableBytes = {
@@ -54,7 +54,7 @@ object PrecompiledContracts {
 	 * 渡されたデータのRIPEMPD160ダイジェスト値を計算して返すコントラクト。
 	 */
 	object Ripempd160 extends PrecompiledContract {
-		override def manaForData(data: Array[Byte]): Long = {
+		override def manaForData(data: ImmutableBytes): Long = {
 			computeManaByWords(data, 600, 120)
 		}
 		override def execute(data: ImmutableBytes): ImmutableBytes = {
@@ -68,7 +68,7 @@ object PrecompiledContracts {
 	}
 
 	object ECRecover extends PrecompiledContract {
-		override def manaForData(data: Array[Byte]): Long = 3000
+		override def manaForData(data: ImmutableBytes): Long = 3000
 		override def execute(data: ImmutableBytes):ImmutableBytes = {
 			val h = new Array[Byte](32)
 			val v = new Array[Byte](32)
