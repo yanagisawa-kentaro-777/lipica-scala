@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.utils.ByteUtils
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 
 /**
  * バイト配列を利用してビットの並びを表現するデータ構造の実装です。
@@ -41,7 +41,7 @@ object Bloom {
 		Bloom.apply(new Array[Byte](256))
 	}
 
-	def create(toBloom: Array[Byte]): Bloom = {
+	def create(toBloom: ImmutableBytes): Bloom = {
 		val mov1 = (((toBloom(0) & ENSURE_BYTE) & _3LOW_BITS) << _8STEPS) + (toBloom(1) & ENSURE_BYTE)
 		val mov2 = (((toBloom(2) & ENSURE_BYTE) & _3LOW_BITS) << _8STEPS) + (toBloom(3) & ENSURE_BYTE)
 		val mov3 = (((toBloom(4) & ENSURE_BYTE) & _3LOW_BITS) << _8STEPS) + (toBloom(5) & ENSURE_BYTE)

@@ -1,16 +1,14 @@
 package org.lipicalabs.lipica.core.vm
 
-import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.base.Bloom
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.RBACCodec
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 
 /**
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-case class LogInfo(address: Array[Byte], topics: Seq[DataWord], data: Array[Byte]) {
+case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: ImmutableBytes) {
 
 	def getEncoded: Array[Byte] = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
@@ -21,9 +19,9 @@ case class LogInfo(address: Array[Byte], topics: Seq[DataWord], data: Array[Byte
 	}
 
 	def getBloom: Bloom = {
-		var result = Bloom.create(DigestUtils.sha3(address))
+		var result = Bloom.create(address.sha3)
 		for (eachTopic <- this.topics) {
-			result = result | Bloom.create(eachTopic.computeSHA3OfData.toByteArray)
+			result = result | Bloom.create(eachTopic.computeSHA3OfData)
 		}
 		result
 	}
@@ -36,7 +34,7 @@ case class LogInfo(address: Array[Byte], topics: Seq[DataWord], data: Array[Byte
 			topicsString.append(eachString).append(" ")
 		}
 		topicsString.append("]")
-		"LogInfo{address=%s, topics=%s, data=%s}".format(Hex.encodeHexString(this.address), topicsString, Hex.encodeHexString(this.data))
+		"LogInfo{address=%s, topics=%s, data=%s}".format(this.address.toHexString, topicsString, this.data.toHexString)
 	}
 
 }

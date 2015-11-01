@@ -66,7 +66,7 @@ class ProgramResult {
 
 	def getCallCreateList: Seq[CallCreate] = this.callCreateBuffer.toSeq
 	def addCallCreate(data: ImmutableBytes, destination: ImmutableBytes, manaLimit: ImmutableBytes, value: ImmutableBytes): Unit = {
-		this.callCreateBuffer.append(CallCreate(data.toByteArray, destination.toByteArray, manaLimit.toByteArray, value.toByteArray))
+		this.callCreateBuffer.append(CallCreate(data, destination, manaLimit, value))
 	}
 
 	def getInternalTransactions: Seq[InternalTransaction] = this.internalTransactions.toSeq
