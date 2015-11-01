@@ -13,9 +13,9 @@ import scala.collection.mutable.ArrayBuffer
  */
 class ProgramResult {
 
-	private var manaUsed: Long = 0L
+	private var _manaUsed: Long = 0L
 	private var hReturn = ImmutableBytes.empty
-	private var exception: RuntimeException = null
+	private var _exception: RuntimeException = null
 
 	private val deleteAccounts: mutable.Buffer[DataWord] = new ArrayBuffer[DataWord]
 	private val internalTransactions: mutable.Buffer[InternalTransaction] = new ArrayBuffer[InternalTransaction]
@@ -27,12 +27,12 @@ class ProgramResult {
 	private val callCreateBuffer: mutable.Buffer[CallCreate] = new ArrayBuffer[CallCreate]
 
 	def spendMana(mana: Long): Unit = {
-		this.manaUsed += mana
+		this._manaUsed += mana
 	}
-
 	def refundMana(mana: Long): Unit = {
-		this.manaUsed -= mana
+		this._manaUsed -= mana
 	}
+	def manaUsed: Long = this._manaUsed
 
 	def addFutureRefund(v: Long): Unit = {
 		this.futureRefund += v
@@ -45,8 +45,12 @@ class ProgramResult {
 	def setHReturn(v: ImmutableBytes): Unit = {
 		this.hReturn = v
 	}
-
 	def getHReturn: ImmutableBytes = this.hReturn
+
+	def exception_=(e: RuntimeException): Unit = {
+		this._exception = e
+	}
+	def exception: RuntimeException = this._exception
 
 	def getDeleteAccounts: Seq[DataWord] = this.deleteAccounts.toSeq
 	def addDeleteAccount(address: DataWord): Unit = {

@@ -110,3 +110,12 @@ trait Repository {
 	def getSnapshotTo(root: Array[Byte]): Repository
 
 }
+
+object Repository {
+
+	def transfer(repository: Repository, fromAddress: ImmutableBytes, toAddress: ImmutableBytes, value: BigInt): Unit = {
+		repository.addBalance(fromAddress, -value)
+		repository.addBalance(fromAddress, value)
+	}
+
+}

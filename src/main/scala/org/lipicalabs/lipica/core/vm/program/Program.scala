@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.vm.program
 
+import org.lipicalabs.lipica.core.base.{Repository, TransactionLike}
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
-import org.lipicalabs.lipica.core.vm.trace.ProgramTraceListener
+import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
 import org.lipicalabs.lipica.core.vm.program.listener.{CompositeProgramListener, ProgramListenerAware}
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
+class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, private val transaction: TransactionLike) {
 
 	import Program._
 
@@ -27,6 +28,10 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	private val memory = setupProgramListener(new Memory)
 	val stack = setupProgramListener(new Stack)
 	val storage = setupProgramListener(Storage(invoke))
+
+	val result = new ProgramResult
+	val trace = new ProgramTrace(invoke)
+
 
 	/**
 	 * JUMPDEST命令がある箇所の索引。
@@ -50,7 +55,19 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 
 	private def getCallDeep: Int = this.invoke.getCallDeep
 
-	//TODO addInternalTx
+	private def addInternalTx(nonce: ImmutableBytes, manaLimit: DataWord, senderAddress: ImmutableBytes, receiveAddress: ImmutableBytes, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
+		if (this.transaction ne null) {
+			val senderNonce =
+				if (nonce.isEmpty) {
+					ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
+				} else {
+					nonce
+				}
+			this.result.addInternalTransaction(this.transaction.hash, getCallDeep, senderNonce, getManaPrice, manaLimit, senderAddress, receiveAddress, ImmutableBytes.asSignedByteArray(value), data, note)
+		} else {
+			null
+		}
+	}
 
 	def getCurrentOp: Byte = {
 		if (ByteUtils.isNullOrEmpty(this.ops)) {
@@ -131,7 +148,9 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 		this.stopped = true
 	}
 
-	//TODO setHReturn
+	def setHReturn(v: ImmutableBytes): Unit = {
+		this.result.setHReturn(v)
+	}
 
 
 	/** メモリ操作 */
@@ -162,6 +181,18 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 			this.memory.extend(offset, size)
 		}
 	}
+	/**
+	 * テスト用に、メモリの中身をコピーして返します。
+	 */
+	private[vm] def getMemoryContent: ImmutableBytes = {
+		this.memory.read(0, memory.size)
+	}
+	/**
+	 * テスト用に、メモリの中身を渡された内容に書き換えます。
+	 */
+	private[vm] def initMemory(data: ImmutableBytes): Unit = {
+		this.memory.write(0, data, data.length, limited = false)
+	}
 
 	def suicide(obtainerAddress: DataWord): Unit = {
 		val owner = getOwnerAddress.last20Bytes
@@ -170,10 +201,10 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 		if (logger.isInfoEnabled) {
 			logger.info("Transfer to [%s] heritage: [%s]".format(obtainer.toHexString, balance))
 		}
-		//TODO 未実装！！！
-//		addInternalTx(null, null, owner, obtainer, balance, null, "suicide")
-//		transfer(this.storage, owner, obtainer, balance)
-//		getResult.addDeleteAccount(getOwnerAddress)
+
+		addInternalTx(ImmutableBytes.empty, DataWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
+		Repository.transfer(this.storage, owner, obtainer, balance)
+		result.addDeleteAccount(getOwnerAddress)
 	}
 
 
@@ -187,13 +218,16 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 
 	def getBalance(address: DataWord): DataWord = {
 		val balance = this.storage.getBalance(address.last20Bytes)
-		DataWord(balance.toByteArray)
+		DataWord(ImmutableBytes.asSignedByteArray(balance))
 	}
 
 	def getOriginAddress = this.invoke.getOriginalAddress
 	def getCallerAddress = this.invoke.getCallerAddress
 	def getManaPrice = this.invoke.getMinManaPrice
-	//TODO def getMana
+	def getMana = {
+		val remaining = invoke.getMana.longValue - this.result.manaUsed
+		DataWord(remaining)
+	}
 	def getCallValue = this.invoke.getCallValue
 	def getDataSize = this.invoke.getDataSize
 	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
@@ -208,10 +242,23 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	def getDifficulty = this.invoke.getDifficulty
 	def getManaLimit = this.invoke.getManaLimit
 
-	//TODO getResult 以降
+	def setRuntimeFailure(e: RuntimeException): Unit = {
+		this.result.exception = e
+	}
 
 	def memoryToString: String = this.memory.toString
 
+	//TODO fullTrace
+
+	/**
+	 * 現在のプログラムカウンタにおける文脈情報を、
+	 * トレース領域に保存します。
+	 */
+	def saveOpTrace(): Unit = {
+		if (this.pc < this.ops.length) {
+			this.trace.addOp(this.ops(this.pc), this.pc, getCallDeep, getMana, this.traceListener.resetActions())
+		}
+	}
 
 	private def precompile(): Unit = {
 		var i = 0
@@ -234,6 +281,8 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke) {
 	def setListener(programOutListener: ProgramOutListener): Unit = {
 		this.listener = programOutListener
 	}
+
+	def byTestingSuite: Boolean = this.invoke.byTestingSuite
 
 }
 

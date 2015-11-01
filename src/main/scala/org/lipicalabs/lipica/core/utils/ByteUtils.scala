@@ -49,6 +49,9 @@ object ByteUtils {
 	 * 絶対値を表すバイト配列を返します。
 	 */
 	def asUnsignedByteArray(value: BigInt): Array[Byte] = {
+		if (value eq null) {
+			return Array.emptyByteArray
+		}
 		val bytes = value.toByteArray
 		if (bytes(0) == 0) {
 			//正負の区別が不要なので、１バイト切り詰める。
@@ -57,6 +60,17 @@ object ByteUtils {
 			result
 		} else {
 			bytes
+		}
+	}
+
+	/**
+	 * BigIntを単純にバイト配列に変換して返します。
+	 */
+	def toByteArray(value: BigInt): Array[Byte] = {
+		if (value eq null) {
+			Array.emptyByteArray
+		} else {
+			value.toByteArray
 		}
 	}
 

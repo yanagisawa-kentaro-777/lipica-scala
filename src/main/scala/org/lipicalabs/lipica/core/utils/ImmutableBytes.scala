@@ -184,6 +184,10 @@ object ImmutableBytes {
 		new ImmutableBytes(ByteUtils.asUnsignedByteArray(value))
 	}
 
+	def asSignedByteArray(value: BigInt): ImmutableBytes = {
+		new ImmutableBytes(ByteUtils.toByteArray(value))
+	}
+
 	def create(length: Int): ImmutableBytes = {
 		if (length <= 0) {
 			empty
