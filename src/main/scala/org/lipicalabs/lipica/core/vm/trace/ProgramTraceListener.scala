@@ -47,7 +47,11 @@ class ProgramTraceListener extends ProgramListenerAdaptor {
 
 	override def onStoragePut(key: DataWord, value: DataWord): Unit = {
 		if (this.enabled) {
-			this.actions = this.actions.storagePut(key, value)
+			if (value == DataWord.Zero) {
+				this.actions = this.actions.storageRemove(key)
+			} else {
+				this.actions = this.actions.storagePut(key, value)
+			}
 		}
 	}
 

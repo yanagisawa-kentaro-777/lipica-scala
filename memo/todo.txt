@@ -1,9 +1,9 @@
-Trace
 
 Program
 VM
 
 ImmutableBytesの普及。（trie方面）
+ProgramInvokeのrefactor？
 
 AccountStateのモデル。
 Blockのモデル。

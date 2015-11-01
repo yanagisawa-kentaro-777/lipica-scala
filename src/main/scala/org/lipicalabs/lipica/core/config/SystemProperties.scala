@@ -11,6 +11,11 @@ class SystemProperties {
 		//TODO
 		true
 	}
+
+	def vmTraceInitStorageLimit: Int = {
+		//TODO
+		1000000
+	}
 }
 
 object SystemProperties {
