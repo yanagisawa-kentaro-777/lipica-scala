@@ -18,7 +18,7 @@ trait Value {
 	 */
 	def value: Any
 
-	def encode: ImmutableBytes
+	def encodedBytes: ImmutableBytes
 
 	def hash: ImmutableBytes
 
@@ -61,6 +61,20 @@ trait Value {
 }
 
 object Value {
+
+	val empty = fromObject(ImmutableBytes.empty)
+
+	def fromObject(obj: Any): Value = {
+		obj match {
+			case v: Value => v
+			case _ => new PlainValue(obj)
+		}
+	}
+
+	def fromEncodedBytes(encodedBytes: ImmutableBytes): Value = {
+		new EncodedValue(encodedBytes)
+	}
+
 	def toString(value: Value): String = {
 		val result =
 			if (value.isSeq) {
@@ -82,19 +96,6 @@ object Value {
 			}
 		"Value(%s)".format(result)
 	}
-
-	def fromObject(obj: Any): Value = {
-		obj match {
-			case v: Value => v
-			case _ => new PlainValue(obj)
-		}
-	}
-
-	def fromEncodedBytes(encodedBytes: ImmutableBytes): Value = {
-		new EncodedValue(encodedBytes)
-	}
-
-	val empty = fromObject(ImmutableBytes.empty)
 }
 
 class PlainValue private[utils](_value: Any) extends Value {
@@ -120,29 +121,19 @@ class PlainValue private[utils](_value: Any) extends Value {
 	/**
 	 * エンコードされたバイト列。
 	 */
-	private val encodedBytesOptionRef: AtomicReference[Option[ImmutableBytes]] = new AtomicReference(None)
+	private val encodedValueOptionRef: AtomicReference[Option[EncodedValue]] = new AtomicReference(None)
 
-	/**
-	 * SHA3ダイジェスト値。
-	 */
-	private val sha3OptionRef = new AtomicReference[Option[ImmutableBytes]](None)
-
-	def sha3: ImmutableBytes = {
-		if (this.sha3OptionRef.get.isEmpty) {
-			val encoded = encode
-			val sha3 = encoded.sha3
-			this.sha3OptionRef.set(Some(sha3))
-		}
-		this.sha3OptionRef.get.get
-	}
-
-	def encode: ImmutableBytes = {
-		if (this.encodedBytesOptionRef.get.isEmpty) {
+	private def encode: EncodedValue = {
+		if (this.encodedValueOptionRef.get.isEmpty) {
 			val encoded = RBACCodec.Encoder.encode(value)
-			this.encodedBytesOptionRef.set(Some(ImmutableBytes(encoded)))
+			this.encodedValueOptionRef.set(Option(new EncodedValue(ImmutableBytes(encoded))))
 		}
-		this.encodedBytesOptionRef.get.get
+		this.encodedValueOptionRef.get.get
 	}
+
+	override def encodedBytes: ImmutableBytes = encode.encodedBytes
+
+	def sha3: ImmutableBytes = encode.sha3
 
 	def hash: ImmutableBytes = sha3
 
@@ -279,7 +270,7 @@ class PlainValue private[utils](_value: Any) extends Value {
 }
 
 
-class EncodedValue private[utils](override val encode: ImmutableBytes) extends Value {
+class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) extends Value {
 
 	/**
 	 * 値。
@@ -298,7 +289,7 @@ class EncodedValue private[utils](override val encode: ImmutableBytes) extends V
 
 	def sha3: ImmutableBytes = {
 		if (this.sha3OptionRef.get.isEmpty) {
-			val sha3 = encode.sha3
+			val sha3 = encodedBytes.sha3
 			this.sha3OptionRef.set(Some(sha3))
 		}
 		this.sha3OptionRef.get.get
@@ -308,7 +299,7 @@ class EncodedValue private[utils](override val encode: ImmutableBytes) extends V
 
 	def decode: PlainValue = {
 		if (this.plainValueRef.get.isEmpty) {
-			RBACCodec.Decoder.decode(this.encode) match {
+			RBACCodec.Decoder.decode(this.encodedBytes) match {
 				case Right(result) =>
 					this.plainValueRef.set(Option(new PlainValue(result.result)))
 				case Left(e) => ()

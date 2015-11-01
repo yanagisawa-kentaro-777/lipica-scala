@@ -32,7 +32,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 	 * 32バイト（＝256ビット）よりも長ければ、キャッシュに保存します。
 	 */
 	def put(value: Value): Either[Value, ImmutableBytes] = {
-		val encoded = value.encode
+		val encoded = value.encodedBytes
 		if (32 <= encoded.length) {
 			val hash = value.hash
 			if (logger.isTraceEnabled) {
@@ -87,7 +87,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 				val node = entry.getValue
 				node.isDirty(false)
 
-				val value = node.nodeValue.encode
+				val value = node.nodeValue.encodedBytes
 
 				totalBytes += (nodeKey.length + value.length)
 
@@ -122,7 +122,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 			if (!existsDataSource) {
 				this.nodes.entrySet().withFilter(entry => !entry.getValue.isDirty).map {
 					entry => {
-						entry.getKey -> entry.getValue.nodeValue.encode
+						entry.getKey -> entry.getValue.nodeValue.encodedBytes
 					}
 				}.toSet
 			} else {
