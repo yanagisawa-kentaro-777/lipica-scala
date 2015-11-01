@@ -4,7 +4,6 @@ VM
 
 ImmutableBytesの普及。（trie方面）
 get や set のメソッド名。
-Invokeのデバッグ出力。
 
 AccountStateのモデル。
 Blockのモデル。
