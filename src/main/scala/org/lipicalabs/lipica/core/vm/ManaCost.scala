@@ -14,4 +14,6 @@ object ManaCost {
 	/** １トランザクションにかかるフィー。 */
 	val TRANSACTION = 21000
 
+	val CreateData = 200
+
 }

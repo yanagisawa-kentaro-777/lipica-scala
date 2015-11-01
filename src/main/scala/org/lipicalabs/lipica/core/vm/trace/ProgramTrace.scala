@@ -104,7 +104,7 @@ class ProgramTrace(programInvoke: ProgramInvoke) {
 
 object ProgramTrace {
 
-	private val logger = LoggerFactory.getLogger("vm")
+	private val logger = LoggerFactory.getLogger("VM")
 
 	class Op {
 		private var _code: OpCode = null

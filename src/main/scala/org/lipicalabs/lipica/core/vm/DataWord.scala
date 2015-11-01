@@ -300,7 +300,15 @@ object DataWord {
 		}
 	}
 
-	def apply(data: ImmutableBytes): DataWord = new DataWord(data)
+	def apply(data: ImmutableBytes): DataWord = {
+		if ((data eq null) || data.isEmpty) {
+			Zero
+		} else if (data.length == NUM_BYTES) {
+			new DataWord(data)
+		} else {
+			new DataWord(wrap(data.toByteArray))
+		}
+	}
 
 	def apply(src: Array[Byte]): DataWord = new DataWord(wrap(src))
 

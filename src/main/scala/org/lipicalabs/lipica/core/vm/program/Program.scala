@@ -1,10 +1,11 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.base.{Repository, TransactionLike}
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
-import org.lipicalabs.lipica.core.vm.{VM, DataWord, OpCode}
+import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
 import org.lipicalabs.lipica.core.vm.program.listener.{CompositeProgramListener, ProgramListenerAware}
 import org.slf4j.LoggerFactory
@@ -217,7 +218,115 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		result.addDeleteAccount(getOwnerAddress)
 	}
 
-	//TODO createContract
+	def createContract(value: DataWord, memStart: DataWord, memSize: DataWord): Unit = {
+		if (getCallDeep == MaxDepth) {
+			stackPushZero()
+			return
+		}
+
+		val senderAddress = this.getOwnerAddress.last20Bytes
+		val endowment = value.value
+		if (this.storage.getBalance(senderAddress) < endowment) {
+			stackPushZero()
+			return
+		}
+		//メモリからコードを読み取る。
+		val programCode = memoryChunk(memStart.intValue, memSize.intValue)
+		if (logger.isInfoEnabled) {
+			logger.info("Creating a new contract inside contract run: [%s]".format(senderAddress.toHexString))
+		}
+		//マナを消費する。
+		val manaLimit = getMana
+		spendMana(manaLimit.longValue, "internal call")
+
+		//コントラクト用アドレスを生成する。
+		val nonce = ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
+		val newAddress = DigestUtils.computeNewAddress(getOwnerAddress.last20Bytes, nonce)
+
+		if (byTestingSuite) {
+			this.result.addCallCreate(programCode, ImmutableBytes.empty, manaLimit.getDataWithoutLeadingZeros, value.getDataWithoutLeadingZeros)
+		}
+		//nonceを更新する。
+		if (!byTestingSuite) {
+			this.storage.increaseNonce(senderAddress)
+		}
+
+		val track = this.storage.startTracking
+		//ハッシュ値衝突が発生した場合の配慮のため、残高を検査する。
+		if (track.existsAccount(newAddress)) {
+			val oldBalance = track.getBalance(newAddress)
+			track.createAccount(newAddress)
+			track.addBalance(newAddress, oldBalance)
+		} else {
+			track.createAccount(newAddress)
+		}
+		//移動を実行する。
+		track.addBalance(senderAddress, -endowment)
+		val newBalance: BigInt =
+			if (!byTestingSuite) {
+				track.addBalance(newAddress, endowment)
+			} else {
+				BigInt(0)
+			}
+		//実行する。
+		val internalTx = addInternalTx(nonce, getManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
+		//TODO 未実装！！！
+		val programInvoke: ProgramInvoke = null// programInfokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.getBlockStore, byTestingSuite)
+
+		val programResult =
+			if (programCode.nonEmpty) {
+				val vm = new VM
+				val program = new Program(programCode, programInvoke, internalTx)
+				vm.play(program)
+				val localResult = program.result
+				this.result.addInternalTransactions(result.getInternalTransactions)
+
+				if (localResult.exception ne null) {
+					//エラーが発生した。
+					if (logger.isDebugEnabled) {
+						logger.debug("contract run halted by Exception: contract: [%s], exception: [%s]".format(newAddress.toHexString, localResult.exception))
+					}
+					internalTx.reject()
+					localResult.rejectInternalTransactions()
+
+					track.rollback()
+					stackPushZero()
+					return
+				}
+				localResult
+			} else {
+				ProgramResult.createEmpty
+			}
+
+		//コントラクトを保存する。
+		val contractCode = programResult.getHReturn
+		val storageCost = contractCode.length * ManaCost.CreateData
+		val afterSpend = programInvoke.getMana.longValue - storageCost - programResult.manaUsed
+		if (afterSpend < 0L) {
+			//残金不足。
+			track.saveCode(newAddress, ImmutableBytes.empty)
+		} else {
+			//料金を消費し、コントラクトのコードを保存する。
+			programResult.spendMana(storageCost)
+			track.saveCode(newAddress, contractCode)
+		}
+
+		track.commit()
+		this.result.addDeleteAccounts(programResult.getDeleteAccounts)
+		this.result.addLogInfos(programResult.getLogInfoList)
+
+		//生成されたアドレスを、スタックにプッシュする。
+		stackPush(DataWord(newAddress))
+
+		//残金をリファンドする。
+		val refundMana = manaLimit.longValue - programResult.manaUsed
+		if (0 < refundMana) {
+			this.refundMana(refundMana, "Remaining mana from the internal call.")
+			if (manaLogger.isInfoEnabled) {
+				manaLogger.info("The remaining mana is refunded, account[%s], mana: [%s]".format(getOwnerAddress.last20Bytes.toHexString, refundMana))
+			}
+		}
+	}
 
 	/**
 	 * 「コード」呼び出しを実行します。
@@ -291,8 +400,8 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 				if (localResult.exception ne null) {
 					//エラーが発生した。
-					if (manaLogger.isDebugEnabled) {
-						manaLogger.debug("contract run halted by Exception: contract: [%s], exception: [%s]".format(contextAddress.toHexString, localResult.exception))
+					if (logger.isDebugEnabled) {
+						logger.debug("contract run halted by Exception: contract: [%s], exception: [%s]".format(contextAddress.toHexString, localResult.exception))
 					}
 					internalTx.reject()
 					localResult.rejectInternalTransactions()
@@ -330,6 +439,9 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		}
 	}
 
+	/**
+	 * 実装済みのコントラクトを実行します。
+	 */
 	def callToPrecompiledAddress(message: MessageCall, contract: PrecompiledContract): Unit = {
 		if (getCallDeep == MaxDepth) {
 			//スタックの深さが限界。
@@ -417,7 +529,16 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
 
-	//TODO getBlockHash
+	def getBlockHash(index: Int): DataWord = {
+		if ((index < this.getNumber.longValue) && (256.max(this.getNumber.intValue) - 256 <= index)) {
+			//最近256ブロック内である。
+			val loaded = this.invoke.getBlockStore.getBlockHashByNumber(index, getPrevHash.data)
+			DataWord(loaded)
+		} else {
+			//古すぎるか未知。
+			DataWord.Zero
+		}
+	}
 
 	def getBalance(address: DataWord): DataWord = {
 		val balance = this.storage.getBalance(address.last20Bytes)

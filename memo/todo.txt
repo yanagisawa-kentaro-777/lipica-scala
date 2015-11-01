@@ -1,8 +1,8 @@
 
 Program
 ProgramInvokeFactory
+
 VM
-Logger("VM")の大文字小文字。
 
 ImmutableBytesの普及。（trie方面）
 ProgramInvokeのrefactor？
