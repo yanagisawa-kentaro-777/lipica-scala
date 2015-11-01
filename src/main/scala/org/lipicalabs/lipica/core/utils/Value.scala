@@ -12,63 +12,128 @@ import scala.annotation.tailrec
  * また一度計算された値を再計算しなくて済むようにキャッシュするための、
  * 値ラッパークラスです。
  */
-class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[ImmutableBytes]) {
+trait Value {
+	/**
+	 * ラップ対象の値を返します。
+	 */
+	def value: Any
+
+	def encode: ImmutableBytes
+
+	def hash: ImmutableBytes
+
+	def asObj: Any
+
+	def asSeq: Seq[AnyRef]
+
+	def asImmutableBytes: ImmutableBytes
+
+	def asBytes: Array[Byte]
+
+	def asInt: Int
+
+	def asLong: Long
+
+	def asBigInt: BigInt
+
+	def asString: String
+
+	def get(index: Int): Option[Value]
+
+	def isString: Boolean
+
+	def isInt: Boolean
+
+	def isLong: Boolean
+
+	def isBigInt: Boolean
+
+	def isBytes: Boolean
+
+	def isImmutableBytes: Boolean
+
+	def isSeq: Boolean
+
+	def isNull: Boolean
+
+	def length: Int
+
+}
+
+object Value {
+	def toString(value: Value): String = {
+		val result =
+			if (value.isSeq) {
+				val seq = value.asSeq
+				seq.map {
+					case null => ""
+					case s: String => s
+					case bytes: Array[Byte] => "[" + Hex.encodeHexString(bytes) + "]"
+					case any => any.toString
+				}.mkString("(", ",", ")")
+			} else if (value.isBytes) {
+				"[" + Hex.encodeHexString(value.asBytes) + "]"
+			} else if (value.isImmutableBytes) {
+				"[" + value.asImmutableBytes.toHexString + "]"
+			} else if (value.isString) {
+				value.asString
+			} else {
+				value.asObj.getClass
+			}
+		"Value(%s)".format(result)
+	}
+
+	def fromObject(obj: Any): Value = {
+		obj match {
+			case v: Value => v
+			case _ => new PlainValue(obj)
+		}
+	}
+
+	def fromEncodedBytes(encodedBytes: ImmutableBytes): Value = {
+		new EncodedValue(encodedBytes)
+	}
+
+	val empty = fromObject(ImmutableBytes.empty)
+}
+
+class PlainValue private[utils](_value: Any) extends Value {
 
 	/**
 	 * 値。
 	 */
-	private val valueOptionRef = new AtomicReference[Option[Any]](None)
-
-	_valueOption match {
-		case Some(v) =>
-			//値による初期化。
-			this.valueOptionRef.set(launderValue(v))
-		case _ =>
-			//値はない。
-	}
+	override val value: Any = launderValue(_value)
 
 	/**
 	 * 入れ子になったValueクラスであった場合には、
 	 * その中身をたぐって値を取得します。
 	 */
 	@tailrec
-	private def launderValue(any: Any): Option[Any] = {
+	private def launderValue(any: Any): Any = {
 		any match {
-			case null =>
-				Some("")
-			case another: Value =>
-				launderValue(another.value)
-			case _ =>
-				Option(any)
+			case null => ""
+			case another: Value => launderValue(another.value)
+			case _ => any
 		}
 	}
 
 	/**
-	 * ラップ対象の値を返します。
-	 */
-	def value: Any = decode
-
-	/**
 	 * エンコードされたバイト列。
 	 */
-	private val encodedBytesOptionRef = new AtomicReference(_encodedBytesOption)
+	private val encodedBytesOptionRef: AtomicReference[Option[ImmutableBytes]] = new AtomicReference(None)
 
 	/**
 	 * SHA3ダイジェスト値。
 	 */
 	private val sha3OptionRef = new AtomicReference[Option[ImmutableBytes]](None)
 
-	def sha3: ImmutableBytes = hash
-
-	def decode: Any = {
-		if (this.valueOptionRef.get.isEmpty) {
-			RBACCodec.Decoder.decode(this.encode) match {
-				case Right(result) =>
-					this.valueOptionRef.set(Option(result.result))
-				case Left(e) => ()
-			}
+	def sha3: ImmutableBytes = {
+		if (this.sha3OptionRef.get.isEmpty) {
+			val encoded = encode
+			val sha3 = encoded.sha3
+			this.sha3OptionRef.set(Some(sha3))
 		}
-		this.valueOptionRef.get.orNull
+		this.sha3OptionRef.get.get
 	}
 
 	def encode: ImmutableBytes = {
@@ -79,26 +144,13 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 		this.encodedBytesOptionRef.get.get
 	}
 
-	def hash: ImmutableBytes = {
-		if (this.sha3OptionRef.get.isEmpty) {
-			val encoded = encode
-			val sha3 = encoded.sha3
-			this.sha3OptionRef.set(Some(sha3))
-		}
-		this.sha3OptionRef.get.get
-	}
+	def hash: ImmutableBytes = sha3
 
-	def asObj: Any = {
-		decode
-	}
+	def asObj: Any = value
 
-	def asSeq: Seq[AnyRef] = {
-		decode
-		this.value.asInstanceOf[Seq[AnyRef]]
-	}
+	def asSeq: Seq[AnyRef] = this.value.asInstanceOf[Seq[AnyRef]]
 
 	def asImmutableBytes: ImmutableBytes = {
-		decode
 		if (isImmutableBytes) {
 			this.value.asInstanceOf[ImmutableBytes]
 		} else if (isBytes) {
@@ -111,7 +163,6 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 	}
 
 	def asBytes: Array[Byte] = {
-		decode
 		if (isBytes) {
 			this.value.asInstanceOf[Array[Byte]]
 		} else if (isImmutableBytes) {
@@ -124,7 +175,6 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 	}
 
 	def asInt: Int = {
-		decode
 		if (isInt) {
 			value.asInstanceOf[Int]
 		} else if (isBytes) {
@@ -137,7 +187,6 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 	}
 
 	def asLong: Long = {
-		decode
 		if (isLong) {
 			value.asInstanceOf[Long]
 		} else if (isBytes) {
@@ -150,7 +199,6 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 	}
 
 	def asBigInt: BigInt = {
-		decode
 		if (isBigInt) {
 			this.value.asInstanceOf[BigInt]
 		} else if (isBytes) {
@@ -163,7 +211,6 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 	}
 
 	def asString: String = {
-		decode
 		if (isString) {
 			this.value.asInstanceOf[String]
 		} else if (isBytes) {
@@ -187,45 +234,25 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 		}
 	}
 
-	def isString: Boolean = {
-		decode
-		this.value.isInstanceOf[String]
-	}
+	def isString: Boolean = this.value.isInstanceOf[String]
 
-	def isInt: Boolean = {
-		decode
-		this.value.isInstanceOf[Int]
-	}
+	def isInt: Boolean = this.value.isInstanceOf[Int]
 
-	def isLong: Boolean = {
-		decode
-		this.value.isInstanceOf[Long]
-	}
+	def isLong: Boolean = this.value.isInstanceOf[Long]
 
-	def isBigInt: Boolean = {
-		decode
-		this.value.isInstanceOf[BigInt]
-	}
+	def isBigInt: Boolean = this.value.isInstanceOf[BigInt]
 
-	def isBytes: Boolean = {
-		decode
-		this.value.isInstanceOf[Array[Byte]]
-	}
+	def isBytes: Boolean = this.value.isInstanceOf[Array[Byte]]
 
-	def isImmutableBytes: Boolean = {
-		decode
-		this.value.isInstanceOf[ImmutableBytes]
-	}
+	def isImmutableBytes: Boolean = this.value.isInstanceOf[ImmutableBytes]
 
 	def isSeq: Boolean = {
-		decode
 		if (!this.value.isInstanceOf[AnyRef]) return false
 		val v = this.value.asInstanceOf[AnyRef]
 		(v ne null) && !isString && v.isInstanceOf[Seq[_]]
 	}
 
 	def isNull: Boolean = {
-		decode
 		try {
 			this.value.asInstanceOf[AnyRef] eq null
 		} catch {
@@ -234,7 +261,6 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 	}
 
 	def length: Int = {
-		decode
 		if (isSeq) {
 			asSeq.size
 		} else if (isBytes) {
@@ -248,43 +274,85 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Immut
 		}
 	}
 
-	override def toString: String = {
-		val result =
-			if (isSeq) {
-				val seq = asSeq
-				seq.map {
-					case null => ""
-					case s: String => s
-					case bytes: Array[Byte] => "[" + Hex.encodeHexString(bytes) + "]"
-					case any => any.toString
-				}.mkString("(", ",", ")")
-			} else if (isBytes) {
-				"[" + Hex.encodeHexString(asBytes) + "]"
-			} else if (isImmutableBytes) {
-				"[" + asImmutableBytes.toHexString + "]"
-			} else if (isString) {
-				asString
-			} else {
-				asObj.getClass
-			}
-		"Value(%s)".format(result)
-	}
+	override def toString: String = Value.toString(this)
 
 }
 
-object Value {
 
-	def fromObject(obj: Any): Value = {
-		obj match {
-			case v: Value => v
-			case _ => new Value(Some(obj), None)
+class EncodedValue private[utils](override val encode: ImmutableBytes) extends Value {
+
+	/**
+	 * 値。
+	 */
+	private val plainValueRef = new AtomicReference[Option[PlainValue]](None)
+
+	/**
+	 * ラップ対象の値を返します。
+	 */
+	def value: Any = decode.value
+
+	/**
+	 * SHA3ダイジェスト値。
+	 */
+	private val sha3OptionRef = new AtomicReference[Option[ImmutableBytes]](None)
+
+	def sha3: ImmutableBytes = {
+		if (this.sha3OptionRef.get.isEmpty) {
+			val sha3 = encode.sha3
+			this.sha3OptionRef.set(Some(sha3))
 		}
+		this.sha3OptionRef.get.get
 	}
 
-	def fromEncodedBytes(encodedBytes: ImmutableBytes): Value = {
-		new Value(None, Option(encodedBytes))
+	def hash: ImmutableBytes = sha3
+
+	def decode: PlainValue = {
+		if (this.plainValueRef.get.isEmpty) {
+			RBACCodec.Decoder.decode(this.encode) match {
+				case Right(result) =>
+					this.plainValueRef.set(Option(new PlainValue(result.result)))
+				case Left(e) => ()
+			}
+		}
+		this.plainValueRef.get.get
 	}
 
-	val empty = fromObject(Array.emptyByteArray)
+	def asObj: Any = decode.asObj
+
+	def asSeq: Seq[AnyRef] = decode.asSeq
+
+	def asImmutableBytes: ImmutableBytes = decode.asImmutableBytes
+
+	def asBytes: Array[Byte] = decode.asBytes
+
+	def asInt: Int = decode.asInt
+
+	def asLong: Long = decode.asLong
+
+	def asBigInt: BigInt = decode.asBigInt
+
+	def asString: String = decode.asString
+
+	def get(index: Int): Option[Value] = decode.get(index)
+
+	def isString: Boolean = decode.isString
+
+	def isInt: Boolean = decode.isInt
+
+	def isLong: Boolean = decode.isLong
+
+	def isBigInt: Boolean = decode.isBigInt
+
+	def isBytes: Boolean = decode.isBytes
+
+	def isImmutableBytes: Boolean = decode.isImmutableBytes
+
+	def isSeq: Boolean = decode.isSeq
+
+	def isNull: Boolean = decode.isNull
+
+	def length: Int = decode.length
+
+	override def toString: String = Value.toString(this)
 
 }

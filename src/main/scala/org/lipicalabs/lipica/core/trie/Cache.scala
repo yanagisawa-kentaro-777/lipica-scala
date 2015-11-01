@@ -34,7 +34,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 	def put(value: Value): Either[Value, ImmutableBytes] = {
 		val encoded = value.encode
 		if (32 <= encoded.length) {
-			val hash = value.sha3
+			val hash = value.hash
 			if (logger.isTraceEnabled) {
 				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, value))
 			}

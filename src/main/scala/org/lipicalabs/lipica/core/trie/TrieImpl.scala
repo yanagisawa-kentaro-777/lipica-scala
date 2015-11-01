@@ -53,7 +53,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 				if (value.isBytes || value.isImmutableBytes) {
 					computeHash(Left(value.asImmutableBytes))
 				} else {
-					value.sha3
+					value.hash
 				}
 		}
 	}

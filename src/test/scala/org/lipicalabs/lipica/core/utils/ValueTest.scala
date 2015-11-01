@@ -18,7 +18,6 @@ class ValueTest extends Specification {
 		"be right" in {
 			val value = Value.fromObject(0)
 			value.value mustEqual 0
-			value.decode mustEqual 0
 			(value.encode sameElements Array(0x80.asInstanceOf[Byte])) mustEqual true
 			value.hash.toHexString mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 		}
@@ -28,7 +27,6 @@ class ValueTest extends Specification {
 		"be right" in {
 			val value = Value.fromEncodedBytes(ImmutableBytes.fromOneByte(0x80.asInstanceOf[Byte]))
 			value.value.asInstanceOf[Array[Byte]] sameElements Array(0.asInstanceOf[Byte])
-			value.decode.asInstanceOf[Array[Byte]] sameElements Array(0.asInstanceOf[Byte])
 			(value.encode sameElements Array(0x80.asInstanceOf[Byte])) mustEqual true
 			value.hash.toHexString mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 		}
@@ -39,7 +37,6 @@ class ValueTest extends Specification {
 			(0 until 10000).foreach {i => {
 				val value = Value.fromObject(i)
 				value.value mustEqual i
-				value.decode mustEqual i
 				value.isInt mustEqual true
 				val encoded = value.encode
 				val rebuiltValue = Value.fromEncodedBytes(encoded)
@@ -52,10 +49,9 @@ class ValueTest extends Specification {
 	"seq cases" should {
 		"be right" in {
 			(0 until 100).foreach {i => {
-				val seq = 0 until i
+				val seq = (0 until i)
 				val value = Value.fromObject(seq)
 				value.value.asInstanceOf[Seq[Int]] mustEqual seq
-				value.decode mustEqual seq
 				value.isSeq mustEqual true
 				val encoded = value.encode
 				val rebuiltValue = Value.fromEncodedBytes(encoded)
@@ -71,7 +67,6 @@ class ValueTest extends Specification {
 				val bytes = generateByteArray(i)
 				val value = Value.fromObject(bytes)
 				value.value mustEqual bytes
-				value.decode mustEqual bytes
 				value.isImmutableBytes mustEqual true
 				val encoded = value.encode
 				val rebuiltValue = Value.fromEncodedBytes(encoded)
