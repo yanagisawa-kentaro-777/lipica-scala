@@ -1,17 +1,11 @@
 # circle.yml
 
-# scoverageのレポートを保存するよう設定
 general:
   artifacts:
-    - "target/*/scoverage-report"
-
-# テスト準備コマンドを上書きしてScoverageに対応させる
-dependencies:
-  override:
-    - "sbt root/clean root/coverage"
+    - "target/scala-2.11/coverage-report"
 
 test:
   override:
-    - "sbt root/test"
+    - "sbt clean coverage test"
   post:
-    - "sbt coveralls" # テスト終了後COVERALLSに結果送信
+    - "sbt coveralls"
