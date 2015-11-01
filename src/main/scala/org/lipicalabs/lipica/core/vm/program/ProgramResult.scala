@@ -72,7 +72,7 @@ class ProgramResult {
 	def getInternalTransactions: Seq[InternalTransaction] = this.internalTransactions.toSeq
 	def addInternalTransaction(parentHash: ImmutableBytes, deep: Int, nonce: ImmutableBytes, manaPrice: DataWord, manaLimit: DataWord, senderAddress: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes, note: String): InternalTransaction = {
 		val index = this.internalTransactions.size
-		val result = new InternalTransaction(parentHash.toByteArray, deep, index, nonce, manaPrice, manaLimit, senderAddress, receiveAddress, value, data, note)
+		val result = new InternalTransaction(parentHash, deep, index, nonce, manaPrice, manaLimit, senderAddress, receiveAddress, value, data, note)
 		this.internalTransactions.append(result)
 		result
 	}
