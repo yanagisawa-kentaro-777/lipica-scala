@@ -115,6 +115,7 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	def asString(charset: Charset): String = new String(this.bytes, charset)
 
 	override def compareTo(another: ImmutableBytes): Int = {
+		//TODO guava に速い実装があるらしい。
 		val min = this.bytes.length.min(another.bytes.length)
 		(0 until min).foreach {
 			i => {

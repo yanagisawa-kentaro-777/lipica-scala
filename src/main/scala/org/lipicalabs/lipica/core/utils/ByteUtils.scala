@@ -5,30 +5,6 @@ object ByteUtils {
 	/**
 	 * ２個のバイト配列が先頭から一致するバイト数を返します。
 	 */
-	def matchingLength(a: Array[Byte], b: Array[Byte]): Int = {
-		var result = 0
-		val len = a.length.min(b.length)
-		while (result < len) {
-			if (a(result) != b(result)) {
-				return result
-			}
-			result += 1
-		}
-		result
-	}
-
-	def matchingLength(a: ImmutableBytes, b: Array[Byte]): Int = {
-		var result = 0
-		val len = a.length.min(b.length)
-		while (result < len) {
-			if (a(result) != b(result)) {
-				return result
-			}
-			result += 1
-		}
-		result
-	}
-
 	def matchingLength(a: ImmutableBytes, b: ImmutableBytes): Int = {
 		var result = 0
 		val len = a.length.min(b.length)
@@ -109,11 +85,6 @@ object ByteUtils {
 		dest
 	}
 
-	def compareBytes(a: Array[Byte], b: Array[Byte]): Int = {
-		//TODO guava に速い実装があるらしい。
-		BigInt(1, a).compare(BigInt(1, b))
-	}
-
 	def setBit(data: Array[Byte], pos: Int, positive: Boolean): Unit = {
 		if ((data.length * 8) - 1 < pos) throw new IndexOutOfBoundsException("%d < %d ".format((data.length * 8) - 1, pos))
 
@@ -139,14 +110,6 @@ object ByteUtils {
 
 	def isNullOrEmpty(bytes: ImmutableBytes): Boolean = {
 		(bytes eq null) || bytes.isEmpty
-	}
-
-	def launderNullToEmpty(bytes: Array[Byte]): Array[Byte] = {
-		if (bytes eq null) {
-			Array.emptyByteArray
-		} else {
-			bytes
-		}
 	}
 
 }
