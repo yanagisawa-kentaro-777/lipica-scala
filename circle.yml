@@ -8,7 +8,7 @@ general:
 # テスト準備コマンドを上書きしてScoverageに対応させる
 dependencies:
   override:
-    - "sbt root/coverage"
+    - "sbt root/clean root/coverage"
 
 test:
   override:
