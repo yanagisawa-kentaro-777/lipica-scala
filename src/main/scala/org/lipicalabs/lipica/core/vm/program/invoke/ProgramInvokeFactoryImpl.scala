@@ -38,11 +38,11 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val lastHash = lastBlock.hash
 		val coinbase = block.coinbase
 		val timestamp = block.timestamp
-		val number = block.number
+		val blockNumber = block.number
 		val difficulty = block.difficulty
-		val manaLimit = block.manaLimit
+		val blockManaLimit = block.manaLimit
 
-		ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, number, difficulty, manaLimit, repository, blockStore, byTestingSuite = false)
+		ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, blockStore, byTestingSuite = false)
 	}
 
 	override def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: Repository, blockStore: BlockStore, byTestingSuite: Boolean) = {
@@ -56,14 +56,14 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val callValue = inValue
 
 		val data = dataIn
-		val lastHash = program.getPrevHash
+		val lastHash = program.getLastHash
 		val coinbase = program.getCoinbase
 		val timestamp = program.getTimestamp
-		val number = program.getNumber
+		val blockNumber = program.getBlockNumber
 		val difficulty = program.getDifficulty
-		val manaLimit = program.getManaLimit
+		val blockManaLimit = program.getBlockManaLimit
 
-		ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, number, difficulty, manaLimit, repository, program.getCallDeep + 1, blockStore, byTestingSuite)
+		ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDeep + 1, blockStore, byTestingSuite)
 	}
 
 }

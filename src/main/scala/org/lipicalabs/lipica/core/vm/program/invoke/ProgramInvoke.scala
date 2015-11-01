@@ -11,16 +11,31 @@ import org.lipicalabs.lipica.core.vm.DataWord
  */
 trait ProgramInvoke {
 
+	/**
+	 * 現在実行中アカウントのアドレス。
+	 */
 	def getOwnerAddress: DataWord
+
+	/**
+	 * 一連の処理の最初の実行者のアドレス。（コントラクトではあり得ない。）
+	 */
+	def getOriginAddress: DataWord
+
+	/**
+	 * この実行に直接関与しているアカウントのアドレス。
+	 */
+	def getCallerAddress: DataWord
 
 	def getBalance: DataWord
 
-	def getOriginalAddress: DataWord
-
-	def getCallerAddress: DataWord
-
+	/**
+	 * 現在の実行コンテクストのマナ価格。
+	 */
 	def getMinManaPrice: DataWord
 
+	/**
+	 * 現在の実行コンテクストの残マナ。
+	 */
 	def getMana: DataWord
 
 	def getCallValue: DataWord
@@ -31,17 +46,18 @@ trait ProgramInvoke {
 
 	def getDataCopy(offsetData: DataWord, lengthData: DataWord): Array[Byte]
 
-	def getPrevHash: DataWord
+	def getLastHash: DataWord
 
 	def getCoinbase: DataWord
 
 	def getTimestamp: DataWord
 
-	def getNumber: DataWord
+	def getBlockNumber: DataWord
 
 	def getDifficulty: DataWord
 
-	def getManaLimit: DataWord
+	/** ブロックにおけるマナ上限。 */
+	def getBlockManaLimit: DataWord
 
 	def byTransaction: Boolean
 
@@ -51,6 +67,6 @@ trait ProgramInvoke {
 
 	def getRepository: Repository
 
-	def getBlockStore: BlockStore
+	def blockStore: BlockStore
 
 }

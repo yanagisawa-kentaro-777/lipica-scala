@@ -270,9 +270,9 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 				BigInt(0)
 			}
 		//実行する。
-		val internalTx = addInternalTx(nonce, getManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
+		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
 		//TODO 未実装！！！
-		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.getBlockStore, byTestingSuite)
+		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore, byTestingSuite)
 
 		val programResult =
 			if (programCode.nonEmpty) {
@@ -384,11 +384,11 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			}
 
 		//内部トランザクションを生成する。
-		val internalTx = addInternalTx(ImmutableBytes.empty, getManaLimit, senderAddress, contextAddress, endowment, programCode, "call")
+		val internalTx = addInternalTx(ImmutableBytes.empty, getBlockManaLimit, senderAddress, contextAddress, endowment, programCode, "call")
 
 		val programResultOption =
 			if (programCode.nonEmpty) {
-				val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.getBlockStore, byTestingSuite)
+				val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.blockStore, byTestingSuite)
 
 				val vm = new VM
 				val program = new Program(programCode, programInvoke, internalTx)
@@ -530,9 +530,9 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
 
 	def getBlockHash(index: Int): DataWord = {
-		if ((index < this.getNumber.longValue) && (256.max(this.getNumber.intValue) - 256 <= index)) {
+		if ((index < this.getBlockNumber.longValue) && (256.max(this.getBlockNumber.intValue) - 256 <= index)) {
 			//最近256ブロック内である。
-			val loaded = this.invoke.getBlockStore.getBlockHashByNumber(index, getPrevHash.data)
+			val loaded = this.invoke.blockStore.getBlockHashByNumber(index, getLastHash.data)
 			DataWord(loaded)
 		} else {
 			//古すぎるか未知。
@@ -545,7 +545,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		DataWord(ImmutableBytes.asSignedByteArray(balance))
 	}
 
-	def getOriginAddress = this.invoke.getOriginalAddress
+	def getOriginAddress = this.invoke.getOriginAddress
 	def getCallerAddress = this.invoke.getCallerAddress
 	def getManaPrice = this.invoke.getMinManaPrice
 	def getMana = {
@@ -556,12 +556,12 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def getDataSize = this.invoke.getDataSize
 	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
 	def getDataCopy(offset: DataWord, length: DataWord): Array[Byte] = this.invoke.getDataCopy(offset, length)
-	def getPrevHash = this.invoke.getPrevHash
+	def getLastHash = this.invoke.getLastHash
 	def getCoinbase = this.invoke.getCoinbase
 	def getTimestamp = this.invoke.getTimestamp
-	def getNumber = this.invoke.getNumber
+	def getBlockNumber = this.invoke.getBlockNumber
 	def getDifficulty = this.invoke.getDifficulty
-	def getManaLimit = this.invoke.getManaLimit
+	def getBlockManaLimit = this.invoke.getBlockManaLimit
 
 	def setRuntimeFailure(e: RuntimeException): Unit = {
 		this.result.exception = e

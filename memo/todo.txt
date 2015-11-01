@@ -3,9 +3,8 @@ Program
 VM
 
 ImmutableBytesの普及。（trie方面）
-ProgramInvokeのrefactor？
 get や set のメソッド名。
-Program周辺の用語法の統一。
+Invokeのデバッグ出力。
 
 AccountStateのモデル。
 Blockのモデル。
