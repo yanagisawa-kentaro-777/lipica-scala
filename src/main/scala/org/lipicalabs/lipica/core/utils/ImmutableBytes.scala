@@ -1,5 +1,8 @@
 package org.lipicalabs.lipica.core.utils
 
+import java.io.ByteArrayOutputStream
+import java.nio.charset.Charset
+
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 
@@ -58,6 +61,18 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		new ImmutableBytes(java.util.Arrays.copyOfRange(this.bytes, from, until))
 	}
 
+	def copyOf(newLength: Int): ImmutableBytes = {
+		new ImmutableBytes(java.util.Arrays.copyOf(this.bytes, newLength))
+	}
+
+	def `++`(another: ImmutableBytes): ImmutableBytes = {
+		new ImmutableBytes(this.bytes ++ another.bytes)
+	}
+
+	def `:+`(oneByte: Byte): ImmutableBytes = {
+		new ImmutableBytes(this.bytes :+ oneByte)
+	}
+
 	def sha3: ImmutableBytes = new ImmutableBytes(DigestUtils.sha3(this.bytes))
 	def sha256: ImmutableBytes = new ImmutableBytes(DigestUtils.sha256(this.bytes))
 	def ripemd160(newLength: Int): ImmutableBytes = {
@@ -97,6 +112,8 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	 */
 	def toSignedBigInteger: java.math.BigInteger = new java.math.BigInteger(this.bytes)
 
+	def asString(charset: Charset): String = new String(this.bytes, charset)
+
 	override def compareTo(another: ImmutableBytes): Int = {
 		val min = this.bytes.length.min(another.bytes.length)
 		(0 until min).foreach {
@@ -116,6 +133,10 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		} else {
 			0
 		}
+	}
+
+	def sameElements(byteArray: Array[Byte]): Boolean = {
+		java.util.Arrays.equals(this.bytes, byteArray)
 	}
 
 	override def hashCode: Int = java.util.Arrays.hashCode(this.bytes)
@@ -165,6 +186,10 @@ object ImmutableBytes {
 		}
 	}
 
+	def apply(stream: ByteArrayOutputStream): ImmutableBytes = {
+		new ImmutableBytes(stream.toByteArray)
+	}
+
 	def apply(original: Array[Byte]): ImmutableBytes = {
 		if (original eq null) {
 			return empty
@@ -178,6 +203,10 @@ object ImmutableBytes {
 		} else {
 			apply(Hex.decodeHex(s.toCharArray))
 		}
+	}
+
+	def fromOneByte(v: Byte): ImmutableBytes = {
+		new ImmutableBytes(Array[Byte](v))
 	}
 
 	def asUnsignedByteArray(value: BigInt): ImmutableBytes = {

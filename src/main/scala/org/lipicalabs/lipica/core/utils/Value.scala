@@ -57,9 +57,9 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 	/**
 	 * SHA3ダイジェスト値。
 	 */
-	private val sha3OptionRef = new AtomicReference[Option[Array[Byte]]](None)
+	private val sha3OptionRef = new AtomicReference[Option[ImmutableBytes]](None)
 
-	def sha3: Array[Byte] = hash
+	def sha3: ImmutableBytes = hash
 
 	def decode: Any = {
 		if (this.valueOptionRef.get.isEmpty) {
@@ -80,10 +80,10 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 		this.encodedBytesOptionRef.get.get
 	}
 
-	def hash: Array[Byte] = {
+	def hash: ImmutableBytes = {
 		if (this.sha3OptionRef.get.isEmpty) {
 			val encoded = encode
-			val sha3 = DigestUtils.sha3(encoded)
+			val sha3 = ImmutableBytes(DigestUtils.sha3(encoded))
 			this.sha3OptionRef.set(Some(sha3))
 		}
 		this.sha3OptionRef.get.get
@@ -98,14 +98,29 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 		this.value.asInstanceOf[Seq[AnyRef]]
 	}
 
+	def asImmutableBytes: ImmutableBytes = {
+		decode
+		if (isImmutableBytes) {
+			this.value.asInstanceOf[ImmutableBytes]
+		} else if (isBytes) {
+			ImmutableBytes(this.value.asInstanceOf[Array[Byte]])
+		} else if (isString) {
+			ImmutableBytes(asString.getBytes(StandardCharsets.UTF_8))
+		} else {
+			ImmutableBytes.empty
+		}
+	}
+
 	def asBytes: Array[Byte] = {
 		decode
 		if (isBytes) {
 			this.value.asInstanceOf[Array[Byte]]
+		} else if (isImmutableBytes) {
+			this.value.asInstanceOf[ImmutableBytes].toByteArray
 		} else if (isString) {
 			asString.getBytes(StandardCharsets.UTF_8)
 		} else {
-			Array.empty[Byte]
+			Array.emptyByteArray
 		}
 	}
 
@@ -115,6 +130,8 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 			value.asInstanceOf[Int]
 		} else if (isBytes) {
 			BigInt(1, asBytes).intValue()
+		} else if (isImmutableBytes) {
+			asImmutableBytes.toPositiveBigInt.intValue()
 		} else {
 			0
 		}
@@ -126,6 +143,8 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 			value.asInstanceOf[Long]
 		} else if (isBytes) {
 			BigInt(1, asBytes).longValue()
+		} else if (isImmutableBytes) {
+			asImmutableBytes.toPositiveBigInt.longValue()
 		} else {
 			0L
 		}
@@ -137,6 +156,8 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 			this.value.asInstanceOf[BigInt]
 		} else if (isBytes) {
 			BigInt(1, asBytes)
+		} else if (isImmutableBytes) {
+			asImmutableBytes.toPositiveBigInt
 		} else {
 			BigInt(0L)
 		}
@@ -148,6 +169,8 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 			this.value.asInstanceOf[String]
 		} else if (isBytes) {
 			new String(asBytes, StandardCharsets.UTF_8)
+		} else if (isImmutableBytes) {
+			asImmutableBytes.asString(StandardCharsets.UTF_8)
 		} else {
 			""
 		}
@@ -190,6 +213,11 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 		this.value.isInstanceOf[Array[Byte]]
 	}
 
+	def isImmutableBytes: Boolean = {
+		decode
+		this.value.isInstanceOf[ImmutableBytes]
+	}
+
 	def isSeq: Boolean = {
 		decode
 		if (!this.value.isInstanceOf[AnyRef]) return false
@@ -212,6 +240,8 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 			asSeq.size
 		} else if (isBytes) {
 			asBytes.length
+		} else if (isImmutableBytes) {
+			asImmutableBytes.length
 		} else if (isString) {
 			asString.length
 		} else {
@@ -231,6 +261,8 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 				}.mkString("(", ",", ")")
 			} else if (isBytes) {
 				"[" + Hex.encodeHexString(asBytes) + "]"
+			} else if (isImmutableBytes) {
+				"[" + asImmutableBytes.toHexString + "]"
 			} else if (isString) {
 				asString
 			} else {
@@ -252,6 +284,10 @@ object Value {
 
 	def fromEncodedBytes(encodedBytes: Array[Byte]): Value = {
 		new Value(None, Option(encodedBytes))
+	}
+
+	def fromEncodedBytes(encodedBytes: ImmutableBytes): Value = {
+		new Value(None, Option(encodedBytes.toByteArray))
 	}
 
 	val empty = fromObject(Array.emptyByteArray)

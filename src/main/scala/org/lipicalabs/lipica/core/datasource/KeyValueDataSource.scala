@@ -1,15 +1,17 @@
 package org.lipicalabs.lipica.core.datasource
 
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
+
 trait KeyValueDataSource extends DataSource {
 
-	def get(key: Array[Byte]): Option[Array[Byte]]
+	def get(key: ImmutableBytes): Option[ImmutableBytes]
 
-	def put(key: Array[Byte], value: Array[Byte]): Option[Array[Byte]]
+	def put(key: ImmutableBytes, value: ImmutableBytes): Option[ImmutableBytes]
 
-	def delete(key: Array[Byte]): Unit
+	def delete(key: ImmutableBytes): Unit
 
-	def keys: Set[Array[Byte]]
+	def keys: Set[ImmutableBytes]
 
-	def updateBatch(rows: Map[Array[Byte], Array[Byte]]): Unit
+	def updateBatch(rows: Map[ImmutableBytes, ImmutableBytes]): Unit
 
 }

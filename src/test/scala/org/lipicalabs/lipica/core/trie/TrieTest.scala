@@ -1,10 +1,12 @@
 package org.lipicalabs.lipica.core.trie
 
+import java.nio.charset.StandardCharsets
+
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datasource.HashMapDB
-import org.lipicalabs.lipica.core.utils.RBACCodec
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -30,7 +32,7 @@ class TrieTest extends Specification {
 
 			val trie = new TrieImpl(mockDb)
 			trie.update("", "dog")
-			"dog" mustEqual new String(trie.get(""))
+			"dog" mustEqual new String(trie.get("").toByteArray)
 		}
 	}
 
@@ -38,7 +40,7 @@ class TrieTest extends Specification {
 		"be right" in {
 			val trie = new TrieImpl(mockDb)
 			trie.update("cat", "dog")
-			"dog" mustEqual new String(trie.get("cat"))
+			"dog" mustEqual new String(trie.get("cat").toByteArray)
 		}
 	}
 
@@ -46,7 +48,7 @@ class TrieTest extends Specification {
 		"be right" in {
 			val trie = new TrieImpl(mockDb)
 			trie.update("cat", LONG_STRING)
-			LONG_STRING mustEqual new String(trie.get("cat"))
+			LONG_STRING mustEqual new String(trie.get("cat").toByteArray)
 		}
 	}
 
@@ -55,26 +57,26 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("ca", "dude")
-			new String(trie.get("ca")) mustEqual "dude"
+			new String(trie.get("ca").toByteArray) mustEqual "dude"
 
 			trie.update("cat", "dog")
-			new String(trie.get("cat")) mustEqual "dog"
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
 
 			trie.update("dog", "test")
-			new String(trie.get("dog")) mustEqual "test"
+			new String(trie.get("dog").toByteArray) mustEqual "test"
 
 			trie.update("doge", LONG_STRING)
-			new String(trie.get("doge")) mustEqual LONG_STRING
+			new String(trie.get("doge").toByteArray) mustEqual LONG_STRING
 
 			trie.update("test", LONG_STRING)
-			new String(trie.get("test")) mustEqual LONG_STRING
+			new String(trie.get("test").toByteArray) mustEqual LONG_STRING
 
 			//再確認。
-			new String(trie.get("ca")) mustEqual "dude"
-			new String(trie.get("cat")) mustEqual "dog"
-			new String(trie.get("dog")) mustEqual "test"
-			new String(trie.get("doge")) mustEqual LONG_STRING
-			new String(trie.get("test")) mustEqual LONG_STRING
+			new String(trie.get("ca").toByteArray) mustEqual "dude"
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
+			new String(trie.get("dog").toByteArray) mustEqual "test"
+			new String(trie.get("doge").toByteArray) mustEqual LONG_STRING
+			new String(trie.get("test").toByteArray) mustEqual LONG_STRING
 		}
 	}
 
@@ -83,26 +85,26 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", "dog")
-			new String(trie.get("cat")) mustEqual "dog"
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
 
 			trie.update("ca", "dude")
-			new String(trie.get("ca")) mustEqual "dude"
+			new String(trie.get("ca").toByteArray) mustEqual "dude"
 
 			trie.update("doge", LONG_STRING)
-			new String(trie.get("doge")) mustEqual LONG_STRING
+			new String(trie.get("doge").toByteArray) mustEqual LONG_STRING
 
 			trie.update("dog", "test")
-			new String(trie.get("dog")) mustEqual "test"
+			new String(trie.get("dog").toByteArray) mustEqual "test"
 
 			trie.update("test", LONG_STRING)
-			new String(trie.get("test")) mustEqual LONG_STRING
+			new String(trie.get("test").toByteArray) mustEqual LONG_STRING
 
 			//再確認。
-			new String(trie.get("cat")) mustEqual "dog"
-			new String(trie.get("ca")) mustEqual "dude"
-			new String(trie.get("doge")) mustEqual LONG_STRING
-			new String(trie.get("dog")) mustEqual "test"
-			new String(trie.get("test")) mustEqual LONG_STRING
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
+			new String(trie.get("ca").toByteArray) mustEqual "dude"
+			new String(trie.get("doge").toByteArray) mustEqual LONG_STRING
+			new String(trie.get("dog").toByteArray) mustEqual "test"
+			new String(trie.get("test").toByteArray) mustEqual LONG_STRING
 		}
 	}
 
@@ -111,10 +113,10 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", "dog")
-			new String(trie.get("cat")) mustEqual "dog"
+			trie.get("cat").asString(StandardCharsets.UTF_8) mustEqual "dog"
 
 			trie.update("cat", "dog1")
-			new String(trie.get("cat")) mustEqual "dog1"
+			trie.get("cat").asString(StandardCharsets.UTF_8) mustEqual "dog1"
 		}
 	}
 
@@ -123,10 +125,10 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", LONG_STRING)
-			new String(trie.get("cat")) mustEqual LONG_STRING
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING
 
 			trie.update("cat", LONG_STRING + "1")
-			new String(trie.get("cat")) mustEqual LONG_STRING + "1"
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING + "1"
 		}
 	}
 
@@ -135,10 +137,10 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", "dog")
-			new String(trie.get("cat")) mustEqual "dog"
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
 
 			trie.update("cat", LONG_STRING + "1")
-			new String(trie.get("cat")) mustEqual LONG_STRING + "1"
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING + "1"
 		}
 	}
 
@@ -147,10 +149,10 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", LONG_STRING)
-			new String(trie.get("cat")) mustEqual LONG_STRING
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING
 
 			trie.update("cat", "dog1")
-			new String(trie.get("cat")) mustEqual "dog1"
+			new String(trie.get("cat").toByteArray) mustEqual "dog1"
 		}
 	}
 
@@ -162,15 +164,15 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", "dog")
-			new String(trie.get("cat")) mustEqual "dog"
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
 
 			trie.update("ca", "dude")
-			new String(trie.get("ca")) mustEqual "dude"
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			new String(trie.get("ca").toByteArray) mustEqual "dude"
+			trie.rootHash.toHexString mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("ca")
-			new String(trie.get("ca")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER
+			new String(trie.get("ca").toByteArray) mustEqual ""
+			trie.rootHash.toHexString mustEqual ROOT_HASH_AFTER
 		}
 	}
 
@@ -182,15 +184,15 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("ca", "dude")
-			new String(trie.get("ca")) mustEqual "dude"
+			new String(trie.get("ca").toByteArray) mustEqual "dude"
 
 			trie.update("cat", "dog")
-			new String(trie.get("cat")) mustEqual "dog"
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
+			trie.rootHash.toHexString mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("cat")
-			new String(trie.get("cat")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER
+			new String(trie.get("cat").toByteArray) mustEqual ""
+			trie.rootHash.toHexString mustEqual ROOT_HASH_AFTER
 		}
 	}
 
@@ -202,15 +204,15 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", "dude")
-			new String(trie.get("cat")) mustEqual "dude"
+			new String(trie.get("cat").toByteArray) mustEqual "dude"
 
 			trie.update("dog", "test")
-			new String(trie.get("dog")) mustEqual "test"
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			new String(trie.get("dog").toByteArray) mustEqual "test"
+			trie.rootHash.toHexString mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("dog")
-			new String(trie.get("dog")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER
+			new String(trie.get("dog").toByteArray) mustEqual ""
+			trie.rootHash.toHexString mustEqual ROOT_HASH_AFTER
 		}
 	}
 
@@ -222,15 +224,15 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", LONG_STRING)
-			new String(trie.get("cat")) mustEqual LONG_STRING
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING
 
 			trie.update("dog", LONG_STRING)
-			new String(trie.get("dog")) mustEqual LONG_STRING
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			new String(trie.get("dog").toByteArray) mustEqual LONG_STRING
+			trie.rootHash.toHexString mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("dog")
-			new String(trie.get("dog")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER
+			new String(trie.get("dog").toByteArray) mustEqual ""
+			trie.rootHash.toHexString mustEqual ROOT_HASH_AFTER
 		}
 	}
 
@@ -242,15 +244,15 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("ca", LONG_STRING)
-			new String(trie.get("ca")) mustEqual LONG_STRING
+			new String(trie.get("ca").toByteArray) mustEqual LONG_STRING
 
 			trie.update("cat", LONG_STRING)
-			new String(trie.get("cat")) mustEqual LONG_STRING
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING
+			trie.rootHash.toHexString mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("cat")
-			new String(trie.get("cat")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER
+			new String(trie.get("cat").toByteArray) mustEqual ""
+			trie.rootHash.toHexString mustEqual ROOT_HASH_AFTER
 		}
 	}
 
@@ -262,15 +264,15 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", LONG_STRING)
-			new String(trie.get("cat")) mustEqual LONG_STRING
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING
 
 			trie.update("ca", LONG_STRING)
-			new String(trie.get("ca")) mustEqual LONG_STRING
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			new String(trie.get("ca").toByteArray) mustEqual LONG_STRING
+			trie.rootHash.toHexString mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("ca")
-			new String(trie.get("ca")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER
+			new String(trie.get("ca").toByteArray) mustEqual ""
+			trie.rootHash.toHexString mustEqual ROOT_HASH_AFTER
 		}
 	}
 
@@ -281,13 +283,13 @@ class TrieTest extends Specification {
 			val val2 = "09"
 			val val3 = "a9"
 
-			trie.update(Hex.decodeHex(val1.toCharArray), Hex.decodeHex(val1.toCharArray))
-			trie.update(Hex.decodeHex(val2.toCharArray), Hex.decodeHex(val2.toCharArray))
-			val root1 = Hex.encodeHexString(trie.rootHash)
+			trie.update(ImmutableBytes(val1), ImmutableBytes(val1))
+			trie.update(ImmutableBytes(val2), ImmutableBytes(val2))
+			val root1 = trie.rootHash.toHexString
 
-			trie.update(Hex.decodeHex(val3.toCharArray), Hex.decodeHex(val3.toCharArray))
-			trie.delete(Hex.decodeHex(val3.toCharArray))
-			val root2 = Hex.encodeHexString(trie.rootHash)
+			trie.update(ImmutableBytes(val3), ImmutableBytes(val3))
+			trie.delete(ImmutableBytes(val3))
+			val root2 = trie.rootHash.toHexString
 
 			root1 mustEqual root2
 		}
@@ -302,29 +304,29 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("cat", "dog")
-			new String(trie.get("cat")) mustEqual "dog"
+			new String(trie.get("cat").toByteArray) mustEqual "dog"
 
 			trie.update("ca", "dude")
-			new String(trie.get("ca")) mustEqual "dude"
+			new String(trie.get("ca").toByteArray) mustEqual "dude"
 
 			trie.update("doge", LONG_STRING)
-			new String(trie.get("doge")) mustEqual LONG_STRING
+			new String(trie.get("doge").toByteArray) mustEqual LONG_STRING
 
 			trie.update("dog", "test")
-			new String(trie.get("dog")) mustEqual "test"
+			new String(trie.get("dog").toByteArray) mustEqual "test"
 
 			trie.update("test", LONG_STRING)
-			new String(trie.get("test")) mustEqual LONG_STRING
+			new String(trie.get("test").toByteArray) mustEqual LONG_STRING
 
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("dog")
-			new String(trie.get("dog")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER1
+			new String(trie.get("dog").toByteArray) mustEqual ""
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_AFTER1
 
 			trie.delete("test")
-			new String(trie.get("test")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER2
+			new String(trie.get("test").toByteArray) mustEqual ""
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_AFTER2
 		}
 	}
 
@@ -337,23 +339,23 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 
 			trie.update("c", LONG_STRING)
-			new String(trie.get("c")) mustEqual LONG_STRING
+			new String(trie.get("c").toByteArray) mustEqual LONG_STRING
 
 			trie.update("ca", LONG_STRING)
-			new String(trie.get("ca")) mustEqual LONG_STRING
+			new String(trie.get("ca").toByteArray) mustEqual LONG_STRING
 
 			trie.update("cat", LONG_STRING)
-			new String(trie.get("cat")) mustEqual LONG_STRING
+			new String(trie.get("cat").toByteArray) mustEqual LONG_STRING
 
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("ca")
-			new String(trie.get("ca")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER1
+			new String(trie.get("ca").toByteArray) mustEqual ""
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_AFTER1
 
 			trie.delete("cat")
-			new String(trie.get("cat")) mustEqual ""
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_AFTER2
+			new String(trie.get("cat").toByteArray) mustEqual ""
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_AFTER2
 		}
 	}
 
@@ -362,17 +364,17 @@ class TrieTest extends Specification {
 			val ROOT_HASH_BEFORE = "a84739b4762ddf15e3acc4e6957e5ab2bbfaaef00fe9d436a7369c6f058ec90d"
 
 			val trie = new TrieImpl(mockDb)
-			Hex.encodeHexString(trie.rootHash) mustEqual Hex.encodeHexString(EMPTY_ROOT_HASH)
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual Hex.encodeHexString(EMPTY_ROOT_HASH)
 
 			trie.update("ca", "dude")
 			trie.update("cat", "dog")
 			trie.update("doge", LONG_STRING)
-			Hex.encodeHexString(trie.rootHash) mustEqual ROOT_HASH_BEFORE
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_BEFORE
 
 			trie.delete("ca")
 			trie.delete("cat")
 			trie.delete("doge")
-			Hex.encodeHexString(trie.rootHash) mustEqual Hex.encodeHexString(EMPTY_ROOT_HASH)
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual Hex.encodeHexString(EMPTY_ROOT_HASH)
 		}
 	}
 
@@ -380,7 +382,7 @@ class TrieTest extends Specification {
 		"be right" in {
 			val trie = new TrieImpl(mockDb)
 			trie.update("A", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-			Hex.encodeHexString(trie.rootHash) mustEqual "d23786fb4a010da3ce639d66d5e904a11dbc02746d1ce25029e53290cabf28ab"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "d23786fb4a010da3ce639d66d5e904a11dbc02746d1ce25029e53290cabf28ab"
 		}
 	}
 
@@ -388,13 +390,13 @@ class TrieTest extends Specification {
 		"be right" in {
 			val trie = new TrieImpl(mockDb)
 			trie.update("doe", "reindeer")
-			Hex.encodeHexString(trie.rootHash) mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
 
 			trie.update("dog", "puppy")
-			Hex.encodeHexString(trie.rootHash) mustEqual "05ae693aac2107336a79309e0c60b24a7aac6aa3edecaef593921500d33c63c4"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "05ae693aac2107336a79309e0c60b24a7aac6aa3edecaef593921500d33c63c4"
 
 			trie.update("dogglesworth", "cat")
-			Hex.encodeHexString(trie.rootHash) mustEqual "8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3"
 		}
 	}
 
@@ -405,7 +407,7 @@ class TrieTest extends Specification {
 			trie.update("doge", "coin")
 			trie.update("horse", "stallion")
 			trie.update("dog", "puppy")
-			Hex.encodeHexString(trie.rootHash) mustEqual "5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"
 		}
 	}
 
@@ -420,7 +422,7 @@ class TrieTest extends Specification {
 			trie.update("ether", "")
 			trie.update("dog", "puppy")
 			trie.update("shaman", "")
-			Hex.encodeHexString(trie.rootHash) mustEqual "5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"
 		}
 	}
 
@@ -430,7 +432,7 @@ class TrieTest extends Specification {
 			trie.update("foo", "bar")
 			trie.update("food", "bat")
 			trie.update("food", "bass")
-			Hex.encodeHexString(trie.rootHash) mustEqual "17beaa1648bafa633cda809c90c04af50fc8aed3cb40d16efbddee6fdf63c4c3"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "17beaa1648bafa633cda809c90c04af50fc8aed3cb40d16efbddee6fdf63c4c3"
 		}
 	}
 
@@ -440,7 +442,7 @@ class TrieTest extends Specification {
 			trie.update("be", "e")
 			trie.update("dog", "puppy")
 			trie.update("bed", "d")
-			Hex.encodeHexString(trie.rootHash) mustEqual "3f67c7a47520f79faa29255d2d3c084a7a6df0453116ed7232ff10277a8be68b"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "3f67c7a47520f79faa29255d2d3c084a7a6df0453116ed7232ff10277a8be68b"
 		}
 	}
 
@@ -448,10 +450,10 @@ class TrieTest extends Specification {
 		"be right" in {
 			val trie = new TrieImpl(mockDb)
 			trie.update("test", "test")
-			Hex.encodeHexString(trie.rootHash) mustEqual "85d106d4edff3b7a4889e91251d0a87d7c17a1dda648ebdba8c6060825be23b8"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "85d106d4edff3b7a4889e91251d0a87d7c17a1dda648ebdba8c6060825be23b8"
 
 			trie.update("te", "testy")
-			Hex.encodeHexString(trie.rootHash) mustEqual "8452568af70d8d140f58d941338542f645fcca50094b20f3c3d8c3df49337928"
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "8452568af70d8d140f58d941338542f645fcca50094b20f3c3d8c3df49337928"
 		}
 	}
 
@@ -519,13 +521,13 @@ class TrieTest extends Specification {
 			val trie = new TrieImpl(mockDb)
 			trie.update("doe", "reindeer")
 			trie.sync()
-			Hex.encodeHexString(trie.rootHash) mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
+			trie.rootHash.toHexString mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
 
 			trie.update("dog", "puppy")
-			Hex.encodeHexString(trie.rootHash) mustEqual "05ae693aac2107336a79309e0c60b24a7aac6aa3edecaef593921500d33c63c4"
+			trie.rootHash.toHexString mustEqual "05ae693aac2107336a79309e0c60b24a7aac6aa3edecaef593921500d33c63c4"
 
 			trie.undo()
-			Hex.encodeHexString(trie.rootHash) mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
+			trie.rootHash.toHexString mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
 		}
 	}
 
@@ -538,7 +540,7 @@ class TrieTest extends Specification {
 
 			trie1.hashCode mustNotEqual trie2.hashCode
 			trie1 mustEqual trie2
-			Hex.encodeHexString(trie1.rootHash) mustEqual Hex.encodeHexString(trie2.rootHash)
+			trie1.rootHash.toHexString mustEqual trie2.rootHash.toHexString
 		}
 	}
 
@@ -563,7 +565,7 @@ class TrieTest extends Specification {
 					trie.update(word1, word2)
 					testerMap.put(word1, word2)
 
-					val retrieved = new String(trie.get(word1))
+					val retrieved = trie.get(word1).asString(StandardCharsets.UTF_8)
 					retrieved mustEqual word2
 					println("Updated: [%d] %s -> %s".format(i, word1, retrieved))
 				}
@@ -575,7 +577,7 @@ class TrieTest extends Specification {
 					trie.delete(word1)
 					testerMap.remove(word1)
 
-					val retrieved = new String(trie.get(word1))
+					val retrieved = trie.get(word1).asString(StandardCharsets.UTF_8)
 					retrieved mustEqual ""
 					println("Deleted: [%d] %s".format(i, word1))
 				}
@@ -590,7 +592,7 @@ class TrieTest extends Specification {
 			testerMap.foreach {
 				entry => {
 					println("[%d] %s -> %s".format(i, entry._1, entry._2))
-					val trieWord2 = new String(trie.get(entry._1))
+					val trieWord2 = trie.get(entry._1).asString(StandardCharsets.UTF_8)
 					trieWord2 mustEqual entry._2
 					i += 1
 				}

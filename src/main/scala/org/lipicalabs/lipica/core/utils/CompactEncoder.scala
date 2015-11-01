@@ -75,6 +75,35 @@ object CompactEncoder {
 		buffer.toByteArray
 	}
 
+	def packNibbles(aNibbles: ImmutableBytes): ImmutableBytes = {
+		val (terminator, nibbles) =
+			if (aNibbles(aNibbles.length - 1) == TERMINATOR) {
+				(1, aNibbles.copyOf(aNibbles.length - 1))
+			} else {
+				(0, aNibbles)
+			}
+
+		val oddlen = nibbles.length % 2
+		//上位ビットが終端記号の有無、下位ビットが奇数か否か。
+		val flag = 2 * terminator + oddlen
+		val concatenated =
+			if (oddlen != 0) {
+				//フラグ分１バイトを足して偶数長にする。
+				ImmutableBytes(Array[Byte](flag.toByte)) ++ nibbles
+			} else {
+				//フラグ分＋パディングの合計２バイトを足して偶数長にする。
+				ImmutableBytes(Array[Byte](flag.toByte, 0)) ++ nibbles
+			}
+		val buffer = new ByteArrayOutputStream
+		var i = 0
+		while (i < concatenated.length) {
+			//２バイトを１バイトに詰め込む。
+			buffer.write(16 * concatenated(i) + concatenated(i + 1))
+			i += 2
+		}
+		ImmutableBytes(buffer)
+	}
+
 	/**
 	 * packNibbles の逆操作を実行して結果を返します。
 	 *
@@ -97,12 +126,32 @@ object CompactEncoder {
 		}
 	}
 
+	def unpackToNibbles(bytes: ImmutableBytes): ImmutableBytes = {
+		val base = binToNibbles(bytes)
+		var result = base.copyOf(base.length - 1)
+		if (2 <= result(0)) {
+			//終端付きである。
+			result = result :+ TERMINATOR
+		}
+		if (result(0) % 2 == 1) {
+			//奇数長であった。
+			result.copyOfRange(1, result.length)
+		} else {
+			//偶数長であった。
+			result.copyOfRange(2, result.length)
+		}
+	}
+
 	/**
 	 * バイト列を、１ニブル（＝４ビット）１文字（＝１バイト）のバイト列に変換し、
 	 * 終端記号を付けて返します。
 	 * すなわち、バイト数は 2 * bytes.length + 1 に増大します。
 	 */
 	def binToNibbles(bytes: Array[Byte]): Array[Byte] = {
+		binToNibbles(bytes, withTerminator = true)
+	}
+
+	def binToNibbles(bytes: ImmutableBytes): ImmutableBytes = {
 		binToNibbles(bytes, withTerminator = true)
 	}
 
@@ -133,6 +182,26 @@ object CompactEncoder {
 			result(result.length - 1) = TERMINATOR
 		}
 		result
+	}
+
+	private def binToNibbles(bytes: ImmutableBytes, withTerminator: Boolean): ImmutableBytes = {
+		val hexChars = bytes.toHexString
+		val result =
+			if (withTerminator) {
+				new Array[Byte](hexChars.length + 1)
+			} else {
+				new Array[Byte](hexChars.length)
+			}
+		(0 until hexChars.length).foreach {
+			i => {
+				val c = hexChars(i)
+				result(i) = HEX_MAP.get(c).get
+			}
+		}
+		if (withTerminator) {
+			result(result.length - 1) = TERMINATOR
+		}
+		ImmutableBytes(result)
 	}
 
 }

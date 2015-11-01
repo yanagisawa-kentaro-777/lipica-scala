@@ -16,6 +16,30 @@ object ByteUtils {
 		}
 		result
 	}
+
+	def matchingLength(a: ImmutableBytes, b: Array[Byte]): Int = {
+		var result = 0
+		val len = a.length.min(b.length)
+		while (result < len) {
+			if (a(result) != b(result)) {
+				return result
+			}
+			result += 1
+		}
+		result
+	}
+
+	def matchingLength(a: ImmutableBytes, b: ImmutableBytes): Int = {
+		var result = 0
+		val len = a.length.min(b.length)
+		while (result < len) {
+			if (a(result) != b(result)) {
+				return result
+			}
+			result += 1
+		}
+		result
+	}
 	
 	/**
 	 * 渡されたバイト配列から、先頭の連続するゼロを除外した

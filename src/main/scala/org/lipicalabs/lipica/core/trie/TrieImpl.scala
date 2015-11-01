@@ -2,13 +2,10 @@ package org.lipicalabs.lipica.core.trie
 
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
-import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.RBACCodec.Encoder
-import org.lipicalabs.lipica.core.utils.{CompactEncoder, Value}
+import org.lipicalabs.lipica.core.utils._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{RBACCodec, ByteUtils, CompactEncoder, Value}
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -20,7 +17,6 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 
 	def this(_db: KeyValueDataSource) = this(_db, Value.empty)
 
-	import java.util.Arrays._
 	import TrieImpl._
 	import CompactEncoder._
 
@@ -37,12 +33,12 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	/**
 	 * 最上位レベルのハッシュ値を計算して返します。
 	 */
-	override def rootHash: Array[Byte] = {
+	override def rootHash: ImmutableBytes = {
 		computeHash(Right(this.root))
 	}
 
 	@tailrec
-	private def computeHash(obj: Either[Array[Byte], Value]): Array[Byte] = {
+	private def computeHash(obj: Either[ImmutableBytes, Value]): ImmutableBytes = {
 		obj match {
 			case null =>
 				EMPTY_TRIE_HASH
@@ -54,8 +50,8 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 					bytes
 				}
 			case Right(value) =>
-				if (value.isBytes) {
-					computeHash(Left(value.asBytes))
+				if (value.isBytes || value.isImmutableBytes) {
+					computeHash(Left(value.asImmutableBytes))
 				} else {
 					value.sha3
 				}
@@ -77,24 +73,24 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	/**
 	 * key 文字列に対応する値を取得して返します。
 	 */
-	def get(key: String): Array[Byte] = get(key.getBytes(StandardCharsets.UTF_8))
+	def get(key: String): ImmutableBytes = get(ImmutableBytes(key.getBytes(StandardCharsets.UTF_8)))
 
 	/**
 	 * key に対応する値を取得して返します。
 	 */
-	override def get(key: Array[Byte]): Array[Byte] = {
+	override def get(key: ImmutableBytes): ImmutableBytes = {
 		if (logger.isDebugEnabled) {
-			logger.debug("Retrieving key [%s]".format(Hex.encodeHexString(key)))
+			logger.debug("Retrieving key [%s]".format(key.toHexString))
 		}
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val convertedKey = binToNibbles(key)
 		//ルートノード以下の全体を探索する。
 		val found = get(this.root, convertedKey)
-		found.asBytes
+		found.asImmutableBytes
 	}
 
 	@tailrec
-	private def get(node: Value, key: Array[Byte]): Value = {
+	private def get(node: Value, key: ImmutableBytes): Value = {
 		if (key.isEmpty || isEmptyNode(node)) {
 			//キーが消費し尽くされているか、ノードに子孫がいない場合、そのノードを返す。
 			return node
@@ -102,17 +98,17 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		val currentNode = valueOf(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//このノードのキーを長ったらしい表現に戻す。
-			val k = unpackToNibbles(currentNode.get(0).get.asBytes)
+			val k = unpackToNibbles(currentNode.get(0).get.asImmutableBytes)
 			//値を読み取る。
 			val v = currentNode.get(1).get
-			if ((k.length <= key.length) && (k sameElements copyOfRange(key, 0, k.length))) {
+			if ((k.length <= key.length) && key.copyOfRange(0, k.length) == k) {
 				if (key.length == k.length) {
 					//完全一致！
 					return v
 				}
 				//このノードのキーが、指定されたキーの接頭辞である。
 				//子孫を再帰的に探索する。
-				get(v, copyOfRange(key, k.length, key.length))
+				get(v, key.copyOfRange(k.length, key.length))
 			} else {
 				//このノードは、指定されたキーの接頭辞ではない。
 				//つまり、要求されたキーに対応する値は存在しない。
@@ -122,7 +118,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 			//このノードは、17要素の通常ノードである。
 			//子孫をたどり、キーを１ニブル消費して探索を継続する。
 			val child = currentNode.get(key(0)).get
-			get(child, copyOfRange(key, 1, key.length))
+			get(child, key.copyOfRange(1, key.length))
 		}
 	}
 
@@ -130,30 +126,30 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	 * key文字列 対応するエントリを削除します。
 	 */
 	def delete(key: String): Unit = {
-		delete(key.getBytes(StandardCharsets.UTF_8))
+		delete(ImmutableBytes(key.getBytes(StandardCharsets.UTF_8)))
 	}
 
 	/**
 	 * 指定されたkeyに対応するエントリを削除します。
 	 */
-	override def delete(key: Array[Byte]): Unit = {
-		update(key, Array.emptyByteArray)
+	override def delete(key: ImmutableBytes): Unit = {
+		update(key, ImmutableBytes.empty)
 	}
 
 	/**
 	 * key文字列 に対して値文字列を関連付けます。
 	 */
 	def update(key: String, value: String): Unit = {
-		update(key.getBytes(StandardCharsets.UTF_8), value.getBytes(StandardCharsets.UTF_8))
+		update(ImmutableBytes(key.getBytes(StandardCharsets.UTF_8)), ImmutableBytes(value.getBytes(StandardCharsets.UTF_8)))
 	}
 
 	/**
 	 * key に対して値を関連付けます。
 	 */
-	override def update(key: Array[Byte], value: Array[Byte]): Unit = {
+	override def update(key: ImmutableBytes, value: ImmutableBytes): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("Updating [%s] -> [%s]".format(Hex.encodeHexString(key), Hex.encodeHexString(value)))
-			logger.debug("Old root-hash: %s".format(Hex.encodeHexString(rootHash)))
+			logger.debug("Updating [%s] -> [%s]".format(key.toHexString, value.toHexString))
+			logger.debug("Old root-hash: %s".format(rootHash.toHexString))
 		}
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val nibbleKey = binToNibbles(key)
@@ -161,12 +157,12 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		//ルート要素を更新する。
 		root(result)
 		if (logger.isDebugEnabled) {
-			logger.debug("Updated [%s] -> [%s]".format(Hex.encodeHexString(key), Hex.encodeHexString(value)))
-			logger.debug("New root-hash: %s".format(Hex.encodeHexString(rootHash)))
+			logger.debug("Updated [%s] -> [%s]".format(key.toHexString, value.toHexString))
+			logger.debug("New root-hash: %s".format(rootHash.toHexString))
 		}
 	}
 
-	private def insertOrDelete(node: Value, key: Array[Byte], value: Array[Byte]): Value = {
+	private def insertOrDelete(node: Value, key: ImmutableBytes, value: ImmutableBytes): Value = {
 		if (value.nonEmpty) {
 			insert(node, key, Value.fromObject(value))
 		} else {
@@ -177,7 +173,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	/**
 	 * キーに対応する値を登録します。
 	 */
-	private def insert(node: Value, key: Array[Byte], value: Value): Value = {
+	private def insert(node: Value, key: ImmutableBytes, value: Value): Value = {
 		if (key.isEmpty) {
 			//終端記号すらない空バイト列ということは、
 			//再帰的な呼び出しによってキーが消費しつくされたということ。
@@ -192,7 +188,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		val currentNode = valueOf(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
-			val packedKey = currentNode.get(0).get.asBytes
+			val packedKey = currentNode.get(0).get.asImmutableBytes
 			//キーを長ったらしい表現に戻す。
 			val k = unpackToNibbles(packedKey)
 			//値を取得する。
@@ -201,16 +197,16 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 			val createdNode =
 				if (matchingLength == k.length) {
 					//既存ノードのキー全体が、新たなキーの接頭辞になっている。
-					val remainingKeyPart = copyOfRange(key, matchingLength, key.length)
+					val remainingKeyPart = key.copyOfRange(matchingLength, key.length)
 					//子孫を作る。
 					insert(v, remainingKeyPart, value)
 				} else {
 					//既存ノードのキーの途中で分岐がある。
 					//2要素のショートカットノードを、17要素の通常ノードに変換する。
 					//従来の要素。
-					val oldNode = insert(Value.empty, copyOfRange(k, matchingLength + 1, k.length), v)
+					val oldNode = insert(Value.empty, k.copyOfRange(matchingLength + 1, k.length), v)
 					//追加された要素。
-					val newNode = insert(Value.empty, copyOfRange(key, matchingLength + 1, key.length), value)
+					val newNode = insert(Value.empty, key.copyOfRange(matchingLength + 1, key.length), value)
 					//異なる最初のニブルに対応するノードを記録して、分岐させる。
 					val scaledSlice = emptyValueSlice(LIST_SIZE)
 					scaledSlice(k(matchingLength)) = oldNode
@@ -223,14 +219,14 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 				createdNode
 			} else {
 				//このノードと今作られたノードとをつなぐノードを作成する。
-				val bridgeNode = Seq(packNibbles(copyOfRange(key, 0, matchingLength)), createdNode)
+				val bridgeNode = Seq(packNibbles(key.copyOfRange(0, matchingLength)), createdNode)
 				putToCache(Value.fromObject(bridgeNode))
 			}
 		} else {
 			//もともと17要素の通常ノードである。
 			val newNode = copyNode(currentNode)
 			//普通にノードを更新して、保存する。
-			newNode(key(0)) = insert(currentNode.get(key(0)).get, copyOfRange(key, 1, key.length), value)
+			newNode(key(0)) = insert(currentNode.get(key(0)).get, key.copyOfRange(1, key.length), value)
 			putToCache(Value.fromObject(newNode.toSeq))
 		}
 	}
@@ -238,7 +234,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	/**
 	 * キーに対応するエントリーを削除します。
 	 */
-	private def delete(node: Value, key: Array[Byte]): Value = {
+	private def delete(node: Value, key: ImmutableBytes): Value = {
 		if (key.isEmpty || isEmptyNode(node)) {
 			//何もしない。
 			return Value.empty
@@ -247,22 +243,22 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
 			//長ったらしい表現に戻す。
-			val packedKey = currentNode.get(0).get.asBytes
+			val packedKey = currentNode.get(0).get.asImmutableBytes
 			val k = unpackToNibbles(packedKey)
 
-			if (k sameElements key) {
+			if (k == key) {
 				//ぴたり一致。 これが削除対象である。
 				Value.empty
-			} else if (k sameElements copyOfRange(key, 0, k.length)) {
+			} else if (k == key.copyOfRange(0, k.length)) {
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
-				val deleteResult = delete(currentNode.get(1).get, copyOfRange(key, k.length, key.length))
+				val deleteResult = delete(currentNode.get(1).get, key.copyOfRange(k.length, key.length))
 				val newChild = valueOf(deleteResult)
 				val newNode =
 					if (newChild.length == PAIR_SIZE) {
 						//削除で発生する跳躍をつなぐ。
 						//この操作こそが、削除そのものである。
-						val newKey = k ++ unpackToNibbles(newChild.get(0).get.asBytes)
+						val newKey = k ++ unpackToNibbles(newChild.get(0).get.asImmutableBytes)
 						Seq(packNibbles(newKey), newChild.get(1).get)
 					} else {
 						Seq(packedKey, deleteResult)
@@ -276,7 +272,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 			//もともと17要素の通常ノードである。
 			val items = copyNode(currentNode)
 			//再帰的に削除する。
-			val newChild = delete(items(key(0)), copyOfRange(key, 1, key.length))
+			val newChild = delete(items(key(0)), key.copyOfRange(1, key.length))
 			//新たな子供をつなぎ直す。これが削除操作の本体である。
 			items(key(0)) = newChild
 
@@ -286,16 +282,16 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 					//値以外は、すべてのキーが空白である。
 					//すなわち、このノードには子はいない。
 					//したがって、「終端記号 -> 値」のショートカットノードを生成する。
-					Seq(packNibbles(Array[Byte](TERMINATOR)), items(idx))
+					Seq(packNibbles(ImmutableBytes.fromOneByte(TERMINATOR)), items(idx))
 				} else if (0 <= idx) {
 					//１ノードだけ子供がいて、このノードには値がない。
 					//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
 					val child = valueOf(items(idx))
 					if (child.length == PAIR_SIZE) {
-						val concat = Array[Byte](idx.toByte) ++ unpackToNibbles(child.get(0).get.asBytes)
+						val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.get(0).get.asImmutableBytes)
 						Seq(packNibbles(concat), child.get(1).get)
 					} else if (child.length == LIST_SIZE) {
-						Seq(packNibbles(Array[Byte](idx.toByte)), items(idx))
+						Seq(packNibbles(ImmutableBytes.fromOneByte(idx.toByte)), items(idx))
 					}
 				} else {
 					//２ノード以上子供がいるか、子どもと値がある。
@@ -344,10 +340,10 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	}
 
 	private def valueOf(value: Value): Value = {
-		if (!value.isBytes) {
+		if (!value.isBytes && !value.isImmutableBytes) {
 			return value
 		}
-		val keyBytes = value.asBytes
+		val keyBytes = value.asImmutableBytes
 		if (keyBytes.isEmpty) {
 			value
 		} else if (keyBytes.length < 32) {
@@ -371,7 +367,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		}
 	}
 
-	private def emptyValueSlice(i: Int): Array[Any] = {
+	private def emptyValueSlice(i: Int): Array[Value] = {
 		(0 until i).map(_ => Value.empty).toArray
 	}
 
@@ -408,7 +404,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 
 	override def equals(o: Any): Boolean = {
 		o match {
-			case another: Trie => this.rootHash sameElements another.rootHash
+			case another: Trie => this.rootHash == another.rootHash
 			case _ => false
 		}
 	}
@@ -420,5 +416,5 @@ object TrieImpl {
 	private val PAIR_SIZE = 2.toByte
 	private val LIST_SIZE = 17.toByte
 
-	private val EMPTY_TRIE_HASH = DigestUtils.sha3(Encoder.encode(Array.empty[Byte]))
+	private val EMPTY_TRIE_HASH = ImmutableBytes(DigestUtils.sha3(Encoder.encode(Array.empty[Byte])))
 }

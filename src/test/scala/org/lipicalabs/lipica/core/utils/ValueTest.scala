@@ -21,7 +21,7 @@ class ValueTest extends Specification {
 			value.value mustEqual 0
 			value.decode mustEqual 0
 			(value.encode sameElements Array(0x80.asInstanceOf[Byte])) mustEqual true
-			Hex.encodeHexString(value.hash) mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+			value.hash.toHexString mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 		}
 	}
 
@@ -31,7 +31,7 @@ class ValueTest extends Specification {
 			value.value.asInstanceOf[Array[Byte]] sameElements Array(0.asInstanceOf[Byte])
 			value.decode.asInstanceOf[Array[Byte]] sameElements Array(0.asInstanceOf[Byte])
 			(value.encode sameElements Array(0x80.asInstanceOf[Byte])) mustEqual true
-			Hex.encodeHexString(value.hash) mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+			value.hash.toHexString mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 		}
 	}
 

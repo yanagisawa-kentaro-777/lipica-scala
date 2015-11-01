@@ -4,16 +4,16 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{Value, ByteArrayWrapper}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, Value}
 import org.slf4j.LoggerFactory
 
 class Cache(_dataSource: KeyValueDataSource) {
 	import Cache._
 	import scala.collection.JavaConversions._
 
-	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[ByteArrayWrapper, CachedNode])
+	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, CachedNode])
 
-	def getNodes: Map[ByteArrayWrapper, CachedNode] = this.nodes.toMap
+	def getNodes: Map[ImmutableBytes, CachedNode] = this.nodes.toMap
 
 	private val dataSourceRef = new AtomicReference(_dataSource)
 	def dataSource: KeyValueDataSource = this.dataSourceRef.get
@@ -24,7 +24,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 		this.isDirtyRef.set(value)
 	}
 
-	private[trie] def privatePut(key: ByteArrayWrapper, value: CachedNode): Unit = {
+	private[trie] def privatePut(key: ImmutableBytes, value: CachedNode): Unit = {
 		this.nodes.put(key, value)
 	}
 
@@ -32,14 +32,14 @@ class Cache(_dataSource: KeyValueDataSource) {
 	 * 渡されたオブジェクトのエンコードされた表現が、
 	 * 32バイト（＝256ビット）よりも長ければ、キャッシュに保存します。
 	 */
-	def put(value: Value): Either[Value, Array[Byte]] = {
+	def put(value: Value): Either[Value, ImmutableBytes] = {
 		val encoded = value.encode
 		if (32 <= encoded.length) {
 			val hash = value.sha3
 			if (logger.isTraceEnabled) {
-				logger.trace("<Cache> Putting: %s (%s): %s".format(Hex.encodeHexString(encoded), Hex.encodeHexString(hash), value))
+				logger.trace("<Cache> Putting: %s (%s): %s".format(Hex.encodeHexString(encoded), hash.toHexString, value))
 			}
-			this.nodes.put(wrap(hash), new CachedNode(value, _dirty = true))
+			this.nodes.put(hash, new CachedNode(value, _dirty = true))
 			this.setDirty(true)
 			Right(hash)
 		} else {
@@ -47,9 +47,8 @@ class Cache(_dataSource: KeyValueDataSource) {
 		}
 	}
 
-	def get(key: Array[Byte]): CachedNode = {
-		val wrappedKey = wrap(key)
-		this.nodes.get(wrappedKey) match {
+	def get(key: ImmutableBytes): CachedNode = {
+		this.nodes.get(key) match {
 			case Some(node) =>
 				//キャッシュされている。
 				node
@@ -57,22 +56,21 @@ class Cache(_dataSource: KeyValueDataSource) {
 				//キャッシュされていないのでデータソースから読み取る。
 				val data =
 					if (!existsDataSource) {
-						Array.empty[Byte]
+						ImmutableBytes.empty
 					} else {
-						this.dataSource.get(key).getOrElse(Array.empty[Byte])
+						this.dataSource.get(key).getOrElse(ImmutableBytes.empty)
 					}
 				val node = new CachedNode(Value.fromEncodedBytes(data), _dirty = false)
 				if (logger.isTraceEnabled) {
-					logger.trace("<Cache> Read: %s -> %s -> %s".format(wrappedKey, Hex.encodeHexString(data), node.nodeValue.asObj))
+					logger.trace("<Cache> Read: %s -> %s -> %s".format(key, data.toHexString, node.nodeValue.asObj))
 				}
-				this.nodes.put(wrappedKey, node)
+				this.nodes.put(key, node)
 				node
 		}
 	}
 
-	def delete(key: Array[Byte]): Unit = {
-		val wrappedKey = wrap(key)
-		this.nodes.remove(wrappedKey)
+	def delete(key: ImmutableBytes): Unit = {
+		this.nodes.remove(key)
 
 		Option(this.dataSource).foreach {
 			_.delete(key)
@@ -90,15 +88,14 @@ class Cache(_dataSource: KeyValueDataSource) {
 				val node = entry.getValue
 				node.isDirty(false)
 
-				val key = nodeKey.data
-				val value = node.nodeValue.encode
+				val value = ImmutableBytes(node.nodeValue.encode)
 
-				totalBytes += (key.length + value.length)
+				totalBytes += (nodeKey.length + value.length)
 
 				if (logger.isTraceEnabled) {
-					logger.trace("<Cache> Committing: %s -> %s -> %s".format(nodeKey, Hex.encodeHexString(value), node.nodeValue.asObj))
+					logger.trace("<Cache> Committing: %s -> %s -> %s".format(nodeKey, value.toHexString, node.nodeValue.asObj))
 				}
-				key -> value
+				nodeKey -> value
 			}
 		}.toMap
 		//保存する。
@@ -122,13 +119,13 @@ class Cache(_dataSource: KeyValueDataSource) {
 		if (this.dataSource eq aDataSource) {
 			return
 		}
-		val rows =
+		val rows: Set[(ImmutableBytes, ImmutableBytes)] =
 			if (!existsDataSource) {
 				this.nodes.entrySet().withFilter(entry => !entry.getValue.isDirty).map {
 					entry => {
-						entry.getKey.data -> entry.getValue.nodeValue.encode
+						entry.getKey -> ImmutableBytes(entry.getValue.nodeValue.encode)
 					}
-				}
+				}.toSet
 			} else {
 				try {
 					this.dataSource.keys.map(eachKey => eachKey -> this.dataSource.get(eachKey).get)
@@ -148,6 +145,4 @@ class Cache(_dataSource: KeyValueDataSource) {
 
 object Cache {
 	private val logger = LoggerFactory.getLogger(getClass)
-
-	private def wrap(bytes: Array[Byte]): ByteArrayWrapper = ByteArrayWrapper(bytes)
 }

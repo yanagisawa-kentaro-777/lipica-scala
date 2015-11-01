@@ -3,6 +3,7 @@ Program
 VM
 
 ImmutableBytesの普及。（trie方面）
+ImmutableBytesの普及。（Value方面）
 get や set のメソッド名。
 
 AccountStateのモデル。

@@ -1,24 +1,22 @@
 package org.lipicalabs.lipica.core.datasource
 
-import org.lipicalabs.lipica.core.utils.ByteArrayWrapper
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 
 class HashMapDB extends KeyValueDataSource {
 
-	private[datasource] val storage = new scala.collection.mutable.HashMap[ByteArrayWrapper, Array[Byte]]
+	private[datasource] val storage = new scala.collection.mutable.HashMap[ImmutableBytes, ImmutableBytes]
 
-	private def wrap(data: Array[Byte]): ByteArrayWrapper = ByteArrayWrapper(data)
-
-	override def delete(arg0: Array[Byte]): Unit = {
-		storage.remove(wrap(arg0))
+	override def delete(arg0: ImmutableBytes): Unit = {
+		storage.remove(arg0)
 	}
 
-	override def get(arg0: Array[Byte]): Option[Array[Byte]] = {
-		storage.get(wrap(arg0))
+	override def get(arg0: ImmutableBytes): Option[ImmutableBytes] = {
+		storage.get(arg0)
 	}
 
-	override def put(key: Array[Byte], value: Array[Byte]): Option[Array[Byte]] = {
-		storage.put(wrap(key), value)
+	override def put(key: ImmutableBytes, value: ImmutableBytes): Option[ImmutableBytes] = {
+		storage.put(key, value)
 	}
 
 	def getAddedItems: Int = {
@@ -39,13 +37,13 @@ class HashMapDB extends KeyValueDataSource {
 		"in-memory"
 	}
 
-	override def keys: Set[Array[Byte]] = {
-		this.storage.keySet.map(_.data).toSet
+	override def keys: Set[ImmutableBytes] = {
+		this.storage.keySet.toSet
 	}
 
-	override def updateBatch(rows: Map[Array[Byte], Array[Byte]]) {
+	override def updateBatch(rows: Map[ImmutableBytes, ImmutableBytes]) {
 		rows.foreach {
-			entry => storage.put(wrap(entry._1), entry._2)
+			entry => storage.put(entry._1, entry._2)
 		}
 	}
 
