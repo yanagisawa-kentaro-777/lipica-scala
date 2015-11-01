@@ -12,4 +12,3 @@ db.ContractDetails -> Storage。
 
 trieを完成させる。（TODOもなくす。）
 
-自動テスト。

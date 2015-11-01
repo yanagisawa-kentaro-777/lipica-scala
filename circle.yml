@@ -4,8 +4,12 @@ general:
   artifacts:
     - "target/scala-2.11/coverage-report"
 
+dependencies:
+  override:
+    - "sbt clean coverage"
+
 test:
   override:
-    - "sbt clean coverage test"
+    - "sbt test"
   post:
     - "sbt coveralls"

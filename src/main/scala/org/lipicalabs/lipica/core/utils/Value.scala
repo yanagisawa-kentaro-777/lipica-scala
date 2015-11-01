@@ -180,6 +180,8 @@ class PlainValue private[utils](_value: Any) extends Value {
 	def asLong: Long = {
 		if (isLong) {
 			value.asInstanceOf[Long]
+		} else if (isInt) {
+			value.asInstanceOf[Int].toLong
 		} else if (isBytes) {
 			BigInt(1, asBytes).longValue()
 		} else if (isImmutableBytes) {
@@ -196,6 +198,10 @@ class PlainValue private[utils](_value: Any) extends Value {
 			BigInt(1, asBytes)
 		} else if (isImmutableBytes) {
 			asImmutableBytes.toPositiveBigInt
+		} else if (isLong) {
+			BigInt(asLong)
+		} else if (isInt) {
+			BigInt(asInt)
 		} else {
 			BigInt(0L)
 		}

@@ -38,9 +38,15 @@ class ValueTest extends Specification {
 				val value = Value.fromObject(i)
 				value.value mustEqual i
 				value.isInt mustEqual true
+				value.asInt mustEqual i
+				value.asLong mustEqual i.toLong
+				value.asBigInt.longValue mustEqual i.toLong
 				val encoded = value.encodedBytes
 				val rebuiltValue = Value.fromEncodedBytes(encoded)
+				rebuiltValue.isInt mustEqual false
 				rebuiltValue.asInt mustEqual i
+				rebuiltValue.asLong mustEqual i.toLong
+				rebuiltValue.asBigInt.longValue mustEqual i.toLong
 			}}
 			ok
 		}
