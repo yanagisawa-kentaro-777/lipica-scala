@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 
 import scala.annotation.tailrec
 
@@ -13,7 +12,7 @@ import scala.annotation.tailrec
  * また一度計算された値を再計算しなくて済むようにキャッシュするための、
  * 値ラッパークラスです。
  */
-class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array[Byte]]) {
+class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[ImmutableBytes]) {
 
 	/**
 	 * 値。
@@ -72,10 +71,10 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 		this.valueOptionRef.get.orNull
 	}
 
-	def encode: Array[Byte] = {
+	def encode: ImmutableBytes = {
 		if (this.encodedBytesOptionRef.get.isEmpty) {
 			val encoded = RBACCodec.Encoder.encode(value)
-			this.encodedBytesOptionRef.set(Some(encoded))
+			this.encodedBytesOptionRef.set(Some(ImmutableBytes(encoded)))
 		}
 		this.encodedBytesOptionRef.get.get
 	}
@@ -83,7 +82,7 @@ class Value private(_valueOption: Option[Any], _encodedBytesOption: Option[Array
 	def hash: ImmutableBytes = {
 		if (this.sha3OptionRef.get.isEmpty) {
 			val encoded = encode
-			val sha3 = ImmutableBytes(DigestUtils.sha3(encoded))
+			val sha3 = encoded.sha3
 			this.sha3OptionRef.set(Some(sha3))
 		}
 		this.sha3OptionRef.get.get
@@ -282,12 +281,12 @@ object Value {
 		}
 	}
 
-	def fromEncodedBytes(encodedBytes: Array[Byte]): Value = {
-		new Value(None, Option(encodedBytes))
-	}
+//	def fromEncodedBytes(encodedBytes: Array[Byte]): Value = {
+//		new Value(None, Option(encodedBytes))
+//	}
 
 	def fromEncodedBytes(encodedBytes: ImmutableBytes): Value = {
-		new Value(None, Option(encodedBytes.toByteArray))
+		new Value(None, Option(encodedBytes))
 	}
 
 	val empty = fromObject(Array.emptyByteArray)

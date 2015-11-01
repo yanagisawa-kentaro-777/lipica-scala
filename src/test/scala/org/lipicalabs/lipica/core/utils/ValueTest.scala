@@ -27,7 +27,7 @@ class ValueTest extends Specification {
 
 	"instance creation (2)" should {
 		"be right" in {
-			val value = Value.fromEncodedBytes(Array(0x80.asInstanceOf[Byte]))
+			val value = Value.fromEncodedBytes(ImmutableBytes.fromOneByte(0x80.asInstanceOf[Byte]))
 			value.value.asInstanceOf[Array[Byte]] sameElements Array(0.asInstanceOf[Byte])
 			value.decode.asInstanceOf[Array[Byte]] sameElements Array(0.asInstanceOf[Byte])
 			(value.encode sameElements Array(0x80.asInstanceOf[Byte])) mustEqual true

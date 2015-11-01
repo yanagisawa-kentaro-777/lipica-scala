@@ -2,7 +2,6 @@ package org.lipicalabs.lipica.core.trie
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
-import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, Value}
 import org.slf4j.LoggerFactory
@@ -37,7 +36,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 		if (32 <= encoded.length) {
 			val hash = value.sha3
 			if (logger.isTraceEnabled) {
-				logger.trace("<Cache> Putting: %s (%s): %s".format(Hex.encodeHexString(encoded), hash.toHexString, value))
+				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, value))
 			}
 			this.nodes.put(hash, new CachedNode(value, _dirty = true))
 			this.setDirty(true)
@@ -88,7 +87,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 				val node = entry.getValue
 				node.isDirty(false)
 
-				val value = ImmutableBytes(node.nodeValue.encode)
+				val value = node.nodeValue.encode
 
 				totalBytes += (nodeKey.length + value.length)
 
@@ -123,7 +122,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 			if (!existsDataSource) {
 				this.nodes.entrySet().withFilter(entry => !entry.getValue.isDirty).map {
 					entry => {
-						entry.getKey -> ImmutableBytes(entry.getValue.nodeValue.encode)
+						entry.getKey -> entry.getValue.nodeValue.encode
 					}
 				}.toSet
 			} else {
