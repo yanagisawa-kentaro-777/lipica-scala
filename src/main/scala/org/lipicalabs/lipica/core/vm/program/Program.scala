@@ -6,7 +6,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
-import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
+import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactory, ProgramInvokeFactoryImpl, ProgramInvoke}
 import org.lipicalabs.lipica.core.vm.program.listener.{CompositeProgramListener, ProgramListenerAware}
 import org.slf4j.LoggerFactory
 
@@ -34,6 +34,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	val result = new ProgramResult
 	val trace = new ProgramTrace(invoke)
 
+	private val programInvokeFactory: ProgramInvokeFactory = new ProgramInvokeFactoryImpl
 
 	/**
 	 * JUMPDEST命令がある箇所の索引。
@@ -55,7 +56,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		traceListenerAware
 	}
 
-	private def getCallDeep: Int = this.invoke.getCallDeep
+	def getCallDeep: Int = this.invoke.getCallDeep
 
 	private def addInternalTx(nonce: ImmutableBytes, manaLimit: DataWord, senderAddress: ImmutableBytes, receiveAddress: ImmutableBytes, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
 		if (this.transaction ne null) {
@@ -271,7 +272,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		//実行する。
 		val internalTx = addInternalTx(nonce, getManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
 		//TODO 未実装！！！
-		val programInvoke: ProgramInvoke = null// programInfokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.getBlockStore, byTestingSuite)
+		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.getBlockStore, byTestingSuite)
 
 		val programResult =
 			if (programCode.nonEmpty) {
@@ -387,8 +388,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		val programResultOption =
 			if (programCode.nonEmpty) {
-				//TODO 未実装！！！
-				val programInvoke: ProgramInvoke = null; //programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.getBlockStore, byTestingSuite)
+				val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.getBlockStore, byTestingSuite)
 
 				val vm = new VM
 				val program = new Program(programCode, programInvoke, internalTx)

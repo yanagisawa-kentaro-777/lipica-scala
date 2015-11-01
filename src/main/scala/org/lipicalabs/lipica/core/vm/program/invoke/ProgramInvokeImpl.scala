@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program.invoke
 
 import org.lipicalabs.lipica.core.base.Repository
 import org.lipicalabs.lipica.core.db.BlockStore
-import org.lipicalabs.lipica.core.utils.ByteUtils
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -19,7 +19,7 @@ class ProgramInvokeImpl private(
 	private val manaPrice: DataWord,
 	private val mana: DataWord,
 	private val callValue: DataWord,
-	private val messageData: Array[Byte],
+	private val messageData: ImmutableBytes,
 	//最終ブロックに関する情報。
 	private val prevHash: DataWord,
 	private val coinbase: DataWord,
@@ -153,7 +153,7 @@ object ProgramInvokeImpl {
 		manaPrice: DataWord,
 		mana: DataWord,
 		callValue: DataWord,
-		messageData: Array[Byte],
+		messageData: ImmutableBytes,
 		prevHash: DataWord,
 		coinbase: DataWord,
 		timestamp: DataWord,
@@ -173,19 +173,19 @@ object ProgramInvokeImpl {
 	}
 
 	def apply(
-		address: Array[Byte],
-		origin: Array[Byte],
-		caller: Array[Byte],
-		balance: Array[Byte],
-		manaPrice: Array[Byte],
-		mana: Array[Byte],
-		callValue: Array[Byte],
-		messageData: Array[Byte],
-		prevHash: Array[Byte],
-		coinbase: Array[Byte],
+		address: ImmutableBytes,
+		origin: ImmutableBytes,
+		caller: ImmutableBytes,
+		balance: ImmutableBytes,
+		manaPrice: ImmutableBytes,
+		mana: ImmutableBytes,
+		callValue: ImmutableBytes,
+		messageData: ImmutableBytes,
+		prevHash: ImmutableBytes,
+		coinbase: ImmutableBytes,
 		timestamp: Long,
-		number: Int,
-		difficulty: Array[Byte],
+		number: Long,
+		difficulty: ImmutableBytes,
 		manaLimit: Long,
 		repository: Repository,
 		blockStore: BlockStore,
