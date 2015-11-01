@@ -34,12 +34,14 @@ publishMavenStyle in ThisBuild := true
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 
+//import org.scoverage.coveralls.Imports.CoverallsKeys._
 
+//coverallsToken := Some("")
 
 // プロジェクト定義。
 
-lazy val core =
-	(project in file("lipica-core"))
+lazy val root =
+	(project in file("."))
 		.settings(classDiagramSettings)
 		.settings(
 			name := "lipica-core",
@@ -62,10 +64,3 @@ lazy val core =
 			unmanagedJars in Test ++= Seq(file("./conf"))
 		)
 
-
-
-lazy val all =
-	(project in file(".")).
-		settings(
-			name := "lipica"
-		) aggregate(core)

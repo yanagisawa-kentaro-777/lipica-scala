@@ -5,3 +5,5 @@ http://www.todesking.com/blog/2014-11-18-scala-with-circleci-and-coveralls/
 https://github.com/scoverage/sbt-coveralls
 
 https://coveralls.io/
+
+sbt root/clean root/coverage root/test coveralls
