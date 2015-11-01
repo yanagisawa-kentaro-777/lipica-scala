@@ -39,10 +39,6 @@ publishMavenStyle in ThisBuild := true
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 
-//import org.scoverage.coveralls.Imports.CoverallsKeys._
-
-//coverallsToken := Some("")
-
 // プロジェクト定義。
 
 lazy val root =

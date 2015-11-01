@@ -8,10 +8,10 @@ general:
 # テスト準備コマンドを上書きしてScoverageに対応させる
 dependencies:
   override:
-    - "sbt coverage"
+    - "sbt root/coverage"
 
 test:
   override:
-    - "sbt test"
+    - "sbt root/test"
   post:
     - "sbt coveralls" # テスト終了後COVERALLSに結果送信
