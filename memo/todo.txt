@@ -4,12 +4,12 @@ Result
 Program
 VM
 
-ImmutableBytes‚Ì•‹yBitrie•û–Êj
+ImmutableBytesã®æ™®åŠã€‚ï¼ˆtrieæ–¹é¢ï¼‰
 
-AccountState‚Ìƒ‚ƒfƒ‹B
-Block‚Ìƒ‚ƒfƒ‹B
-db.ContractDetails -> StorageB
+AccountStateã®ãƒ¢ãƒ‡ãƒ«ã€‚
+Blockã®ãƒ¢ãƒ‡ãƒ«ã€‚
+db.ContractDetails -> Storageã€‚
 
-trie‚ðŠ®¬‚³‚¹‚éBiTODO‚à‚È‚­‚·Bj
+trieã‚’å®Œæˆã•ã›ã‚‹ã€‚ï¼ˆTODOã‚‚ãªãã™ã€‚ï¼‰
 
-Ž©“®ƒeƒXƒgB
+è‡ªå‹•ãƒ†ã‚¹ãƒˆã€‚

@@ -6,6 +6,8 @@ scalaVersion in ThisBuild := "2.11.6"
 
 scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature", "-encoding", "UTF-8", "-target:jvm-1.7")
 
+javacOptions in ThisBuild ++= Seq("-encoding", "UTF-8")
+
 // このプロジェクトの依存関係。
 // 外部ライブラリ。
 def commonsCodec = "commons-codec"          % "commons-codec"             % "1.9"
