@@ -6,10 +6,10 @@ general:
 
 dependencies:
   override:
-    - "sbt clean coverage"
+    - "sbt clean"
 
 test:
   override:
-    - "sbt test"
+    - "sbt coverage test"
   post:
     - "sbt coveralls"
