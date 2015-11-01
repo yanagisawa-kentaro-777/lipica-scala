@@ -56,7 +56,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		traceListenerAware
 	}
 
-	def getCallDeep: Int = this.invoke.getCallDeep
+	def getCallDepth: Int = this.invoke.getCallDepth
 
 	private def addInternalTx(nonce: ImmutableBytes, manaLimit: DataWord, senderAddress: ImmutableBytes, receiveAddress: ImmutableBytes, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
 		if (this.transaction ne null) {
@@ -66,7 +66,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 				} else {
 					nonce
 				}
-			this.result.addInternalTransaction(this.transaction.hash, getCallDeep, senderNonce, getManaPrice, manaLimit, senderAddress, receiveAddress, ImmutableBytes.asSignedByteArray(value), data, note)
+			this.result.addInternalTransaction(this.transaction.hash, getCallDepth, senderNonce, getManaPrice, manaLimit, senderAddress, receiveAddress, ImmutableBytes.asSignedByteArray(value), data, note)
 		} else {
 			null
 		}
@@ -220,7 +220,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	}
 
 	def createContract(value: DataWord, memStart: DataWord, memSize: DataWord): Unit = {
-		if (getCallDeep == MaxDepth) {
+		if (getCallDepth == MaxDepth) {
 			stackPushZero()
 			return
 		}
@@ -336,7 +336,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	 * ステートレスコールは、別のコントラクトに属するコールを、呼び出し元の文脈において呼び出します。
 	 */
 	def callToAddress(message: MessageCall): Unit = {
-		if (getCallDeep == MaxDepth) {
+		if (getCallDepth == MaxDepth) {
 			//スタックオーバーフロー。
 			stackPushZero()
 			refundMana(message.mana.longValue, "Call deep limit reached.")
@@ -443,7 +443,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	 * 実装済みのコントラクトを実行します。
 	 */
 	def callToPrecompiledAddress(message: MessageCall, contract: PrecompiledContract): Unit = {
-		if (getCallDeep == MaxDepth) {
+		if (getCallDepth == MaxDepth) {
 			//スタックの深さが限界。
 			stackPushZero()
 			this.refundMana(message.mana.longValue, "Call deep limit reached.")
@@ -579,7 +579,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	 */
 	def saveOpTrace(): Unit = {
 		if (this.pc < this.ops.length) {
-			this.trace.addOp(this.ops(this.pc), this.pc, getCallDeep, getMana, this.traceListener.resetActions())
+			this.trace.addOp(this.ops(this.pc), this.pc, getCallDepth, getMana, this.traceListener.resetActions())
 		}
 	}
 

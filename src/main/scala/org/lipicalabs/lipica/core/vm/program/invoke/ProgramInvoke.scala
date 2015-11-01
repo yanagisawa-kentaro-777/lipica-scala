@@ -63,7 +63,7 @@ trait ProgramInvoke {
 
 	def byTestingSuite: Boolean
 
-	def getCallDeep: Int
+	def getCallDepth: Int
 
 	def getRepository: Repository
 

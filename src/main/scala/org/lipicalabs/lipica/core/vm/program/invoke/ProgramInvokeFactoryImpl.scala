@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory
  */
 class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 
-	import ProgramInvokeFactoryImpl._
-
 	private var _blockChain: BlockChain = null
 	def blockChain_=(v: BlockChain): Unit = {
 		this._blockChain = v
@@ -63,7 +61,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val difficulty = program.getDifficulty
 		val blockManaLimit = program.getBlockManaLimit
 
-		ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDeep + 1, blockStore, byTestingSuite)
+		ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDepth + 1, blockStore, byTestingSuite)
 	}
 
 }
