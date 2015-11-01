@@ -231,8 +231,10 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	def occupiedBytes: Int = {
 		val idx = this.data.firstIndex(_ != 0)
 		if (idx < 0) {
+			//ゼロでないバイトがないのだから、占有されているバイトはゼロバイトである。
 			0
 		} else {
+			//ゼロでない最初のバイトから終端までが、専有されているバイトである。
 			NUM_BYTES - idx
 		}
 	}

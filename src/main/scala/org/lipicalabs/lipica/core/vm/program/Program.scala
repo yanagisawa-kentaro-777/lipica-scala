@@ -249,6 +249,8 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 	def memoryToString: String = this.memory.toString
 
 	//TODO fullTrace
+	//TODO stringify multiline
+	//TODO stringify(not used)
 
 	/**
 	 * 現在のプログラムカウンタにおける文脈情報を、
@@ -263,18 +265,37 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 	private def precompile(): Unit = {
 		var i = 0
 		while (i < this.ops.length) {
+			//オペコードを走査する。
 			OpCode.code(this.ops(i)).foreach {eachOp => {
 				if (eachOp == OpCode.JumpDest) {
-					//記憶しておく。
+					//この箇所を記憶しておく。
 					this.jumpDests = this.jumpDests + i
 				}
 				val code = eachOp.opcode.toInt
 				if ((OpCode.Push1.opcode.toInt <= code) && (code <= OpCode.Push32.opcode.toInt)) {
-					//Push対象は読み飛ばす。
+					//Push対象データは、読み飛ばす。
 					i += ((code - OpCode.Push1.opcode.toInt) + 1)
 				}
 				i += 1
 			}}
+		}
+	}
+
+	/**
+	 * 渡されたプログラムカウンタによって参照されるバイトコードが、
+	 * JUMPDEST命令であることを確認します。
+	 */
+	def verifyJumpDest(nextPC: DataWord): Either[RuntimeException, Int] = {
+		if (4 < nextPC.occupiedBytes) {
+			Left(Exception.badJumpDestination(-1))
+		}
+		//次のプログラムカウンタ（＝添字）によって引かれるバイトコードが
+		//JUMPDEST命令であることを確認する。
+		val next = nextPC.intValue
+		if (!this.jumpDests.contains(next)) {
+			Left(Exception.badJumpDestination(next))
+		} else {
+			Right(next)
 		}
 	}
 
@@ -312,6 +333,13 @@ object Program {
 		//
 	}
 
+	/**
+	 * JUMPもしくはJUMPI命令のジャンプ先が正当でない場合に発生する例外。
+	 */
+	class BadJumpDestinationException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+		//
+	}
+
 	object Exception {
 
 		def stackOverflow(allowedMaxSize: Int, requiredSize: Int): StackTooLargeException = {
@@ -320,6 +348,10 @@ object Program {
 
 		def tooSmallStack(expectedSize: Int, actualSize: Int): StackTooSmallException = {
 			new StackTooSmallException("Expected stack size=%,d; Actual stack Size=%,d;", expectedSize, actualSize)
+		}
+
+		def badJumpDestination(pc: Int): BadJumpDestinationException = {
+			new BadJumpDestinationException("Bad jump destination: %s.".format(pc))
 		}
 
 	}
