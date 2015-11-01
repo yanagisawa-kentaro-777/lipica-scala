@@ -1,10 +1,10 @@
 Trace
-Result
 
 Program
 VM
 
 ImmutableBytesの普及。（trie方面）
+CallCreate、LogInfo、InternalTransaction
 
 AccountStateのモデル。
 Blockのモデル。
