@@ -2,7 +2,6 @@
 Program
 VM
 
-Valueの根本的refactor。
 ImmutableBytesの普及。（Value方面）
 ImmutableBytes#toByteArray の排除。
 get や set のメソッド名。
