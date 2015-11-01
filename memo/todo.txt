@@ -2,8 +2,9 @@
 Program
 VM
 
-ImmutableBytesの普及。（trie方面）
+Valueの根本的refactor。
 ImmutableBytesの普及。（Value方面）
+ImmutableBytes#toByteArray の排除。
 get や set のメソッド名。
 
 AccountStateのモデル。

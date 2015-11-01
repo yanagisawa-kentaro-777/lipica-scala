@@ -343,7 +343,7 @@ object Transaction {
 	}
 
 	def create(to: String, amount: BigInt, nonce: BigInt, manaPrice: BigInt, manaLimit: BigInt): TransactionLike = {
-		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), ImmutableBytes.asUnsignedByteArray(manaPrice), ImmutableBytes.asUnsignedByteArray(manaLimit), ImmutableBytes(to), ImmutableBytes.asUnsignedByteArray(amount), ImmutableBytes.empty)
+		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), ImmutableBytes.asUnsignedByteArray(manaPrice), ImmutableBytes.asUnsignedByteArray(manaLimit), ImmutableBytes.parseHexString(to), ImmutableBytes.asUnsignedByteArray(amount), ImmutableBytes.empty)
 	}
 
 	def createDefault(to: String, amount: BigInteger, nonce: BigInteger): TransactionLike = {

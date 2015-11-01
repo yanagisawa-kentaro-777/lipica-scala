@@ -198,7 +198,7 @@ object ImmutableBytes {
 		apply(original, 0, original.length)
 	}
 
-	def apply(s: String): ImmutableBytes = {
+	def parseHexString(s: String): ImmutableBytes = {
 		if (s eq null) {
 			empty
 		} else {

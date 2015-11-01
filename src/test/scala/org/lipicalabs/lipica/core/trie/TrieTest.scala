@@ -283,12 +283,12 @@ class TrieTest extends Specification {
 			val val2 = "09"
 			val val3 = "a9"
 
-			trie.update(ImmutableBytes(val1), ImmutableBytes(val1))
-			trie.update(ImmutableBytes(val2), ImmutableBytes(val2))
+			trie.update(ImmutableBytes.parseHexString(val1), ImmutableBytes.parseHexString(val1))
+			trie.update(ImmutableBytes.parseHexString(val2), ImmutableBytes.parseHexString(val2))
 			val root1 = trie.rootHash.toHexString
 
-			trie.update(ImmutableBytes(val3), ImmutableBytes(val3))
-			trie.delete(ImmutableBytes(val3))
+			trie.update(ImmutableBytes.parseHexString(val3), ImmutableBytes.parseHexString(val3))
+			trie.delete(ImmutableBytes.parseHexString(val3))
 			val root2 = trie.rootHash.toHexString
 
 			root1 mustEqual root2
