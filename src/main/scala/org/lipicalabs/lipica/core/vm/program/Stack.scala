@@ -61,6 +61,9 @@ class Stack extends ProgramListenerAware {
 		}
 	}
 
+	def isEmpty: Boolean = this.size == 0
+	def nonEmpty: Boolean = !this.isEmpty
+
 	def asIterable: Iterable[DataWord] = {
 		this.synchronized {
 			import scala.collection.JavaConversions._

@@ -48,6 +48,14 @@ class MemoryTest extends Specification {
 			chunk(4) mustEqual 0
 
 			memory.size mustEqual Memory.WORD_SIZE
+			memory.toString.nonEmpty mustEqual true
+		}
+	}
+
+	"read from memory (1)" should {
+		"be right" in {
+			val memory = new Memory
+			memory.read(0, 0) mustEqual ImmutableBytes.empty
 		}
 	}
 
@@ -57,7 +65,14 @@ class MemoryTest extends Specification {
 
 			(0 until 10000).foreach {i => {
 				val data = ImmutableBytes(Array[Byte]((i % 256).toByte))
-				memory.write(i, data, data.length, limited = false)
+				if ((i % 3) == 0) {
+					memory.write(i, data, data.length, limited = false)
+				} else if ((i % 3) == 1) {
+					memory.write(i, data, data.length + 1, limited = false)
+				} else {
+					memory.extendAndWrite(i, i + data.length, data)
+				}
+
 			}}
 			(0 until 10000).foreach {i => {
 				val data = memory.read(i, 1)
