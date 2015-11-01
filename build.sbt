@@ -8,6 +8,9 @@ scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature", "-e
 
 javacOptions in ThisBuild ++= Seq("-encoding", "UTF-8")
 
+testOptions in ThisBuild ++= Tests.Argument(TestFrameworks.ScalaTest, "-u", {val dir = System.getenv("CI_REPORTS"); if(dir == null) "target/reports" else dir} )
+
+
 // このプロジェクトの依存関係。
 // 外部ライブラリ。
 def commonsCodec = "commons-codec"          % "commons-codec"             % "1.9"
