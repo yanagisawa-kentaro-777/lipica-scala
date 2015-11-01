@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.vm
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -19,6 +20,96 @@ class DataWordTest extends Specification {
 	sequential
 
 	private val RANDOM_CASES = 500
+
+	"last 20" should {
+		"be right" in {
+			val word = DataWord((0 until 32).map(_.toByte).toArray)
+			word.data.length mustEqual 32
+
+			val bytes = word.last20Bytes
+			bytes.length mustEqual 20
+			bytes(0) mustEqual (32 - 20)
+			bytes(19) mustEqual 31
+		}
+	}
+
+	"strip zeros (1)" should {
+		"be right" in {
+			val word = DataWord((0 until 32).map(_.toByte).toArray)
+			word.data.length mustEqual 32
+			word.getDataWithoutLeadingZeros.length mustEqual 31
+			word.occupiedBytes mustEqual 31
+			word.toPrefixString mustEqual "010203"
+		}
+	}
+
+	"strip zeros (2)" should {
+		"be right" in {
+			val word = DataWord((1 until 33).map(_.toByte).toArray)
+			word.data.length mustEqual 32
+			word.getDataWithoutLeadingZeros.length mustEqual 32
+			word.occupiedBytes mustEqual 32
+			word.toPrefixString mustEqual "010203"
+		}
+	}
+
+	"strip zeros (3)" should {
+		"be right" in {
+			val word = DataWord(0)
+			word.data.length mustEqual 32
+			word.getDataWithoutLeadingZeros.length mustEqual 0
+			word.occupiedBytes mustEqual 0
+			(word == DataWord.Zero) mustEqual true
+			word.hashCode mustEqual DataWord.Zero.hashCode
+			word.toPrefixString mustEqual ""
+		}
+	}
+
+	"strip zeros (4)" should {
+		"be right" in {
+			val word = DataWord(1)
+			word.data.length mustEqual 32
+			word.getDataWithoutLeadingZeros.length mustEqual 1
+			word.occupiedBytes mustEqual 1
+			(word == DataWord.One) mustEqual true
+			word.toPrefixString mustEqual "01"
+		}
+	}
+
+	"instance creation (1)" should {
+		"be right" in {
+			val zero = DataWord(null.asInstanceOf[ImmutableBytes])
+			zero.isZero mustEqual true
+		}
+	}
+
+	"instance creation (2)" should {
+		"be right" in {
+			val word = DataWord(ImmutableBytes((0 until 32).map(_.toByte).toArray))
+			word.data.indices.foreach {i => {
+				word.data(i) mustEqual i
+			}}
+			word.data.length mustEqual 32
+		}
+	}
+
+	"instance creation (3)" should {
+		"be right" in {
+			val word = DataWord(ImmutableBytes.fromOneByte(1))
+			word.data.length mustEqual 32
+			word.data(31) mustEqual 1
+			word.getDataWithoutLeadingZeros.length mustEqual 1
+		}
+	}
+
+	"comparison" should {
+		"be right" in {
+			val zero = DataWord(0)
+			zero.compareTo(DataWord.Zero) mustEqual 0
+			zero.compareTo(DataWord.One) mustEqual -1
+			DataWord.One.compareTo(zero) mustEqual 1
+		}
+	}
 
 	"add simple" should {
 		"be right" in {

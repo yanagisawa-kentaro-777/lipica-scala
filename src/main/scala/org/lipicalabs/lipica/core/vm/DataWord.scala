@@ -16,11 +16,7 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	import DataWord._
 
 	def last20Bytes: ImmutableBytes = {
-		if (this.data.length == 20) {
-			this.data
-		} else {
-			this.data.copyOfRange(NUM_BYTES - 20, data.length)
-		}
+		this.data.copyOfRange(NUM_BYTES - 20, data.length)
 	}
 	def getDataWithoutLeadingZeros: ImmutableBytes = ByteUtils.stripLeadingZeroes(this.data)
 
