@@ -1,10 +1,12 @@
 
 Program
+ProgramInvokeFactory
 VM
 Logger("VM")の大文字小文字。
 
 ImmutableBytesの普及。（trie方面）
 ProgramInvokeのrefactor？
+get や set のメソッド名。
 
 AccountStateのモデル。
 Blockのモデル。

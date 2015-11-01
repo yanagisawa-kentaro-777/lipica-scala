@@ -49,12 +49,12 @@ trait Repository {
 	/**
 	 * 指定されたアカウントに対して、コードを保存します。
 	 */
-	def saveCode(address: ImmutableBytes, code: Array[Byte]): Unit
+	def saveCode(address: ImmutableBytes, code: ImmutableBytes): Unit
 
 	/**
 	 * 指定されたアカウントに結び付けられたコードを読み取ります。
 	 */
-	def getCode(address: ImmutableBytes): Array[Byte]
+	def getCode(address: ImmutableBytes): ImmutableBytes
 
 	/**
 	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。

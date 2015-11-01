@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.base.{Repository, TransactionLike}
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
-import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
+import org.lipicalabs.lipica.core.vm.{VM, DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
 import org.lipicalabs.lipica.core.vm.program.listener.{CompositeProgramListener, ProgramListenerAware}
 import org.slf4j.LoggerFactory
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, private val transaction: TransactionLike) {
+class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke, private val transaction: TransactionLike) {
 
 	import Program._
 
@@ -135,11 +135,11 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 	 * 現在箇所からN個のオペコードを読み取って返すと同時に、
 	 * プログラムカウンタをN個進めます。
 	 */
-	def sweep(n: Int): Array[Byte] = {
+	def sweep(n: Int): ImmutableBytes = {
 		if (this.ops.length <= this.pc + n) {
 			stop()
 		}
-		val result = java.util.Arrays.copyOfRange(this.ops, this.pc, this.pc + n)
+		val result = this.ops.copyOfRange(this.pc, this.pc + n)
 		this.pc += n
 		result
 	}
@@ -156,6 +156,9 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 	/** メモリ操作 */
 	def getMemSize: Int = this.memory.size
 
+	def memorySave(addr: Int, value: ImmutableBytes, len: Int, limited: Boolean): Unit = {
+		this.memory.write(addr, value, len, limited)
+	}
 	def memorySave(addr: DataWord, value: ImmutableBytes, limited: Boolean): Unit = {
 		this.memory.write(addr.intValue, value, value.length, limited)
 	}
@@ -215,7 +218,173 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 	}
 
 	//TODO createContract
-	//TODO callToAddress
+
+	/**
+	 * 「コード」呼び出しを実行します。
+	 *
+	 * 通常のコールは、自身の状態を更新するコントラクトを呼び出します。
+	 * ステートレスコールは、別のコントラクトに属するコールを、呼び出し元の文脈において呼び出します。
+	 */
+	def callToAddress(message: MessageCall): Unit = {
+		if (getCallDeep == MaxDepth) {
+			//スタックオーバーフロー。
+			stackPushZero()
+			refundMana(message.mana.longValue, "Call deep limit reached.")
+			return
+		}
+		//入力データをメモリから読み取る。
+		val data = memoryChunk(message.inDataOffset.intValue, message.inDataSize.intValue)
+
+		val senderAddress = this.getOwnerAddress.last20Bytes
+		val codeAddress = message.codeAddress.last20Bytes
+		val contextAddress =
+			if (message.msgType == MessageType.Stateless) {
+				senderAddress
+			} else {
+				codeAddress
+			}
+		if (logger.isInfoEnabled) {
+			logger.info("%s for existing contract: address: [%s], outDataOffset: [%s], outDataSize[%s]".format(contextAddress.toHexString, message.outDataOffset, message.outDataSize))
+		}
+		val track = this.storage.startTracking
+		//手数料。
+		val endowment = message.endowment.value
+		val senderBalance = track.getBalance(senderAddress)
+		if (senderBalance < endowment) {
+			//手数料を払えない。
+			stackPushZero()
+			this.refundMana(message.mana.longValue, "Refund mana from message call.")
+			return
+		}
+		//コードを取得する。
+		val programCode =
+			if (this.storage.existsAccount(codeAddress)) {
+				this.storage.getCode(codeAddress)
+			} else {
+				ImmutableBytes.empty
+			}
+		track.addBalance(senderAddress, -endowment)
+
+		val contextBalance =
+			if (byTestingSuite) {
+				this.result.addCallCreate(data, contextAddress, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
+				BigInt(0)
+			} else {
+				track.addBalance(contextAddress, endowment)
+			}
+
+		//内部トランザクションを生成する。
+		val internalTx = addInternalTx(ImmutableBytes.empty, getManaLimit, senderAddress, contextAddress, endowment, programCode, "call")
+
+		val programResultOption =
+			if (programCode.nonEmpty) {
+				//TODO 未実装！！！
+				val programInvoke: ProgramInvoke = null; //programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.getBlockStore, byTestingSuite)
+
+				val vm = new VM
+				val program = new Program(programCode, programInvoke, internalTx)
+				vm.play(program)
+				val localResult = program.result
+
+				this.trace.mergeToThis(program.trace)
+				this.result.mergeToThis(localResult)
+
+				if (localResult.exception ne null) {
+					//エラーが発生した。
+					if (manaLogger.isDebugEnabled) {
+						manaLogger.debug("contract run halted by Exception: contract: [%s], exception: [%s]".format(contextAddress.toHexString, localResult.exception))
+					}
+					internalTx.reject()
+					localResult.rejectInternalTransactions()
+
+					track.rollback()
+					stackPushZero()
+					return
+				}
+				Option(localResult)
+			} else {
+				None
+			}
+		//実行結果をメモリに書き込む。
+		if (programResultOption.isDefined) {
+			val hReturn = programResultOption.get.getHReturn
+			memorySave(message.outDataOffset.intValue, hReturn, message.outDataSize.intValue, limited = true)
+		}
+		//成功を確定させる。
+		track.commit()
+		stackPushOne()
+
+		//残りのマナをリファンドする。
+		if (programResultOption.isDefined) {
+			//利用されなかった残額を計算する。
+			val refundMana = message.mana.value - BigInt(programResultOption.get.manaUsed)
+			if (0 < refundMana.signum) {
+				this.refundMana(refundMana.longValue(), "Remaining mana from the internal call.")
+				if (manaLogger.isInfoEnabled) {
+					manaLogger.info("The remaining mana refunded, account: [%s], mana: [%s]".format(senderAddress.toHexString, refundMana))
+				}
+			}
+		} else {
+			//全額。
+			this.refundMana(message.mana.longValue, "remaining gas from the internal call")
+		}
+	}
+
+	def callToPrecompiledAddress(message: MessageCall, contract: PrecompiledContract): Unit = {
+		if (getCallDeep == MaxDepth) {
+			//スタックの深さが限界。
+			stackPushZero()
+			this.refundMana(message.mana.longValue, "Call deep limit reached.")
+			return
+		}
+
+		val track = this.storage.startTracking
+		val senderAddress = this.getOwnerAddress.last20Bytes
+		val codeAddress = message.codeAddress.last20Bytes
+		val contextAddress =
+			if (message.msgType == MessageType.Stateless) {
+				senderAddress
+			} else {
+				codeAddress
+			}
+
+		//手数料。
+		val endowment = message.endowment.value
+		val senderBalance = track.getBalance(senderAddress)
+		if (senderBalance < endowment) {
+			//手数料を払えない。
+			stackPushZero()
+			this.refundMana(message.mana.longValue, "Refund mana from message call.")
+			return
+		}
+
+		val data = this.memoryChunk(message.inDataOffset.intValue, message.inDataSize.intValue)
+		//手数料を取る。
+		Repository.transfer(track, senderAddress, contextAddress, message.endowment.value)
+
+		if (byTestingSuite) {
+			//テストなので、生成されたコールを蓄積する。
+			this.result.addCallCreate(data, message.codeAddress.last20Bytes, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
+			stackPushOne()
+			return
+		}
+		//データに応じたコストを計算する。
+		val requiredMana = contract.manaForData(data)
+		if (message.mana.longValue < requiredMana) {
+			//支払えない。
+			this.refundMana(0, "Call pre-compiled.")
+			this.stackPushZero()
+			track.rollback()
+		} else {
+			//残額を返金する。
+			this.refundMana(message.mana.longValue - requiredMana, "call pre-compiled")
+			//実行する。
+			val out = contract.execute(data)
+			this.memorySave(message.outDataOffset, out, limited = false)
+			this.stackPushOne()
+			track.commit()
+		}
+	}
 
 	def spendMana(manaValue: Long, cause: String): Unit = {
 		manaLogger.info("[%s] Spent for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
@@ -237,10 +406,13 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 	}
 	def resetFutureRefund(): Unit = this.result.resetFutureRefund()
 
-	def getCode: Array[Byte] = this.ops
-	def getCodeAt(address: DataWord): Array[Byte] = {
-		val code = this.invoke.getRepository.getCode(address.last20Bytes)
-		ByteUtils.launderNullToEmpty(code)
+	def getCode: ImmutableBytes = this.ops
+
+	/**
+	 * あるアドレスに結び付けられたコードをロードして返します。
+	 */
+	def getCodeAt(address: DataWord): ImmutableBytes = {
+		this.invoke.getRepository.getCode(address.last20Bytes)
 	}
 
 	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
@@ -324,61 +496,6 @@ class Program(private val ops: Array[Byte], private val invoke: ProgramInvoke, p
 			Left(Exception.badJumpDestination(next))
 		} else {
 			Right(next)
-		}
-	}
-
-	def callToPrecompiledAddress(message: MessageCall, contract: PrecompiledContract): Unit = {
-		if (getCallDeep == MaxDepth) {
-			//スタックの深さが限界。
-			stackPushZero()
-			this.refundMana(message.mana.longValue, "Call deep limit reached.")
-			return
-		}
-
-		val track = this.storage.startTracking
-		val senderAddress = this.getOwnerAddress.last20Bytes
-		val codeAddress = message.codeAddress.last20Bytes
-		val contextAddress =
-			if (message.msgType == MessageType.Stateless) {
-				senderAddress
-			} else {
-				codeAddress
-			}
-
-		//手数料。
-		val endowment = message.endowment.value
-		val senderBalance = track.getBalance(senderAddress)
-		if (senderBalance < endowment) {
-			//手数料を払えない。
-			stackPushZero()
-			this.refundMana(message.mana.longValue, "Refund mana from message call.")
-			return
-		}
-
-		val data = this.memoryChunk(message.inDataOffset.intValue, message.inDataSize.intValue)
-		//手数料を取る。
-		Repository.transfer(track, senderAddress, contextAddress, message.endowment.value)
-
-		if (byTestingSuite) {
-			//テストなので、生成されたコールを蓄積する。
-			this.result.addCallCreate(data, message.codeAddress.last20Bytes, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
-			stackPushOne()
-			return
-		}
-		//データに応じたコストを計算する。
-		val requiredMana = contract.manaForData(data)
-		if (message.mana.longValue < requiredMana) {
-			//支払えない。
-			this.refundMana(0, "Call pre-compiled.")
-			this.stackPushZero()
-			track.rollback()
-		} else {
-			this.refundMana(message.mana.longValue - requiredMana, "call pre-compiled")
-			//実行する。
-			val out = contract.execute(data)
-			this.memorySave(message.outDataOffset, out, limited = false)
-			this.stackPushOne()
-			track.commit()
 		}
 	}
 

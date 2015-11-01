@@ -17,6 +17,10 @@ class VM {
 		//
 	}
 
+	def play(program: Program): Unit = {
+		//
+	}
+
 }
 
 object VM {

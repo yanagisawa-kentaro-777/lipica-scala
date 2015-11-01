@@ -39,7 +39,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def getContractDetails(address: ImmutableBytes) = this.repository.getContractDetails(address)
 
-	override def saveCode(address: ImmutableBytes, code: Array[Byte]) = this.repository.saveCode(address, code)
+	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = this.repository.saveCode(address, code)
 
 	override def getCode(address: ImmutableBytes) = this.repository.getCode(address)
 
