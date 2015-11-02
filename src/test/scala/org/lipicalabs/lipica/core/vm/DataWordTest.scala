@@ -19,7 +19,7 @@ import scala.util.Random
 class DataWordTest extends Specification {
 	sequential
 
-	private val RANDOM_CASES = 500
+	private val RANDOM_CASES = 100
 
 	"last 20" should {
 		"be right" in {
@@ -314,7 +314,49 @@ class DataWordTest extends Specification {
 					val value2 = Math.abs(random.nextInt(3))
 					val word2 = DataWord(value2)
 					(word1 exp word2).longValue mustEqual BigInt(value1).pow(value2).longValue
-					println("[Exp] %,d == %,d".format((word1 exp word2).longValue, BigInt(value1).pow(value2).longValue()))
+					//println("[Exp] %,d == %,d".format((word1 exp word2).longValue, BigInt(value1).pow(value2).longValue()))
+				}
+			}
+			ok
+		}
+	}
+
+	"add mod random" should {
+		"be right" in {
+			val seed = System.currentTimeMillis
+			println("Seed (AddMod): %,d".format(seed))
+			val random = new Random(seed)
+			(0 until RANDOM_CASES).foreach {
+				_ => {
+					val value1 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
+					val word1 = DataWord(value1)
+					val value2 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
+					val word2 = DataWord(value2)
+					val value3 = Math.abs(random.nextInt(Int.MaxValue - 1)) + 1
+					val word3 = DataWord(value3)
+					word1.addMod(word2, word3).longValue mustEqual (BigInt(value1) + BigInt(value2)) % BigInt(value3)
+					//println("[AddMod] %,d == %,d".format(word1.addMod(word2, word3).longValue, (BigInt(value1) + BigInt(value2)) % BigInt(value3)))
+				}
+			}
+			ok
+		}
+	}
+
+	"mul mod random" should {
+		"be right" in {
+			val seed = System.currentTimeMillis
+			println("Seed (MulMod): %,d".format(seed))
+			val random = new Random(seed)
+			(0 until RANDOM_CASES).foreach {
+				_ => {
+					val value1 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
+					val word1 = DataWord(value1)
+					val value2 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
+					val word2 = DataWord(value2)
+					val value3 = Math.abs(random.nextInt(Int.MaxValue - 1)) + 1
+					val word3 = DataWord(value3)
+					word1.mulMod(word2, word3).longValue mustEqual (BigInt(value1) * BigInt(value2)) % BigInt(value3)
+					println("[MulMod] %,d == %,d".format(word1.mulMod(word2, word3).longValue, (BigInt(value1) * BigInt(value2)) % BigInt(value3)))
 				}
 			}
 			ok
