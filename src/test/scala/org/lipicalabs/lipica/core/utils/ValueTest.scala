@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.utils
 
+import java.nio.charset.StandardCharsets
+
 import org.junit.runner.RunWith
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -20,6 +22,7 @@ class ValueTest extends Specification {
 			value.value mustEqual 0
 			(value.encodedBytes sameElements Array(0x80.asInstanceOf[Byte])) mustEqual true
 			value.hash.toHexString mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+			value.toString.nonEmpty mustEqual true
 		}
 	}
 
@@ -31,6 +34,24 @@ class ValueTest extends Specification {
 			value.hash.toHexString mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 		}
 	}
+
+	"string case (1)" should {
+		"be right" in {
+			val value = Value.fromObject("abc")
+			value.isString mustEqual true
+			value.asString mustEqual "abc"
+		}
+	}
+
+	"string case (2)" should {
+		"be right" in {
+			val value = Value.fromObject("abc".getBytes(StandardCharsets.UTF_8))
+			value.isBytes mustEqual true
+			value.isString mustEqual false
+			value.asString mustEqual "abc"
+		}
+	}
+
 
 	"int cases" should {
 		"be right" in {
@@ -61,6 +82,7 @@ class ValueTest extends Specification {
 				value.isSeq mustEqual true
 				val encoded = value.encodedBytes
 				val rebuiltValue = Value.fromEncodedBytes(encoded)
+				rebuiltValue.isSeq mustEqual true
 				rebuiltValue.asSeq.size mustEqual seq.size
 			}}
 			ok
