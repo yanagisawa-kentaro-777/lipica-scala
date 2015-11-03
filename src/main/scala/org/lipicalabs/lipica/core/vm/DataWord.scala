@@ -326,4 +326,18 @@ object DataWord {
 		DataWord(ByteUtils.asUnsignedByteArray(value))
 	}
 
+	/**
+	 * 渡されたバイト数が、何ワードを消費するか計算して返します。
+	 */
+	def countWords(bytes: Int): Int = {
+		(bytes + NUM_BYTES - 1) / NUM_BYTES
+	}
+
+	/**
+	 * 渡されたバイト数が、何ワードを消費するか計算して返します。
+	 */
+	def countWords(bytes: Long): Long = {
+		(bytes + NUM_BYTES - 1) / NUM_BYTES
+	}
+
 }

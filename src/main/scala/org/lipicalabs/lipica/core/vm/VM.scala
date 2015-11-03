@@ -21,6 +21,31 @@ class VM {
 	/** このVM上で実行されたステップ数のカウンタ。 */
 	private var vmCounter: Long = 0L
 
+	def play(program: Program): Unit = {
+		try {
+			if (SystemProperties.CONFIG.isStorageDictionaryEnabled) {
+				//TODO storageDictHandler
+				//storageDictHandler = new StorageDictionaryHandler(program.getOwnerAddress)
+				//storageDictHandler.vmStartPlayNotify
+			}
+			if (program.byTestingSuite) return
+			while (!program.isStopped) {
+				this.step(program)
+			}
+			//TODO storageDictHandler
+			//			if (storageDictHandler != null) {
+			//				val details = program.storage.getContractDetails(program.getOwnerAddress.last20Bytes)
+			//				storageDictHandler.vmEndPlayNotify(details)
+			//			}
+		} catch {
+			case e: RuntimeException =>
+				program.setRuntimeFailure(e)
+			case stackOverFlowError: StackOverflowError =>
+				logger.error("\n !!! StackOverflowError: update your java run command with -Xss32M !!!\n")
+				System.exit(-1)
+		}
+	}
+
 	def step(program: Program): Unit = {
 		if (SystemProperties.CONFIG.vmTrace) {
 			program.saveOpTrace()
@@ -37,11 +62,7 @@ class VM {
 			program.verifyStackSize(op.require)
 			program.verifyStackOverflow(op.require, op.ret)
 
-			var hint = ""
-
 			val manaBefore = program.getMana.longValue
-			val stepBefore: Int = program.getPC
-
 			//必要なマナ容量および新たに必要となるメモリサイズを計算する。
 			val (baseManaCost, newMemSize, copySize) = computeNecessaryResources(op, program)
 			//マナを消費する。
@@ -54,7 +75,7 @@ class VM {
 			//マナコストを、さらに詳しく計算する。
 			var manaCost = baseManaCost
 			val oldMemSize = program.getMemSize
-			val memoryUsage = (newMemSize.longValue() + DataWord.NUM_BYTES - 1) / DataWord.NUM_BYTES * DataWord.NUM_BYTES
+			val memoryUsage = DataWord.countWords(newMemSize.longValue()) * DataWord.NUM_BYTES
 			var memWords: Long = 0
 			if (oldMemSize < memoryUsage) {
 				memWords = memoryUsage / DataWord.NUM_BYTES
@@ -64,7 +85,7 @@ class VM {
 				manaCost += memMana
 			}
 			if (0 < copySize) {
-				val copyMana = ManaCost.CopyMana * ((copySize + DataWord.NUM_BYTES - 1) / DataWord.NUM_BYTES)
+				val copyMana = ManaCost.CopyMana * DataWord.countWords(copySize)
 				manaCost += copyMana
 				program.spendMana(copyMana, op.name + " (copy usage)")
 			}
@@ -74,7 +95,7 @@ class VM {
 			}
 
 			//処理を実行する。
-			execute(op, program)
+			val hint = execute(op, program)
 
 			//実行したコードを記録する。
 			program.setPreviouslyExecutedOp(op.opcode)
@@ -124,7 +145,7 @@ class VM {
 				(ManaCost.Return, memNeeded(stack.peek, stack.get(-2)), 0L)
 			case SHA3 =>
 				val size = stack.get(-2)
-				val chunkUsed = (size.longValue + DataWord.NUM_BYTES - 1) / DataWord.NUM_BYTES
+				val chunkUsed = DataWord.countWords(size.longValue)
 				val manaCost = ManaCost.SHA3 + (chunkUsed * ManaCost.SHA3Word)
 				(manaCost, memNeeded(stack.peek, size), 0L)
 			case CallDataCopy =>
@@ -729,7 +750,7 @@ class VM {
 				}
 
 				program.memoryExpand(outDataOffset, outDataSize)
-				val message = new MessageCall(
+				val message = MessageCall(
 					if (op == Call) MessageType.Call else MessageType.Stateless,
 					mana, codeAddress, value, inDataOffset, inDataSize, outDataOffset, outDataSize
 				)
@@ -768,31 +789,6 @@ class VM {
 	 */
 	private def memNeeded(offset: DataWord, size: DataWord): BigInt = {
 		if (size.isZero) Zero else offset.value + size.value
-	}
-
-	def play(program: Program): Unit = {
-		try {
-			if (SystemProperties.CONFIG.isStorageDictionaryEnabled) {
-				//TODO
-				//storageDictHandler = new StorageDictionaryHandler(program.getOwnerAddress)
-				//storageDictHandler.vmStartPlayNotify
-			}
-			if (program.byTestingSuite) return
-			while (!program.isStopped) {
-				this.step(program)
-			}
-			//TODO
-//			if (storageDictHandler != null) {
-//				val details = program.storage.getContractDetails(program.getOwnerAddress.last20Bytes)
-//				storageDictHandler.vmEndPlayNotify(details)
-//			}
-		} catch {
-			case e: RuntimeException =>
-				program.setRuntimeFailure(e)
-			case stackOverFlowError: StackOverflowError =>
-				logger.error("\n !!! StackOverflowError: update your java run command with -Xss32M !!!\n")
-				System.exit(-1)
-		}
 	}
 
 	private def dumpLine(op: OpCode, manaBefore: Long, manaCost: Long, memWords: Long, program: Program): Unit = {
