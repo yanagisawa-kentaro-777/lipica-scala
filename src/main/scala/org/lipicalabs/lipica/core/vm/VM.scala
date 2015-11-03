@@ -170,15 +170,183 @@ class VM {
 		}
 	}
 
-	private def execute(op: OpCode, program: Program): Unit = {
+	private def execute(op: OpCode, program: Program): String = {
 		//処理を実行する。
+		var hint = ""
 		op match {
 			case Stop =>
 				program.setHReturn(ImmutableBytes.empty)
 				program.stop()
+			case Add =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d + %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 + word2)
+				program.step()
+			case Mul =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d * %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 * word2)
+				program.step()
+			case Sub =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d - %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 - word2)
+				program.step()
+			case Div =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d / %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 / word2)
+				program.step()
+			case SDiv =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d sdiv %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 sDiv word2)
+				program.step()
+			case Mod =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d mod %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 % word2)
+				program.step()
+			case SMod =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d smod %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 sMod word2)
+				program.step()
+			case Exp =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d exp %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 exp word2)
+				program.step()
+			case SignExtend =>
+				val word1 = program.stackPop
+				val k = word1.value
+				if (k < WordLength) {
+					val word2 = program.stackPop
+					if (logger.isInfoEnabled) {
+						hint = "%d  %d".format(word1.value, word2.value)
+					}
+					program.stackPush(word2.signExtend(k.byteValue()))
+				}
+				program.step()
+			case Not =>
+				val word = program.stackPop
+				val result = ~word
+				if (logger.isInfoEnabled) {
+					hint = "%d".format(result.value)
+				}
+				program.stackPush(result)
+				program.step()
+			case Lt =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d < %d".format(word1.value, word2.value)
+				}
+				val result =
+					if (word1.value < word2.value) {
+						DataWord.One
+					} else {
+						DataWord.Zero
+					}
+				program.stackPush(result)
+				program.step()
+			case SLt =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d < %d".format(word1.sValue, word2.sValue)
+				}
+				val result =
+					if (word1.sValue < word2.sValue) {
+						DataWord.One
+					} else {
+						DataWord.Zero
+					}
+				program.stackPush(result)
+				program.step()
+			case SGt =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d > %d".format(word1.sValue, word2.sValue)
+				}
+				val result =
+					if (word1.sValue > word2.sValue) {
+						DataWord.One
+					} else {
+						DataWord.Zero
+					}
+				program.stackPush(result)
+				program.step()
+			case Gt =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d > %d".format(word1.value, word2.value)
+				}
+				val result =
+					if (word1.value > word2.value) {
+						DataWord.One
+					} else {
+						DataWord.Zero
+					}
+				program.stackPush(result)
+				program.step()
+			case Eq =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d == %d".format(word1.value, word2.value)
+				}
+				val result =
+					if ((word1 ^ word2).isZero) {
+						DataWord.One
+					} else {
+						DataWord.Zero
+					}
+				program.stackPush(result)
+				program.step()
+			case IsZero =>
+				val word = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d".format(word.value)
+				}
+				val result =
+					if (word.isZero) {
+						DataWord.One
+					} else {
+						DataWord.Zero
+					}
+				program.stackPush(result)
+				program.step()
 			case _ =>
 			//
 		}
+		hint
 	}
 
 	/**
@@ -224,7 +392,7 @@ object VM {
 	private val dumpLogger = LoggerFactory.getLogger("dump")
 
 	private val Zero = BigInt(0)
-	private val _32_ = BigInt(32L)
+	private val WordLength = BigInt(DataWord.NUM_BYTES)
 	private val logString = "[%s]    Op: [%s]  Mana: [%s] Deep: [%,d]  Hint: [%s]"
 
 	private val MaxMana = BigInt(Long.MaxValue)
