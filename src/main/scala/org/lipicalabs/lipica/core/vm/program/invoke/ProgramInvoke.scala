@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.vm.program.invoke
 
 import org.lipicalabs.lipica.core.base.Repository
 import org.lipicalabs.lipica.core.db.BlockStore
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -44,7 +45,7 @@ trait ProgramInvoke {
 
 	def getDataValue(indexData: DataWord): DataWord
 
-	def getDataCopy(offsetData: DataWord, lengthData: DataWord): Array[Byte]
+	def getDataCopy(offsetData: DataWord, lengthData: DataWord): ImmutableBytes
 
 	def getLastHash: DataWord
 

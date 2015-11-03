@@ -4,7 +4,6 @@ Program（文字列生成関連）
 VM（文字列生成関連）
 
 StorageLoadをOption化する。
-Program.getDataCopyをImmutableBytesにする。
 
 ImmutableBytesの普及。（Value方面）
 ImmutableBytes#toByteArray の排除。

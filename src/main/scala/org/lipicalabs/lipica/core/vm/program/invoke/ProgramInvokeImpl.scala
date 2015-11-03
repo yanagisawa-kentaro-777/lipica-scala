@@ -85,14 +85,14 @@ class ProgramInvokeImpl private(
 	}
 
 	/** CALLDATACOPY */
-	override def getDataCopy(offsetData: DataWord, lengthData: DataWord): Array[Byte] = {
+	override def getDataCopy(offsetData: DataWord, lengthData: DataWord): ImmutableBytes = {
 		val offset = offsetData.intValue
 		val len = lengthData.intValue
 
 		val result = new Array[Byte](len)
 
-		if (ByteUtils.isNullOrEmpty(messageData)) return result
-		if (this.messageData.length <= offset) return result
+		if (ByteUtils.isNullOrEmpty(messageData)) return ImmutableBytes(result)
+		if (this.messageData.length <= offset) return ImmutableBytes(result)
 		val length =
 			if (this.messageData.length < (offset + len)) {
 				this.messageData.length - offset
@@ -100,7 +100,7 @@ class ProgramInvokeImpl private(
 				len
 			}
 		System.arraycopy(this.messageData, offset, result, 0, length)
-		result
+		ImmutableBytes(result)
 	}
 
 	/** PREVHASH op. */

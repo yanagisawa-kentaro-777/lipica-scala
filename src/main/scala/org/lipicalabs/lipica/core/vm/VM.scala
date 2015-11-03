@@ -495,7 +495,7 @@ class VM {
 				if (logger.isInfoEnabled) {
 					hint = "data: " + messageData
 				}
-				program.memorySave(memOffset, ImmutableBytes(messageData), limited = false)
+				program.memorySave(memOffset, messageData, limited = false)
 				program.step()
 			case CodeSize | ExtCodeSize =>
 				val length =

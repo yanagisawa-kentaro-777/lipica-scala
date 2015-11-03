@@ -554,7 +554,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def getCallValue = this.invoke.getCallValue
 	def getDataSize = this.invoke.getDataSize
 	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
-	def getDataCopy(offset: DataWord, length: DataWord): Array[Byte] = this.invoke.getDataCopy(offset, length)
+	def getDataCopy(offset: DataWord, length: DataWord): ImmutableBytes = this.invoke.getDataCopy(offset, length)
 	def getLastHash = this.invoke.getLastHash
 	def getCoinbase = this.invoke.getCoinbase
 	def getTimestamp = this.invoke.getTimestamp
