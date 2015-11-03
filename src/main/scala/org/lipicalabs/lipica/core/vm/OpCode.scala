@@ -178,7 +178,7 @@ object OpCode {
 	object Not extends OpCode(0x19, 1, 1, VeryLowTier)
 
 	/**
-	 * 0x1a：Wordから１バイトを抽出する。
+	 * 0x1a：Wordから添字によって１バイトを読み取る。
 	 */
 	object Byte extends OpCode(0x1a, 2, 1, VeryLowTier)
 

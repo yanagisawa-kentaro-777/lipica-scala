@@ -343,6 +343,189 @@ class VM {
 					}
 				program.stackPush(result)
 				program.step()
+			case And =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d & %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 & word2)
+				program.step()
+			case Or =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d | %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 | word2)
+				program.step()
+			case Xor =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "%d xor %d".format(word1.value, word2.value)
+				}
+				program.stackPush(word1 ^ word2)
+				program.step()
+			case Byte =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				val result =
+					if (word1.value < WordLength) {
+						val temp: Byte = word2.data(word1.intValue)
+						DataWord(temp & 0xFF)
+					} else {
+						DataWord.Zero
+					}
+				if (logger.isInfoEnabled) {
+					hint = "%d".format(result.value)
+				}
+				program.stackPush(word1 | word2)
+				program.step()
+			case AddMod =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				val word3 = program.stackPop
+				val result = word1.addMod(word2, word3)
+				program.stackPush(result)
+				program.step()
+			case MulMod =>
+				val word1 = program.stackPop
+				val word2 = program.stackPop
+				val word3 = program.stackPop
+				val result = word1.mulMod(word2, word3)
+				program.stackPush(result)
+				program.step()
+			case SHA3 =>
+				val offset = program.stackPop
+				val len = program.stackPop
+				val buffer = program.memoryChunk(offset.intValue, len.intValue)
+				//計算する。
+				val result = DataWord(buffer.sha3)
+				//TODO 未実装： StorageDictHandler
+//				if (this.storageDictHandler ne null) {
+//					storageDictHandler.vmSha3Notify(buffer, result)
+//				}
+				if (logger.isInfoEnabled) {
+					hint = result.toString
+				}
+				program.stackPush(result)
+				program.step()
+			case Address =>
+				val address = program.getOwnerAddress
+				if (logger.isInfoEnabled) {
+					hint = "address: " + address.last20Bytes.toHexString
+				}
+				program.stackPush(address)
+				program.step()
+			case Balance =>
+				val address = program.stackPop
+				val balance = program.getBalance(address)
+				if (logger.isInfoEnabled) {
+					hint = "address: %s; balance: %s".format(address.last20Bytes, balance)
+				}
+				program.stackPush(balance)
+				program.step()
+			case Origin =>
+				val originAddress = program.getOriginAddress
+				if (logger.isInfoEnabled) {
+					hint = "address: " + originAddress.last20Bytes.toHexString
+				}
+				program.stackPush(originAddress)
+				program.step()
+			case Caller =>
+				val callerAddress = program.getCallerAddress
+				if (logger.isInfoEnabled) {
+					hint = "address: " + callerAddress.last20Bytes.toHexString
+				}
+				program.stackPush(callerAddress)
+				program.step()
+			case CallValue =>
+				val callValue = program.getCallValue
+				if (logger.isInfoEnabled) {
+					hint = "value: " + callValue
+				}
+				program.stackPush(callValue)
+				program.step()
+			case CallDataLoad =>
+				val offset = program.stackPop
+				val value = program.getDataValue(offset)
+				if (logger.isInfoEnabled) {
+					hint = "data: " + value
+				}
+				program.stackPush(value)
+				program.step()
+			case CallDataSize =>
+				val dataSize = program.getDataSize
+				if (logger.isInfoEnabled) {
+					hint = "size: " + dataSize
+				}
+				program.stackPush(dataSize)
+				program.step()
+			case CallDataCopy =>
+				//メッセージデータをメモリに格納する。
+				val memOffset = program.stackPop
+				val dataOffset = program.stackPop
+				val length = program.stackPop
+				val messageData = program.getDataCopy(dataOffset, length)
+				if (logger.isInfoEnabled) {
+					hint = "data: " + messageData
+				}
+				program.memorySave(memOffset, ImmutableBytes(messageData), limited = false)
+				program.step()
+			case CodeSize | ExtCodeSize =>
+				val length =
+					if (op == CodeSize) {
+						program.getCode.length
+					} else {
+						val address = program.stackPop
+						program.getCodeAt(address).length
+					}
+				val result = DataWord(length)
+				if (logger.isInfoEnabled) {
+					hint = "size: " + length
+				}
+				program.stackPush(result)
+				program.step()
+			case CodeCopy | ExtCodeCopy =>
+				val fullCode =
+					if (op == CodeCopy) {
+						program.getCode
+					} else {
+						val address = program.stackPop
+						program.getCodeAt(address)
+					}
+				val memOffset = program.stackPop
+				val codeOffset = program.stackPop.intValue
+				val length = program.stackPop.intValue
+				val sizeToBeCopied =
+					if (fullCode.length < (codeOffset + length)) {
+						if (fullCode.length < codeOffset) {
+							0
+						} else {
+							fullCode.length - codeOffset
+						}
+					} else {
+						length
+					}
+				val result =
+					if (codeOffset < fullCode.length) {
+						fullCode.copyOfRange(codeOffset, codeOffset + sizeToBeCopied)
+					} else {
+						ImmutableBytes.create(length)
+					}
+				if (logger.isInfoEnabled) {
+					hint = "code: " + result.toHexString
+				}
+				program.memorySave(memOffset, result, limited = false)
+				program.step()
+			case ManaPrice =>
+				val manaPrice = program.getManaPrice
+				if (logger.isInfoEnabled) {
+					hint = "price: " + manaPrice
+				}
+				program.stackPush(manaPrice)
+				program.step()
 			case _ =>
 			//
 		}
