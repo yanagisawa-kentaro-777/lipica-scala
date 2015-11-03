@@ -65,7 +65,7 @@ class VM {
 			case Stop | Suicide =>
 				(ManaCost.Stop, Zero, 0L)
 			case SStore =>
-				val newValue = stack.get(stack.size - 2)
+				val newValue = stack.get(-2)
 				val oldValue = program.storageLoad(stack.peek)
 				if ((oldValue eq null) && !newValue.isZero) {
 					(ManaCost.SetSStore, Zero, 0L)
@@ -86,51 +86,51 @@ class VM {
 			case MLoad =>
 				(op.tier.asInt, memNeeded(stack.peek, DataWord(DataWord.NUM_BYTES)), 0L)
 			case Return =>
-				(ManaCost.Return, memNeeded(stack.peek, stack.get(stack.size - 2)), 0L)
+				(ManaCost.Return, memNeeded(stack.peek, stack.get(-2)), 0L)
 			case SHA3 =>
-				val size = stack.get(stack.size - 2)
+				val size = stack.get(-2)
 				val chunkUsed = (size.longValue + DataWord.NUM_BYTES - 1) / DataWord.NUM_BYTES
 				val manaCost = ManaCost.SHA3 + (chunkUsed * ManaCost.SHA3Word)
 				(manaCost, memNeeded(stack.peek, size), 0L)
 			case CallDataCopy =>
-				val copySize = stack.get(stack.size - 3).longValue
-				(op.tier.asInt, memNeeded(stack.peek, stack.get(stack.size - 3)), copySize)
+				val copySize = stack.get(-3).longValue
+				(op.tier.asInt, memNeeded(stack.peek, stack.get(-3)), copySize)
 			case CodeCopy =>
-				val copySize = stack.get(stack.size - 3).longValue
-				(op.tier.asInt, memNeeded(stack.peek, stack.get(stack.size - 3)), copySize)
+				val copySize = stack.get(-3).longValue
+				(op.tier.asInt, memNeeded(stack.peek, stack.get(-3)), copySize)
 			case ExtCodeCopy =>
-				val copySize = stack.get(stack.size - 4).longValue
-				(op.tier.asInt, memNeeded(stack.get(stack.size - 2), stack.get(stack.size - 4)), copySize)
+				val copySize = stack.get(-4).longValue
+				(op.tier.asInt, memNeeded(stack.get(-2), stack.get(-4)), copySize)
 			case Call | CallCode =>
-				val callManaWord = stack.get(stack.size - 1)
+				val callManaWord = stack.get(-1)
 				if (program.getMana.value < callManaWord.value) {
 					throw Program.Exception.notEnoughOpMana(op, callManaWord, program.getMana)
 				}
 				var manaCost = ManaCost.Call + callManaWord.longValue
-				val callAddressWord = stack.get(stack.size - 2)
+				val callAddressWord = stack.get(-2)
 
 				if ((op != CallCode) && !program.storage.existsAccount(callAddressWord.last20Bytes)) {
 					manaCost += ManaCost.NewAccountCall
 				}
-				if (!stack.get(stack.size - 3).isZero) {
+				if (!stack.get(-3).isZero) {
 					manaCost += ManaCost.ValueTransferCall
 				}
-				val in = memNeeded(stack.get(stack.size - 4), stack.get(stack.size - 5))
-				val out = memNeeded(stack.get(stack.size - 6), stack.get(stack.size - 7))
+				val in = memNeeded(stack.get(-4), stack.get(-5))
+				val out = memNeeded(stack.get(-6), stack.get(-7))
 				(manaCost, in.max(out), 0L)
 			case Create =>
-				(ManaCost.Create, memNeeded(stack.get(stack.size - 2), stack.get(stack.size - 3)), 0L)
+				(ManaCost.Create, memNeeded(stack.get(-2), stack.get(-3)), 0L)
 			case Log0 | Log1 | Log2 | Log3 | Log4 =>
 				val numTopics = op.opcode - OpCode.Log0.opcode
-				val dataSize = stack.get(stack.size - 2).value
+				val dataSize = stack.get(-2).value
 				val dataCost = dataSize * BigInt(ManaCost.LogDataMana)
 				if (program.getMana.value < dataCost) {
 					throw Program.Exception.notEnoughOpMana(op, dataCost, program.getMana.value)
 				}
-				val manaCost = ManaCost.LogMana + ManaCost.LogTopicMana * numTopics + ManaCost.LogDataMana * stack.get(stack.size - 2).longValue
-				(manaCost, memNeeded(stack.peek, stack.get(stack.size - 2)), 0L)
+				val manaCost = ManaCost.LogMana + ManaCost.LogTopicMana * numTopics + ManaCost.LogDataMana * stack.get(-2).longValue
+				(manaCost, memNeeded(stack.peek, stack.get(-2)), 0L)
 			case Exp =>
-				val exp = stack.get(stack.size - 2)
+				val exp = stack.get(-2)
 				val bytesOccupied = exp.occupiedBytes
 				(ManaCost.ExpMana + ManaCost.ExpByteMana * bytesOccupied, Zero, 0L)
 			case _ => (op.tier.asInt, Zero, 0L)

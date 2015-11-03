@@ -57,7 +57,14 @@ class Stack extends ProgramListenerAware {
 
 	def peek: DataWord = this.stack.peek
 
-	def get(index: Int): DataWord = this.stack.get(index)
+	def get(index: Int): DataWord = {
+		if (0 <= index) {
+			this.stack.get(index)
+		} else {
+			//添字が負の場合、末尾から数える。
+			this.stack.get(this.stack.size + index)
+		}
+	}
 
 	def size: Int = {
 		this.synchronized {
