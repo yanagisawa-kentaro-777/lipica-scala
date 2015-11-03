@@ -202,7 +202,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def storageSave(key: ImmutableBytes, value: ImmutableBytes): Unit = {
 		storageSave(DataWord(key), DataWord(value))
 	}
-	def storageLoad(key: DataWord): DataWord = {
+	def storageLoad(key: DataWord): Option[DataWord] = {
 		this.storage.getStorageValue(getOwnerAddress.last20Bytes, key)
 	}
 

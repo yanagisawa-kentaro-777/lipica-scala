@@ -64,7 +64,7 @@ trait Repository {
 	/**
 	 * 指定されたアカウントにおいて、キーに対応する値を取得して返します。
 	 */
-	def getStorageValue(address: ImmutableBytes, key: DataWord): DataWord
+	def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord]
 
 	/**
 	 * 指定されたアカウントの残高を返します。

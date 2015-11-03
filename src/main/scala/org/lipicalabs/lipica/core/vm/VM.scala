@@ -122,10 +122,10 @@ class VM {
 				(ManaCost.Stop, Zero, 0L)
 			case SStore =>
 				val newValue = stack.get(-2)
-				val oldValue = program.storageLoad(stack.peek)
-				if ((oldValue eq null) && !newValue.isZero) {
+				val oldValueOption = program.storageLoad(stack.peek)
+				if (oldValueOption.isEmpty && !newValue.isZero) {
 					(ManaCost.SetSStore, Zero, 0L)
-				} else if ((oldValue eq null) && newValue.isZero) {
+				} else if (oldValueOption.nonEmpty && newValue.isZero) {
 					program.futureRefundMana(ManaCost.RefundSStore)
 					(ManaCost.ClearSStore, Zero, 0L)
 				} else {
@@ -645,12 +645,9 @@ class VM {
 				program.step()
 			case SLoad =>
 				val key = program.stackPop
-				var value = program.storageLoad(key)
+				val value = program.storageLoad(key).getOrElse(DataWord.Zero)
 				if (logger.isInfoEnabled) {
 					hint = "key: " + key + " value: " + value
-				}
-				if (value eq null) {
-					value = DataWord.Zero
 				}
 				program.stackPush(value)
 				program.step()
