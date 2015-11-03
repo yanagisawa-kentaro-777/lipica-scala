@@ -21,14 +21,12 @@ class VMTest extends Specification {
 
 	"test push1" should {
 		"be right" in {
-			ok
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60A0"), invoke, null)
+			val expected = "00000000000000000000000000000000000000000000000000000000000000A0"
 
-//			val vm = new VM
-//			val program = new Program(ImmutableBytes.parseHexString("60A0"), invoke, null)
-//			val expected = "00000000000000000000000000000000000000000000000000000000000000A0"
-//
-//			vm.step(program)
-//			program.stack.peek.data.toHexString.toUpperCase mustEqual expected + "1"
+			vm.step(program)
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
 		}
 	}
 
