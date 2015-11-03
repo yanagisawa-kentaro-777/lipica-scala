@@ -185,7 +185,7 @@ object OpCode {
 	/**
 	 * 0x20：SHA3-256ダイジェスト値を計算する。
 	 */
-	object Sha3 extends OpCode(0x20, 2, 1, SpecialTier)
+	object SHA3 extends OpCode(0x20, 2, 1, SpecialTier)
 
 	//環境情報。
 

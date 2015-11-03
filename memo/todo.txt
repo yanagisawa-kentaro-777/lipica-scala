@@ -3,6 +3,7 @@ Program（文字列生成関連）
 StorageDictionaryHandler
 VM
 
+StorageLoadをOption化する。
 ImmutableBytesの普及。（Value方面）
 ImmutableBytes#toByteArray の排除。
 get や set のメソッド名。
@@ -12,4 +13,3 @@ Blockのモデル。
 db.ContractDetails -> Storage。
 
 trieを完成させる。（TODOもなくす。）
-

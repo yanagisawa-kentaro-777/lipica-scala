@@ -57,6 +57,8 @@ class Stack extends ProgramListenerAware {
 
 	def peek: DataWord = this.stack.peek
 
+	def get(index: Int): DataWord = this.stack.get(index)
+
 	def size: Int = {
 		this.synchronized {
 			this.stack.size

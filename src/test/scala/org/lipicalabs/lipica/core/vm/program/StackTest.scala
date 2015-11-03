@@ -37,6 +37,7 @@ class StackTest extends Specification {
 			stack.nonEmpty mustEqual true
 			stack.size mustEqual 1
 			stack.peek mustEqual DataWord(0)
+			stack.get(0) mustEqual DataWord(0)
 
 			stack.push(DataWord(1L))
 
@@ -45,6 +46,7 @@ class StackTest extends Specification {
 			stack.size mustEqual 2
 
 			stack.peek mustEqual DataWord(1L)
+			stack.get(1) mustEqual DataWord(1)
 			stack.pop mustEqual DataWord(1L)
 
 			stack.isEmpty mustEqual false

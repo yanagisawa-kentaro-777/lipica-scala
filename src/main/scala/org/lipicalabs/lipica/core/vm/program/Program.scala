@@ -692,6 +692,14 @@ object Program {
 			new OutOfManaException("Not enough mana for '%s' cause spending: invokeMana[%d], mana[%d], usedMana[%d];", cause, program.invoke.getMana.longValue, manaValue, program.result.manaUsed)
 		}
 
+		def notEnoughOpMana(op: OpCode, opMana: BigInt, programMana: BigInt): OutOfManaException = {
+			new OutOfManaException("Not enough mana for '%s' operation executing: opMana[%,d], programMana[%,d];".format(op, opMana, programMana))
+		}
+
+		def notEnoughOpMana(op: OpCode, opMana: DataWord, programMana: DataWord): OutOfManaException = {
+			new OutOfManaException("Not enough mana for '%s' operation executing: opMana[%,d], programMana[%,d];".format(op, opMana.value, programMana.value))
+		}
+
 		def invalidOpCode(opCode: Byte): IllegalOperationException = {
 			new IllegalOperationException("Invalid operation code: opCode[%s];".format(opCode))
 		}
