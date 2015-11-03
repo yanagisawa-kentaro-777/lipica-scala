@@ -32,6 +32,9 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 		0 < this.length
 	}
 
+	def head: Byte = this.bytes.head
+	def last: Byte = this.bytes.last
+
 	/**
 	 * 指定された添字の要素を返します。
 	 */

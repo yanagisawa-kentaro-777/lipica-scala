@@ -351,6 +351,7 @@ object OpCode {
 	object JumpDest extends OpCode(0x5b, 0, 0, SpecialTier)
 
 	//プッシュ操作。
+	//現在の文脈のプログラムコードの先を、
 	//1バイト～32バイトのデータをスタックにプッシュする。
 	object Push1 extends OpCode(0x60, 0, 1, VeryLowTier)
 	object Push2 extends OpCode(0x61, 0, 1, VeryLowTier)

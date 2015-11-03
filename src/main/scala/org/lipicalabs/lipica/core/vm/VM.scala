@@ -3,8 +3,10 @@ package org.lipicalabs.lipica.core.vm
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.OpCode._
-import org.lipicalabs.lipica.core.vm.program.Program
+import org.lipicalabs.lipica.core.vm.program.{MessageType, MessageCall, Program}
 import org.slf4j.LoggerFactory
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Lipica VMを表すクラスです。
@@ -581,6 +583,179 @@ class VM {
 			case Swap1 | Swap2 | Swap3 | Swap4 | Swap5 | Swap6 | Swap7 | Swap8 | Swap9 | Swap10 | Swap11 | Swap12 | Swap13 | Swap14 | Swap15 | Swap16 =>
 				val n = op.opcode - OpCode.Swap1.opcode + 2
 				stack.swap(stack.size - 1, stack.size - n)
+				program.step()
+			case Log0 | Log1 | Log2 | Log3 | Log4 =>
+				val address = program.getOwnerAddress
+				val memStart = stack.pop
+				val memOffset = stack.pop
+				val nTopics = op.opcode - OpCode.Log0.opcode
+				val topics = new ArrayBuffer[DataWord]
+				(0 until nTopics).foreach {
+					_ => topics.append(stack.pop)
+				}
+				val data = program.memoryChunk(memStart.intValue, memOffset.intValue)
+				val logInfo = new LogInfo(address.last20Bytes, topics, data)
+				if (logger.isInfoEnabled) {
+					hint = logInfo.toString
+				}
+				program.result.addLogInfo(logInfo)
+				program.step()
+			case MLoad =>
+				val address = program.stackPop
+				val data = program.memoryLoad(address)
+				if (logger.isInfoEnabled) {
+					hint = "data: " + data
+				}
+				program.stackPush(data)
+				program.step()
+			case MStore =>
+				val address = program.stackPop
+				val value = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "addr: " + address + " value: " + value
+				}
+				program.memorySave(address, value)
+				program.step()
+			case MStore8 =>
+				val address = program.stackPop
+				val value = program.stackPop
+				val byteValue = value.data.last
+				program.memorySave(address, ImmutableBytes.fromOneByte(byteValue), limited = false)
+				program.step()
+			case SLoad =>
+				val key = program.stackPop
+				var value = program.storageLoad(key)
+				if (logger.isInfoEnabled) {
+					hint = "key: " + key + " value: " + value
+				}
+				if (value eq null) {
+					value = DataWord.Zero
+				}
+				program.stackPush(value)
+				program.step()
+			case SStore =>
+				val key = program.stackPop
+				val value = program.stackPop
+				if (logger.isInfoEnabled) {
+					hint = "[%s] key: %s value: %s".format(program.getOwnerAddress.toPrefixString, key, value)
+				}
+				program.storageSave(key, value)
+				//TODO 未実装：StorageDictHandler
+//				if (storageDictHandler ne null) {
+//					storageDictHandler.vmSStoreNotify(addr, value)
+//				}
+				program.step()
+			case Jump =>
+				val pos = program.stackPop
+				program.verifyJumpDest(pos) match {
+					case Right(nextPC) =>
+						if (logger.isInfoEnabled) {
+							hint = "~> " + nextPC
+						}
+						program.setPC(nextPC)
+					case Left(e) => throw e
+				}
+			case JumpI =>
+				val pos = program.stackPop
+				val cond = program.stackPop
+				if (!cond.isZero) {
+					program.verifyJumpDest(pos) match {
+						case Right(nextPC) =>
+							if (logger.isInfoEnabled) {
+								hint = "~> " + nextPC
+							}
+							program.setPC(nextPC)
+						case Left(e) => throw e
+					}
+				} else {
+					program.step()
+				}
+			case PC =>
+				val pc = DataWord(program.getPC)
+				if (logger.isInfoEnabled) {
+					hint = pc.intValue.toString
+				}
+				program.stackPush(pc)
+				program.step()
+			case MSize =>
+				val memSize = DataWord(program.getMemSize)
+				if (logger.isInfoEnabled) {
+					hint = memSize.intValue.toString
+				}
+				program.stackPush(memSize)
+				program.step()
+			case Mana =>
+				val mana = program.getMana
+				if (logger.isInfoEnabled) {
+					hint = mana.intValue.toString
+				}
+				program.stackPush(mana)
+				program.step()
+			case Push1 | Push2 | Push3 | Push4 | Push5 | Push6 | Push7 | Push8 | Push9 | Push10 | Push11 | Push12 | Push13 | Push14 | Push15 | Push16 |
+			     Push17 | Push18 | Push19 | Push20 | Push21 | Push22 | Push23 | Push24 | Push25 | Push26 | Push27 | Push28 | Push29 | Push30 | Push31 | Push32 =>
+				program.step()
+				val nPush = op.opcode - Push1.opcode + 1
+				val data = program.sweep(nPush)
+				if (logger.isInfoEnabled) {
+					hint = data.toHexString
+				}
+				program.stackPush(DataWord(data))
+			case JumpDest =>
+				program.step()
+			case Create =>
+				val value = program.stackPop
+				val inOffset = program.stackPop
+				val inSize = program.stackPop
+				if (logger.isInfoEnabled) {
+					logger.info(logString.format("[%5s]".format(program.getPC), "%-12s".format(op.name), program.getMana.value, program.getCallDepth, hint))
+				}
+				program.createContract(value, inOffset, inSize)
+				program.step()
+			case Call | CallCode =>
+				var mana = program.stackPop
+				val codeAddress = program.stackPop
+				val value = program.stackPop
+				if (!value.isZero) {
+					mana = DataWord(mana.intValue + ManaCost.StipendCall)
+				}
+				val inDataOffset = program.stackPop
+				val inDataSize = program.stackPop
+				val outDataOffset = program.stackPop
+				val outDataSize = program.stackPop
+
+				if (logger.isInfoEnabled) {
+					hint = "addr: %s gas: %s inOffset: %s inSize: %s".format(codeAddress.last20Bytes.toHexString, mana.shortHex, inDataOffset.shortHex, inDataSize.shortHex)
+					logger.info(logString.format("[%5s]".format(program.getPC), "%-12s".format(op.name), program.getMana.value, program.getCallDepth, hint))
+				}
+
+				program.memoryExpand(outDataOffset, outDataSize)
+				val message = new MessageCall(
+					if (op == Call) MessageType.Call else MessageType.Stateless,
+					mana, codeAddress, value, inDataOffset, inDataSize, outDataOffset, outDataSize
+				)
+				PrecompiledContracts.getContractForAddress(codeAddress) match {
+					case Some(contract) =>
+						program.callToPrecompiledAddress(message, contract)
+					case _ =>
+						program.callToAddress(message)
+				}
+				program.step()
+			case Return =>
+				val offset = program.stackPop
+				val size = program.stackPop
+				val hReturn = program.memoryChunk(offset.intValue, size.intValue)
+				program.setHReturn(hReturn)
+				if (logger.isInfoEnabled) {
+					hint = "data: " + hReturn.toHexString
+				}
+				program.step()
+				program.stop()
+			case Suicide =>
+				val address = program.stackPop
+				program.suicide(address)
+				if (logger.isInfoEnabled) {
+					hint = "address: " + address.last20Bytes.toHexString
+				}
 				program.step()
 			case _ =>
 			//

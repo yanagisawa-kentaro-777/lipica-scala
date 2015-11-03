@@ -1,7 +1,7 @@
 
-Program（文字列生成関連）
 StorageDictionaryHandler
-VM
+Program（文字列生成関連）
+VM（文字列生成関連）
 
 DataWord.countWords: Int を実装して使う。
 StorageLoadをOption化する。
