@@ -308,4 +308,37 @@ class VMTest extends Specification {
 		}
 	}
 
+	"test push not enough data (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61AA"), invoke, null)
+			val expected = "000000000000000000000000000000000000000000000000000000000000AA00"
+			vm.step(program)
+			program.isStopped mustEqual true
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+	"test push not enough data (2)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("7fAABB"), invoke, null)
+			val expected = "AABB000000000000000000000000000000000000000000000000000000000000"
+			vm.step(program)
+			program.isStopped mustEqual true
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test and (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("600A600A16"), invoke, null)
+			val expected = "000000000000000000000000000000000000000000000000000000000000000A"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
 }
