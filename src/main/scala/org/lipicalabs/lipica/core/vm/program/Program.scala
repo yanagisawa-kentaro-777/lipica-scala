@@ -700,6 +700,10 @@ object Program {
 			new OutOfManaException("Not enough mana for '%s' operation executing: opMana[%,d], programMana[%,d];".format(op, opMana.value, programMana.value))
 		}
 
+		def manaOverflow(actualMana: BigInt, manaLimit: BigInt): OutOfManaException = {
+			new OutOfManaException("Mana value overflow: actualMana[%d], manaLimit[%d];".format(actualMana.longValue(), manaLimit.longValue()))
+		}
+
 		def invalidOpCode(opCode: Byte): IllegalOperationException = {
 			new IllegalOperationException("Invalid operation code: opCode[%s];".format(opCode))
 		}

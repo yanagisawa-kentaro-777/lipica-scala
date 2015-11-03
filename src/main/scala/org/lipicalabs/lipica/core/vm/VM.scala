@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.OpCode._
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.slf4j.LoggerFactory
@@ -34,19 +35,51 @@ class VM {
 			program.verifyStackSize(op.require)
 			program.verifyStackOverflow(op.require, op.ret)
 
-			val oldMemSize: Long = program.getMemSize
-			val stack = program.stack
-
 			var hint = ""
-			val callMana: Long = 0
-			var memWords: Long = 0
-			val manaBefore: Long = program.getMana.longValue
+
+			val manaBefore = program.getMana.longValue
 			val stepBefore: Int = program.getPC
 
 			//必要なマナ容量および新たに必要となるメモリサイズを計算する。
-			val (manaCost, newMemSize, copySize) = computeNecessaryResources(op, program)
+			val (baseManaCost, newMemSize, copySize) = computeNecessaryResources(op, program)
 			//マナを消費する。
-			program.spendMana(manaCost, op.toString)
+			program.spendMana(baseManaCost, op.toString)
+
+			if (MaxMana < newMemSize) {
+				throw Program.Exception.manaOverflow(newMemSize, MaxMana)
+			}
+
+			//マナコストを、さらに詳しく計算する。
+			var manaCost = baseManaCost
+			val oldMemSize = program.getMemSize
+			val memoryUsage = (newMemSize.longValue() + DataWord.NUM_BYTES - 1) / DataWord.NUM_BYTES * DataWord.NUM_BYTES
+			var memWords: Long = 0
+			if (oldMemSize < memoryUsage) {
+				memWords = memoryUsage / DataWord.NUM_BYTES
+				val memWordsOld = oldMemSize / DataWord.NUM_BYTES
+				val memMana = (ManaCost.Memory * memWords + memWords * memWords / 512) - (ManaCost.Memory * memWordsOld + memWordsOld * memWordsOld / 512)
+				program.spendMana(memMana, op.name + " (memory usage)")
+				manaCost += memMana
+			}
+			if (0 < copySize) {
+				val copyMana = ManaCost.CopyMana * ((copySize + DataWord.NUM_BYTES - 1) / DataWord.NUM_BYTES)
+				manaCost += copyMana
+				program.spendMana(copyMana, op.name + " (copy usage)")
+			}
+			//詳細デバッグ出力。
+			if (program.getBlockNumber.longValue == SystemProperties.CONFIG.dumpBlock) {
+				dumpLine(op, manaBefore, manaCost, memWords, program)
+			}
+
+			//処理を実行する。
+			execute(op, program)
+
+			//実行したコードを記録する。
+			program.setPreviouslyExecutedOp(op.opcode)
+			if (logger.isInfoEnabled && (op != Call) && (op != CallCode) && (op != Create)) {
+				logger.info(logString.format("[%5s]".format(program.getPC), "%-12s".format(op.name), program.getMana.longValue, program.getCallDepth, hint))
+			}
+			vmCounter += 1
 		} catch {
 			case e: RuntimeException =>
 				logger.warn("VM halted: [%s]", e.toString)
@@ -137,6 +170,17 @@ class VM {
 		}
 	}
 
+	private def execute(op: OpCode, program: Program): Unit = {
+		//処理を実行する。
+		op match {
+			case Stop =>
+				program.setHReturn(ImmutableBytes.empty)
+				program.stop()
+			case _ =>
+			//
+		}
+	}
+
 	/**
 	 * 命令実行に必要となる、新たな総メモリ容量を計算して返します。
 	 */
@@ -167,6 +211,10 @@ class VM {
 				logger.error("\n !!! StackOverflowError: update your java run command with -Xss32M !!!\n")
 				System.exit(-1)
 		}
+	}
+
+	private def dumpLine(op: OpCode, manaBefore: Long, manaCost: Long, memWords: Long, program: Program): Unit = {
+		//TODO 未実装：dumpLine
 	}
 
 }

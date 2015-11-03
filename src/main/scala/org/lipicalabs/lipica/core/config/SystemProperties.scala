@@ -22,6 +22,11 @@ class SystemProperties {
 		false
 	}
 
+	def dumpBlock: Long = {
+		//TODO
+		-1L
+	}
+
 }
 
 object SystemProperties {

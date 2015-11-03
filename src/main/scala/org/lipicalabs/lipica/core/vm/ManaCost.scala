@@ -23,9 +23,13 @@ object ManaCost {
 	val ValueTransferCall = 9000
 	val NewAccountCall = 25000
 
+	val Memory = 3
+
 	val LogMana = 375
 	val LogDataMana = 8
 	val LogTopicMana = 375
+
+	val CopyMana = 3
 
 	val ExpMana = 10
 	val ExpByteMana = 10

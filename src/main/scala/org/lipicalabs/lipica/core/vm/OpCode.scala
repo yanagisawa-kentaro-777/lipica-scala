@@ -58,7 +58,9 @@ object Tier {
  * @since 2015/10/17
  * @author YANAGISAWA, Kentaro
  */
-sealed class OpCode(val opcode: Byte, val require: Int, val ret: Int, val tier: Tier)
+sealed class OpCode(val opcode: Byte, val require: Int, val ret: Int, val tier: Tier) {
+	def name: String = "%s (%d)".format(getClass.getSimpleName, opcode)
+}
 
 
 object OpCode {
