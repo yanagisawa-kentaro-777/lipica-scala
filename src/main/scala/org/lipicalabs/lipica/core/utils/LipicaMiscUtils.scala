@@ -16,4 +16,14 @@ object LipicaMiscUtils {
 			Some(internal.sealedDescendants.map(_.asInstanceOf[Symbol]) - symbol)
 		else None
 	}
+
+//	def getModule[T](tpe: Type): T = {
+//		val classSymbol  = tpe.typeSymbol.asClass
+//		val compSymbol   = classSymbol.companion
+//		println(compSymbol)
+//		val moduleSymbol = compSymbol.asClass
+//		val moduleMirror = currentMirror.reflectClass(moduleSymbol)
+//		moduleMirror.reflectConstructor()
+//		moduleMirror.instance.asInstanceOf[T]
+//	}
 }
