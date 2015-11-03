@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListener, ProgramL
 
 
 /**
- * LipicaVMのスタックを表すクラスです。
+ * Lipica VMのスタックを表すクラスです。
  *
  * Created by IntelliJ IDEA.
  * 2015/10/25 13:27
@@ -54,6 +54,8 @@ class Stack extends ProgramListenerAware {
 			}
 		}
 	}
+
+	def peek: DataWord = this.stack.peek
 
 	def size: Int = {
 		this.synchronized {

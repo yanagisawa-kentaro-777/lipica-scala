@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -23,12 +22,21 @@ class StackTest extends Specification {
 			stack.size mustEqual 0
 			stack.isEmpty mustEqual true
 			stack.nonEmpty mustEqual false
+			try {
+				stack.peek
+				ko
+			} catch {
+				case any: Throwable =>
+					ok
+			}
+
 
 			stack.push(DataWord(0L))
 
 			stack.isEmpty mustEqual false
 			stack.nonEmpty mustEqual true
 			stack.size mustEqual 1
+			stack.peek mustEqual DataWord(0)
 
 			stack.push(DataWord(1L))
 
@@ -36,12 +44,14 @@ class StackTest extends Specification {
 			stack.nonEmpty mustEqual true
 			stack.size mustEqual 2
 
+			stack.peek mustEqual DataWord(1L)
 			stack.pop mustEqual DataWord(1L)
 
 			stack.isEmpty mustEqual false
 			stack.nonEmpty mustEqual true
 			stack.size mustEqual 1
 
+			stack.peek mustEqual DataWord(0L)
 			stack.pop mustEqual DataWord(0L)
 
 			stack.size mustEqual 0

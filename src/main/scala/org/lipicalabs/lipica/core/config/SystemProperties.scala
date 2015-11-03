@@ -16,6 +16,12 @@ class SystemProperties {
 		//TODO
 		1000000
 	}
+
+	def isStorageDictionaryEnabled: Boolean = {
+		//TODO
+		false
+	}
+
 }
 
 object SystemProperties {

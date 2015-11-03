@@ -271,7 +271,6 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			}
 		//実行する。
 		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
-		//TODO 未実装！！！
 		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore, byTestingSuite)
 
 		val programResult =
@@ -354,7 +353,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 				codeAddress
 			}
 		if (logger.isInfoEnabled) {
-			logger.info("%s for existing contract: address: [%s], outDataOffset: [%s], outDataSize[%s]".format(contextAddress.toHexString, message.outDataOffset, message.outDataSize))
+			logger.info("Call for existing contract: address: [%s], outDataOffset: [%s], outDataSize[%s]".format(contextAddress.toHexString, message.outDataOffset, message.outDataSize))
 		}
 		val track = this.storage.startTracking
 		//手数料。
@@ -569,7 +568,10 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 	def memoryToString: String = this.memory.toString
 
-	//TODO fullTrace
+	def fullTrace(): Unit = {
+		//TODO 未実装：fullTrace
+	}
+
 	//TODO stringify multiline
 	//TODO stringify(not used)
 
@@ -661,7 +663,14 @@ object Program {
 		//
 	}
 
+	/**
+	 * 実行に必要なマナが枯渇した際に発生する例外。
+	 */
 	class OutOfManaException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+		//
+	}
+
+	class IllegalOperationException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
 		//
 	}
 
@@ -681,6 +690,10 @@ object Program {
 
 		def notEnoughSpendingMana(cause: String, manaValue: Long, program: Program): OutOfManaException = {
 			new OutOfManaException("Not enough mana for '%s' cause spending: invokeMana[%d], mana[%d], usedMana[%d];", cause, program.invoke.getMana.longValue, manaValue, program.result.manaUsed)
+		}
+
+		def invalidOpCode(opCode: Byte): IllegalOperationException = {
+			new IllegalOperationException("Invalid operation code: opCode[%s];".format(opCode))
 		}
 
 	}

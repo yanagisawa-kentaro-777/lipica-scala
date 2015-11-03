@@ -7,6 +7,9 @@ package org.lipicalabs.lipica.core.vm
  */
 object ManaCost {
 
+
+	val Stop = 0
+
 	/** ゼロでないデータ１バイトにかかるフィー。 */
 	val TX_NO_ZERO_DATA = 68
 	/** ゼロであるデータ１バイトにかかるフィー。 */

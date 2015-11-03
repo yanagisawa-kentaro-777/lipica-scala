@@ -13,7 +13,8 @@ import org.lipicalabs.lipica.core.vm.Tier._
 sealed trait Tier {
 	def level: Int
 	def asInt: Int = this.level
-	override def toString: String = "%s (Level %d)".format(getClass.getSimpleName, level)
+	def name: String = "%s (Level %d)".format(getClass.getSimpleName, level)
+	override def toString: String = this.name
 }
 object Tier {
 	val all: Set[Tier] = {

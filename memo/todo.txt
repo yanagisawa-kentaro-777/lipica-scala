@@ -1,5 +1,6 @@
 
-Program
+Program（文字列生成関連）
+StorageDictionaryHandler
 VM
 
 ImmutableBytesの普及。（Value方面）
