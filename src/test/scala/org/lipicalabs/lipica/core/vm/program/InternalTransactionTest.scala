@@ -44,8 +44,20 @@ class InternalTransactionTest extends Specification {
 			internalTx.isRejected mustEqual false
 			internalTx.reject()
 			internalTx.isRejected mustEqual true
+
+			val encoded = internalTx.encodedBytes
+			encoded.nonEmpty mustEqual true
+
+			internalTx.encodedRawBytes mustEqual encoded
+
+			try {
+				internalTx.sign(ImmutableBytes.empty)
+				ko
+			} catch {
+				case any: Throwable => ok
+			}
+			internalTx.signatureOption.isEmpty mustEqual true
 		}
 	}
-
 
 }
