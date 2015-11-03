@@ -266,12 +266,12 @@ object OpCode {
 	/**
 	 * 0x41：ブロックのコインベースアドレスを取得する。
 	 */
-	object CoinBase extends OpCode(0x41, 0, 1, BaseTier)
+	object Coinbase extends OpCode(0x41, 0, 1, BaseTier)
 
 	/**
 	 * 0x42：ブロックのタイムスタンプを取得する。
 	 */
-	object TimeStamp extends OpCode(0x42, 0, 1, BaseTier)
+	object Timestamp extends OpCode(0x42, 0, 1, BaseTier)
 
 	/**
 	 * 0x43：ブロックの番号を取得する。

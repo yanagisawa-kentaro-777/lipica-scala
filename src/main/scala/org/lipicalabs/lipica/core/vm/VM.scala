@@ -173,6 +173,7 @@ class VM {
 	private def execute(op: OpCode, program: Program): String = {
 		//処理を実行する。
 		var hint = ""
+		val stack = program.stack
 		op match {
 			case Stop =>
 				program.setHReturn(ImmutableBytes.empty)
@@ -525,6 +526,61 @@ class VM {
 					hint = "price: " + manaPrice
 				}
 				program.stackPush(manaPrice)
+				program.step()
+			case BlockHash =>
+				val blockIndex = program.stackPop.intValue
+				val blockHash = program.getBlockHash(blockIndex)
+				if (logger.isInfoEnabled) {
+					hint = "blockHash: " + blockHash
+				}
+				program.stackPush(blockHash)
+				program.step()
+			case Coinbase =>
+				val coinbase = program.getCoinbase
+				if (logger.isInfoEnabled) {
+					hint = "Coinbase: " + coinbase.last20Bytes.toHexString
+				}
+				program.stackPush(coinbase)
+				program.step()
+			case Timestamp =>
+				val timestamp = program.getTimestamp
+				if (logger.isInfoEnabled) {
+					hint = "timestamp: " + timestamp.value
+				}
+				program.stackPush(timestamp)
+				program.step()
+			case Number =>
+				val number = program.getBlockNumber
+				if (logger.isInfoEnabled) {
+					hint = "number: " + number.value
+				}
+				program.stackPush(number)
+				program.step()
+			case Difficulty =>
+				val difficulty = program.getDifficulty
+				if (logger.isInfoEnabled) {
+					hint = "difficulty: " + difficulty.value
+				}
+				program.stackPush(difficulty)
+				program.step()
+			case ManaLimit =>
+				val manaLimit = program.getBlockManaLimit
+				if (logger.isInfoEnabled) {
+					hint = "manaLimit: " + manaLimit.value
+				}
+				program.stackPush(manaLimit)
+				program.step()
+			case Pop =>
+				program.stackPop
+				program.step()
+			case Dup1 | Dup2 | Dup3 | Dup4 | Dup5 | Dup6 | Dup7 | Dup8 | Dup9 | Dup10 | Dup11 | Dup12 | Dup13 | Dup14 | Dup15 | Dup16 =>
+				val n = op.opcode - OpCode.Dup1.opcode + 1
+				val word = stack.get(stack.size - n)
+				program.stackPush(word)
+				program.step()
+			case Swap1 | Swap2 | Swap3 | Swap4 | Swap5 | Swap6 | Swap7 | Swap8 | Swap9 | Swap10 | Swap11 | Swap12 | Swap13 | Swap14 | Swap15 | Swap16 =>
+				val n = op.opcode - OpCode.Swap1.opcode + 2
+				stack.swap(stack.size - 1, stack.size - n)
 				program.step()
 			case _ =>
 			//
