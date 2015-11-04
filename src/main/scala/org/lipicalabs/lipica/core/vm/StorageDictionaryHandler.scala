@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
+import org.lipicalabs.lipica.core.db.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.{LoggerFactory, Logger}
 
@@ -33,7 +34,8 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 			hashes.put(getMapKey(out.data), new Entry(out, in))
 		} catch {
 			case e: Throwable =>
-				logger.error("Unexpected exception: ", e)
+				//例外は伝播させない。
+				logger.warn("Unexpected exception: ", e)
 		}
 	}
 
@@ -108,63 +110,68 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 		}
 		return Array[StorageDictionary.PathElement](el)
 	}
+	*/
 
 	def guessValue(bytes: ImmutableBytes): AnyRef = {
-		var startZeroCnt: Int = 0
-		var startNonZeroCnt: Int = 0
-		var asciiOnly: Boolean = true
-		{
-			var i: Int = 0
-			while (i < bytes.length) {
-				{
-					if (bytes(i) != 0) {
-						if (startNonZeroCnt > 0 || i == 0) ({
-							startNonZeroCnt += 1; startNonZeroCnt - 1
-						})
-						else break //todo: break is not supported
+		import scala.util.control.Breaks
+		val b = new Breaks
+
+		var startZeroCnt = 0
+		var startNonZeroCnt = 0
+		var asciiOnly = true
+
+		b.breakable {
+			(0 until bytes.length).foreach { i => {
+				if (bytes(i) != 0) {
+					if ((0 < startNonZeroCnt) || (i == 0)) {
+						//連続の非ゼロ。
+						startNonZeroCnt += 1
+					} else {
+						b.break()
 					}
-					else {
-						if (startZeroCnt > 0 || i == 0) ({
-							startZeroCnt += 1; startZeroCnt - 1
-						})
-						else break //todo: break is not supported
-					}
-					asciiOnly &= bytes(i) > 0x1F && bytes(i) <= 0x7E
-				}
-				({
-					i += 1; i - 1
-				})
-			}
-		}
-		var endZeroCnt: Int = 0
-		var endNonZeroCnt: Int = 0
-		{
-			var i: Int = 0
-			while (i < bytes.length) {
-				{
-					if (bytes(bytes.length - i - 1) != 0) {
-						if (endNonZeroCnt > 0 || i == 0) ({
-							endNonZeroCnt += 1; endNonZeroCnt - 1
-						})
-						else break //todo: break is not supported
-					}
-					else {
-						if (endZeroCnt > 0 || i == 0) ({
-							endZeroCnt += 1; endZeroCnt - 1
-						})
-						else break //todo: break is not supported
+				} else {
+					//連続のゼロ。
+					if ((0 < startZeroCnt) || (i == 0)) {
+						startZeroCnt += 1
+					} else {
+						b.break()
 					}
 				}
-				({
-					i += 1; i - 1
-				})
-			}
+				asciiOnly &= (0x1F < bytes(i)) && (bytes(i) <= 0x7E)
+			}}
 		}
-		if (startZeroCnt > 16) return new BigInteger(bytes)
-		if (asciiOnly) return new String(bytes, 0, startNonZeroCnt)
-		return Hex.toHexString(bytes)
+
+		var endZeroCnt = 0
+		var endNonZeroCnt = 0
+		b.breakable {
+			(0 until bytes.length).foreach { i => {
+				if (bytes(bytes.length - i - 1) != 0) {
+					if ((0 < endNonZeroCnt) || (i == 0)) {
+						//連続の非ゼロ。
+						endNonZeroCnt += 1
+					} else {
+						b.break()
+					}
+				} else {
+					if ((0 < endZeroCnt) || (i == 0)) {
+						endZeroCnt += 1
+					} else {
+						b.break()
+					}
+				}
+			}}
+		}
+
+		if (16 < startZeroCnt) {
+			bytes.toSignedBigInt
+		} else if (asciiOnly) {
+			new String(bytes.toByteArray, 0, startNonZeroCnt)
+		} else {
+			bytes.toHexString
+		}
 	}
 
+	/*
 	private var seContracts: Map[ByteArrayWrapper, StorageDictionary] = new HashMap[ByteArrayWrapper, StorageDictionary]
 
 	def testDump(layout: StorageDictionaryDb.Layout): StorageDictionary = {
@@ -175,8 +182,11 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 		}
 		dict
 	}
+			*/
 
 	def dumpKeys(storage: ContractDetails) {
+		//TODO dumpKeys: 未実装。
+		/*
 		val solidityDict: StorageDictionary = StorageDictionaryDb.INST.getOrCreate(StorageDictionaryDb.Layout.Solidity, contractAddress)
 		val serpentDict: StorageDictionary = StorageDictionaryDb.INST.getOrCreate(StorageDictionaryDb.Layout.Serpent, contractAddress)
 		import scala.collection.JavaConversions._
@@ -240,12 +250,15 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 		}
 		StorageDictionaryDb.INST.put(StorageDictionaryDb.Layout.Solidity, contractAddress, solidityDict)
 		StorageDictionaryDb.INST.put(StorageDictionaryDb.Layout.Serpent, contractAddress, serpentDict)
+		*/
 	}
 
-	def vmStartPlayNotify {
+
+	def vmStartPlayNotify(): Unit = {
+		//
 	}
 
-	def vmEndPlayNotify(contractDetails: ContractDetails) {
+	def vmEndPlayNotify(contractDetails: ContractDetails): Unit = {
 		try {
 			dumpKeys(contractDetails)
 		} catch {
@@ -253,7 +266,7 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 				logger.error("Unexpected exception: ", e)
 		}
 	}
-		*/
+
 }
 
 object StorageDictionaryHandler {
