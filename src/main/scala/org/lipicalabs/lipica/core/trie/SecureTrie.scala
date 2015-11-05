@@ -10,6 +10,10 @@ import org.lipicalabs.lipica.core.utils.{Value, ImmutableBytes}
  */
 class SecureTrie(_db: KeyValueDataSource, _root: Value) extends TrieImpl(_db, _root) {
 
+	override def get(key: ImmutableBytes): ImmutableBytes = super.get(key.sha3)
 
+	override def update(key: ImmutableBytes, value: ImmutableBytes): Unit = super.update(key.sha3, value)
+
+	override def delete(key: ImmutableBytes): Unit = this.update(key, ImmutableBytes.empty)
 
 }
