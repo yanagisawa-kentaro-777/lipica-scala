@@ -519,15 +519,24 @@ class TrieTest extends Specification {
 		"be right" in {
 			val mockDb = new HashMapDB
 			val trie = new TrieImpl(mockDb)
+			val dump0 = trie.dumpToString
+
 			trie.update("doe", "reindeer")
 			trie.sync()
 			trie.rootHash.toHexString mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
+			val dump1 = trie.dumpToString
+			dump1 mustNotEqual dump0
 
 			trie.update("dog", "puppy")
 			trie.rootHash.toHexString mustEqual "05ae693aac2107336a79309e0c60b24a7aac6aa3edecaef593921500d33c63c4"
+			val dump2 = trie.dumpToString
+			dump2 mustNotEqual dump1
+			dump2 mustNotEqual dump0
 
 			trie.undo()
 			trie.rootHash.toHexString mustEqual "11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e"
+			val dump3 = trie.dumpToString
+			dump3 mustEqual dump1
 		}
 	}
 

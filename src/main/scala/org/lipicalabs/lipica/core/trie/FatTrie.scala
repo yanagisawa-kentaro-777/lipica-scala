@@ -44,9 +44,9 @@ class FatTrie(origTrieDS: KeyValueDataSource, secureTrieDS: KeyValueDataSource) 
 
 	override def validate: Boolean = this.secureTrie.validate
 
-//	override def getTrieDump: String = {
-//		this.secureTrie.getTrieDump
-//	}
+	override def dumpToString: String = {
+		this.secureTrie.dumpToString
+	}
 
 
 }

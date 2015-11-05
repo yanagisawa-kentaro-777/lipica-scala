@@ -44,4 +44,6 @@ trait Trie {
 
 	def validate: Boolean
 
+	def dumpToString: String
+
 }

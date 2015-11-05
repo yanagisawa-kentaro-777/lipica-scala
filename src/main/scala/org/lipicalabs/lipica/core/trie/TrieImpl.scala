@@ -402,6 +402,33 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		another
 	}
 
+	private def scanTree(hash: ImmutableBytes, action: ScanAction): Unit = {
+		val node = this.cache.get(hash)
+		if (node eq null) return
+
+		if (node.nodeValue.isSeq) {
+			val siblings = node.nodeValue.asSeq
+			if (siblings.size == PAIR_SIZE) {
+				val value = Value.fromObject(siblings(1))
+				if (value.isHashCode) scanTree(value.asImmutableBytes, action)
+			} else {
+				(0 until LIST_SIZE).foreach {i => {
+					val value = Value.fromObject(siblings(i))
+					if (value.isHashCode) scanTree(value.asImmutableBytes, action)
+				}}
+			}
+			action.doOnNode(hash, node.nodeValue)
+		}
+	}
+
+	override def dumpToString: String = {
+		val traceAction = new TraceAllNodes
+		this.scanTree(this.rootHash, traceAction)
+
+		val rootString = "root: %s => %s\n".format(rootHash.toHexString, this.root.toString)
+		rootString + traceAction.getOutput
+	}
+
 	override def equals(o: Any): Boolean = {
 		o match {
 			case another: Trie => this.rootHash == another.rootHash

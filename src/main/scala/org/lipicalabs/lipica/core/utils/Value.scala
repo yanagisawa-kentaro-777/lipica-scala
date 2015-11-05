@@ -52,6 +52,8 @@ trait Value {
 
 	def isImmutableBytes: Boolean
 
+	def isHashCode: Boolean
+
 	def isSeq: Boolean
 
 	def isNull: Boolean
@@ -62,7 +64,7 @@ trait Value {
 
 object Value {
 
-	val empty = fromObject(ImmutableBytes.empty)
+	val empty: PlainValue = fromObject(ImmutableBytes.empty).asInstanceOf[PlainValue]
 
 	def fromObject(obj: Any): Value = {
 		obj match {
@@ -243,6 +245,8 @@ class PlainValue private[utils](_value: Any) extends Value {
 
 	def isImmutableBytes: Boolean = this.value.isInstanceOf[ImmutableBytes]
 
+	def isHashCode: Boolean = isImmutableBytes && (asImmutableBytes.length == 32)
+
 	def isSeq: Boolean = {
 		if (!this.value.isInstanceOf[AnyRef]) return false
 		val v = this.value.asInstanceOf[AnyRef]
@@ -311,7 +315,7 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 				case Left(e) => ()
 			}
 		}
-		this.plainValueRef.get.get
+		this.plainValueRef.get.getOrElse(Value.empty)
 	}
 
 	def asObj: Any = decode.asObj
@@ -343,6 +347,8 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 	def isBytes: Boolean = decode.isBytes
 
 	def isImmutableBytes: Boolean = decode.isImmutableBytes
+
+	def isHashCode: Boolean = decode.isHashCode
 
 	def isSeq: Boolean = decode.isSeq
 
