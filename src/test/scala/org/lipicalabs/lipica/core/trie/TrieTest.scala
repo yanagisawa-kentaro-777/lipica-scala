@@ -592,7 +592,7 @@ class TrieTest extends Specification {
 				}
 			}
 
-//			trie.cleanCache()
+			trie.cleanCache()
 			val prev = mockDb.getAddedItems
 			trie.sync()
 			println("Committed: %d -> %d".format(prev, mockDb.getAddedItems))

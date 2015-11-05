@@ -9,6 +9,7 @@ import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 
 /**
  * Merkle-Patricia Treeの実装クラスです。
@@ -391,7 +392,27 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	override def validate: Boolean = Option(this.cache.get(rootHash)).isDefined
 
 	def cleanCache(): Unit = {
-		//TODO
+		val startTime = System.currentTimeMillis
+
+		val collectAction = new CollectFullSetOfNodes
+		this.scanTree(this.rootHash, collectAction)
+		val collectedHashes = collectAction.getCollectedHashes
+
+		val cachedNodes = this.cache.getNodes
+		val toRemoveSet = new mutable.HashSet[ImmutableBytes]
+		for (key <- cachedNodes.keySet) {
+			if (!collectedHashes.contains(key)) {
+				toRemoveSet.add(key)
+			}
+		}
+		for (key <- toRemoveSet) {
+			this.cache.delete(key)
+			if (logger.isTraceEnabled) {
+				logger.trace("Garbage collected node: [%s]".format(key.toHexString))
+			}
+		}
+		logger.info("Garbage collected node list, size: [%,d]".format(toRemoveSet.size))
+		logger.info("Garbage collection time: [%,d ms]".format(System.currentTimeMillis - startTime))
 	}
 
 	def copy: TrieImpl = {
