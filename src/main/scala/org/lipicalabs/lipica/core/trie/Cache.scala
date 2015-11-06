@@ -27,6 +27,8 @@ class Cache(_dataSource: KeyValueDataSource) {
 		this.nodes.put(key, value)
 	}
 
+	def put(key: ImmutableBytes, value: Value): Unit = this.nodes.put(key, new CachedNode(value, _dirty = false))
+
 	/**
 	 * 渡されたオブジェクトのエンコードされた表現が、
 	 * 32バイト（＝256ビット）よりも長ければ、キャッシュに保存します。

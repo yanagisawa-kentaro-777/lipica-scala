@@ -6,7 +6,7 @@ StorageDictionaryHandler
 Program（文字列生成関連）
 VM（文字列生成関連）
 
-TrieImpl#serialize & deserialize
+TrieImplのテストおよびrefactor.
 
 RepositoryのメソッドをOption化する。
 CacheのメソッドをOption化する。

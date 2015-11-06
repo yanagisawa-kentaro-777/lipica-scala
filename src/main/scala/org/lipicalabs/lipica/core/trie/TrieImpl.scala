@@ -442,6 +442,35 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		}
 	}
 
+	def deserialize(data: ImmutableBytes): Unit = {
+		RBACCodec.Decoder.decode(data.toByteArray) match {
+			case Right(result) =>
+				val keys = result.items.head.bytes
+				val valuesSeq = result.items(1).items.map(_.bytes)
+				val encodedRoot = result.items(2).bytes
+
+				valuesSeq.indices.foreach {i => {
+					val encodedValue = valuesSeq(i)
+					val key = new Array[Byte](32)
+					val value = Value.fromEncodedBytes(ImmutableBytes(encodedValue))
+					System.arraycopy(keys, i * 32, key, 0, 32)
+
+					this.cache.put(ImmutableBytes(key), value)
+				}}
+				root(Value.fromEncodedBytes(ImmutableBytes(encodedRoot)))
+			case Left(e) =>
+				logger.warn("Deserialization error.", e)
+		}
+	}
+
+	def serialize: ImmutableBytes = {
+		val nodes = this.cache.getNodes
+		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
+		val encodedValues = nodes.values.map(each => RBACCodec.Encoder.encode(each.nodeValue.value))
+		val encodedRoot = RBACCodec.Encoder.encode(this.root.value)
+		ImmutableBytes(RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot)))
+	}
+
 	override def dumpToString: String = {
 		val traceAction = new TraceAllNodes
 		this.scanTree(this.rootHash, traceAction)

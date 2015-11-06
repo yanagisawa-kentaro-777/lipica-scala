@@ -320,6 +320,20 @@ class TrieTest extends Specification {
 
 			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_BEFORE
 
+			val serialized = trie.serialize
+			val newTrie = new TrieImpl(new HashMapDB)
+			new String(newTrie.get("cat").toByteArray) mustEqual ""
+			new String(newTrie.get("ca").toByteArray) mustEqual ""
+			new String(newTrie.get("doge").toByteArray) mustEqual ""
+			new String(newTrie.get("dog").toByteArray) mustEqual ""
+			new String(newTrie.get("test").toByteArray) mustEqual ""
+			newTrie.deserialize(serialized)
+			new String(newTrie.get("cat").toByteArray) mustEqual "dog"
+			new String(newTrie.get("ca").toByteArray) mustEqual "dude"
+			new String(newTrie.get("doge").toByteArray) mustEqual LONG_STRING
+			new String(newTrie.get("dog").toByteArray) mustEqual "test"
+			new String(newTrie.get("test").toByteArray) mustEqual LONG_STRING
+
 			trie.delete("dog")
 			new String(trie.get("dog").toByteArray) mustEqual ""
 			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_AFTER1
