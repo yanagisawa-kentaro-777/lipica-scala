@@ -507,4 +507,145 @@ class VMTest extends Specification {
 		program.stack.pop.data.toHexString.toUpperCase mustEqual expected
 	}
 
+	//TODO Swap 以下、間を大きく飛ばしている。
+
+	"test add (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6002600201"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000004"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test add mod (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60026002600308"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 4).foreach {
+				_ => vm.step(program)
+			}
+			program.isStopped mustEqual true
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test add mod (2)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6110006002611002086000"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000004"
+			(0 until 4).foreach {
+				_ => vm.step(program)
+			}
+			program.isStopped mustEqual false
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test mul (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6003600202"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000006"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test mul mod (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60036002600409"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000002"
+			(0 until 4).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test div (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6002600404"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000002"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test sdiv (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6103E87FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC1805"), invoke, null)
+			val expected = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test sub (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6004600603"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000002"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test msize (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("59"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000000"
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test stop" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60206030601060306011602300"), invoke, null)
+			val expectedSteps = 7
+			var count = 0
+			while (!program.isStopped) {
+				vm.step(program)
+				count += 1
+			}
+			count mustEqual expectedSteps
+		}
+	}
+
+	"test exp (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("600360020a"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000008"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+			program.result.manaUsed mustEqual 26
+		}
+	}
+
+	//TODO RETURN 以下未実装。
+
 }
