@@ -11,7 +11,6 @@ TrieImplのテストおよびrefactor.
 
 DataWord#intValueSafeを実装し、VMのメモリアクセスで利用する。
 
-ImmutableBytesの普及。（Value方面）
 ImmutableBytes#toByteArray の排除。
 
 AccountStateのモデル。

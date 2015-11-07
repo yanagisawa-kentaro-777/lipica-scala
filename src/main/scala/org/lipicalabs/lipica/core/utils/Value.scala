@@ -26,9 +26,7 @@ trait Value {
 
 	def asSeq: Seq[AnyRef]
 
-	def asImmutableBytes: ImmutableBytes
-
-	def asBytes: Array[Byte]
+	def asBytes: ImmutableBytes
 
 	def asInt: Int
 
@@ -49,8 +47,6 @@ trait Value {
 	def isBigInt: Boolean
 
 	def isBytes: Boolean
-
-	def isImmutableBytes: Boolean
 
 	def isHashCode: Boolean
 
@@ -85,12 +81,11 @@ object Value {
 					case null => ""
 					case s: String => s
 					case bytes: Array[Byte] => "[" + Hex.encodeHexString(bytes) + "]"
+					case bytes: ImmutableBytes => "[" + bytes.toHexString + "]"
 					case any => any.toString
 				}.mkString("(", ",", ")")
 			} else if (value.isBytes) {
-				"[" + Hex.encodeHexString(value.asBytes) + "]"
-			} else if (value.isImmutableBytes) {
-				"[" + value.asImmutableBytes.toHexString + "]"
+				"[" + value.asBytes.toHexString + "]"
 			} else if (value.isString) {
 				value.asString
 			} else {
@@ -137,69 +132,48 @@ class PlainValue private[utils](_value: Any) extends Value {
 
 	def sha3: ImmutableBytes = encode.sha3
 
-	def hash: ImmutableBytes = sha3
+	override def hash: ImmutableBytes = sha3
 
-	def asObj: Any = value
+	override def asObj: Any = value
 
-	def asSeq: Seq[AnyRef] = this.value.asInstanceOf[Seq[AnyRef]]
+	override def asSeq: Seq[AnyRef] = this.value.asInstanceOf[Seq[AnyRef]]
 
-	def asImmutableBytes: ImmutableBytes = {
-		if (isImmutableBytes) {
-			this.value.asInstanceOf[ImmutableBytes]
-		} else if (isBytes) {
-			ImmutableBytes(this.value.asInstanceOf[Array[Byte]])
-		} else if (isString) {
-			ImmutableBytes(asString.getBytes(StandardCharsets.UTF_8))
-		} else {
-			ImmutableBytes.empty
+	override def asBytes: ImmutableBytes = {
+		this.value match {
+			case v: Array[Byte] => ImmutableBytes(this.value.asInstanceOf[Array[Byte]])
+			case v: ImmutableBytes => v
+			case v: String => ImmutableBytes(v.getBytes(StandardCharsets.UTF_8))
+			case _ => ImmutableBytes.empty
 		}
 	}
 
-	def asBytes: Array[Byte] = {
-		if (isBytes) {
-			this.value.asInstanceOf[Array[Byte]]
-		} else if (isImmutableBytes) {
-			this.value.asInstanceOf[ImmutableBytes].toByteArray
-		} else if (isString) {
-			asString.getBytes(StandardCharsets.UTF_8)
-		} else {
-			Array.emptyByteArray
-		}
-	}
-
-	def asInt: Int = {
+	override def asInt: Int = {
 		if (isInt) {
 			value.asInstanceOf[Int]
 		} else if (isBytes) {
-			BigInt(1, asBytes).intValue()
-		} else if (isImmutableBytes) {
-			asImmutableBytes.toPositiveBigInt.intValue()
+			asBytes.toPositiveBigInt.intValue()
 		} else {
 			0
 		}
 	}
 
-	def asLong: Long = {
+	override def asLong: Long = {
 		if (isLong) {
 			value.asInstanceOf[Long]
 		} else if (isInt) {
 			value.asInstanceOf[Int].toLong
 		} else if (isBytes) {
-			BigInt(1, asBytes).longValue()
-		} else if (isImmutableBytes) {
-			asImmutableBytes.toPositiveBigInt.longValue()
+			asBytes.toPositiveBigInt.longValue()
 		} else {
 			0L
 		}
 	}
 
-	def asBigInt: BigInt = {
+	override def asBigInt: BigInt = {
 		if (isBigInt) {
 			this.value.asInstanceOf[BigInt]
 		} else if (isBytes) {
-			BigInt(1, asBytes)
-		} else if (isImmutableBytes) {
-			asImmutableBytes.toPositiveBigInt
+			asBytes.toPositiveBigInt
 		} else if (isLong) {
 			BigInt(asLong)
 		} else if (isInt) {
@@ -209,19 +183,17 @@ class PlainValue private[utils](_value: Any) extends Value {
 		}
 	}
 
-	def asString: String = {
+	override def asString: String = {
 		if (isString) {
 			this.value.asInstanceOf[String]
 		} else if (isBytes) {
-			new String(asBytes, StandardCharsets.UTF_8)
-		} else if (isImmutableBytes) {
-			asImmutableBytes.asString(StandardCharsets.UTF_8)
+			asBytes.asString(StandardCharsets.UTF_8)
 		} else {
 			""
 		}
 	}
 
-	def get(index: Int): Option[Value] = {
+	override def get(index: Int): Option[Value] = {
 		if (isSeq) {
 			try {
 				Some(Value.fromObject(asSeq(index)))
@@ -233,27 +205,25 @@ class PlainValue private[utils](_value: Any) extends Value {
 		}
 	}
 
-	def isString: Boolean = this.value.isInstanceOf[String]
+	override def isString: Boolean = this.value.isInstanceOf[String]
 
-	def isInt: Boolean = this.value.isInstanceOf[Int]
+	override def isInt: Boolean = this.value.isInstanceOf[Int]
 
-	def isLong: Boolean = this.value.isInstanceOf[Long]
+	override def isLong: Boolean = this.value.isInstanceOf[Long]
 
-	def isBigInt: Boolean = this.value.isInstanceOf[BigInt]
+	override def isBigInt: Boolean = this.value.isInstanceOf[BigInt]
 
-	def isBytes: Boolean = this.value.isInstanceOf[Array[Byte]]
+	override def isBytes: Boolean = this.value.isInstanceOf[Array[Byte]] || this.value.isInstanceOf[ImmutableBytes]
 
-	def isImmutableBytes: Boolean = this.value.isInstanceOf[ImmutableBytes]
+	override def isHashCode: Boolean = isBytes && (asBytes.length == 32)
 
-	def isHashCode: Boolean = isImmutableBytes && (asImmutableBytes.length == 32)
-
-	def isSeq: Boolean = {
+	override def isSeq: Boolean = {
 		if (!this.value.isInstanceOf[AnyRef]) return false
 		val v = this.value.asInstanceOf[AnyRef]
 		(v ne null) && !isString && v.isInstanceOf[Seq[_]]
 	}
 
-	def isNull: Boolean = {
+	override def isNull: Boolean = {
 		try {
 			this.value.asInstanceOf[AnyRef] eq null
 		} catch {
@@ -261,13 +231,11 @@ class PlainValue private[utils](_value: Any) extends Value {
 		}
 	}
 
-	def length: Int = {
+	override def length: Int = {
 		if (isSeq) {
 			asSeq.size
 		} else if (isBytes) {
 			asBytes.length
-		} else if (isImmutableBytes) {
-			asImmutableBytes.length
 		} else if (isString) {
 			asString.length
 		} else {
@@ -290,7 +258,7 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 	/**
 	 * ラップ対象の値を返します。
 	 */
-	def value: Any = decode.value
+	override def value: Any = decode.value
 
 	/**
 	 * SHA3ダイジェスト値。
@@ -305,7 +273,7 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 		this.sha3OptionRef.get.get
 	}
 
-	def hash: ImmutableBytes = sha3
+	override def hash: ImmutableBytes = sha3
 
 	def decode: PlainValue = {
 		if (this.plainValueRef.get.isEmpty) {
@@ -318,43 +286,39 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 		this.plainValueRef.get.getOrElse(Value.empty)
 	}
 
-	def asObj: Any = decode.asObj
+	override def asObj: Any = decode.asObj
 
-	def asSeq: Seq[AnyRef] = decode.asSeq
+	override def asSeq: Seq[AnyRef] = decode.asSeq
 
-	def asImmutableBytes: ImmutableBytes = decode.asImmutableBytes
+	override def asBytes: ImmutableBytes = decode.asBytes
 
-	def asBytes: Array[Byte] = decode.asBytes
+	override def asInt: Int = decode.asInt
 
-	def asInt: Int = decode.asInt
+	override def asLong: Long = decode.asLong
 
-	def asLong: Long = decode.asLong
+	override def asBigInt: BigInt = decode.asBigInt
 
-	def asBigInt: BigInt = decode.asBigInt
+	override def asString: String = decode.asString
 
-	def asString: String = decode.asString
+	override def get(index: Int): Option[Value] = decode.get(index)
 
-	def get(index: Int): Option[Value] = decode.get(index)
+	override def isString: Boolean = decode.isString
 
-	def isString: Boolean = decode.isString
+	override def isInt: Boolean = decode.isInt
 
-	def isInt: Boolean = decode.isInt
+	override def isLong: Boolean = decode.isLong
 
-	def isLong: Boolean = decode.isLong
+	override def isBigInt: Boolean = decode.isBigInt
 
-	def isBigInt: Boolean = decode.isBigInt
+	override def isBytes: Boolean = decode.isBytes
 
-	def isBytes: Boolean = decode.isBytes
+	override def isHashCode: Boolean = decode.isHashCode
 
-	def isImmutableBytes: Boolean = decode.isImmutableBytes
+	override def isSeq: Boolean = decode.isSeq
 
-	def isHashCode: Boolean = decode.isHashCode
+	override def isNull: Boolean = decode.isNull
 
-	def isSeq: Boolean = decode.isSeq
-
-	def isNull: Boolean = decode.isNull
-
-	def length: Int = decode.length
+	override def length: Int = decode.length
 
 	override def toString: String = Value.toString(this)
 

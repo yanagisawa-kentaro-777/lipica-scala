@@ -95,10 +95,10 @@ class ValueTest extends Specification {
 				val bytes = generateByteArray(i)
 				val value = Value.fromObject(bytes)
 				value.value mustEqual bytes
-				value.isImmutableBytes mustEqual true
+				value.isBytes mustEqual true
 				val encoded = value.encodedBytes
 				val rebuiltValue = Value.fromEncodedBytes(encoded)
-				rebuiltValue.asImmutableBytes mustEqual bytes
+				rebuiltValue.asBytes mustEqual bytes
 			}}
 			ok
 		}

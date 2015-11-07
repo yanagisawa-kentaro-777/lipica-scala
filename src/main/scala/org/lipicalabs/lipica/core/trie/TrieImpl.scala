@@ -51,8 +51,8 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 					bytes
 				}
 			case Right(value) =>
-				if (value.isBytes || value.isImmutableBytes) {
-					computeHash(Left(value.asImmutableBytes))
+				if (value.isBytes) {
+					computeHash(Left(value.asBytes))
 				} else {
 					value.hash
 				}
@@ -87,7 +87,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		val convertedKey = binToNibbles(key)
 		//ルートノード以下の全体を探索する。
 		val found = get(this.root, convertedKey)
-		found.asImmutableBytes
+		found.asBytes
 	}
 
 	@tailrec
@@ -99,7 +99,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		val currentNode = valueOf(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//このノードのキーを長ったらしい表現に戻す。
-			val k = unpackToNibbles(currentNode.get(0).get.asImmutableBytes)
+			val k = unpackToNibbles(currentNode.get(0).get.asBytes)
 			//値を読み取る。
 			val v = currentNode.get(1).get
 			if ((k.length <= key.length) && key.copyOfRange(0, k.length) == k) {
@@ -189,7 +189,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		val currentNode = valueOf(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
-			val packedKey = currentNode.get(0).get.asImmutableBytes
+			val packedKey = currentNode.get(0).get.asBytes
 			//キーを長ったらしい表現に戻す。
 			val k = unpackToNibbles(packedKey)
 			//値を取得する。
@@ -244,7 +244,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
 			//長ったらしい表現に戻す。
-			val packedKey = currentNode.get(0).get.asImmutableBytes
+			val packedKey = currentNode.get(0).get.asBytes
 			val k = unpackToNibbles(packedKey)
 
 			if (k == key) {
@@ -259,7 +259,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 					if (newChild.length == PAIR_SIZE) {
 						//削除で発生する跳躍をつなぐ。
 						//この操作こそが、削除そのものである。
-						val newKey = k ++ unpackToNibbles(newChild.get(0).get.asImmutableBytes)
+						val newKey = k ++ unpackToNibbles(newChild.get(0).get.asBytes)
 						Seq(packNibbles(newKey), newChild.get(1).get)
 					} else {
 						Seq(packedKey, deleteResult)
@@ -289,7 +289,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 					//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
 					val child = valueOf(items(idx))
 					if (child.length == PAIR_SIZE) {
-						val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.get(0).get.asImmutableBytes)
+						val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.get(0).get.asBytes)
 						Seq(packNibbles(concat), child.get(1).get)
 					} else if (child.length == LIST_SIZE) {
 						Seq(packNibbles(ImmutableBytes.fromOneByte(idx.toByte)), items(idx))
@@ -341,10 +341,10 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	}
 
 	private def valueOf(value: Value): Value = {
-		if (!value.isBytes && !value.isImmutableBytes) {
+		if (!value.isBytes) {
 			return value
 		}
-		val keyBytes = value.asImmutableBytes
+		val keyBytes = value.asBytes
 		if (keyBytes.isEmpty) {
 			value
 		} else if (keyBytes.length < 32) {
@@ -429,11 +429,11 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 			val siblings = node.nodeValue.asSeq
 			if (siblings.size == PAIR_SIZE) {
 				val value = Value.fromObject(siblings(1))
-				if (value.isHashCode) scanTree(value.asImmutableBytes, action)
+				if (value.isHashCode) scanTree(value.asBytes, action)
 			} else {
 				(0 until LIST_SIZE).foreach {i => {
 					val value = Value.fromObject(siblings(i))
-					if (value.isHashCode) scanTree(value.asImmutableBytes, action)
+					if (value.isHashCode) scanTree(value.asBytes, action)
 				}}
 			}
 			action.doOnNode(hash, node.nodeValue)
