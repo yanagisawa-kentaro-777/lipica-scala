@@ -341,4 +341,40 @@ class VMTest extends Specification {
 		}
 	}
 
+	"test or (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60F0600F17"), invoke, null)
+			val expected = "00000000000000000000000000000000000000000000000000000000000000FF"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test xor (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60FF60FF18"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000000"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test byte (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("65AABBCCDDEEFF601E1A"), invoke, null)
+			val expected = "00000000000000000000000000000000000000000000000000000000000000EE"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
 }

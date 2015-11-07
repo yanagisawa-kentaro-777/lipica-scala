@@ -1,3 +1,4 @@
+VMTestを充実させる。
 
 RepositoryDummy を実装する。
 
@@ -10,11 +11,8 @@ TrieImplのテストおよびrefactor.
 
 DataWord#intValueSafeを実装し、VMのメモリアクセスで利用する。
 
-CacheのメソッドをOption化する。
 ImmutableBytesの普及。（Value方面）
 ImmutableBytes#toByteArray の排除。
-get や set のメソッド名。
-
 
 AccountStateのモデル。
 Blockのモデル。

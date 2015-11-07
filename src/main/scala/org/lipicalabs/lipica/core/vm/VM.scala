@@ -404,7 +404,7 @@ class VM {
 				if (logger.isInfoEnabled) {
 					hint = "%d".format(result.value)
 				}
-				program.stackPush(word1 | word2)
+				program.stackPush(result)
 				program.step()
 			case AddMod =>
 				val word1 = program.stackPop

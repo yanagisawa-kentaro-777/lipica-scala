@@ -425,8 +425,6 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 
 	private def scanTree(hash: ImmutableBytes, action: ScanAction): Unit = {
 		val node = this.cache.get(hash)
-		if (node eq null) return
-
 		if (node.nodeValue.isSeq) {
 			val siblings = node.nodeValue.asSeq
 			if (siblings.size == PAIR_SIZE) {
