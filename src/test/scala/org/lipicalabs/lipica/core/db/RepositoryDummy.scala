@@ -20,7 +20,7 @@ class RepositoryDummy extends Repository {
 	/**
 	 * アカウントを取得します。
 	 */
-	override def getAccountState(address: ImmutableBytes): AccountState = ???
+	override def getAccountState(address: ImmutableBytes): Option[AccountState] = ???
 
 	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: Array[Byte]): Unit = ???
 
@@ -32,7 +32,7 @@ class RepositoryDummy extends Repository {
 	/**
 	 * 指定されたアカウントの残高を返します。
 	 */
-	override def getBalance(address: ImmutableBytes): BigInt = ???
+	override def getBalance(address: ImmutableBytes): Option[BigInt] = ???
 
 	/**
 	 * アカウントの存否確認を行います。
@@ -50,7 +50,7 @@ class RepositoryDummy extends Repository {
 	/**
 	 * 指定されたアカウントに結び付けられたコードを読み取ります。
 	 */
-	override def getCode(address: ImmutableBytes): ImmutableBytes = ???
+	override def getCode(address: ImmutableBytes): Option[ImmutableBytes] = ???
 
 	override def rollback(): Unit = ???
 
@@ -74,7 +74,7 @@ class RepositoryDummy extends Repository {
 	/**
 	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
 	 */
-	override def getContractDetails(address: ImmutableBytes): ContractDetails = null
+	override def getContractDetails(address: ImmutableBytes): Option[ContractDetails] = None
 
 	/**
 	 * 指定されたアカウントにおいて、キーに対応する値を取得して返します。
@@ -84,14 +84,14 @@ class RepositoryDummy extends Repository {
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。
 	 */
-	override def getNonce(address: ImmutableBytes): BigInt = ???
+	override def getNonce(address: ImmutableBytes): Option[BigInt] = ???
 
 	override def close(): Unit = ???
 
 	/**
 	 * 指定されたアカウントのnonceを１増やします。
 	 */
-	override def increaseNonce(address: ImmutableBytes): BigInt = ???
+	override def increaseNonce(address: ImmutableBytes): Option[BigInt] = ???
 
 	override def isClosed: Boolean = ???
 

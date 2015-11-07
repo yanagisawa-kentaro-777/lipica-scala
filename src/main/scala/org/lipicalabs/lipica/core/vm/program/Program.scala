@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.base.{Repository, TransactionLike}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
@@ -62,7 +62,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		if (this.transaction ne null) {
 			val senderNonce =
 				if (nonce.isEmpty) {
-					ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
+					ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress).getOrElse(UtilConsts.Zero))
 				} else {
 					nonce
 				}
@@ -209,7 +209,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def suicide(obtainerAddress: DataWord): Unit = {
 		val owner = getOwnerAddress.last20Bytes
 		val obtainer = obtainerAddress.last20Bytes
-		val balance = this.storage.getBalance(owner)
+		val balance = this.storage.getBalance(owner).getOrElse(UtilConsts.Zero)
 		if (logger.isInfoEnabled) {
 			logger.info("Transfer to [%s] heritage: [%s]".format(obtainer.toHexString, balance))
 		}
@@ -227,7 +227,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		val senderAddress = this.getOwnerAddress.last20Bytes
 		val endowment = value.value
-		if (this.storage.getBalance(senderAddress) < endowment) {
+		if (this.storage.getBalance(senderAddress).getOrElse(UtilConsts.Zero) < endowment) {
 			stackPushZero()
 			return
 		}
@@ -241,7 +241,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		spendMana(manaLimit.longValue, "internal call")
 
 		//コントラクト用アドレスを生成する。
-		val nonce = ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
+		val nonce = ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress).getOrElse(UtilConsts.Zero))
 		val newAddress = DigestUtils.computeNewAddress(getOwnerAddress.last20Bytes, nonce)
 
 		if (byTestingSuite) {
@@ -255,7 +255,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		val track = this.storage.startTracking
 		//ハッシュ値衝突が発生した場合の配慮のため、残高を検査する。
 		if (track.existsAccount(newAddress)) {
-			val oldBalance = track.getBalance(newAddress)
+			val oldBalance = track.getBalance(newAddress).getOrElse(UtilConsts.Zero)
 			track.createAccount(newAddress)
 			track.addBalance(newAddress, oldBalance)
 		} else {
@@ -267,7 +267,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			if (!byTestingSuite) {
 				track.addBalance(newAddress, endowment)
 			} else {
-				BigInt(0)
+				UtilConsts.Zero
 			}
 		//実行する。
 		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
@@ -358,7 +358,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		val track = this.storage.startTracking
 		//手数料。
 		val endowment = message.endowment.value
-		val senderBalance = track.getBalance(senderAddress)
+		val senderBalance = track.getBalance(senderAddress).getOrElse(UtilConsts.Zero)
 		if (senderBalance < endowment) {
 			//手数料を払えない。
 			stackPushZero()
@@ -366,18 +366,18 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			return
 		}
 		//コードを取得する。
-		val programCode =
-			if (this.storage.existsAccount(codeAddress)) {
-				this.storage.getCode(codeAddress)
-			} else {
-				ImmutableBytes.empty
-			}
+		val programCode = this.storage.getCode(codeAddress).getOrElse(ImmutableBytes.empty)
+//			if (this.storage.existsAccount(codeAddress)) {
+//				this.storage.getCode(codeAddress).get
+//			} else {
+//				ImmutableBytes.empty
+//			}
 		track.addBalance(senderAddress, -endowment)
 
 		val contextBalance =
 			if (byTestingSuite) {
 				this.result.addCallCreate(data, contextAddress, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
-				BigInt(0)
+				UtilConsts.Zero
 			} else {
 				track.addBalance(contextAddress, endowment)
 			}
@@ -461,7 +461,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		//手数料。
 		val endowment = message.endowment.value
-		val senderBalance = track.getBalance(senderAddress)
+		val senderBalance = track.getBalance(senderAddress).getOrElse(UtilConsts.Zero)
 		if (senderBalance < endowment) {
 			//手数料を払えない。
 			stackPushZero()
@@ -522,7 +522,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	/**
 	 * あるアドレスに結び付けられたコードをロードして返します。
 	 */
-	def getCodeAt(address: DataWord): ImmutableBytes = {
+	def getCodeAt(address: DataWord): Option[ImmutableBytes] = {
 		this.invoke.getRepository.getCode(address.last20Bytes)
 	}
 
@@ -540,7 +540,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	}
 
 	def getBalance(address: DataWord): DataWord = {
-		val balance = this.storage.getBalance(address.last20Bytes)
+		val balance = this.storage.getBalance(address.last20Bytes).getOrElse(UtilConsts.Zero)
 		DataWord(ImmutableBytes.asSignedByteArray(balance))
 	}
 

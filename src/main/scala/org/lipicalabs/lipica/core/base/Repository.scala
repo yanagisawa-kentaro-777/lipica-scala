@@ -24,7 +24,7 @@ trait Repository {
 	/**
 	 * アカウントを取得します。
 	 */
-	def getAccountState(address: ImmutableBytes): AccountState
+	def getAccountState(address: ImmutableBytes): Option[AccountState]
 
 	/**
 	 * アカウントを削除します。
@@ -34,17 +34,17 @@ trait Repository {
 	/**
 	 * 指定されたアカウントのnonceを１増やします。
 	 */
-	def increaseNonce(address: ImmutableBytes): BigInt
+	def increaseNonce(address: ImmutableBytes): Option[BigInt]
 
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。
 	 */
-	def getNonce(address: ImmutableBytes): BigInt
+	def getNonce(address: ImmutableBytes): Option[BigInt]
 
 	/**
 	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
 	 */
-	def getContractDetails(address: ImmutableBytes): ContractDetails
+	def getContractDetails(address: ImmutableBytes): Option[ContractDetails]
 
 	/**
 	 * 指定されたアカウントに対して、コードを保存します。
@@ -54,7 +54,7 @@ trait Repository {
 	/**
 	 * 指定されたアカウントに結び付けられたコードを読み取ります。
 	 */
-	def getCode(address: ImmutableBytes): ImmutableBytes
+	def getCode(address: ImmutableBytes): Option[ImmutableBytes]
 
 	/**
 	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
@@ -69,7 +69,7 @@ trait Repository {
 	/**
 	 * 指定されたアカウントの残高を返します。
 	 */
-	def getBalance(address: ImmutableBytes): BigInt
+	def getBalance(address: ImmutableBytes): Option[BigInt]
 
 	/**
 	 * 指定されたアカウントの残高に、指定された値を足します。
@@ -81,7 +81,7 @@ trait Repository {
 	 */
 	def getAccountKeys: Set[ImmutableBytes]
 
-	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: Array[Byte])
+	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: Array[Byte]): Unit
 
 	def startTracking: Repository
 

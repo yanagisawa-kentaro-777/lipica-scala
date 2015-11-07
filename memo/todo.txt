@@ -8,7 +8,8 @@ VM（文字列生成関連）
 
 TrieImplのテストおよびrefactor.
 
-RepositoryのメソッドをOption化する。
+DataWord#intValueSafeを実装し、VMのメモリアクセスで利用する。
+
 CacheのメソッドをOption化する。
 ImmutableBytesの普及。（Value方面）
 ImmutableBytes#toByteArray の排除。

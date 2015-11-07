@@ -40,27 +40,27 @@ class ProgramTrace(programInvoke: ProgramInvoke) {
 
 	if (SystemProperties.CONFIG.vmTrace && (programInvoke ne null)) {
 		this.contractAddress = programInvoke.getOwnerAddress.last20Bytes.toHexString
-		val contractDetails = getContractDetails(programInvoke)
-		if (contractDetails eq null) {
-			this.storageSize = 0
-			this.fullStorage = true
-		} else {
-			this.storageSize = contractDetails.getStorageSize
-			if (this.storageSize <= SystemProperties.CONFIG.vmTraceInitStorageLimit) {
-				this.fullStorage = true
-				val address = programInvoke.getOwnerAddress.last20Bytes.toHexString
-				contractDetails.getStorage.foreach {entry => {
-					val (key, value) = entry
-					if ((key eq null) || (value eq null)) {
-						logger.info("Null storage key/value: address[%s]".format(address))
-					} else {
-						this.initStorage.put(key.toHexString, value.toHexString)
+		getContractDetails(programInvoke) match {
+			case Some(contractDetails) =>
+				this.storageSize = contractDetails.getStorageSize
+				if (this.storageSize <= SystemProperties.CONFIG.vmTraceInitStorageLimit) {
+					this.fullStorage = true
+					val address = programInvoke.getOwnerAddress.last20Bytes.toHexString
+					contractDetails.getStorage.foreach { entry => {
+						val (key, value) = entry
+						if ((key eq null) || (value eq null)) {
+							logger.info("Null storage key/value: address[%s]".format(address))
+						} else {
+							this.initStorage.put(key.toHexString, value.toHexString)
+						}
+					}}
+					if (this.initStorage.nonEmpty) {
+						logger.info("%,d entries loaded to transaction's initStorage.".format(this.initStorage.size))
 					}
-				}}
-				if (this.initStorage.nonEmpty) {
-					logger.info("%,d entries loaded to transaction's initStorage.".format(this.initStorage.size))
 				}
-			}
+			case None =>
+				this.storageSize = 0
+				this.fullStorage = true
 		}
 	}
 
@@ -90,7 +90,7 @@ class ProgramTrace(programInvoke: ProgramInvoke) {
 		this.ops ++= another.ops
 	}
 
-	private def getContractDetails(programInvoke: ProgramInvoke): ContractDetails = {
+	private def getContractDetails(programInvoke: ProgramInvoke): Option[ContractDetails] = {
 		val repository = programInvoke.getRepository
 		//TODO repository が RepositoryTrack だったら、本体を引き寄せること。
 

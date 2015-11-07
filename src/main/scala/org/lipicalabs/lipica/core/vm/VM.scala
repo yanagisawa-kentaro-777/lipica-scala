@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.OpCode._
 import org.lipicalabs.lipica.core.vm.program.{MessageType, MessageCall, Program}
 import org.slf4j.LoggerFactory
@@ -503,7 +503,7 @@ class VM {
 						program.getCode.length
 					} else {
 						val address = program.stackPop
-						program.getCodeAt(address).length
+						program.getCodeAt(address).map(_.length).getOrElse(0)
 					}
 				val result = DataWord(length)
 				if (logger.isInfoEnabled) {
@@ -517,7 +517,7 @@ class VM {
 						program.getCode
 					} else {
 						val address = program.stackPop
-						program.getCodeAt(address)
+						program.getCodeAt(address).getOrElse(ImmutableBytes.empty)
 					}
 				val memOffset = program.stackPop
 				val codeOffset = program.stackPop.intValue
@@ -798,7 +798,7 @@ object VM {
 	private val logger = LoggerFactory.getLogger("VM")
 	private val dumpLogger = LoggerFactory.getLogger("dump")
 
-	private val Zero = BigInt(0)
+	private val Zero = UtilConsts.Zero
 	private val WordLength = BigInt(DataWord.NUM_BYTES)
 	private val logString = "[%s]    Op: [%s]  Mana: [%s] Deep: [%,d]  Hint: [%s]"
 

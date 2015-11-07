@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program.invoke
 
 import org.lipicalabs.lipica.core.base.{BlockChain, Block, TransactionLike, Repository}
 import org.lipicalabs.lipica.core.db.BlockStore
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.slf4j.LoggerFactory
@@ -30,7 +30,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val origin = tx.sendAddress
 		//この実行に直接関与しているアカウントのアドレス。
 		val caller = tx.sendAddress
-		val balance = ImmutableBytes.asSignedByteArray(repository.getBalance(address))
+		val balance = ImmutableBytes.asSignedByteArray(repository.getBalance(address).getOrElse(UtilConsts.Zero))
 		val manaPrice = tx.manaPrice
 		val mana = tx.manaLimit
 		val callValue = tx.value

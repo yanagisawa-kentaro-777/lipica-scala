@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm
 import java.nio.ByteBuffer
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 
 /**
  * 32バイト＝256ビットの数値を表すクラスです。
@@ -284,7 +284,7 @@ object DataWord {
 	val Zero = DataWord.apply(new Array[Byte](NUM_BYTES))
 	val One = DataWord(1)
 	private val MAX_PLUS_ONE: BigInt = BigInt(2).pow(NUM_BYTES * 8)
-	val MaxValue: BigInt = MAX_PLUS_ONE - BigInt(1)
+	val MaxValue: BigInt = MAX_PLUS_ONE - UtilConsts.One
 
 	def wrap(src: Array[Byte]): ImmutableBytes = {
 		if (src eq null) {
