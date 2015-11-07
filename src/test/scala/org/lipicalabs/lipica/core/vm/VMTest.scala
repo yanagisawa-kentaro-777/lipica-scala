@@ -377,4 +377,100 @@ class VMTest extends Specification {
 		}
 	}
 
+	"test is zero (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("600015"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 2).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test eq (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("602A602A14"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test gt (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6001600211"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test sgt (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6001600213"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test lt (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6001600210"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000000"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test slt (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6001600212"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000000"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test bnot (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("600119"), invoke, null)
+			val expected = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE"
+			(0 until 2).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test bnot (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61000060016200000250"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 4).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
 }
