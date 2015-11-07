@@ -461,7 +461,7 @@ class VMTest extends Specification {
 		}
 	}
 
-	"test bnot (1)" should {
+	"test pop (1)" should {
 		"be right" in {
 			val vm = new VM
 			val program = new Program(ImmutableBytes.parseHexString("61000060016200000250"), invoke, null)
@@ -471,6 +471,40 @@ class VMTest extends Specification {
 			}
 			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
 		}
+	}
+
+	"test dupN (1)" should {
+		"be right" in {
+			(1 to 16).foreach {
+				testDupN
+			}
+			ok
+		}
+	}
+
+	private def testDupN(n: Int): Unit = {
+		val vm = new VM
+		val operation = (OpCode.Dup1.opcode + n - 1).toByte
+		val programCode = new StringBuilder
+		(0 until n).foreach {
+			i => {
+				programCode.append("60" + (12 + i))
+			}
+		}
+		val code = ImmutableBytes.parseHexString(programCode.toString()) :+ operation
+		val program = new Program(code, invoke, null)
+		val expected = "0000000000000000000000000000000000000000000000000000000000000012"
+		val expectedLen = n + 1
+		(0 until expectedLen).foreach {
+			_ => vm.step(program)
+		}
+
+		program.stack.size mustEqual expectedLen
+		program.stack.pop.data.toHexString.toUpperCase mustEqual expected
+		(0 until (expectedLen - 2)).foreach {
+			_ => program.stack.pop.data.toHexString.toUpperCase mustNotEqual expected
+		}
+		program.stack.pop.data.toHexString.toUpperCase mustEqual expected
 	}
 
 }
