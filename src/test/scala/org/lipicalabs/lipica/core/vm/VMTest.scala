@@ -540,7 +540,33 @@ class VMTest extends Specification {
 		program.stackPop.data.toHexString mustEqual top
 	}
 
-	//TODO Swap 以下、間を大きく飛ばしている。
+	"test mstore (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("611234600052"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000001234"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.getMemoryContent.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test log0 (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61123460005260206000A0"), invoke, null)
+			(0 until 6).foreach {
+				_ => vm.step(program)
+			}
+			val logInfo = program.result.logInfoList.head
+			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
+			logInfo.topics.isEmpty mustEqual true
+			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
+		}
+	}
+
+	//TODO 以下、間を大きく飛ばしている。
 
 	"test add (1)" should {
 		"be right" in {
