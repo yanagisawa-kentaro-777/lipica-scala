@@ -2,8 +2,6 @@ VMTestを充実させる。
 
 RepositoryImpl & RepositoryDummy を実装する。
 
-ImmutableBytes#toByteArray の排除。
-
 AccountStateのモデル。
 Blockのモデル。
 db.ContractDetails & ContractDetailsImpl -> Storage。

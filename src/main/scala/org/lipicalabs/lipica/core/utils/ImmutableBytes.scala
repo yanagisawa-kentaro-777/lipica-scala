@@ -115,7 +115,26 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	 */
 	def toSignedBigInteger: java.math.BigInteger = new java.math.BigInteger(this.bytes)
 
-	def asString(charset: Charset): String = new String(this.bytes, charset)
+	/**
+	 * このバイト列を、指定されたキャラクターセットでエンコードされた文字列として返します。
+	 * toString メソッドと異なり、十六進エンコーディングを行うわけではありません。
+	 *
+	 * @param charset キャラクタセット。
+	 * @return 文字列。
+	 */
+	def asString(charset: Charset): String = asString(0, this.bytes.length, charset)
+
+	/**
+	 * このバイト列の中の特定の部分配列を、
+	 * 指定されたキャラクターセットでエンコードされた文字列として返します。
+	 * toString メソッドと異なり、十六進エンコーディングを行うわけではありません。
+	 *
+	 * @param offset 開始箇所の添字。
+	 * @param len 文字列として解釈する長さ。
+	 * @param charset キャラクタセット。
+	 * @return 文字列。
+	 */
+	def asString(offset: Int, len: Int, charset: Charset): String = new String(this.bytes, offset, len, charset)
 
 	override def compareTo(another: ImmutableBytes): Int = {
 		//TODO guava に速い実装があるらしい。
