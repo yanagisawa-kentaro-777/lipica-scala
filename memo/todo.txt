@@ -5,8 +5,6 @@ RepositoryDummy を実装する。
 StorageDictionary
 StorageDictionaryHandler
 
-OpCodeの大文字小文字。
-
 VM関連のデバッグ用出力。
 
 ImmutableBytes#toByteArray の排除。

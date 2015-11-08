@@ -155,26 +155,26 @@ object OpCode {
 	/**
 	 * 0x10：未満。
 	 */
-	object Lt extends OpCode(0x10, 2, 1, VeryLowTier)
-	set.add(Lt)
+	object LT extends OpCode(0x10, 2, 1, VeryLowTier)
+	set.add(LT)
 
 	/**
 	 * 0x11：超。
 	 */
-	object Gt extends OpCode(0x11, 2, 1, VeryLowTier)
-	set.add(Gt)
+	object GT extends OpCode(0x11, 2, 1, VeryLowTier)
+	set.add(GT)
 
 	/**
 	 * 0x12：符号付きLT。
 	 */
-	object SLt extends OpCode(0x12, 2, 1, VeryLowTier)
-	set.add(SLt)
+	object SLT extends OpCode(0x12, 2, 1, VeryLowTier)
+	set.add(SLT)
 
 	/**
 	 * 0x13：符号付きGT。
 	 */
-	object SGt extends OpCode(0x13, 2, 1, VeryLowTier)
-	set.add(SGt)
+	object SGT extends OpCode(0x13, 2, 1, VeryLowTier)
+	set.add(SGT)
 
 	/**
 	 * 0x14：等値。

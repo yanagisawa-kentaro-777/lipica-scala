@@ -284,7 +284,7 @@ class VM {
 				}
 				program.stackPush(result)
 				program.step()
-			case Lt =>
+			case LT =>
 				val word1 = program.stackPop
 				val word2 = program.stackPop
 				if (logger.isInfoEnabled) {
@@ -298,7 +298,7 @@ class VM {
 					}
 				program.stackPush(result)
 				program.step()
-			case SLt =>
+			case SLT =>
 				val word1 = program.stackPop
 				val word2 = program.stackPop
 				if (logger.isInfoEnabled) {
@@ -312,7 +312,7 @@ class VM {
 					}
 				program.stackPush(result)
 				program.step()
-			case SGt =>
+			case SGT =>
 				val word1 = program.stackPop
 				val word2 = program.stackPop
 				if (logger.isInfoEnabled) {
@@ -326,7 +326,7 @@ class VM {
 					}
 				program.stackPush(result)
 				program.step()
-			case Gt =>
+			case GT =>
 				val word1 = program.stackPop
 				val word2 = program.stackPop
 				if (logger.isInfoEnabled) {
