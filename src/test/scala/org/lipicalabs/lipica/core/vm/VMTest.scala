@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.vm
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.Program
+import org.lipicalabs.lipica.core.vm.program.Program.BadJumpDestinationException
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeMockImpl
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -540,22 +541,10 @@ class VMTest extends Specification {
 		program.stackPop.data.toHexString mustEqual top
 	}
 
-	"test mstore (1)" should {
+	"test log0" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("611234600052"), invoke, null)
-			val expected = "0000000000000000000000000000000000000000000000000000000000001234"
-			(0 until 3).foreach {
-				_ => vm.step(program)
-			}
-			program.getMemoryContent.toHexString.toUpperCase mustEqual expected
-		}
-	}
-
-	"test log0 (1)" should {
-		"be right" in {
-			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("61123460005260206000A0"), invoke, null)
+			val program = new Program(ImmutableBytes.parseHexString("61123460005260206000A0"), invoke)
 			(0 until 6).foreach {
 				_ => vm.step(program)
 			}
@@ -566,12 +555,172 @@ class VMTest extends Specification {
 		}
 	}
 
-	//TODO 以下、間を大きく飛ばしている。
+	"test log1" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61123460005261999960206000A1"), invoke)
+			(0 until 7).foreach {
+				_ => vm.step(program)
+			}
+			val logInfo = program.result.logInfoList.head
+			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
+			logInfo.topics.size mustEqual 1
+			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
+		}
+	}
+
+
+	"test log2" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61123460005261999961666660206000A2"), invoke)
+			(0 until 8).foreach {
+				_ => vm.step(program)
+			}
+			val logInfo = program.result.logInfoList.head
+			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
+			logInfo.topics.size mustEqual 2
+			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
+		}
+	}
+
+	"test log3" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61123460005261999961666661333360206000A3"), invoke)
+			(0 until 9).foreach {
+				_ => vm.step(program)
+			}
+			val logInfo = program.result.logInfoList.head
+			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
+			logInfo.topics.size mustEqual 3
+			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
+		}
+	}
+
+	"test log4" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61123460005261999961666661333361555560206000A4"), invoke)
+			(0 until 10).foreach {
+				_ => vm.step(program)
+			}
+			val logInfo = program.result.logInfoList.head
+			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
+			logInfo.topics.size mustEqual 4
+			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
+		}
+	}
+
+	"test mstore (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("611234600052"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000001234"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.getMemoryContent.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test mload (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("600051"), invoke)
+			val m_expected = "0000000000000000000000000000000000000000000000000000000000000000"
+			val s_expected = "0000000000000000000000000000000000000000000000000000000000000000"
+
+			(0 until 2).foreach {
+				_ => vm.step(program)
+			}
+			program.getMemoryContent.toHexString.toUpperCase mustEqual m_expected
+			program.stack.peek.data.toHexString.toUpperCase mustEqual s_expected
+		}
+	}
+
+	"test mstore8 (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6011600053"), invoke)
+			val expected = "1100000000000000000000000000000000000000000000000000000000000000"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.getMemoryContent.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	//TODO 以下、SStore 以下間を飛ばしている。
+
+	"test pc (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("58"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000000"
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test jump (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60AA60BB600E5660CC60DD60EE5B60FF"), invoke)
+			val expected = "00000000000000000000000000000000000000000000000000000000000000FF"
+
+			try {
+				(0 until 5).foreach {
+					_ => vm.step(program)
+				}
+				program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+				ko
+			} catch {
+				case e: BadJumpDestinationException => ok
+			}
+		}
+	}
+
+	"test jumpi (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60016005575B60CC"), invoke)
+			val expected = "00000000000000000000000000000000000000000000000000000000000000CC"
+			(0 until 5).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test jumpdest (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("602360085660015b600255"), invoke)
+			val s_expected_key = "0000000000000000000000000000000000000000000000000000000000000002"
+			val s_expected_val = "0000000000000000000000000000000000000000000000000000000000000023"
+			try {
+				(0 until 5).foreach {
+					_ => vm.step(program)
+				}
+
+				program.isStopped mustEqual true
+				val key = DataWord(ImmutableBytes.parseHexString(s_expected_key))
+				val value = program.storage.getStorageValue(program.getOwnerAddress.data, key).get
+				value.data.toHexString mustEqual s_expected_val
+				ko
+			} catch {
+				case e: BadJumpDestinationException => ok
+			}
+		}
+	}
 
 	"test add (1)" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("6002600201"), invoke, null)
+			val program = new Program(ImmutableBytes.parseHexString("6002600201"), invoke)
 			val expected = "0000000000000000000000000000000000000000000000000000000000000004"
 			(0 until 3).foreach {
 				_ => vm.step(program)
@@ -705,6 +854,19 @@ class VMTest extends Specification {
 		}
 	}
 
-	//TODO RETURN 以下未実装。
+	"test return (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("61123460005260206000F3"), invoke, null)
+			val expected = "0000000000000000000000000000000000000000000000000000000000001234"
+			(0 until 6).foreach {
+				_ => vm.step(program)
+			}
+			program.isStopped mustEqual true
+			program.result.hReturn.toHexString mustEqual expected
+		}
+	}
+
+	//TODO CODECOPY 以下未実装。
 
 }
