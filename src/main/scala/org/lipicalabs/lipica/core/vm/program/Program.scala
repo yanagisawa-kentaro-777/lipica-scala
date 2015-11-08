@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory
  */
 class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke, private val transaction: TransactionLike) {
 
+	def this(_ops: ImmutableBytes, _invoke: ProgramInvoke) = this(_ops, _invoke, null)
+
 	import Program._
 
 	/** 各種リスナ。 */

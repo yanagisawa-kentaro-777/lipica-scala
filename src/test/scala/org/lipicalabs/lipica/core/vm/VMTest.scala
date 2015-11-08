@@ -492,7 +492,7 @@ class VMTest extends Specification {
 			}
 		}
 		val code = ImmutableBytes.parseHexString(programCode.toString()) :+ operation
-		val program = new Program(code, invoke, null)
+		val program = new Program(code, invoke)
 		val expected = "0000000000000000000000000000000000000000000000000000000000000012"
 		val expectedLen = n + 1
 		(0 until expectedLen).foreach {
@@ -505,6 +505,39 @@ class VMTest extends Specification {
 			_ => program.stack.pop.data.toHexString.toUpperCase mustNotEqual expected
 		}
 		program.stack.pop.data.toHexString.toUpperCase mustEqual expected
+	}
+
+	"test swapN (1)" should {
+		"be right" in {
+			(1 to 16).foreach {
+				testSwapN
+			}
+			ok
+		}
+	}
+
+	private def testSwapN(n: Int): Unit = {
+		val vm = new VM
+		val operation = (OpCode.Swap1.opcode + n - 1).toByte
+
+		val programCode = new StringBuilder
+		val top = DataWord(0x10 + n).toString
+		(n to 0 by -1).foreach {
+			i => {
+				programCode.append("60" + ImmutableBytes.fromOneByte((0x10 + i).toByte).toHexString)
+			}
+		}
+		programCode.append(ImmutableBytes.fromOneByte(operation).toHexString)
+
+		val code = ImmutableBytes.parseHexString(programCode.toString()) :+ operation
+
+		val program = new Program(code, invoke)
+		(0 until n + 2).foreach {
+			_ => vm.step(program)
+		}
+
+		program.stack.size mustEqual n + 1
+		program.stackPop.data.toHexString mustEqual top
 	}
 
 	//TODO Swap 以下、間を大きく飛ばしている。
