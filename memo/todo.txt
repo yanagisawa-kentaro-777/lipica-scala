@@ -1,13 +1,12 @@
 VMTestを充実させる。
 
-RepositoryDummy を実装する。
-db.DetailsDataStore
-
-StorageDictionary関連は、よく意味がわかっていないので後回しとする。
-VM関連のデバッグ用出力。
+RepositoryImpl & RepositoryDummy を実装する。
 
 ImmutableBytes#toByteArray の排除。
 
 AccountStateのモデル。
 Blockのモデル。
-db.ContractDetails -> Storage。
+db.ContractDetails & ContractDetailsImpl -> Storage。
+
+StorageDictionary関連は、よく意味がわかっていないので後回しとする。
+VM関連のデバッグ用出力。
