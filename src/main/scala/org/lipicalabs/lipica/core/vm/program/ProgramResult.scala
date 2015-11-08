@@ -7,6 +7,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * コードの実行結果を表現するクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/10/31 15:35
  * YANAGISAWA, Kentaro
@@ -14,58 +16,72 @@ import scala.collection.mutable.ArrayBuffer
 class ProgramResult {
 
 	private var _manaUsed: Long = 0L
-	private var hReturn = ImmutableBytes.empty
+	private var _hReturn = ImmutableBytes.empty
 	private var _exception: RuntimeException = null
 
-	private val deleteAccounts: mutable.Buffer[DataWord] = new ArrayBuffer[DataWord]
-	private val internalTransactions: mutable.Buffer[InternalTransaction] = new ArrayBuffer[InternalTransaction]
-	private val logInfoBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
+	private val _deletedAccounts: mutable.Buffer[DataWord] = new ArrayBuffer[DataWord]
+	private val _internalTransactions: mutable.Buffer[InternalTransaction] = new ArrayBuffer[InternalTransaction]
+	private val _logInfoBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
 
-	private var futureRefund: Long = 0L
+	private var _futureRefund: Long = 0L
 
 	/** テスト用。（実行せずに貯める。） */
 	private val callCreateBuffer: mutable.Buffer[CallCreate] = new ArrayBuffer[CallCreate]
 
+	/** マナを消費します。 */
 	def spendMana(mana: Long): Unit = {
 		this._manaUsed += mana
 	}
+	/** マナを払い戻します。 */
 	def refundMana(mana: Long): Unit = {
 		this._manaUsed -= mana
 	}
+	/**
+	 * 一連のコード実行によって消費されたマナの合計値を返します。
+	 */
 	def manaUsed: Long = this._manaUsed
 
+	/**
+	 * 将来の払い戻しを記録します。
+	 */
 	def addFutureRefund(v: Long): Unit = {
-		this.futureRefund += v
+		this._futureRefund += v
 	}
+	/**
+	 * 将来の払い戻しをリセットします。
+	 */
 	def resetFutureRefund(): Unit = {
-		this.futureRefund = 0
+		this._futureRefund = 0
 	}
-	def getFutureRefund: Long = this.futureRefund
+	/**
+	 * 将来の払戻額を取得します。
+	 */
+	def futureRefund: Long = this._futureRefund
 
-	def setHReturn(v: ImmutableBytes): Unit = {
-		this.hReturn = v
+	def hReturn_=(v: ImmutableBytes): Unit = {
+		this._hReturn = v
 	}
-	def getHReturn: ImmutableBytes = this.hReturn
+	def hReturn: ImmutableBytes = this._hReturn
 
 	def exception_=(e: RuntimeException): Unit = {
 		this._exception = e
 	}
 	def exception: RuntimeException = this._exception
 
-	def getDeleteAccounts: Seq[DataWord] = this.deleteAccounts.toSeq
-	def addDeleteAccount(address: DataWord): Unit = {
-		this.deleteAccounts.append(address)
+	def deletedAccounts: Seq[DataWord] = this._deletedAccounts.toSeq
+	def addDeletedAccount(address: DataWord): Unit = {
+		this._deletedAccounts.append(address)
 	}
-	def addDeleteAccounts(accounts: Iterable[DataWord]): Unit = {
-		this.deleteAccounts ++= accounts
+	def addDeletedAccounts(accounts: Iterable[DataWord]): Unit = {
+		this._deletedAccounts ++= accounts
 	}
 
-	def getLogInfoList: Seq[LogInfo] = this.logInfoBuffer.toSeq
+	def logInfoList: Seq[LogInfo] = this._logInfoBuffer.toSeq
 	def addLogInfo(info: LogInfo): Unit = {
-		this.logInfoBuffer.append(info)
+		this._logInfoBuffer.append(info)
 	}
 	def addLogInfos(infos: Iterable[LogInfo]): Unit = {
-		this.logInfoBuffer ++= infos
+		this._logInfoBuffer ++= infos
 	}
 
 	def getCallCreateList: Seq[CallCreate] = this.callCreateBuffer.toSeq
@@ -73,25 +89,25 @@ class ProgramResult {
 		this.callCreateBuffer.append(CallCreate(data, destination, manaLimit, value))
 	}
 
-	def getInternalTransactions: Seq[InternalTransaction] = this.internalTransactions.toSeq
+	def internalTransactions: Seq[InternalTransaction] = this._internalTransactions.toSeq
 	def addInternalTransaction(parentHash: ImmutableBytes, deep: Int, nonce: ImmutableBytes, manaPrice: DataWord, manaLimit: DataWord, senderAddress: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes, note: String): InternalTransaction = {
-		val index = this.internalTransactions.size
+		val index = this._internalTransactions.size
 		val result = new InternalTransaction(parentHash, deep, index, nonce, manaPrice, manaLimit, senderAddress, receiveAddress, value, data, note)
-		this.internalTransactions.append(result)
+		this._internalTransactions.append(result)
 		result
 	}
 	def addInternalTransactions(transactions: Iterable[InternalTransaction]): Unit = {
-		this.internalTransactions ++= transactions
+		this._internalTransactions ++= transactions
 	}
 	def rejectInternalTransactions(): Unit = {
-		this.internalTransactions.foreach(_.reject())
+		this._internalTransactions.foreach(_.reject())
 	}
 
 	def mergeToThis(another: ProgramResult): Unit = {
-		addInternalTransactions(another.getInternalTransactions)
-		addDeleteAccounts(another.getDeleteAccounts)
-		addLogInfos(another.getLogInfoList)
-		addFutureRefund(another.getFutureRefund)
+		addInternalTransactions(another.internalTransactions)
+		addDeletedAccounts(another.deletedAccounts)
+		addLogInfos(another.logInfoList)
+		addFutureRefund(another.futureRefund)
 	}
 
 }
@@ -100,7 +116,7 @@ object ProgramResult {
 
 	def createEmpty: ProgramResult = {
 		val result = new ProgramResult
-		result.setHReturn(ImmutableBytes.empty)
+		result.hReturn = ImmutableBytes.empty
 		result
 	}
 }

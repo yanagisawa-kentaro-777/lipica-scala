@@ -152,7 +152,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	}
 
 	def setHReturn(v: ImmutableBytes): Unit = {
-		this.result.setHReturn(v)
+		this.result.hReturn = v
 	}
 
 	/** メモリ操作 */
@@ -216,7 +216,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		addInternalTx(ImmutableBytes.empty, DataWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
 		Repository.transfer(this.storage, owner, obtainer, balance)
-		result.addDeleteAccount(getOwnerAddress)
+		result.addDeletedAccount(getOwnerAddress)
 	}
 
 	def createContract(value: DataWord, memStart: DataWord, memSize: DataWord): Unit = {
@@ -279,7 +279,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 				val program = new Program(programCode, programInvoke, internalTx)
 				vm.play(program)
 				val localResult = program.result
-				this.result.addInternalTransactions(result.getInternalTransactions)
+				this.result.addInternalTransactions(result.internalTransactions)
 
 				if (localResult.exception ne null) {
 					//エラーが発生した。
@@ -299,7 +299,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			}
 
 		//コントラクトを保存する。
-		val contractCode = programResult.getHReturn
+		val contractCode = programResult.hReturn
 		val storageCost = contractCode.length * ManaCost.CreateData
 		val afterSpend = programInvoke.getMana.longValue - storageCost - programResult.manaUsed
 		if (afterSpend < 0L) {
@@ -312,8 +312,8 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		}
 
 		track.commit()
-		this.result.addDeleteAccounts(programResult.getDeleteAccounts)
-		this.result.addLogInfos(programResult.getLogInfoList)
+		this.result.addDeletedAccounts(programResult.deletedAccounts)
+		this.result.addLogInfos(programResult.logInfoList)
 
 		//生成されたアドレスを、スタックにプッシュする。
 		stackPush(DataWord(newAddress))
@@ -415,7 +415,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			}
 		//実行結果をメモリに書き込む。
 		if (programResultOption.isDefined) {
-			val hReturn = programResultOption.get.getHReturn
+			val hReturn = programResultOption.get.hReturn
 			memorySave(message.outDataOffset.intValue, hReturn, message.outDataSize.intValue, limited = true)
 		}
 		//成功を確定させる。
