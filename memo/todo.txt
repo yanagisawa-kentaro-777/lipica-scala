@@ -1,8 +1,6 @@
 VMTestを充実させる。
 
 RepositoryDummy を実装する。
-db.Database
-db.DatabaseImpl
 db.DetailsDataStore
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
