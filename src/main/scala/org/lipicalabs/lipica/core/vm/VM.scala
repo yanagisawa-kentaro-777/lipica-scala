@@ -789,7 +789,24 @@ class VM {
 	}
 
 	private def dumpLine(op: OpCode, manaBefore: Long, manaCost: Long, memWords: Long, program: Program): Unit = {
-		//TODO 未実装：dumpLine
+//		op match {
+//			case Stop | Return | Suicide =>
+//				val details = program.storage.getContractDetails(program.getOwnerAddress.last20Bytes)
+//				val storageKeys = details.get new ArrayList[DataWord](details.getStorage.keySet)
+//				Collections.sort(storageKeys)
+//				import scala.collection.JavaConversions._
+//				for (key <- storageKeys) {
+//					dumpLogger.trace("{} {}", Hex.toHexString(key.getNoLeadZeroesData), Hex.toHexString(details.getStorage.get(key).getNoLeadZeroesData))
+//				}
+//			case _ =>
+//				break
+//		}
+		val addressString = program.getOwnerAddress.last20Bytes.toHexString
+		val pcString = program.getPC.toString
+		val opString = "%d (%s)".format(op.opcode, op.name)
+		val manaString = program.getMana.getDataWithoutLeadingZeros.toHexString
+
+		dumpLogger.trace("{} {} {} {}", addressString, pcString, opString, manaString)
 	}
 
 }
