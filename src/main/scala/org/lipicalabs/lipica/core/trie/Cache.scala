@@ -6,6 +6,9 @@ import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, Value}
 import org.slf4j.LoggerFactory
 
+/**
+ * Trieのバックエンドとして動作する永続化機構を表すクラスです。
+ */
 class Cache(_dataSource: KeyValueDataSource) {
 	import Cache._
 	import scala.collection.JavaConversions._

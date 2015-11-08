@@ -4,6 +4,9 @@ import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{Value, ImmutableBytes}
 
 /**
+ * 常にキーをSHA3ダイジェスト値に変換して
+ * 操作を行うTrieの実装です。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/04 20:49
  * YANAGISAWA, Kentaro

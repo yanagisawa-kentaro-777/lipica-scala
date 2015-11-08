@@ -7,7 +7,6 @@ StorageDictionaryHandler
 
 Program（文字列生成関連）
 VM（文字列生成関連）
-TrieImplのテストおよびrefactor.
 
 ImmutableBytes#toByteArray の排除。
 

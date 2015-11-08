@@ -6,6 +6,7 @@ import scala.collection.immutable.HashSet
 import scala.collection.mutable
 
 /**
+ * Trieのノードに対するVisitorが実装すべきインターフェイスです。
  *
  * @since 2015/11/05
  * @author YANAGISAWA, Kentaro

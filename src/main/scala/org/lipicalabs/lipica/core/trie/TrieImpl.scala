@@ -391,6 +391,9 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 
 	override def validate: Boolean = Option(this.cache.get(rootHash)).isDefined
 
+	/**
+	 * このTrieに属するすべての要素を、キャッシュから削除します。
+	 */
 	def cleanCache(): Unit = {
 		val startTime = System.currentTimeMillis
 
@@ -440,6 +443,10 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		}
 	}
 
+	/**
+	 * このTrieの中身に、渡されたバイト列の中身を充填します。
+	 * @param data 符号化されたバイト列。
+	 */
 	def deserialize(data: ImmutableBytes): Unit = {
 		RBACCodec.Decoder.decode(data.toByteArray) match {
 			case Right(result) =>
@@ -461,6 +468,10 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		}
 	}
 
+	/**
+	 * このTrieの中身をバイト列に符号化して返します。
+	 * @return 符号化されたバイト列。
+	 */
 	def serialize: ImmutableBytes = {
 		val nodes = this.cache.getNodes
 		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
@@ -469,6 +480,10 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		ImmutableBytes(RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot)))
 	}
 
+	/**
+	 * このTrieの中身を文字列化して返します。
+	 * @return human readable な文字列。
+	 */
 	override def dumpToString: String = {
 		val traceAction = new TraceAllNodes
 		this.scanTree(this.rootHash, traceAction)
