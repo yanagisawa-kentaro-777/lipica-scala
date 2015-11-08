@@ -9,8 +9,6 @@ VM（文字列生成関連）
 
 TrieImplのテストおよびrefactor.
 
-DataWord#intValueSafeを実装し、VMのメモリアクセスで利用する。
-
 ImmutableBytes#toByteArray の排除。
 
 AccountStateのモデル。

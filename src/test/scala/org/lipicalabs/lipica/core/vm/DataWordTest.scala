@@ -547,4 +547,16 @@ class DataWordTest extends Specification {
 		}
 	}
 
+	"overflow" should {
+		"be right" in {
+			val v1 = DataWord(7)
+			v1.intValueSafe mustEqual 7
+			v1.longValueSafe mustEqual 7L
+
+			val v2 = DataWord((0 until 32).map(_ => 0xff.toByte).toArray)
+			v2.intValueSafe mustEqual Int.MaxValue
+			v2.longValueSafe mustEqual Long.MaxValue
+		}
+	}
+
 }

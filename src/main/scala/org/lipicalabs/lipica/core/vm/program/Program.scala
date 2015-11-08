@@ -162,7 +162,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		this.memory.write(addr, value, len, limited)
 	}
 	def memorySave(addr: DataWord, value: ImmutableBytes, limited: Boolean): Unit = {
-		this.memory.write(addr.intValue, value, value.length, limited)
+		this.memory.write(addr.intValueSafe, value, value.length, limited)
 	}
 	private def memorySave(addr: DataWord, value: DataWord, limited: Boolean): Unit = {
 		memorySave(addr, value.data, limited)
@@ -173,7 +173,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		this.memory.extendAndWrite(addr, allocSize, value)
 	}
 	def memoryLoad(addr: DataWord): DataWord = {
-		this.memory.readWord(addr.intValue)
+		this.memory.readWord(addr.intValueSafe)
 	}
 	def memoryChunk(offset: Int, size: Int): ImmutableBytes = {
 		this.memory.read(offset, size)

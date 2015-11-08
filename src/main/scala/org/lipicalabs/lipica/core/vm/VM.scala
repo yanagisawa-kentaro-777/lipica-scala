@@ -520,8 +520,8 @@ class VM {
 						program.getCodeAt(address).getOrElse(ImmutableBytes.empty)
 					}
 				val memOffset = program.stackPop
-				val codeOffset = program.stackPop.intValue
-				val length = program.stackPop.intValue
+				val codeOffset = program.stackPop.intValueSafe
+				val length = program.stackPop.intValueSafe
 				val sizeToBeCopied =
 					if (fullCode.length < (codeOffset + length)) {
 						if (fullCode.length < codeOffset) {

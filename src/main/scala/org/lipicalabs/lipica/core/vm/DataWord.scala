@@ -6,7 +6,8 @@ import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 
 /**
- * 32バイト＝256ビットの数値を表すクラスです。
+ * Lipica の VM における１ワードである
+ * 32バイト＝256ビットの不変の数値を表すクラスです。
  *
  * @since 2015, Oct. 17
  * @author YANAGISAWA, Kentaro
@@ -15,16 +16,37 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 
 	import DataWord._
 
+	/**
+	 * 末尾20バイトを返します。
+	 */
 	def last20Bytes: ImmutableBytes = {
 		this.data.copyOfRange(NUM_BYTES - 20, data.length)
 	}
+
+	/**
+	 * 先頭のゼロを剥ぎとったバイト列を返します。
+	 * @return
+	 */
 	def getDataWithoutLeadingZeros: ImmutableBytes = ByteUtils.stripLeadingZeroes(this.data)
 
+	/**
+	 * 正の整数としての値を返します。
+	 */
 	def value: BigInt = this.data.toPositiveBigInt
+
+	/**
+	 * 符号付き整数としての値を返します。
+	 */
 	def sValue: BigInt = this.data.toSignedBigInt
 
+	/**
+	 * この値のSHA3ダイジェスト値を返します。
+	 */
 	def computeSHA3OfData: ImmutableBytes = this.data.sha3
 
+	/**
+	 * この値をInt値として返します。
+	 */
 	def intValue: Int = {
 		var result = 0
 		this.data.indices.foreach {
@@ -35,6 +57,25 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 		result
 	}
 
+	/**
+	 * この値をInt値として返します。
+	 * ただし、オーバーフロー時に Int.MaxValueを返します。
+	 */
+	def intValueSafe: Int = {
+		if (4 < occupiedBytes) {
+			return Int.MaxValue
+		}
+		val result = intValue
+		if (result < 0) {
+			Int.MaxValue
+		} else {
+			result
+		}
+	}
+
+	/**
+	 * この値をLong値として返します。
+	 */
 	def longValue: Long = {
 		var result = 0L
 		this.data.indices.foreach {
@@ -44,6 +85,23 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 		}
 		result
 	}
+
+	/**
+	 * この値をLong値として返します。
+	 * ただし、オーバーフロー時に Long.MaxValueを返します。
+	 */
+	def longValueSafe: Long = {
+		if (8 < occupiedBytes) {
+			return Long.MaxValue
+		}
+		val result = longValue
+		if (result < 0L) {
+			Long.MaxValue
+		} else {
+			result
+		}
+	}
+
 
 	def isZero: Boolean = {
 		this.data.indices.foreach {

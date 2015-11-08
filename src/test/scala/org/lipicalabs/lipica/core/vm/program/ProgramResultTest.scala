@@ -8,7 +8,7 @@ import org.specs2.runner.JUnitRunner
 
 /**
  * Created by IntelliJ IDEA.
- * 2015/09/08 13:01
+ * 2015/11/08
  * YANAGISAWA, Kentaro
  */
 
