@@ -7,6 +7,15 @@ package org.lipicalabs.lipica.core.db
  */
 object StorageDictionary {
 
+	sealed trait Type
+	object Type {
+		case object Root extends Type
+		case object StorageIndex extends Type
+		case object Offset extends Type
+		case object ArrayIndex extends Type
+		case object Map extends Type
+	}
+
 	class PathElement {
 		//
 	}
