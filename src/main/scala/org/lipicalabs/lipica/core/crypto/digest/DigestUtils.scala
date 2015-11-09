@@ -7,6 +7,9 @@ import org.spongycastle.crypto.digests.RIPEMD160Digest
 
 object DigestUtils {
 
+	val EmptyDataHash = ImmutableBytes(sha3(Array.empty[Byte]))
+	val EmptyTrieHash = ImmutableBytes(sha3(RBACCodec.Encoder.encode(Array.emptyByteArray)))
+
 	def sha3(data: Array[Byte]): Array[Byte] = {
 		val digest = new Keccak256
 		digest.update(data)

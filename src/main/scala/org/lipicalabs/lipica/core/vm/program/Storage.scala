@@ -7,6 +7,8 @@ import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
+import scala.collection.mutable
+
 /**
  * Created by IntelliJ IDEA.
  * 2015/10/25 14:22
@@ -52,13 +54,15 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def getStorageValue(address: ImmutableBytes, key: DataWord) = this.repository.getStorageValue(address, key)
 
+	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = this.repository.getStorage(address, keys)
+
 	override def getBalance(address: ImmutableBytes) = this.repository.getBalance(address)
 
 	override def addBalance(address: ImmutableBytes, value: BigInt) = this.repository.addBalance(address, value)
 
 	override def getAccountKeys = this.repository.getAccountKeys
 
-	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: Array[Byte]) = {
+	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes) = {
 		this.repository.dumpState(block, gasUsed, txNumber, txHash)
 	}
 
@@ -74,7 +78,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def rollback() = this.repository.rollback()
 
-	override def syncToRoot(root: Array[Byte]) = this.repository.syncToRoot(root)
+	override def syncToRoot(root: ImmutableBytes) = this.repository.syncToRoot(root)
 
 	override def close() = this.repository.close()
 
@@ -84,16 +88,16 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def getRoot = this.repository.getRoot
 
-	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]) = {
+	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
 		//TODO tracelistener への記録が未実装。
 		this.repository.updateBatch(accountStates, contractDetails)
 	}
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]) = {
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
 		this.repository.loadAccount(address, cacheAccounts, cacheDetails)
 	}
 
-	override def getSnapshotTo(root: Array[Byte]) = {
+	override def getSnapshotTo(root: ImmutableBytes) = {
 		throw new UnsupportedOperationException
 	}
 

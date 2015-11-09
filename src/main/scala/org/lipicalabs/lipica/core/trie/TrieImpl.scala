@@ -29,6 +29,9 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		this.rootRef.set(value)
 		this
 	}
+	def root(value: ImmutableBytes): TrieImpl = {
+		root(Value.fromObject(value))
+	}
 	def root: Value = this.rootRef.get
 
 	/**
@@ -70,6 +73,9 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	 */
 	private val cacheRef = new AtomicReference[Cache](new Cache(_db))
 	def cache: Cache = this.cacheRef.get
+	def cache_=(v: Cache): Unit = {
+		this.cacheRef.set(v)
+	}
 
 	/**
 	 * key 文字列に対応する値を取得して返します。

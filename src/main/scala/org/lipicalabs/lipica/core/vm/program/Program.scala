@@ -64,7 +64,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		if (this.transaction ne null) {
 			val senderNonce =
 				if (nonce.isEmpty) {
-					ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress).getOrElse(UtilConsts.Zero))
+					ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
 				} else {
 					nonce
 				}
@@ -243,7 +243,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		spendMana(manaLimit.longValue, "internal call")
 
 		//コントラクト用アドレスを生成する。
-		val nonce = ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress).getOrElse(UtilConsts.Zero))
+		val nonce = ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
 		val newAddress = DigestUtils.computeNewAddress(getOwnerAddress.last20Bytes, nonce)
 
 		if (byTestingSuite) {

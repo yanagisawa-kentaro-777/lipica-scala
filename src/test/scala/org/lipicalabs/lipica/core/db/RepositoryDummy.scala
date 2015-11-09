@@ -4,6 +4,8 @@ import org.lipicalabs.lipica.core.base.{Block, AccountState, Repository}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
+import scala.collection.mutable
+
 /**
  *
  * @since 2015/11/03
@@ -22,7 +24,7 @@ class RepositoryDummy extends Repository {
 	 */
 	override def getAccountState(address: ImmutableBytes): Option[AccountState] = ???
 
-	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: Array[Byte]): Unit = ???
+	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit = ???
 
 	/**
 	 * 指定されたアカウントの残高に、指定された値を足します。
@@ -58,18 +60,18 @@ class RepositoryDummy extends Repository {
 
 	override def flush(): Unit = ???
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]): Unit = ???
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = ???
 
-	override def getSnapshotTo(root: Array[Byte]): Repository = ???
+	override def getSnapshotTo(root: ImmutableBytes): Repository = ???
 
-	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]): Unit = ???
+	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = ???
 
 	/**
 	 * アカウントを削除します。
 	 */
 	override def delete(address: ImmutableBytes): Unit = ???
 
-	override def getRoot: Array[Byte] = ???
+	override def getRoot: ImmutableBytes = ???
 
 	/**
 	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
@@ -81,23 +83,25 @@ class RepositoryDummy extends Repository {
 	 */
 	override def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord] = ???
 
+	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]) = ???
+
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。
 	 */
-	override def getNonce(address: ImmutableBytes): Option[BigInt] = ???
+	override def getNonce(address: ImmutableBytes): BigInt = ???
 
 	override def close(): Unit = ???
 
 	/**
 	 * 指定されたアカウントのnonceを１増やします。
 	 */
-	override def increaseNonce(address: ImmutableBytes): Option[BigInt] = ???
+	override def increaseNonce(address: ImmutableBytes): BigInt = ???
 
 	override def isClosed: Boolean = ???
 
 	override def reset(): Unit = ???
 
-	override def syncToRoot(root: Array[Byte]): Unit = ???
+	override def syncToRoot(root: ImmutableBytes): Unit = ???
 
 	/**
 	 * 指定されたアカウントに対して、コードを保存します。

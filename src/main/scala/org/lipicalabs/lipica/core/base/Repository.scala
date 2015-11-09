@@ -4,6 +4,8 @@ import org.lipicalabs.lipica.core.db.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
+import scala.collection.mutable
+
 /**
  * データを保存するリポジトリが実装すべき trait です。
  *
@@ -34,12 +36,12 @@ trait Repository {
 	/**
 	 * 指定されたアカウントのnonceを１増やします。
 	 */
-	def increaseNonce(address: ImmutableBytes): Option[BigInt]
+	def increaseNonce(address: ImmutableBytes): BigInt
 
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。
 	 */
-	def getNonce(address: ImmutableBytes): Option[BigInt]
+	def getNonce(address: ImmutableBytes): BigInt
 
 	/**
 	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
@@ -66,6 +68,8 @@ trait Repository {
 	 */
 	def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord]
 
+	def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord]
+
 	/**
 	 * 指定されたアカウントの残高を返します。
 	 */
@@ -81,7 +85,7 @@ trait Repository {
 	 */
 	def getAccountKeys: Set[ImmutableBytes]
 
-	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: Array[Byte]): Unit
+	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit
 
 	def startTracking: Repository
 
@@ -93,7 +97,7 @@ trait Repository {
 
 	def rollback(): Unit
 
-	def syncToRoot(root: Array[Byte])
+	def syncToRoot(root: ImmutableBytes)
 
 	def close(): Unit
 
@@ -101,13 +105,13 @@ trait Repository {
 
 	def reset(): Unit
 
-	def getRoot: Array[Byte]
+	def getRoot: ImmutableBytes
 
-	def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails])
+	def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails])
 
-	def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails])
+	def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails])
 
-	def getSnapshotTo(root: Array[Byte]): Repository
+	def getSnapshotTo(root: ImmutableBytes): Repository
 
 }
 

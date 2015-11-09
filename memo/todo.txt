@@ -1,6 +1,9 @@
 VMTestを充実させる。
 
-RepositoryImpl & RepositoryDummy を実装する。
+RepositoryImpl を整備する。
+RepositoryDummy & RepositoryTracking を実装する。
+
+Trie#syncToRootとは何？
 
 AccountStateのモデル。
 Blockのモデル。
