@@ -153,7 +153,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 
 				val rootHash = this.worldState.rootHash
 				reset()
-				this.worldState.root(rootHash)
+				this.worldState.root = rootHash
 			}
 		}
 	}
@@ -165,7 +165,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	override def syncToRoot(v: ImmutableBytes): Unit = {
 		withAccessCounting {
 			() => {
-				this.worldState.root(v)
+				this.worldState.root = v
 			}
 		}
 	}
@@ -328,7 +328,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 
 	override def getSnapshotTo(root: ImmutableBytes): Repository = {
 		val trie = new SecureTrie(this.stateDS)
-		trie.root(root)
+		trie.root = root
 		trie.cache = this.worldState.cache
 
 		val repo = new RepositoryImpl()

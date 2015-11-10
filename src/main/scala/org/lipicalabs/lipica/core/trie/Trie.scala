@@ -30,7 +30,7 @@ trait Trie {
 	 */
 	def rootHash: ImmutableBytes
 
-	def root(value: Value): Trie
+	def root_=(value: Value): Trie
 
 	/**
 	 * 前回永続化された以降の更新を永続化します。

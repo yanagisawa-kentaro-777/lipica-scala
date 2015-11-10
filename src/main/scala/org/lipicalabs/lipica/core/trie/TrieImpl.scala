@@ -2,7 +2,6 @@ package org.lipicalabs.lipica.core.trie
 
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
-import org.lipicalabs.lipica.core.utils.RBACCodec.Encoder
 import org.lipicalabs.lipica.core.utils._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
@@ -13,6 +12,9 @@ import scala.collection.mutable
 
 /**
  * Merkle-Patricia Treeの実装クラスです。
+ *
+ * @author YANAGISAWA, Kentaro
+ * @since 2015/09/30
  */
 class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 
@@ -25,12 +27,12 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	 * 木構造のルート要素。
 	 */
 	private val rootRef = new AtomicReference[Value](_root)
-	override def root(value: Value): TrieImpl = {
+	override def root_=(value: Value): TrieImpl = {
 		this.rootRef.set(value)
 		this
 	}
-	def root(value: ImmutableBytes): TrieImpl = {
-		root(Value.fromObject(value))
+	def root_=(value: ImmutableBytes): TrieImpl = {
+		this.root = Value.fromObject(value)
 	}
 	def root: Value = this.rootRef.get
 
@@ -87,7 +89,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	 */
 	override def get(key: ImmutableBytes): ImmutableBytes = {
 		if (logger.isDebugEnabled) {
-			logger.debug("Retrieving key [%s]".format(key.toHexString))
+			logger.debug("<TrieImpl> Retrieving key [%s]".format(key.toHexString))
 		}
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val convertedKey = binToNibbles(key)
@@ -155,17 +157,17 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	 */
 	override def update(key: ImmutableBytes, value: ImmutableBytes): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("Updating [%s] -> [%s]".format(key.toHexString, value.toHexString))
-			logger.debug("Old root-hash: %s".format(rootHash.toHexString))
+			logger.debug("<TrieImpl> Updating [%s] -> [%s]".format(key.toHexString, value.toHexString))
+			logger.debug("<TrieImpl> Old root-hash: %s".format(rootHash.toHexString))
 		}
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val nibbleKey = binToNibbles(key)
 		val result = insertOrDelete(this.root, nibbleKey, value)
 		//ルート要素を更新する。
-		root(result)
+		this.root = result
 		if (logger.isDebugEnabled) {
-			logger.debug("Updated [%s] -> [%s]".format(key.toHexString, value.toHexString))
-			logger.debug("New root-hash: %s".format(rootHash.toHexString))
+			logger.debug("<TrieImpl> Updated [%s] -> [%s]".format(key.toHexString, value.toHexString))
+			logger.debug("<TrieImpl> New root-hash: %s".format(rootHash.toHexString))
 		}
 	}
 
@@ -417,11 +419,11 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		for (key <- toRemoveSet) {
 			this.cache.delete(key)
 			if (logger.isTraceEnabled) {
-				logger.trace("Garbage collected node: [%s]".format(key.toHexString))
+				logger.trace("<TrieImpl> Garbage collected node: [%s]".format(key.toHexString))
 			}
 		}
-		logger.info("Garbage collected node list, size: [%,d]".format(toRemoveSet.size))
-		logger.info("Garbage collection time: [%,d ms]".format(System.currentTimeMillis - startTime))
+		logger.info("<TrieImpl> Garbage collected node list, size: [%,d]".format(toRemoveSet.size))
+		logger.info("<TrieImpl> Garbage collection time: [%,d ms]".format(System.currentTimeMillis - startTime))
 	}
 
 	def copy: TrieImpl = {
@@ -468,9 +470,9 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 
 					this.cache.put(ImmutableBytes(key), value)
 				}}
-				root(Value.fromEncodedBytes(ImmutableBytes(encodedRoot)))
+				this.root = Value.fromEncodedBytes(ImmutableBytes(encodedRoot))
 			case Left(e) =>
-				logger.warn("Deserialization error.", e)
+				logger.warn("<TrieImpl> Deserialization error.", e)
 		}
 	}
 
@@ -512,5 +514,5 @@ object TrieImpl {
 	private val PAIR_SIZE = 2.toByte
 	private val LIST_SIZE = 17.toByte
 
-	private val EMPTY_TRIE_HASH = ImmutableBytes(DigestUtils.sha3(Encoder.encode(Array.empty[Byte])))
+	private val EMPTY_TRIE_HASH = DigestUtils.EmptyTrieHash
 }

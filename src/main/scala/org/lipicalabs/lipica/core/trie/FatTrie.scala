@@ -32,7 +32,7 @@ class FatTrie(origTrieDS: KeyValueDataSource, secureTrieDS: KeyValueDataSource) 
 
 	override def rootHash: ImmutableBytes = this._secureTrie.rootHash
 
-	override def root(v: Value): Trie = this._secureTrie.root(v)
+	override def root_=(v: Value): Trie = this._secureTrie.root = v
 
 	override def sync(): Unit = {
 		this._origTrie.sync()
