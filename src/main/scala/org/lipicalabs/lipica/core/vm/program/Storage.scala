@@ -7,7 +7,6 @@ import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
-import scala.collection.mutable
 
 /**
  * Created by IntelliJ IDEA.
@@ -88,12 +87,12 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def getRoot = this.repository.getRoot
 
-	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
 		//TODO tracelistener への記録が未実装。
 		this.repository.updateBatch(accountStates, contractDetails)
 	}
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
 		this.repository.loadAccount(address, cacheAccounts, cacheDetails)
 	}
 

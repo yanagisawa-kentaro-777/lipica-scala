@@ -11,9 +11,9 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.{LoggerFactory, Logger}
 
-import scala.collection.mutable
 
 /**
+ * Repository の実装基底クラスです。
  *
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
@@ -38,6 +38,8 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 
 	private var stateDB = new DatabaseImpl(stateDS)
 	private var worldState = new SecureTrie(stateDB.getDB)
+
+	private var _isClosed: Boolean = false
 
 	private val lock: ReentrantLock = new ReentrantLock
 	private val accessCounter = new AtomicInteger(0)
@@ -70,43 +72,44 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	}
 
 	override def reset(): Unit = {
-		withLock {() => {
-			close()
-			this.detailsDS.init()
-			this.detailsDB = new DatabaseImpl(this.detailsDS)
+		withLock {
+			() => {
+				close()
+				this.detailsDS.init()
+				this.detailsDB = new DatabaseImpl(this.detailsDS)
 
-			this.stateDS.init()
-			this.stateDB = new DatabaseImpl(this.stateDS)
-			this.worldState = new SecureTrie(this.stateDB.getDB)
-		}}
+				this.stateDS.init()
+				this.stateDB = new DatabaseImpl(this.stateDS)
+				this.worldState = new SecureTrie(this.stateDB.getDB)
+			}
+		}
 	}
 
 	override def close(): Unit = {
-		withLock {() => {
-			if (this.detailsDB ne null) {
-				this.detailsDB.close()
-				this.detailsDB = null
+		withLock {
+			() => {
+				if (!isClosed) {
+					this.detailsDB.close()
+					this.stateDB.close()
+					this._isClosed = true
+				}
 			}
-			if (this.stateDB ne null) {
-				this.stateDB.close()
-				this.stateDB = null
-			}
-		}}
+		}
 	}
 
 	override def isClosed: Boolean = {
-		this.stateDB eq null
+		this._isClosed
 	}
 
-	override def updateBatch(stateCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
-		logger.info("UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
+	override def updateBatch(stateCache: Map[ImmutableBytes, AccountState], detailsCache: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
+		logger.info("<RepositoryImpl> UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
 		for (eachEntry <- stateCache) {
 			val (hash, accountState) = eachEntry
 			var contractDetails = detailsCache.get(hash).get
 
 			if (accountState.isDeleted) {
 				delete(hash)
-				logger.debug("delete: [%s]".format(hash.toHexString))
+				logger.debug("<RepositoryImpl> Delete: [%s]".format(hash.toHexString))
 			} else if (contractDetails.isDirty) {
 				val contractDetailsCache = contractDetails.asInstanceOf[ContractDetailsCacheImpl]
 				if (contractDetailsCache.originalContract eq null) {
@@ -121,21 +124,20 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				}
 				updateAccountState(hash, accountState)
 				if (logger.isDebugEnabled) {
-					logger.debug("update: [%s], nonce: [%s], balance: [%s] \n [%s]".format(
+					logger.debug("<RepositoryImpl> Update: [%s], nonce: [%s], balance: [%s] \n [%s]".format(
 						hash.toHexString, accountState.nonce, accountState.balance, contractDetails.getStorage
 					))
 				}
 			}
 		}
-		logger.info("UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
-		stateCache.clear()
-		detailsCache.clear()
+		logger.info("<RepositoryImpl> UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
+		(Map.empty, Map.empty)
 	}
 
 	override def flushNoReconnect(): Unit = {
 		withLock {
 			() => {
-				gLogger.info("Flushing to disk.")
+				gLogger.info("<RepositoryImpl> Flushing to disk.")
 				this.dds.flush()
 				this.worldState.sync()
 			}
@@ -145,7 +147,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	override def flush(): Unit = {
 		withLock {
 			() => {
-				gLogger.info("Flushing to disk.")
+				gLogger.info("<RepositoryImpl> Flushing to disk.")
 				this.dds.flush()
 				this.worldState.sync()
 
@@ -313,12 +315,15 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 
 
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
-		val account = getAccountState(address).map(_.clone().asInstanceOf[AccountState]).getOrElse(new AccountState())
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
+		var (accountMap, detailsMap) = (cacheAccounts, cacheDetails)
+
+		val account = getAccountState(address).map(_.clone()).getOrElse(new AccountState())
 		val details = new ContractDetailsCacheImpl(getContractDetails(address).orNull)
 
-		cacheAccounts.put(address, account)
-		cacheDetails.put(address, details)
+		accountMap += (address -> account)
+		detailsMap += (address -> details)
+		(accountMap, detailsMap)
 	}
 
 	override def getSnapshotTo(root: ImmutableBytes): Repository = {

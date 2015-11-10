@@ -4,7 +4,6 @@ import org.lipicalabs.lipica.core.base.{Block, AccountState, Repository}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
-import scala.collection.mutable
 
 /**
  *
@@ -60,11 +59,11 @@ class RepositoryDummy extends Repository {
 
 	override def flush(): Unit = ???
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = ???
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]) = ???
 
 	override def getSnapshotTo(root: ImmutableBytes): Repository = ???
 
-	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = ???
+	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]) = ???
 
 	/**
 	 * アカウントを削除します。

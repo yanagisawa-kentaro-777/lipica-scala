@@ -60,11 +60,11 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 
 	override def flush() = ???
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = ???
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]) = ???
 
 	override def getSnapshotTo(root: ImmutableBytes) = ???
 
-	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]) = ???
+	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]) = ???
 
 	/**
 	 * アカウントを削除します。
