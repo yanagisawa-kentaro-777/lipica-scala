@@ -318,7 +318,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
 		var (accountMap, detailsMap) = (cacheAccounts, cacheDetails)
 
-		val account = getAccountState(address).map(_.clone()).getOrElse(new AccountState())
+		val account = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
 		val details = new ContractDetailsCacheImpl(getContractDetails(address).orNull)
 
 		accountMap += (address -> account)

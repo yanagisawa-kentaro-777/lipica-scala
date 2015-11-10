@@ -1,8 +1,10 @@
 package org.lipicalabs.lipica.core.db
 
-import org.lipicalabs.lipica.core.base.{Block, AccountState, Repository}
+import org.lipicalabs.lipica.core.base.{Block, AccountState}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
+
+import scala.collection.mutable
 
 
 /**
@@ -10,102 +12,137 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * @since 2015/11/03
  * @author YANAGISAWA, Kentaro
  */
-class RepositoryDummy extends Repository {
-	override def createAccount(address: ImmutableBytes): AccountState = ???
+class RepositoryDummy extends RepositoryImpl {
 
-	/**
-	 * このアカウントのアドレスすべての集合を返します。
-	 */
-	override def getAccountKeys: Set[ImmutableBytes] = ???
+	private val worldState = new mutable.HashMap[ImmutableBytes, AccountState]
+	private val detailsDB = new mutable.HashMap[ImmutableBytes, ContractDetails]
 
-	/**
-	 * アカウントを取得します。
-	 */
-	override def getAccountState(address: ImmutableBytes): Option[AccountState] = ???
+	override def reset() = {
+		this.worldState.clear()
+		this.detailsDB.clear()
+	}
 
-	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit = ???
+	override def close() = {
+		this.worldState.clear()
+		this.detailsDB.clear()
+	}
 
-	/**
-	 * 指定されたアカウントの残高に、指定された値を足します。
-	 */
-	override def addBalance(address: ImmutableBytes, value: BigInt): BigInt = ???
+	override def isClosed = throw new UnsupportedOperationException
 
-	/**
-	 * 指定されたアカウントの残高を返します。
-	 */
-	override def getBalance(address: ImmutableBytes): Option[BigInt] = ???
+	override def flush() = throw new UnsupportedOperationException
 
-	/**
-	 * アカウントの存否確認を行います。
-	 * @param address 検査対象のアカウント。
-	 */
-	override def existsAccount(address: ImmutableBytes): Boolean = ???
+	override def rollback() = throw new UnsupportedOperationException
 
-	/**
-	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
-	 */
-	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord): Unit = ???
+	override def commit() = throw new UnsupportedOperationException
 
-	override def startTracking: Repository = ???
+	override def syncToRoot(root: ImmutableBytes) = throw new UnsupportedOperationException
 
-	/**
-	 * 指定されたアカウントに結び付けられたコードを読み取ります。
-	 */
-	override def getCode(address: ImmutableBytes): Option[ImmutableBytes] = ???
+	override def startTracking = new RepositoryTrack(this)
 
-	override def rollback(): Unit = ???
+	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes) = ()
 
-	override def flushNoReconnect(): Unit = ???
+	override def getAccountKeys = this.worldState.keySet.toSet
 
-	override def flush(): Unit = ???
+	override def addBalance(address: ImmutableBytes, value: BigInt) = {
+		val account = getAccountState(address).getOrElse(createAccount(address))
+		val result = account.addToBalance(value)
+		worldState.put(address, account)
+		result
+	}
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]) = ???
+	override def getBalance(address: ImmutableBytes) = {
+		getAccountState(address).map(_.balance)
+	}
 
-	override def getSnapshotTo(root: ImmutableBytes): Repository = ???
+	override def getStorageValue(address: ImmutableBytes, key: DataWord) = {
+		getContractDetails(address).map(_.get(key))
+	}
 
-	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]) = ???
+	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord) = {
+		val details = getContractDetails(address).getOrElse {
+			createAccount(address)
+			getContractDetails(address).get
+		}
 
-	/**
-	 * アカウントを削除します。
-	 */
-	override def delete(address: ImmutableBytes): Unit = ???
+		details.put(key, value)
+		detailsDB.put(address, details)
+	}
 
-	override def getRoot: ImmutableBytes = ???
+	override def getCode(address: ImmutableBytes) = {
+		getContractDetails(address).map(_.getCode)
+	}
 
-	/**
-	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
-	 */
-	override def getContractDetails(address: ImmutableBytes): Option[ContractDetails] = None
+	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = {
+		val details = getContractDetails(address).getOrElse {
+			createAccount(address)
+			getContractDetails(address).get
+		}
+		details.setCode(code)
+	}
 
-	/**
-	 * 指定されたアカウントにおいて、キーに対応する値を取得して返します。
-	 */
-	override def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord] = ???
+	override def getNonce(address: ImmutableBytes) = {
+		getAccountState(address).getOrElse(createAccount(address)).nonce
+	}
 
-	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]) = ???
+	override def increaseNonce(address: ImmutableBytes) = {
+		val account = getAccountState(address).getOrElse(createAccount(address))
+		account.incrementNonce()
+		this.worldState.put(address, account)
+		account.nonce
+	}
 
-	/**
-	 * 指定されたアカウントの現在のnonceを返します。
-	 */
-	override def getNonce(address: ImmutableBytes): BigInt = ???
+	override def setNonce(address: ImmutableBytes, value: BigInt) = {
+		val account = getAccountState(address).getOrElse(createAccount(address))
+		account.nonce = value
+		this.worldState.put(address, account)
+		account.nonce
+	}
 
-	override def close(): Unit = ???
+	override def delete(address: ImmutableBytes) = {
+		this.worldState.remove(address)
+		this.detailsDB.remove(address)
+	}
 
-	/**
-	 * 指定されたアカウントのnonceを１増やします。
-	 */
-	override def increaseNonce(address: ImmutableBytes): BigInt = ???
+	override def getContractDetails(address: ImmutableBytes) = this.detailsDB.get(address)
 
-	override def isClosed: Boolean = ???
+	override def getAccountState(address: ImmutableBytes) = this.worldState.get(address)
 
-	override def reset(): Unit = ???
 
-	override def syncToRoot(root: ImmutableBytes): Unit = ???
+	override def createAccount(address: ImmutableBytes) = {
+		val account = new AccountState()
+		this.worldState.put(address, account)
+		this.detailsDB.put(address, new ContractDetailsImpl())
+		account
+	}
 
-	/**
-	 * 指定されたアカウントに対して、コードを保存します。
-	 */
-	override def saveCode(address: ImmutableBytes, code: ImmutableBytes): Unit = ???
+	override def existsAccount(address: ImmutableBytes) = getAccountState(address).isDefined
 
-	override def commit(): Unit = ???
+
+	override def getRoot = throw new UnsupportedOperationException
+
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]) = {
+		val account: AccountState = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
+		val details: ContractDetails = getContractDetails(address).map(_.createClone).getOrElse(new ContractDetailsImpl())
+		(cacheAccounts + (address -> account), cacheDetails + (address -> details))
+	}
+
+	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], detailsCache: Map[ImmutableBytes, ContractDetails]) = {
+		for (hash <- accountStates.keySet) {
+			val accountState = accountStates.get(hash).get
+			val contractDetails = detailsCache.get(hash).get
+			if (accountState.isDeleted) {
+				worldState.remove(hash)
+				detailsDB.remove(hash)
+			} else {
+				if (accountState.isDirty || contractDetails.isDirty) {
+					detailsDB.put(hash, contractDetails)
+					accountState.stateRoot = contractDetails.getStorageHash
+					accountState.codeHash = contractDetails.getCode.sha3
+					worldState.put(hash, accountState)
+				}
+			}
+		}
+		(Map.empty, Map.empty)
+	}
+
 }

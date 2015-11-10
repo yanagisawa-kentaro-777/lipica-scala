@@ -38,4 +38,6 @@ class ContractDetailsImpl(encodedBytes: ImmutableBytes) extends ContractDetails 
 	override def syncStorage(): Unit = ???
 
 	def getEncoded: ImmutableBytes = ???
+
+	override def createClone: ContractDetails = ???
 }

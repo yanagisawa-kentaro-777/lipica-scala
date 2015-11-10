@@ -38,4 +38,6 @@ trait ContractDetails {
 
 	def getSnapshotTo(v: ImmutableBytes): ContractDetails
 
+	def createClone: ContractDetails
+
 }

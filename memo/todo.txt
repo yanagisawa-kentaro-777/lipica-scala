@@ -1,10 +1,10 @@
 VMTestを充実させる。
 
-RepositoryDummy & RepositoryTrack を実装する。
+RepositoryTrack を実装する。
 
 AccountStateのモデル。
-Blockのモデル。
 db.ContractDetails & ContractDetailsImpl -> Storage。
+Blockのモデル。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。

@@ -13,6 +13,8 @@ class AccountState(_bytes: ImmutableBytes) {
 
 	//TODO
 
+	def isDirty: Boolean = ???
+
 	def isDeleted: Boolean = ???
 
 	def addToBalance(value: BigInt): BigInt = ???
@@ -32,6 +34,6 @@ class AccountState(_bytes: ImmutableBytes) {
 	def stateRoot: ImmutableBytes = ???
 	def stateRoot_=(v: ImmutableBytes): Unit = ???
 
-	override def clone: AccountState = ???
+	def createClone: AccountState = ???
 
 }

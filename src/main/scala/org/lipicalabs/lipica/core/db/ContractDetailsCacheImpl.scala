@@ -38,4 +38,6 @@ class ContractDetailsCacheImpl(details: ContractDetails) extends ContractDetails
 	override def setCode(v: ImmutableBytes) = ???
 
 	override def setAddress(v: ImmutableBytes) = ???
+
+	override def createClone: ContractDetails = ???
 }
