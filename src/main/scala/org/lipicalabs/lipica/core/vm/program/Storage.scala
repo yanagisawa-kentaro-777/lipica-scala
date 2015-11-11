@@ -7,6 +7,7 @@ import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
+import scala.collection.mutable
 
 /**
  * Created by IntelliJ IDEA.
@@ -92,7 +93,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 		this.repository.updateBatch(accountStates, contractDetails)
 	}
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
 		this.repository.loadAccount(address, cacheAccounts, cacheDetails)
 	}
 

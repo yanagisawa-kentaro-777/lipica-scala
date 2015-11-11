@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.db
 import org.lipicalabs.lipica.core.base.{Block, AccountState, Repository}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
@@ -12,17 +13,46 @@ import scala.collection.mutable
  * YANAGISAWA, Kentaro
  */
 class RepositoryTrack(private val repository: Repository) extends Repository {
-	override def createAccount(address: ImmutableBytes) = ???
+
+	import RepositoryTrack._
+
+	private val cacheAccounts = new mutable.HashMap[ImmutableBytes, AccountState]
+	private val cacheDetails = new mutable.HashMap[ImmutableBytes, ContractDetails]
+
+	override def createAccount(address: ImmutableBytes) = {
+		if (logger.isTraceEnabled) {
+			logger.trace("<RepositoryTrack> Creating account: [%s]".format(address))
+		}
+		val accountState = new AccountState
+		this.cacheAccounts.put(address, accountState)
+
+		val contractDetails = new ContractDetailsImpl
+		contractDetails.isDirty = true
+		this.cacheDetails.put(address, contractDetails)
+
+		accountState
+	}
+
+	override def getAccountState(address: ImmutableBytes) = {
+		this.cacheAccounts.get(address) match {
+			case Some(account) => Some(account)
+			case _ =>
+				this.repository.loadAccount(address, this.cacheAccounts, this.cacheDetails)
+				this.cacheAccounts.get(address)
+		}
+	}
+
+	override def existsAccount(address: ImmutableBytes) = {
+		this.cacheAccounts.get(address) match {
+			case Some(account) => !account.isDeleted
+			case _ => this.repository.existsAccount(address)
+		}
+	}
 
 	/**
 	 * このアカウントのアドレスすべての集合を返します。
 	 */
 	override def getAccountKeys = ???
-
-	/**
-	 * アカウントを取得します。
-	 */
-	override def getAccountState(address: ImmutableBytes) = ???
 
 	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes) = ???
 
@@ -36,11 +66,6 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 	 */
 	override def getBalance(address: ImmutableBytes) = ???
 
-	/**
-	 * アカウントの存否確認を行います。
-	 * @param address 検査対象のアカウント。
-	 */
-	override def existsAccount(address: ImmutableBytes) = ???
 
 	/**
 	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
@@ -60,7 +85,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 
 	override def flush() = ???
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]) = ???
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = ???
 
 	override def getSnapshotTo(root: ImmutableBytes) = ???
 
@@ -109,4 +134,8 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = ???
 
 	override def commit() = ???
+}
+
+object RepositoryTrack {
+	private val logger = LoggerFactory.getLogger("repository")
 }

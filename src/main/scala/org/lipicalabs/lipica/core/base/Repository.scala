@@ -4,6 +4,8 @@ import org.lipicalabs.lipica.core.db.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
+import scala.collection.mutable
+
 /**
  * データを保存するリポジトリが実装すべき trait です。
  *
@@ -107,7 +109,7 @@ trait Repository {
 
 	def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails])
 
-	def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails])
+	def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit
 
 	def getSnapshotTo(root: ImmutableBytes): Repository
 

@@ -120,10 +120,11 @@ class RepositoryDummy extends RepositoryImpl {
 
 	override def getRoot = throw new UnsupportedOperationException
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]) = {
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
 		val account: AccountState = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
+		cacheAccounts.put(address, account)
 		val details: ContractDetails = getContractDetails(address).map(_.createClone).getOrElse(new ContractDetailsImpl())
-		(cacheAccounts + (address -> account), cacheDetails + (address -> details))
+		cacheDetails.put(address, details)
 	}
 
 	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], detailsCache: Map[ImmutableBytes, ContractDetails]) = {

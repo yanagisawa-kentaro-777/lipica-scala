@@ -11,6 +11,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.{LoggerFactory, Logger}
 
+import scala.collection.mutable
 
 /**
  * Repository の実装基底クラスです。
@@ -315,15 +316,12 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 
 
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: Map[ImmutableBytes, AccountState], cacheDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
-		var (accountMap, detailsMap) = (cacheAccounts, cacheDetails)
-
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
 		val account = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
-		val details = new ContractDetailsCacheImpl(getContractDetails(address).orNull)
+		cacheAccounts.put(address, account)
 
-		accountMap += (address -> account)
-		detailsMap += (address -> details)
-		(accountMap, detailsMap)
+		val details = new ContractDetailsCacheImpl(getContractDetails(address).orNull)
+		cacheDetails.put(address, details)
 	}
 
 	override def getSnapshotTo(root: ImmutableBytes): Repository = {

@@ -15,6 +15,8 @@ class ContractDetailsImpl(encodedBytes: ImmutableBytes) extends ContractDetails 
 
 	override def isDirty = ???
 
+	override def isDirty_=(v: Boolean) = ???
+
 	override def getSnapshotTo(v: ImmutableBytes) = ???
 
 	override def put(key: DataWord, value: DataWord) = ???

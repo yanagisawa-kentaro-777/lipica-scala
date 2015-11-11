@@ -13,6 +13,7 @@ trait ContractDetails {
 	//TODO これを実装したら、Storageにも実装を保管すること。
 
 	def isDirty: Boolean
+	def isDirty_=(v: Boolean): Unit
 
 	def get(key: DataWord): DataWord
 

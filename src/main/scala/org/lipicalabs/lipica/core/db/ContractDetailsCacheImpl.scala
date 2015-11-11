@@ -17,6 +17,9 @@ class ContractDetailsCacheImpl(details: ContractDetails) extends ContractDetails
 	def getStorageHash: ImmutableBytes = ???
 
 	override def isDirty = ???
+
+	override def isDirty_=(v: Boolean) = ???
+
 	override def get(key: DataWord) = ???
 
 	override def getEncoded = ???
