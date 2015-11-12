@@ -601,8 +601,8 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 					//Push対象データは、読み飛ばす。
 					i += ((code - OpCode.Push1.opcode.toInt) + 1)
 				}
-				i += 1
 			}}
+			i += 1
 		}
 	}
 
