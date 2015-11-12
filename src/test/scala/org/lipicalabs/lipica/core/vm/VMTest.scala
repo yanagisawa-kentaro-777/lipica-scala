@@ -869,4 +869,18 @@ class VMTest extends Specification {
 
 	//TODO CODECOPY 以下未実装。
 
+	"test codecopy (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60036007600039123456"), invoke, null)
+			val expected = "1234560000000000000000000000000000000000000000000000000000000000"
+			(0 until 4).foreach {
+				_ => vm.step(program)
+			}
+			val mana = program.result.manaUsed
+			program.getMemoryContent.toHexString mustEqual expected
+			mana mustEqual 18
+		}
+	}
+
 }
