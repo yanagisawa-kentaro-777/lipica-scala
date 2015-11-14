@@ -38,6 +38,10 @@ class ContractDetailsCacheImpl(details: ContractDetails) extends ContractDetails
 
 	override def getStorage(keys: Iterable[DataWord]) = ???
 
+	override def storageKeys: Set[DataWord] = ???
+
+	override def setStorage(data: Map[DataWord, DataWord]): Unit = ???
+
 	override def getStorage = ???
 
 	override def code_=(v: ImmutableBytes) = ???

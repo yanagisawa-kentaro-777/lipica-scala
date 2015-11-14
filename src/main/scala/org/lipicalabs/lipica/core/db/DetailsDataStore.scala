@@ -35,7 +35,7 @@ class DetailsDataStore {
 				}
 				this.db.get(key) match {
 					case Some(data) =>
-						val details = new ContractDetailsImpl(data)
+						val details = ContractDetailsImpl.decode(data)
 						this.cache.put(key, details)
 						Some(details)
 					case _ =>

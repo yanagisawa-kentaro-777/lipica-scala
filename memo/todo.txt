@@ -1,6 +1,7 @@
 VMTestを充実させる。
 
-ContractDetailsImpl、ContractDetailsCacheImpl。
+ContractDetailsのメソッド名をrefactorする。
+ContractDetailsCacheImpl -> RepositoryImplのテスト！
 Blockのモデル。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。

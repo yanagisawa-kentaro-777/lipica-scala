@@ -41,7 +41,7 @@ trait ContractDetails {
 	def get(key: DataWord): Option[DataWord]
 
 	/**
-	 * ストレージデータのダイジェスト値を取得します。
+	 * ストレージデータ全体のトップダイジェスト値を取得します。
 	 */
 	def getStorageHash: ImmutableBytes
 
@@ -60,6 +60,9 @@ trait ContractDetails {
 	 */
 	def getStorage(keys: Iterable[DataWord]): Map[DataWord, DataWord]
 
+	def storageKeys: Set[DataWord]
+
+	def setStorage(data: Map[DataWord, DataWord]): Unit
 
 	def syncStorage(): Unit
 

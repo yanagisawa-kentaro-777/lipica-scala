@@ -27,6 +27,11 @@ class SystemProperties {
 		-1L
 	}
 
+	def detailsInMemoryStorageLimit: Int = {
+		//TODO
+		1000
+	}
+
 }
 
 object SystemProperties {
