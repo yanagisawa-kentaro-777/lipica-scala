@@ -45,7 +45,7 @@ class DetailsDataStore {
 	}
 
 	def update(key: ImmutableBytes, contractDetails: ContractDetails): Unit = {
-		contractDetails.setAddress(key)
+		contractDetails.address = key
 		cache.put(key, contractDetails)
 		removes.remove(key)
 	}
@@ -76,7 +76,7 @@ class DetailsDataStore {
 			val details = entry.getValue
 			details.syncStorage()
 			val key = entry.getKey
-			val value = details.getEncoded
+			val value = details.encode
 			batch.put(key, value)
 			totalSize += value.length
 		}

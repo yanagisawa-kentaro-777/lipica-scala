@@ -55,7 +55,7 @@ class RepositoryDummy extends RepositoryImpl {
 	}
 
 	override def getStorageValue(address: ImmutableBytes, key: DataWord) = {
-		getContractDetails(address).map(_.get(key))
+		getContractDetails(address).flatMap(_.get(key))
 	}
 
 	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord) = {
@@ -69,7 +69,7 @@ class RepositoryDummy extends RepositoryImpl {
 	}
 
 	override def getCode(address: ImmutableBytes) = {
-		getContractDetails(address).map(_.getCode)
+		getContractDetails(address).map(_.code)
 	}
 
 	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = {
@@ -77,7 +77,7 @@ class RepositoryDummy extends RepositoryImpl {
 			createAccount(address)
 			getContractDetails(address).get
 		}
-		details.setCode(code)
+		details.code = code
 	}
 
 	override def getNonce(address: ImmutableBytes) = {
@@ -127,9 +127,9 @@ class RepositoryDummy extends RepositoryImpl {
 		cacheDetails.put(address, details)
 	}
 
-	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]) = {
-		for (hash <- accountStates.keySet) {
-			val accountState = accountStates.get(hash).get
+	override def updateBatch(accountCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]) = {
+		for (entry <- accountCache) {
+			val (hash, accountState) = entry
 			val contractDetails = detailsCache.get(hash).get
 			if (accountState.isDeleted) {
 				worldState.remove(hash)
@@ -138,12 +138,13 @@ class RepositoryDummy extends RepositoryImpl {
 				if (accountState.isDirty || contractDetails.isDirty) {
 					detailsDB.put(hash, contractDetails)
 					accountState.stateRoot = contractDetails.getStorageHash
-					accountState.codeHash = contractDetails.getCode.sha3
+					accountState.codeHash = contractDetails.code.sha3
 					worldState.put(hash, accountState)
 				}
 			}
 		}
-		(Map.empty, Map.empty)
+		accountCache.clear()
+		detailsCache.clear()
 	}
 
 }

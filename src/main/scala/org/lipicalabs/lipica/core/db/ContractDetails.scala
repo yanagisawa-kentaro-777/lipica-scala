@@ -9,30 +9,26 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * YANAGISAWA, Kentaro
  */
 trait ContractDetails {
-	//TODO これを実装したら、Storageにも実装を補完すること。
-
-	//TODO メソッド名をrefactorする。
 
 	/**
 	 * アドレスを取得します。
-	 * TODO
 	 */
-	def getAddress: ImmutableBytes
+	def address: ImmutableBytes
 
 	/**
 	 * アドレスを設定します。
 	 */
-	def setAddress(v: ImmutableBytes): Unit
+	def address_=(v: ImmutableBytes): Unit
 
 	/**
 	 * コードを取得します。
 	 */
-	def getCode: ImmutableBytes
+	def code: ImmutableBytes
 
 	/**
 	 * コードをセットします。
 	 */
-	def setCode(v: ImmutableBytes): Unit
+	def code_=(v: ImmutableBytes): Unit
 
 	/**
 	 * データをストレージに保存します。
@@ -41,9 +37,8 @@ trait ContractDetails {
 
 	/**
 	 * データをストレージから読み取ります。
-	 * TODO
 	 */
-	def get(key: DataWord): DataWord
+	def get(key: DataWord): Option[DataWord]
 
 	/**
 	 * ストレージデータのダイジェスト値を取得します。
@@ -71,10 +66,13 @@ trait ContractDetails {
 	def getSnapshotTo(v: ImmutableBytes): ContractDetails
 
 	/**
-	 * TODO
+	 * このオブジェクトを、RBAC形式にエンコードします。
 	 */
-	def getEncoded: ImmutableBytes
+	def encode: ImmutableBytes
 
+	/**
+	 * RBAC形式にエンコードされたバイト列を解析して、このオブジェクトに属性をセットします。
+	 */
 	def decode(data: ImmutableBytes): Unit
 
 	def createClone: ContractDetails

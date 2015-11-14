@@ -25,19 +25,19 @@ class ContractDetailsImpl(encodedBytes: ImmutableBytes) extends ContractDetails 
 
 	override def put(key: DataWord, value: DataWord) = ???
 
-	override def getCode = ???
+	override def code = ???
 
 	override def getStorage(keys: Iterable[DataWord]) = ???
 
 	override def getStorageHash: ImmutableBytes = ???
 
-	override def setCode(v: ImmutableBytes) = ???
+	override def code_=(v: ImmutableBytes) = ???
 
-	override def get(key: DataWord): DataWord = ???
+	override def get(key: DataWord): Option[DataWord] = ???
 
-	override def setAddress(v: ImmutableBytes) = ???
+	override def address_=(v: ImmutableBytes) = ???
 
-	override def getAddress: ImmutableBytes = ???
+	override def address: ImmutableBytes = ???
 
 	override def getStorageSize: Int = ???
 
@@ -45,7 +45,7 @@ class ContractDetailsImpl(encodedBytes: ImmutableBytes) extends ContractDetails 
 
 	override def syncStorage(): Unit = ???
 
-	override def getEncoded: ImmutableBytes = ???
+	override def encode: ImmutableBytes = ???
 
 	override def decode(data: ImmutableBytes) = ???
 

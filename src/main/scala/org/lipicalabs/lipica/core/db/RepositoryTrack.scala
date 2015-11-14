@@ -125,7 +125,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		}
 		getContractDetails(address).foreach {
 			each => {
-				each.setCode(code)
+				each.code = code
 				each.isDirty = true
 			}
 		}
@@ -138,7 +138,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		} else if (getAccountState(address).get.codeHash == DigestUtils.EmptyDataHash) {
 			Some(ImmutableBytes.empty)
 		} else {
-			Option(getContractDetails(address).get.getCode)
+			Option(getContractDetails(address).get.code)
 		}
 	}
 
@@ -149,7 +149,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		getContractDetails(address).foreach(_.put(key, value))
 	}
 
-	override def getStorageValue(address: ImmutableBytes, key: DataWord) = getContractDetails(address).map(_.get(key))
+	override def getStorageValue(address: ImmutableBytes, key: DataWord) = getContractDetails(address).flatMap(_.get(key))
 
 	override def getAccountKeys = throw new UnsupportedOperationException
 

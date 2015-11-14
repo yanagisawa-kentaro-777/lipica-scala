@@ -103,7 +103,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	}
 
 	override def updateBatch(stateCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
-		logger.info("<RepositoryImpl> UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
+		logger.info("<RepositoryImpl> Updating batch: detailsCache.size: %,d".format(detailsCache.size))
 		for (eachEntry <- stateCache) {
 			val (hash, accountState) = eachEntry
 			var contractDetails = detailsCache.get(hash).get
@@ -115,7 +115,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				val contractDetailsCache = contractDetails.asInstanceOf[ContractDetailsCacheImpl]
 				if (contractDetailsCache.originalContract eq null) {
 					contractDetailsCache.originalContract = new ContractDetailsImpl
-					contractDetailsCache.originalContract.setAddress(hash)
+					contractDetailsCache.originalContract.address = hash
 					contractDetailsCache.commit()
 				}
 				contractDetails = contractDetailsCache.originalContract
@@ -131,7 +131,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				}
 			}
 		}
-		logger.info("<RepositoryImpl> UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
+		logger.info("<RepositoryImpl> Updated batch: detailsCache.size: %,d".format(detailsCache.size))
 		stateCache.clear()
 		detailsCache.clear()
 	}
@@ -210,7 +210,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	}
 
 	override def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord] = {
-		getContractDetails(address).map(_.get(key))
+		getContractDetails(address).flatMap(_.get(key))
 	}
 
 	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
@@ -241,7 +241,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				if (codeHash == DigestUtils.EmptyDataHash) {
 					return Some(ImmutableBytes.empty)
 				}
-				getContractDetails(address).map(_.getCode)
+				getContractDetails(address).map(_.code)
 			case _ =>
 				None
 		}
@@ -252,7 +252,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 			createAccount(address)
 			getContractDetails(address).get
 		}
-		details.setCode(code)
+		details.code = code
 		val account = getAccountState(address).get
 		account.codeHash = code.sha3
 
