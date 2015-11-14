@@ -15,6 +15,9 @@ trait ContractDetails {
 	def isDirty: Boolean
 	def isDirty_=(v: Boolean): Unit
 
+	def isDeleted: Boolean
+	def isDeleted_=(v: Boolean): Unit
+
 	def get(key: DataWord): DataWord
 
 	def put(key: DataWord, value: DataWord): Unit

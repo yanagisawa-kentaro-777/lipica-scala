@@ -127,7 +127,7 @@ class RepositoryDummy extends RepositoryImpl {
 		cacheDetails.put(address, details)
 	}
 
-	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], detailsCache: Map[ImmutableBytes, ContractDetails]) = {
+	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]) = {
 		for (hash <- accountStates.keySet) {
 			val accountState = accountStates.get(hash).get
 			val contractDetails = detailsCache.get(hash).get

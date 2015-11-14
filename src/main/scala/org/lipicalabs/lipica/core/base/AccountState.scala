@@ -17,6 +17,8 @@ class AccountState(_bytes: ImmutableBytes) {
 
 	def isDeleted: Boolean = ???
 
+	def isDeleted_=(v: Boolean): Unit = ???
+
 	def addToBalance(value: BigInt): BigInt = ???
 
 	def encode: ImmutableBytes = ???

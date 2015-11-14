@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.db
 
 import org.lipicalabs.lipica.core.base.{Block, AccountState, Repository}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.LoggerFactory
 
@@ -49,91 +50,177 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		}
 	}
 
-	/**
-	 * このアカウントのアドレスすべての集合を返します。
-	 */
-	override def getAccountKeys = ???
+	override def getContractDetails(address: ImmutableBytes) = {
+		this.cacheDetails.get(address) match {
+			case Some(details) => Some(details)
+			case _ =>
+				this.repository.loadAccount(address, this.cacheAccounts, this.cacheDetails)
+				this.cacheDetails.get(address)
+		}
+	}
 
-	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes) = ???
+	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+		val (account, details) =
+			this.cacheAccounts.get(address) match {
+				case Some(accountState) =>
+					val contractDetails = this.cacheDetails.get(address).get
+					(accountState, contractDetails)
+				case _ =>
+					this.repository.loadAccount(address, this.cacheAccounts, this.cacheDetails)
+					(this.cacheAccounts.get(address).get, this.cacheDetails.get(address).get)
+			}
+		this.cacheAccounts.put(address, account.createClone)
+		this.cacheDetails.put(address, new ContractDetailsCacheImpl(details))
+	}
 
-	/**
-	 * 指定されたアカウントの残高に、指定された値を足します。
-	 */
-	override def addBalance(address: ImmutableBytes, value: BigInt) = ???
+	override def delete(address: ImmutableBytes) = {
+		if (logger.isTraceEnabled) {
+			logger.trace("<RepositoryTrack> Delete account: [%s]".format(address.toHexString))
+		}
+		getAccountState(address).foreach(_.isDeleted = true)
+		getContractDetails(address).foreach(_.isDeleted = true)
+	}
 
-	/**
-	 * 指定されたアカウントの残高を返します。
-	 */
-	override def getBalance(address: ImmutableBytes) = ???
+	override def increaseNonce(address: ImmutableBytes) = {
+		val accountState = getAccountState(address).getOrElse(createAccount(address))
+		getContractDetails(address).foreach(_.isDirty = true)
+
+		val prevNonce = accountState.nonce
+		accountState.incrementNonce()
+		if (logger.isTraceEnabled) {
+			logger.trace("<RepositoryTrack> Increased nonce: [%s] from [%s] to [%s]".format(address, prevNonce, accountState.nonce))
+		}
+		accountState.nonce
+	}
+
+	def setNonce(address: ImmutableBytes, v: BigInt): BigInt = {
+		val accountState = getAccountState(address).getOrElse(createAccount(address))
+		getContractDetails(address).foreach(_.isDirty = true)
+
+		val prevNonce = accountState.nonce
+		accountState.nonce = v
+		if (logger.isTraceEnabled) {
+			logger.trace("<RepositoryTrack> Set nonce: [%s] from [%s] to [%s]".format(address, prevNonce, accountState.nonce))
+		}
+		accountState.nonce
+	}
+
+	override def getNonce(address: ImmutableBytes) = getAccountState(address).map(_.nonce).getOrElse(UtilConsts.Zero)
+
+	override def getBalance(address: ImmutableBytes) = getAccountState(address).map(_.balance)
+
+	override def addBalance(address: ImmutableBytes, value: BigInt) = {
+		val account = getAccountState(address).getOrElse(createAccount(address))
+		getContractDetails(address).foreach(_.isDirty = true)
+		val newBalance = account.addToBalance(value)
+		if (logger.isTraceEnabled) {
+			logger.trace("<RepositoryTrack> Added to balance: [%s] NewBalance: [%s], Delta: [%s]".format(address, newBalance, value))
+		}
+		newBalance
+	}
+
+	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = {
+		if (logger.isTraceEnabled) {
+			logger.trace("<RepositoryTrack> Saving code. Address: [%s], Code: [%s]".format(address.toHexString, code.toHexString))
+		}
+		getContractDetails(address).foreach {
+			each => {
+				each.setCode(code)
+				each.isDirty = true
+			}
+		}
+		getAccountState(address).foreach(_.codeHash = code.sha3)
+	}
+
+	override def getCode(address: ImmutableBytes): Option[ImmutableBytes] = {
+		if (!existsAccount(address)) {
+			None
+		} else if (getAccountState(address).get.codeHash == DigestUtils.EmptyDataHash) {
+			Some(ImmutableBytes.empty)
+		} else {
+			Option(getContractDetails(address).get.getCode)
+		}
+	}
+
+	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord) = {
+		if (logger.isTraceEnabled) {
+			logger.trace("<RepositoryTrack> Add storage row. Address: [%s], Key: [%s], Value: [%s]".format(address.toHexString, key.toHexString, value.toHexString))
+		}
+		getContractDetails(address).foreach(_.put(key, value))
+	}
+
+	override def getStorageValue(address: ImmutableBytes, key: DataWord) = getContractDetails(address).map(_.get(key))
+
+	override def getAccountKeys = throw new UnsupportedOperationException
+
+	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes) = throw new UnsupportedOperationException
+
+	override def startTracking = new RepositoryTrack(this)
+
+	override def flush() = throw new UnsupportedOperationException
+
+	override def flushNoReconnect() = throw new UnsupportedOperationException
+
+	override def commit() = {
+		for (details <- this.cacheDetails.values) {
+			details.asInstanceOf[ContractDetailsCacheImpl].commit()
+		}
+		this.repository.updateBatch(this.cacheAccounts, this.cacheDetails)
+		this.cacheAccounts.clear()
+		this.cacheDetails.clear()
+		if (logger.isDebugEnabled) {
+			logger.debug("<RepositoryTrack> Committed changes.")
+		}
+	}
+
+	override def syncToRoot(root: ImmutableBytes) = throw new UnsupportedOperationException
+
+	override def rollback() = {
+		this.cacheAccounts.clear()
+		this.cacheDetails.clear()
+
+		if (logger.isDebugEnabled) {
+			logger.debug("<RepositoryTrack> Rolled back changes.")
+		}
+	}
+
+	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+		for (each <- accountStates) {
+			this.cacheAccounts.put(each._1, each._2)
+		}
+		for (each <- contractDetails) {
+			val hash = each._1
+			val contractDetailsCache = each._2.asInstanceOf[ContractDetailsCacheImpl]
+			if (Option(contractDetailsCache.originalContract).exists(original => original.isInstanceOf[ContractDetailsImpl])) {
+				this.cacheDetails.put(hash, contractDetailsCache.originalContract)
+			} else {
+				this.cacheDetails.put(hash, contractDetailsCache)
+			}
+		}
+	}
 
 
-	/**
-	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
-	 */
-	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord) = ???
+	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
+		getContractDetails(address).map(_.getStorage(keys)).getOrElse(Map.empty)
+	}
 
-	override def startTracking = ???
+	override def getRoot = throw new UnsupportedOperationException
 
-	/**
-	 * 指定されたアカウントに結び付けられたコードを読み取ります。
-	 */
-	override def getCode(address: ImmutableBytes) = ???
+	override def getSnapshotTo(root: ImmutableBytes) = throw new UnsupportedOperationException
 
-	override def rollback() = ???
+	override def close() = throw new UnsupportedOperationException
 
-	override def flushNoReconnect() = ???
+	override def isClosed = throw new UnsupportedOperationException
 
-	override def flush() = ???
+	override def reset() = throw new UnsupportedOperationException
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = ???
+	def getOriginalRepository: Repository = {
+		this.repository match {
+			case r: RepositoryTrack => r.getOriginalRepository
+			case r: Repository => r
+		}
+	}
 
-	override def getSnapshotTo(root: ImmutableBytes) = ???
-
-	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]) = ???
-
-	/**
-	 * アカウントを削除します。
-	 */
-	override def delete(address: ImmutableBytes) = ???
-
-	override def getRoot = ???
-
-	/**
-	 * 指定されたアカウントに対応するコントラクト明細を取得して返します。
-	 */
-	override def getContractDetails(address: ImmutableBytes) = ???
-
-	/**
-	 * 指定されたアカウントにおいて、キーに対応する値を取得して返します。
-	 */
-	override def getStorageValue(address: ImmutableBytes, key: DataWord) = ???
-
-	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = ???
-
-	/**
-	 * 指定されたアカウントの現在のnonceを返します。
-	 */
-	override def getNonce(address: ImmutableBytes) = ???
-
-	override def close() = ???
-
-	/**
-	 * 指定されたアカウントのnonceを１増やします。
-	 */
-	override def increaseNonce(address: ImmutableBytes) = ???
-
-	override def isClosed = ???
-
-	override def reset() = ???
-
-	override def syncToRoot(root: ImmutableBytes) = ???
-
-	/**
-	 * 指定されたアカウントに対して、コードを保存します。
-	 */
-	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = ???
-
-	override def commit() = ???
 }
 
 object RepositoryTrack {

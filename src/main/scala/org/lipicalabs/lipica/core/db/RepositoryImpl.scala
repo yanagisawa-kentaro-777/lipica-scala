@@ -102,7 +102,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		this._isClosed
 	}
 
-	override def updateBatch(stateCache: Map[ImmutableBytes, AccountState], detailsCache: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
+	override def updateBatch(stateCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
 		logger.info("<RepositoryImpl> UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
 		for (eachEntry <- stateCache) {
 			val (hash, accountState) = eachEntry
@@ -132,7 +132,8 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 			}
 		}
 		logger.info("<RepositoryImpl> UpdatingBatch: detailsCache.size: %,d".format(detailsCache.size))
-		(Map.empty, Map.empty)
+		stateCache.clear()
+		detailsCache.clear()
 	}
 
 	override def flushNoReconnect(): Unit = {

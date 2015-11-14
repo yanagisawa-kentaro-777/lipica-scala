@@ -88,7 +88,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def getRoot = this.repository.getRoot
 
-	override def updateBatch(accountStates: Map[ImmutableBytes, AccountState], contractDetails: Map[ImmutableBytes, ContractDetails]): (Map[ImmutableBytes, AccountState], Map[ImmutableBytes, ContractDetails]) = {
+	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit  = {
 		//TODO tracelistener への記録が未実装。
 		this.repository.updateBatch(accountStates, contractDetails)
 	}
