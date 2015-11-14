@@ -1,6 +1,6 @@
 VMTestを充実させる。
 
-db.ContractDetails & ContractDetailsImpl -> Storage。
+ContractDetailsImpl、ContractDetailsCacheImpl。
 Blockのモデル。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。

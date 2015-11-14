@@ -24,6 +24,8 @@ class ContractDetailsCacheImpl(details: ContractDetails) extends ContractDetails
 
 	override def getEncoded = ???
 
+	override def decode(data: ImmutableBytes) = ???
+
 	override def getStorageSize = ???
 
 	override def put(key: DataWord, value: DataWord) = ???
@@ -41,6 +43,8 @@ class ContractDetailsCacheImpl(details: ContractDetails) extends ContractDetails
 	override def setCode(v: ImmutableBytes) = ???
 
 	override def setAddress(v: ImmutableBytes) = ???
+
+	override def getAddress: ImmutableBytes = ???
 
 	override def createClone: ContractDetails = ???
 

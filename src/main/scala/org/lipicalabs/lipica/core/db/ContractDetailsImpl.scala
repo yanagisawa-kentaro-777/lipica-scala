@@ -17,9 +17,9 @@ class ContractDetailsImpl(encodedBytes: ImmutableBytes) extends ContractDetails 
 
 	override def isDirty_=(v: Boolean) = ???
 
-	def isDeleted: Boolean = ???
+	override def isDeleted: Boolean = ???
 
-	def isDeleted_=(v: Boolean): Unit = ???
+	override def isDeleted_=(v: Boolean): Unit = ???
 
 	override def getSnapshotTo(v: ImmutableBytes) = ???
 
@@ -29,13 +29,15 @@ class ContractDetailsImpl(encodedBytes: ImmutableBytes) extends ContractDetails 
 
 	override def getStorage(keys: Iterable[DataWord]) = ???
 
-	def getStorageHash: ImmutableBytes = ???
+	override def getStorageHash: ImmutableBytes = ???
 
 	override def setCode(v: ImmutableBytes) = ???
 
-	def get(key: DataWord): DataWord = ???
+	override def get(key: DataWord): DataWord = ???
 
 	override def setAddress(v: ImmutableBytes) = ???
+
+	override def getAddress: ImmutableBytes = ???
 
 	override def getStorageSize: Int = ???
 
@@ -43,7 +45,9 @@ class ContractDetailsImpl(encodedBytes: ImmutableBytes) extends ContractDetails 
 
 	override def syncStorage(): Unit = ???
 
-	def getEncoded: ImmutableBytes = ???
+	override def getEncoded: ImmutableBytes = ???
+
+	override def decode(data: ImmutableBytes) = ???
 
 	override def createClone: ContractDetails = ???
 }

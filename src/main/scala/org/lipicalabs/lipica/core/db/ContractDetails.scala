@@ -9,39 +9,82 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * YANAGISAWA, Kentaro
  */
 trait ContractDetails {
-	//TODO 未実装。
-	//TODO これを実装したら、Storageにも実装を保管すること。
+	//TODO これを実装したら、Storageにも実装を補完すること。
 
-	def isDirty: Boolean
-	def isDirty_=(v: Boolean): Unit
+	//TODO メソッド名をrefactorする。
 
-	def isDeleted: Boolean
-	def isDeleted_=(v: Boolean): Unit
+	/**
+	 * アドレスを取得します。
+	 * TODO
+	 */
+	def getAddress: ImmutableBytes
 
-	def get(key: DataWord): DataWord
+	/**
+	 * アドレスを設定します。
+	 */
+	def setAddress(v: ImmutableBytes): Unit
 
+	/**
+	 * コードを取得します。
+	 */
+	def getCode: ImmutableBytes
+
+	/**
+	 * コードをセットします。
+	 */
+	def setCode(v: ImmutableBytes): Unit
+
+	/**
+	 * データをストレージに保存します。
+	 */
 	def put(key: DataWord, value: DataWord): Unit
 
-	def getStorageSize: Int
+	/**
+	 * データをストレージから読み取ります。
+	 * TODO
+	 */
+	def get(key: DataWord): DataWord
 
-	def getStorage: Map[DataWord, DataWord]
-
+	/**
+	 * ストレージデータのダイジェスト値を取得します。
+	 */
 	def getStorageHash: ImmutableBytes
 
+	/**
+	 * ストレージに格納されたデータ数を取得します。
+	 */
+	def getStorageSize: Int
+
+	/**
+	 * ストレージに保存されたデータを返します。
+	 */
+	def getStorage: Map[DataWord, DataWord]
+
+	/**
+	 * ストレージに保存されたデータのうち、条件に合致するものを返します。
+	 */
 	def getStorage(keys: Iterable[DataWord]): Map[DataWord, DataWord]
 
-	def setAddress(v: ImmutableBytes): Unit
 
 	def syncStorage(): Unit
 
-	def getEncoded: ImmutableBytes
-
-	def getCode: ImmutableBytes
-
-	def setCode(v: ImmutableBytes): Unit
-
 	def getSnapshotTo(v: ImmutableBytes): ContractDetails
 
+	/**
+	 * TODO
+	 */
+	def getEncoded: ImmutableBytes
+
+	def decode(data: ImmutableBytes): Unit
+
 	def createClone: ContractDetails
+
+	def isDirty: Boolean
+
+	def isDirty_=(v: Boolean): Unit
+
+	def isDeleted: Boolean
+
+	def isDeleted_=(v: Boolean): Unit
 
 }

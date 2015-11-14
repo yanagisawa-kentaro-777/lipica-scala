@@ -89,7 +89,20 @@ class Storage private(private val address: DataWord, private val repository: Rep
 	override def getRoot = this.repository.getRoot
 
 	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit  = {
-		//TODO tracelistener への記録が未実装。
+		for (each <- contractDetails) {
+			val (address, details) = each
+			if (!canListenTrace(address)) {
+				return
+			}
+
+			if (details.isDeleted) {
+				this.traceListener.onStorageClear()
+			} else if (details.isDirty) {
+				for (entry <- details.getStorage) {
+					traceListener.onStoragePut(entry._1, entry._2)
+				}
+			}
+		}
 		this.repository.updateBatch(accountStates, contractDetails)
 	}
 
