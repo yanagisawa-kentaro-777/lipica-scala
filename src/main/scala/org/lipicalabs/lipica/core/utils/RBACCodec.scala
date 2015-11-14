@@ -302,9 +302,14 @@ object RBACCodec {
 				if (this.isSeq) mapElementsToBytes(items) else bytes
 			}
 
-			def asPositiveLong: Long = {
-				if (bytes.length == 0) return 0
-				BigInt(1, bytes).longValue()
+			def asPositiveLong: Long = asPositiveBigInt.longValue()
+
+			def asPositiveBigInt: BigInt = {
+				if (bytes.length == 0) {
+					UtilConsts.Zero
+				} else {
+					BigInt(1, bytes)
+				}
 			}
 
 			private def mapElementsToBytes(seq: Seq[DecodedResult]): Seq[AnyRef] = {

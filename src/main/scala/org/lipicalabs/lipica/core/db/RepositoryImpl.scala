@@ -298,7 +298,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 			() => {
 				val bytes = this.worldState.get(address)
 				if (bytes.nonEmpty) {
-					Some(new AccountState(bytes))
+					Some(AccountState.decode(bytes))
 				} else {
 					None
 				}

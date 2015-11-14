@@ -1,10 +1,8 @@
 VMTestを充実させる。
 
-RepositoryTrack を実装する。
-
-AccountStateのモデル。
 db.ContractDetails & ContractDetailsImpl -> Storage。
 Blockのモデル。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。
+RepositoryImplのデバッグ用出力。
