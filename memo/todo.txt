@@ -1,6 +1,5 @@
 VMTestを充実させる。
 
-Repositoryのメソッド名をrefactorする。
 RepositoryImpl等々のテスト！
 Blockのモデル。
 CodecをImmutableBytesにする。

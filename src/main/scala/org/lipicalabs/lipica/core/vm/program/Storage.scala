@@ -54,7 +54,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def getStorageValue(address: ImmutableBytes, key: DataWord) = this.repository.getStorageValue(address, key)
 
-	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = this.repository.getStorage(address, keys)
+	override def getStorageContent(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = this.repository.getStorageContent(address, keys)
 
 	override def getBalance(address: ImmutableBytes) = this.repository.getBalance(address)
 

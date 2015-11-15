@@ -68,7 +68,7 @@ trait Repository {
 	 */
 	def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord]
 
-	def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord]
+	def getStorageContent(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord]
 
 	/**
 	 * 指定されたアカウントの残高を返します。

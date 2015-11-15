@@ -199,8 +199,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		}
 	}
 
-
-	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
+	override def getStorageContent(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
 		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 
