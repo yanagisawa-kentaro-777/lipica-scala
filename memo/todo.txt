@@ -1,4 +1,3 @@
-AccountStateのテスト。
 RepositoryImplのテスト。
 Blockのモデル。
 CodecをImmutableBytesにする。

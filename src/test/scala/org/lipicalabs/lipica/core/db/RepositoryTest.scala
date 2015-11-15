@@ -1,16 +1,11 @@
 package org.lipicalabs.lipica.core.db
 
-import java.util.Random
-
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.datasource.{HashMapDB, KeyValueDataSource}
+import org.lipicalabs.lipica.core.datasource.HashMapDB
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
-
-import scala.collection.mutable
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,15 +16,6 @@ import scala.collection.mutable
 @RunWith(classOf[JUnitRunner])
 class RepositoryTest extends Specification {
 	sequential
-
-	private def randomBytes(length: Int): ImmutableBytes = {
-		val random = new Random
-		val result = new Array[Byte](length)
-		random.nextBytes(result)
-		ImmutableBytes(result)
-	}
-
-	private def randomWord: DataWord = DataWord(randomBytes(32))
 
 	"test (1)" should {
 		"be right" in {
@@ -116,7 +102,191 @@ class RepositoryTest extends Specification {
 		}
 	}
 
-	//TODO test (5) 以下未実装。
+	"test (5)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				(0 until 10).foreach {
+					_ => track.increaseNonce(cow)
+				}
+				track.increaseNonce(horse)
+
+				track.getNonce(cow) mustEqual BigInt(10)
+				track.getNonce(horse) mustEqual BigInt(1)
+				repository.getNonce(cow) mustEqual UtilConsts.Zero
+				repository.getNonce(horse) mustEqual UtilConsts.Zero
+
+				track.commit()
+
+				track.getNonce(cow) mustEqual BigInt(10)
+				track.getNonce(horse) mustEqual BigInt(1)
+				repository.getNonce(cow) mustEqual BigInt(10)
+				repository.getNonce(horse) mustEqual BigInt(1)
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (6)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				(0 until 10).foreach {
+					_ => track.increaseNonce(cow)
+				}
+				track.increaseNonce(horse)
+
+				track.getNonce(cow) mustEqual BigInt(10)
+				track.getNonce(horse) mustEqual BigInt(1)
+				repository.getNonce(cow) mustEqual UtilConsts.Zero
+				repository.getNonce(horse) mustEqual UtilConsts.Zero
+
+				track.rollback()
+
+				track.getNonce(cow) mustEqual UtilConsts.Zero
+				track.getNonce(horse) mustEqual UtilConsts.Zero
+				repository.getNonce(cow) mustEqual UtilConsts.Zero
+				repository.getNonce(horse) mustEqual UtilConsts.Zero
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (7)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				track.addBalance(cow, BigInt(10))
+				track.addBalance(horse, BigInt(1))
+
+				track.getBalance(cow).get mustEqual BigInt(10)
+				track.getBalance(horse).get mustEqual BigInt(1)
+				repository.getBalance(cow).isEmpty mustEqual true
+				repository.getBalance(horse).isEmpty mustEqual true
+
+				track.commit()
+
+				track.getBalance(cow).get mustEqual BigInt(10)
+				track.getBalance(horse).get mustEqual BigInt(1)
+				repository.getBalance(cow).get mustEqual BigInt(10)
+				repository.getBalance(horse).get mustEqual BigInt(1)
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (8)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				track.addBalance(cow, BigInt(10))
+				track.addBalance(horse, BigInt(1))
+
+				track.getBalance(cow).get mustEqual BigInt(10)
+				track.getBalance(horse).get mustEqual BigInt(1)
+				repository.getBalance(cow).isEmpty mustEqual true
+				repository.getBalance(horse).isEmpty mustEqual true
+
+				track.rollback()
+
+				track.getBalance(cow).get mustEqual UtilConsts.Zero
+				track.getBalance(horse).get mustEqual UtilConsts.Zero
+				repository.getBalance(cow).isEmpty mustEqual true
+				repository.getBalance(horse).isEmpty mustEqual true
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (9)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val cowKey = ImmutableBytes.parseHexString("A1A2A3")
+				val cowValue = ImmutableBytes.parseHexString("A4A5A6")
+
+				val horseKey = ImmutableBytes.parseHexString("B1B2B3")
+				val horseValue = ImmutableBytes.parseHexString("B4B5B6")
+
+				track.addStorageRow(cow, DataWord(cowKey), DataWord(cowValue))
+				track.addStorageRow(horse, DataWord(horseKey), DataWord(horseValue))
+
+				track.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
+				track.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
+				repository.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
+				repository.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
+
+				track.commit()
+
+				track.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
+				track.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
+				repository.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
+				repository.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (10)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val cowKey = ImmutableBytes.parseHexString("A1A2A3")
+				val cowValue = ImmutableBytes.parseHexString("A4A5A6")
+
+				val horseKey = ImmutableBytes.parseHexString("B1B2B3")
+				val horseValue = ImmutableBytes.parseHexString("B4B5B6")
+
+				track.addStorageRow(cow, DataWord(cowKey), DataWord(cowValue))
+				track.addStorageRow(horse, DataWord(horseKey), DataWord(horseValue))
+
+				track.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
+				track.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
+				repository.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
+				repository.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
+
+				track.rollback()
+
+				track.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
+				track.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
+				repository.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
+				repository.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	//TODO test (11) 以下未実装。
 
 
 }
