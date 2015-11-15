@@ -937,19 +937,40 @@ class VMTest extends Specification with BeforeExample {
 		}
 	}
 
+	"test extcodecopy (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60036007600073471FD3AD3E9EEADEEC4608B92D16CE6B500704CC3C123456"), invoke)
+			val expected = "6000600000000000000000000000000000000000000000000000000000000000"
+			(0 until 5).foreach {
+				_ => vm.step(program)
+			}
+			program.getMemoryContent.toHexString mustEqual expected
+		}
+	}
 
-	//TODO ExtCodeCopy
+	"test mod (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6003600406"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stackPop.data.toHexString mustEqual expected
+		}
+	}
 
-//	"test extcodecopy (1)" should {
-//		"be right" in {
-//			val vm = new VM
-//			val program = new Program(ImmutableBytes.parseHexString("60036007600073471FD3AD3E9EEADEEC4608B92D16CE6B500704CC3C123456"), invoke)
-//			val expected = "6000600000000000000000000000000000000000000000000000000000000000"
-//			(0 until 5).foreach {
-//				_ => vm.step(program)
-//			}
-//			program.getMemoryContent.toHexString mustEqual expected
-//		}
-//	}
+	"test smod (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("6003600407"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			program.stackPop.data.toHexString mustEqual expected
+		}
+	}
 
 }

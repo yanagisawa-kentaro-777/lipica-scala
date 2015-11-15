@@ -1,9 +1,9 @@
-VMTestを充実させる。
-
 AccountStateのテスト。
 RepositoryImplのテスト。
 Blockのモデル。
 CodecをImmutableBytesにする。
+
+VMTestを充実させる。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。
