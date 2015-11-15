@@ -456,7 +456,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	 * @param data 符号化されたバイト列。
 	 */
 	def deserialize(data: ImmutableBytes): Unit = {
-		RBACCodec.Decoder.decode(data.toByteArray) match {
+		RBACCodec.Decoder.decode(data) match {
 			case Right(result) =>
 				val keys = result.items.head.bytes
 				val valuesSeq = result.items(1).items.map(_.bytes)
@@ -465,12 +465,12 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 				valuesSeq.indices.foreach {i => {
 					val encodedValue = valuesSeq(i)
 					val key = new Array[Byte](32)
-					val value = Value.fromEncodedBytes(ImmutableBytes(encodedValue))
-					System.arraycopy(keys, i * 32, key, 0, 32)
+					val value = Value.fromEncodedBytes(encodedValue)
+					keys.copyTo(i * 32, key, 0, 32)
 
 					this.cache.put(ImmutableBytes(key), value)
 				}}
-				this.root = Value.fromEncodedBytes(ImmutableBytes(encodedRoot))
+				this.root = Value.fromEncodedBytes(encodedRoot)
 			case Left(e) =>
 				logger.warn("<TrieImpl> Deserialization error.", e)
 		}

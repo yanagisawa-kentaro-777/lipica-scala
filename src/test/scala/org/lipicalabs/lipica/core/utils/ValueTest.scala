@@ -29,7 +29,7 @@ class ValueTest extends Specification {
 	"instance creation (2)" should {
 		"be right" in {
 			val value = Value.fromEncodedBytes(ImmutableBytes.fromOneByte(0x80.asInstanceOf[Byte]))
-			value.value.asInstanceOf[Array[Byte]] sameElements Array(0.asInstanceOf[Byte])
+			value.value.asInstanceOf[ImmutableBytes].toByteArray sameElements Array(0.asInstanceOf[Byte])
 			(value.encodedBytes sameElements Array(0x80.asInstanceOf[Byte])) mustEqual true
 			value.hash.toHexString mustEqual "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 		}

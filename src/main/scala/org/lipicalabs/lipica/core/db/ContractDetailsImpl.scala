@@ -165,15 +165,15 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	override def decode(data: ImmutableBytes) = {
 		val items = RBACCodec.Decoder.decode(data).right.get.items
-		this.address = ImmutableBytes(items.head.bytes)
+		this.address = items.head.bytes
 		this.externalStorage = items(1).asPositiveLong > 0L
-		this.storageTrie.deserialize(ImmutableBytes(items(2).bytes))
-		this.code = ImmutableBytes(items(3).bytes)
+		this.storageTrie.deserialize(items(2).bytes)
+		this.code = items(3).bytes
 		items(4).items.foreach {
-			each => addKey(ImmutableBytes(each.bytes))
+			each => addKey(each.bytes)
 		}
 		if (externalStorage) {
-			this.storageTrie.root = ImmutableBytes(items(5).bytes)
+			this.storageTrie.root = items(5).bytes
 			this.storageTrie.cache.setDB(getExternalStorageDataSource)
 		}
 	}

@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.db
 
-import org.lipicalabs.lipica.core.datasource.HashMapDB
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -133,7 +132,7 @@ class ContractDetailsCacheImpl(private[db] var originalContract: ContractDetails
 				this.storage.put(DataWord(decodedKeySeq(i).bytes), DataWord(decodedValueSeq(i).bytes))
 			}
 		}
-		this.code = ImmutableBytes(decodedCode)
+		this.code = decodedCode
 	}
 
 	override def syncStorage() = Option(this.originalContract).foreach(_.syncStorage())

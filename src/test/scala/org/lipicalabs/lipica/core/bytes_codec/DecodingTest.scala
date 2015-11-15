@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.utils.RBACCodec.{Decoder, Encoder}
-import org.lipicalabs.lipica.core.utils.RBACCodec
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.{DecodedSeq, DecodedBytes}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -29,7 +29,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = Decoder.decode(encodeResult)
-			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes, StandardCharsets.UTF_8) mustEqual test
+			decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.asString(StandardCharsets.UTF_8) mustEqual test
 		}
 	}
 
@@ -41,7 +41,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
-			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes, StandardCharsets.UTF_8) mustEqual test
+			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray, StandardCharsets.UTF_8) mustEqual test
 		}
 	}
 
@@ -53,7 +53,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
-			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes, StandardCharsets.UTF_8) mustEqual test
+			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray, StandardCharsets.UTF_8) mustEqual test
 		}
 	}
 
@@ -65,7 +65,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
-			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes, StandardCharsets.UTF_8) mustEqual test
+			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray, StandardCharsets.UTF_8) mustEqual test
 		}
 	}
 
@@ -89,7 +89,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
-			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes) mustEqual test
+			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
 		}
 	}
 
@@ -101,7 +101,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
-			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes) mustEqual test
+			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
 		}
 	}
 
@@ -113,7 +113,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
-			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes) mustEqual test
+			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
 		}
 	}
 
@@ -125,7 +125,7 @@ class DecodingTest extends Specification {
 			Hex.encodeHexString(encodeResult) mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
-			BigInt(1, decodeResult.right.get.asInstanceOf[DecodedBytes].bytes) mustEqual test
+			BigInt(1, decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
 		}
 	}
 
@@ -150,9 +150,9 @@ class DecodingTest extends Specification {
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.size mustEqual 3
-			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.bytes) mustEqual "dog"
-			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).bytes) mustEqual "god"
-			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(2).bytes) mustEqual "cat"
+			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.bytes.toByteArray) mustEqual "dog"
+			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).bytes.toByteArray) mustEqual "god"
+			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(2).bytes.toByteArray) mustEqual "cat"
 		}
 	}
 
@@ -169,10 +169,10 @@ class DecodingTest extends Specification {
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.size mustEqual 4
 
-			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.bytes) mustEqual 1
-			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).items.head.bytes) mustEqual "cat"
-			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(2).bytes) mustEqual "dog"
-			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items(3).items.head.bytes) mustEqual 2
+			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.bytes.toByteArray) mustEqual 1
+			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).items.head.bytes.toByteArray) mustEqual "cat"
+			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items(2).bytes.toByteArray) mustEqual "dog"
+			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items(3).items.head.bytes.toByteArray) mustEqual 2
 		}
 	}
 
@@ -189,10 +189,10 @@ class DecodingTest extends Specification {
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.size mustEqual 3
 
-			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.items.head.bytes) mustEqual "cat"
-			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.items(1).bytes) mustEqual "dog"
-			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).items.head.bytes) mustEqual 1
-			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).items(1).bytes) mustEqual 2
+			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.items.head.bytes.toByteArray) mustEqual "cat"
+			new String(decodeResult.right.get.asInstanceOf[DecodedSeq].items.head.items(1).bytes.toByteArray) mustEqual "dog"
+			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).items.head.bytes.toByteArray) mustEqual 1
+			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedSeq].items(1).items(1).bytes.toByteArray) mustEqual 2
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items(2).isSeq mustEqual true
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items(2).items.isEmpty mustEqual true
 		}
@@ -315,7 +315,7 @@ class DecodingTest extends Specification {
 		bytes
 	}
 
-	def encodeAndRebuildByteArray(bytes: Array[Byte]): Array[Byte] = {
+	def encodeAndRebuildByteArray(bytes: Array[Byte]): ImmutableBytes = {
 		val encoded = RBACCodec.Encoder.encode(bytes)
 		//println("%s".format(Hex.encodeHexString(encoded)))
 		RBACCodec.Decoder.decode(encoded).right.get.bytes
@@ -327,9 +327,9 @@ class DecodingTest extends Specification {
 				len => {
 					val bytes = generateByteArray(len)
 					val rebuilt = encodeAndRebuildByteArray(bytes)
-					val matches = bytes sameElements rebuilt
+					val matches = bytes sameElements rebuilt.toByteArray
 					if (!matches) {
-						println("[%,d] %s != %s".format(len, Hex.encodeHexString(bytes), Hex.encodeHexString(rebuilt)))
+						println("[%,d] %s != %s".format(len, Hex.encodeHexString(bytes), rebuilt.toHexString))
 					}
 					matches mustEqual true
 				}
@@ -342,9 +342,9 @@ class DecodingTest extends Specification {
 		(0 until len).map(_ => Array.emptyByteArray).toSeq
 	}
 
-	def encodeAndRebuildSeq(seq: Seq[Array[Byte]]): Seq[Array[Byte]] = {
+	def encodeAndRebuildSeq(seq: Seq[Array[Byte]]): Seq[ImmutableBytes] = {
 		val encoded = RBACCodec.Encoder.encode(seq)
-		RBACCodec.Decoder.decode(encoded).right.get.result.asInstanceOf[Seq[Array[Byte]]]
+		RBACCodec.Decoder.decode(encoded).right.get.result.asInstanceOf[Seq[ImmutableBytes]]
 	}
 
 	"various seq" should {
@@ -353,7 +353,7 @@ class DecodingTest extends Specification {
 				len => {
 					val seq = generateSeq(len)
 					val rebuilt = encodeAndRebuildSeq(seq)
-					seq.map(Hex.encodeHexString) mustEqual rebuilt.map(Hex.encodeHexString)
+					seq.map(Hex.encodeHexString) mustEqual rebuilt.map(_.toHexString)
 				}
 			}
 			ok

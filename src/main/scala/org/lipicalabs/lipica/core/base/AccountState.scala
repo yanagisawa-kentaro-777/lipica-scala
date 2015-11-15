@@ -87,8 +87,8 @@ object AccountState {
 		val result = new AccountState
 		result.nonce = items.head.asPositiveBigInt
 		result.balance = items(1).asPositiveBigInt
-		result.stateRoot = ImmutableBytes(items(2).bytes)
-		result.codeHash = ImmutableBytes(items(3).bytes)
+		result.stateRoot = items(2).bytes
+		result.codeHash = items(3).bytes
 		result
 	}
 }

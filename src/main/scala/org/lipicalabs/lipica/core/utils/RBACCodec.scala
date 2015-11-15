@@ -3,8 +3,6 @@ package org.lipicalabs.lipica.core.utils
 import java.io.PrintStream
 import java.nio.charset.StandardCharsets
 
-import org.apache.commons.codec.binary.Hex
-
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
 
@@ -295,7 +293,7 @@ object RBACCodec {
 		trait DecodedResult {
 			def pos: Int
 			def isSeq: Boolean
-			def bytes: Array[Byte]
+			def bytes: ImmutableBytes
 			def items: Seq[DecodedResult]
 
 			def result: Any = {
@@ -308,7 +306,7 @@ object RBACCodec {
 				if (bytes.length == 0) {
 					UtilConsts.Zero
 				} else {
-					BigInt(1, bytes)
+					bytes.toPositiveBigInt
 				}
 			}
 
@@ -332,52 +330,50 @@ object RBACCodec {
 					}
 					out.print("]")
 				} else {
-					out.print(Hex.encodeHexString(this.bytes))
+					out.print(this.bytes.toHexString)
 					out.print(", ")
 				}
 			}
 		}
 
-		case class DecodedBytes(override val pos: Int, override val bytes: Array[Byte]) extends DecodedResult {
+		case class DecodedBytes(override val pos: Int, override val bytes: ImmutableBytes) extends DecodedResult {
 			override val isSeq = false
 			override val items = List.empty
 		}
 
 		case class DecodedSeq(override val pos: Int, override val items: Seq[DecodedResult]) extends DecodedResult {
 			override val isSeq = true
-			override val bytes = Array.empty[Byte]
-		}
-
-		def decode(data: ImmutableBytes): Either[Exception, DecodedResult] = {
-			decode(data.toByteArray)
+			override val bytes = ImmutableBytes.empty
 		}
 
 		def decode(data: Array[Byte]): Either[Exception, DecodedResult] = {
+			decode(ImmutableBytes(data))
+		}
+
+		def decode(data: ImmutableBytes): Either[Exception, DecodedResult] = {
 			decode(data, 0)
 		}
 
-		def decode(data: Array[Byte], pos: Int): Either[Exception, DecodedResult] = {
-			import java.util.Arrays._
-
+		def decode(data: ImmutableBytes, pos: Int): Either[Exception, DecodedResult] = {
 			if (data.length < 1) {
 				return Left(new IllegalArgumentException("Prefix is lacking."))
 			}
 			val prefix = data(pos) & 0xFF
 			if (prefix == OFFSET_SHORT_ITEM) {
 				//空データであることが確定。
-				Right(DecodedBytes(pos + 1, Array.empty))
+				Right(DecodedBytes(pos + 1, ImmutableBytes.empty))
 			} else if (prefix < OFFSET_SHORT_ITEM) {
 				//１バイトデータ。
-				Right(DecodedBytes(pos + 1, Array[Byte](data(pos))))
+				Right(DecodedBytes(pos + 1, ImmutableBytes.fromOneByte(data(pos))))
 			} else if (prefix <= OFFSET_LONG_ITEM) {//この判定条件は、バグではない。
 			//長さがprefixに含まれている。
 			val len = prefix - OFFSET_SHORT_ITEM
-				Right(DecodedBytes(pos + 1 + len, copyOfRange(data, pos + 1, pos + 1 + len)))
+				Right(DecodedBytes(pos + 1 + len, data.copyOfRange(pos + 1, pos + 1 + len)))
 			} else if (prefix < OFFSET_SHORT_LIST) {
 				//長さが２重にエンコードされている。
 				val lenlen = prefix - OFFSET_LONG_ITEM
-				val len = intFromBytes(copyOfRange(data, pos + 1, pos + 1 + lenlen))
-				Right(DecodedBytes(pos + 1 + lenlen + len, copyOfRange(data, pos + 1 + lenlen, pos + 1 + lenlen + len)))
+				val len = intFromBytes(data.copyOfRange(pos + 1, pos + 1 + lenlen))
+				Right(DecodedBytes(pos + 1 + lenlen + len, data.copyOfRange(pos + 1 + lenlen, pos + 1 + lenlen + len)))
 			} else if (prefix <= OFFSET_LONG_LIST) {//この判定条件は、バグではない。
 			//単純なリスト。
 			val len = prefix - OFFSET_SHORT_LIST
@@ -385,19 +381,19 @@ object RBACCodec {
 			} else if (prefix < 0xFF) {
 				//長さが２重にエンコードされている。
 				val lenlen = prefix - OFFSET_LONG_LIST
-				val len = intFromBytes(copyOfRange(data, pos + 1, pos + 1 + lenlen))
+				val len = intFromBytes(data.copyOfRange(pos + 1, pos + 1 + lenlen))
 				decodeSeq(data, pos + lenlen + 1, len)
 			} else {
 				Left(new IllegalArgumentException("Illegal prefix: %d".format(prefix)))
 			}
 		}
 
-		private def decodeSeq(data: Array[Byte], pos: Int, len: Int): Either[Exception, DecodedSeq] = {
+		private def decodeSeq(data: ImmutableBytes, pos: Int, len: Int): Either[Exception, DecodedSeq] = {
 			decodeListItemsRecursively(data, pos, len, 0, new ArrayBuffer[DecodedResult])
 		}
 
 		@tailrec
-		private def decodeListItemsRecursively(data: Array[Byte], pos: Int, len: Int, consumed: Int, items: ArrayBuffer[DecodedResult]): Either[Exception, DecodedSeq] = {
+		private def decodeListItemsRecursively(data: ImmutableBytes, pos: Int, len: Int, consumed: Int, items: ArrayBuffer[DecodedResult]): Either[Exception, DecodedSeq] = {
 			if (len <= consumed) {
 				return Right(DecodedSeq(pos, items.toIndexedSeq))
 			}
@@ -410,9 +406,9 @@ object RBACCodec {
 			}
 		}
 
-		private def intFromBytes(b: Array[Byte]): Int = {
+		private def intFromBytes(b: ImmutableBytes): Int = {
 			if (b.length == 0) return 0
-			BigInt(1, b).intValue()
+			BigInt(1, b.toByteArray).intValue()
 		}
 
 	}

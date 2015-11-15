@@ -263,19 +263,19 @@ class EncodedTransaction(private val _encodedBytes: ImmutableBytes) extends Tran
 			val transaction = RBACCodec.Decoder.decode(this.encodedBytes).right.get.items
 			//val transaction = decodedTxList.items.head.items
 
-			val nonce = launderEmptyToZero(ImmutableBytes(transaction.head.bytes))
-			val manaPrice = launderEmptyToZero(ImmutableBytes(transaction(1).bytes))
-			val manaLimit = ImmutableBytes(transaction(2).bytes)
-			val receiveAddress = ImmutableBytes(transaction(3).bytes)
-			val value = launderEmptyToZero(ImmutableBytes(transaction(4).bytes))
-			val data = ImmutableBytes(transaction(5).bytes)
+			val nonce = launderEmptyToZero(transaction.head.bytes)
+			val manaPrice = launderEmptyToZero(transaction(1).bytes)
+			val manaLimit = transaction(2).bytes
+			val receiveAddress = transaction(3).bytes
+			val value = launderEmptyToZero(transaction(4).bytes)
+			val data = transaction(5).bytes
 			val sixthElem = transaction(6).bytes
 			this.parsed =
 				if (!ByteUtils.isNullOrEmpty(sixthElem)) {
 					val v = transaction(6).bytes(0)
 					val r = transaction(7).bytes
 					val s = transaction(8).bytes
-					val signature = ECDSASignature.fromComponents(r, s, v)
+					val signature = ECDSASignature.fromComponents(r.toByteArray, s.toByteArray, v)
 					new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 				} else {
 					logger.debug("RBAC encoded tx is not signed!")
