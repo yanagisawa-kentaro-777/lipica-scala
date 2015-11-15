@@ -190,10 +190,10 @@ object RBACCodec {
 				case _ =>
 					val bytes = toBytes(value)
 					if ((bytes.length == 1) && ((bytes(0) & 0xff) < OFFSET_SHORT_ITEM)) {
-						ImmutableBytes(bytes)
+						bytes
 					} else {
 						val firstByte = encodeLength(bytes.length, OFFSET_SHORT_ITEM)
-						ImmutableBytes(firstByte ++: bytes)
+						firstByte ++ bytes
 					}
 			}
 		}
@@ -201,9 +201,9 @@ object RBACCodec {
 		/**
 		 * 長さの表現をバイト列にエンコードします。
 		 */
-		private def encodeLength(length: Int, offset: Int): Array[Byte] = {
+		private def encodeLength(length: Int, offset: Int): ImmutableBytes = {
 			if (length < SIZE_THRESHOLD) {
-				Array((length + offset).asInstanceOf[Byte])
+				ImmutableBytes(Array((length + offset).asInstanceOf[Byte]))
 			} else {
 				val binaryLength =
 					if (0xff < length) {
@@ -214,21 +214,21 @@ object RBACCodec {
 				//渡ってくる offset は、常に短いリストやアイテムの基準点なので、
 				//それを長いリストやアイテムに換算するために、SIZE_THRESHOLDを足す。
 				val firstByte = (binaryLength.length + offset + SIZE_THRESHOLD - 1).asInstanceOf[Byte]
-				firstByte +: binaryLength
+				ImmutableBytes(firstByte +: binaryLength)
 			}
 		}
 
 		@tailrec
-		private def toBytes(input: Any): Array[Byte] = {
+		private def toBytes(input: Any): ImmutableBytes = {
 			input match {
-				case v: Array[Byte] => v
-				case v: ImmutableBytes => v.toByteArray
-				case v: String => v.getBytes(StandardCharsets.UTF_8)
+				case v: Array[Byte] => ImmutableBytes(v)
+				case v: ImmutableBytes => v
+				case v: String => ImmutableBytes(v.getBytes(StandardCharsets.UTF_8))
 				case v: Long =>
 					if (v == 0L) {
-						Array.empty
+						ImmutableBytes.empty
 					} else {
-					 	ByteUtils.asUnsignedByteArray(BigInt(v))
+					 	ImmutableBytes(ByteUtils.asUnsignedByteArray(BigInt(v)))
 					}
 				case v: Int =>
 					if (v <= 0xff) {
@@ -239,19 +239,19 @@ object RBACCodec {
 						toBytes(v.asInstanceOf[Short])
 					} else if (v <= 0xffffff) {
 						//３バイト。
-						Array(
+						ImmutableBytes(Array(
 							(v >>> 16).asInstanceOf[Byte],
 							(v >>> 8).asInstanceOf[Byte],
 							v.asInstanceOf[Byte]
-						)
+						))
 					} else {
 						//４バイト。
-						Array(
+						ImmutableBytes(Array(
 							(v >>> 24).asInstanceOf[Byte],
 							(v >>> 16).asInstanceOf[Byte],
 							(v >>> 8).asInstanceOf[Byte],
 							v.asInstanceOf[Byte]
-						)
+						))
 					}
 				case v: Short =>
 					if ((v & 0xFFFF) <= 0xff) {
@@ -259,16 +259,16 @@ object RBACCodec {
 						toBytes(v.asInstanceOf[Byte])
 					} else {
 						//２バイト。
-						Array(
+						ImmutableBytes(Array(
 							(v >>> 8).asInstanceOf[Byte],
 							v.asInstanceOf[Byte]
-						)
+						))
 					}
 				case v: Byte =>
 					if (v == 0) {
-						Array.empty
+						ImmutableBytes.empty
 					} else {
-						Array((v & 0xff).asInstanceOf[Byte])
+						ImmutableBytes.fromOneByte((v & 0xff).asInstanceOf[Byte])
 					}
 				case v: Boolean =>
 					if (v) {
@@ -278,9 +278,9 @@ object RBACCodec {
 					}
 				case v: BigInt =>
 					if (v == BIGINT_ZERO) {
-						Array.empty
+						ImmutableBytes.empty
 					} else {
-						ByteUtils.asUnsignedByteArray(v)
+						ImmutableBytes.asUnsignedByteArray(v)
 					}
 				case _ =>
 					throw new RuntimeException("Unsupported type: %s".format(input.getClass + " " + input))
