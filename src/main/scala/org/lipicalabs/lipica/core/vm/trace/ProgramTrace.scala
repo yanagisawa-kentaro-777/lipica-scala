@@ -42,11 +42,11 @@ class ProgramTrace(programInvoke: ProgramInvoke) {
 		this.contractAddress = programInvoke.getOwnerAddress.last20Bytes.toHexString
 		getContractDetails(programInvoke) match {
 			case Some(contractDetails) =>
-				this.storageSize = contractDetails.getStorageSize
+				this.storageSize = contractDetails.storageSize
 				if (this.storageSize <= SystemProperties.CONFIG.vmTraceInitStorageLimit) {
 					this.fullStorage = true
 					val address = programInvoke.getOwnerAddress.last20Bytes.toHexString
-					contractDetails.getStorage.foreach { entry => {
+					contractDetails.storageContent.foreach { entry => {
 						val (key, value) = entry
 						if ((key eq null) || (value eq null)) {
 							logger.info("Null storage key/value: address[%s]".format(address))

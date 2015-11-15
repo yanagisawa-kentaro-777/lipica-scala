@@ -68,17 +68,17 @@ class ContractDetailsImpl() extends ContractDetails {
 		}
 	}
 
-	override def getStorageHash: ImmutableBytes = this.storageTrie.rootHash
+	override def storageHash: ImmutableBytes = this.storageTrie.rootHash
 
 	override def storageKeys: Set[DataWord] = this.keys.map(DataWord(_)).toSet
 
-	override def setStorage(data: Map[DataWord, DataWord]): Unit = {
+	override def put(data: Map[DataWord, DataWord]): Unit = {
 		for (entry <- data) {
 			put(entry._1, entry._2)
 		}
 	}
 
-	override def getStorage(aKeys: Iterable[DataWord]) = {
+	override def storageContent(aKeys: Iterable[DataWord]) = {
 		aKeys.flatMap {
 			eachKey => {
 				get(eachKey).map(v => (eachKey, v))
@@ -86,7 +86,7 @@ class ContractDetailsImpl() extends ContractDetails {
 		}.toMap
 	}
 
-	override def getStorage: Map[DataWord, DataWord] = {
+	override def storageContent: Map[DataWord, DataWord] = {
 		this.keys.flatMap {
 			each => {
 				val eachKey = DataWord(each)
@@ -95,7 +95,7 @@ class ContractDetailsImpl() extends ContractDetails {
 		}.toMap
 	}
 
-	override def getStorageSize: Int = this.keys.size
+	override def storageSize: Int = this.keys.size
 
 	override def syncStorage(): Unit = {
 		if (externalStorage) {
@@ -137,7 +137,7 @@ class ContractDetailsImpl() extends ContractDetails {
 		val result = new ContractDetailsImpl
 		result.address = this.address
 		result.code = this.code
-		this.getStorage.foreach {
+		this.storageContent.foreach {
 			entry => result.put(entry._1, entry._2)
 		}
 		result
@@ -177,7 +177,7 @@ class ContractDetailsImpl() extends ContractDetails {
 	}
 
 	override def toString: String = {
-		"Code: %s; Storage: %s".format(this.code.toHexString, getStorage.toString())
+		"Code: %s; Storage: %s".format(this.code.toHexString, storageContent.toString())
 	}
 
 }

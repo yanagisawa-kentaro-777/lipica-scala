@@ -201,7 +201,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 
 
 	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
-		getContractDetails(address).map(_.getStorage(keys)).getOrElse(Map.empty)
+		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 
 	override def getRoot = throw new UnsupportedOperationException

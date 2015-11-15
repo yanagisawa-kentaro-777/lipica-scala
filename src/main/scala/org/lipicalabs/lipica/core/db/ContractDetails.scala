@@ -4,6 +4,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
+ * コントラクトの内容を表す trait です。
+ *
  * Created by IntelliJ IDEA.
  * 2015/10/25 14:03
  * YANAGISAWA, Kentaro
@@ -36,6 +38,11 @@ trait ContractDetails {
 	def put(key: DataWord, value: DataWord): Unit
 
 	/**
+	 * 渡されたデータをストレージに登録します。
+	 */
+	def put(data: Map[DataWord, DataWord]): Unit
+
+	/**
 	 * データをストレージから読み取ります。
 	 */
 	def get(key: DataWord): Option[DataWord]
@@ -43,26 +50,27 @@ trait ContractDetails {
 	/**
 	 * ストレージデータ全体のトップダイジェスト値を取得します。
 	 */
-	def getStorageHash: ImmutableBytes
+	def storageHash: ImmutableBytes
 
 	/**
 	 * ストレージに格納されたデータ数を取得します。
 	 */
-	def getStorageSize: Int
+	def storageSize: Int
 
 	/**
 	 * ストレージに保存されたデータを返します。
 	 */
-	def getStorage: Map[DataWord, DataWord]
+	def storageContent: Map[DataWord, DataWord]
 
 	/**
 	 * ストレージに保存されたデータのうち、条件に合致するものを返します。
 	 */
-	def getStorage(keys: Iterable[DataWord]): Map[DataWord, DataWord]
+	def storageContent(keys: Iterable[DataWord]): Map[DataWord, DataWord]
 
+	/**
+	 * ストレージに保存されているデータのキーの集合を返します。
+	 */
 	def storageKeys: Set[DataWord]
-
-	def setStorage(data: Map[DataWord, DataWord]): Unit
 
 	def syncStorage(): Unit
 

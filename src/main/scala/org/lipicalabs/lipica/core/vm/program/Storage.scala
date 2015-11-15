@@ -98,7 +98,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 			if (details.isDeleted) {
 				this.traceListener.onStorageClear()
 			} else if (details.isDirty) {
-				for (entry <- details.getStorage) {
+				for (entry <- details.storageContent) {
 					traceListener.onStoragePut(entry._1, entry._2)
 				}
 			}

@@ -14,11 +14,15 @@ class ContractDetailsCacheImpl(details: ContractDetails) extends ContractDetails
 
 	def commit(): Unit = ???
 
-	def getStorageHash: ImmutableBytes = ???
+	override def storageHash: ImmutableBytes = ???
 
-	override def isDirty = ???
+	override def storageSize = ???
 
-	override def isDirty_=(v: Boolean) = ???
+	override def storageContent = ???
+
+	override def storageContent(keys: Iterable[DataWord]) = ???
+
+	override def storageKeys: Set[DataWord] = ???
 
 	override def get(key: DataWord) = ???
 
@@ -26,33 +30,26 @@ class ContractDetailsCacheImpl(details: ContractDetails) extends ContractDetails
 
 	override def decode(data: ImmutableBytes) = ???
 
-	override def getStorageSize = ???
-
 	override def put(key: DataWord, value: DataWord) = ???
 
-	override def code = ???
+	override def put(data: Map[DataWord, DataWord]): Unit = ???
 
 	override def syncStorage() = ???
 
 	override def getSnapshotTo(v: ImmutableBytes) = ???
 
-	override def getStorage(keys: Iterable[DataWord]) = ???
-
-	override def storageKeys: Set[DataWord] = ???
-
-	override def setStorage(data: Map[DataWord, DataWord]): Unit = ???
-
-	override def getStorage = ???
-
+	override def code = ???
 	override def code_=(v: ImmutableBytes) = ???
 
 	override def address_=(v: ImmutableBytes) = ???
-
 	override def address: ImmutableBytes = ???
 
-	override def createClone: ContractDetails = ???
+	override def isDeleted: Boolean = ???
+	override def isDeleted_=(v: Boolean): Unit = ???
 
-	def isDeleted: Boolean = ???
-	def isDeleted_=(v: Boolean): Unit = ???
+	override def isDirty = ???
+	override def isDirty_=(v: Boolean) = ???
+
+	override def createClone: ContractDetails = ???
 
 }

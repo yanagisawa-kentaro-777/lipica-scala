@@ -121,12 +121,12 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				contractDetails = contractDetailsCache.originalContract
 				updateContractDetails(hash, contractDetails)
 				if (accountState.codeHash != DigestUtils.EmptyTrieHash) {
-					accountState.stateRoot = contractDetails.getStorageHash
+					accountState.stateRoot = contractDetails.storageHash
 				}
 				updateAccountState(hash, accountState)
 				if (logger.isDebugEnabled) {
 					logger.debug("<RepositoryImpl> Update: [%s], nonce: [%s], balance: [%s] \n [%s]".format(
-						hash.toHexString, accountState.nonce, accountState.balance, contractDetails.getStorage
+						hash.toHexString, accountState.nonce, accountState.balance, contractDetails.storageContent
 					))
 				}
 			}
@@ -214,7 +214,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	}
 
 	override def getStorage(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
-		getContractDetails(address).map(_.getStorage(keys)).getOrElse(Map.empty)
+		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 
 	private def updateContractDetails(address: ImmutableBytes, details: ContractDetails): Unit = {

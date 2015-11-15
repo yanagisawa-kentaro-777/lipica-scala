@@ -1,6 +1,6 @@
 VMTestを充実させる。
 
-ContractDetailsのメソッド名をrefactorする。
+Repositoryのメソッド名をrefactorする。
 ContractDetailsCacheImpl -> RepositoryImplのテスト！
 Blockのモデル。
 
