@@ -55,7 +55,7 @@ class ContractDetailsCacheImpl(private[db] var originalContract: ContractDetails
 		for (entry <- this.storage) {
 			val (key, value) = entry
 			val encodedValue = RBACCodec.Encoder.encode(value.getDataWithoutLeadingZeros)
-			storageTrie.update(key.data, ImmutableBytes(encodedValue))
+			storageTrie.update(key.data, encodedValue)
 		}
 		storageTrie.rootHash
 	}
@@ -118,7 +118,7 @@ class ContractDetailsCacheImpl(private[db] var originalContract: ContractDetails
 		val encodedValueSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(tupleSeq.map(_._2))
 		val encodedCode = RBACCodec.Encoder.encode(this.code)
 
-		ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedKeySeq, encodedValueSeq, encodedCode)))
+		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedKeySeq, encodedValueSeq, encodedCode))
 	}
 
 	override def decode(data: ImmutableBytes) = {

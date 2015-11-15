@@ -141,9 +141,9 @@ trait TransactionLike {
 						val s = RBACCodec.Encoder.encode(Array.emptyByteArray)
 						(v, r, s)
 				}
-			ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data, v, r, s)))
+			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data, v, r, s))
 		} else {
-			ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data)))
+			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data))
 		}
 	}
 

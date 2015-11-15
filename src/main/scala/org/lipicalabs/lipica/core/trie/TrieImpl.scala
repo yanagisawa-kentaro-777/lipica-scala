@@ -485,7 +485,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
 		val encodedValues = nodes.values.map(each => RBACCodec.Encoder.encode(each.nodeValue.value))
 		val encodedRoot = RBACCodec.Encoder.encode(this.root.value)
-		ImmutableBytes(RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot)))
+		RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot))
 	}
 
 	/**

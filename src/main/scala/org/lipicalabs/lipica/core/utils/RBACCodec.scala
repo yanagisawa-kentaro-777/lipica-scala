@@ -113,7 +113,7 @@ object RBACCodec {
 		/**
 		 * あらゆる値をエンコードします。
 		 */
-		def encode(v: Any): Array[Byte] = {
+		def encode(v: Any): ImmutableBytes = {
 			v match {
 				case seq: Seq[_] => encodeSeq(seq)
 				case any => encodeItem(any)
@@ -123,10 +123,10 @@ object RBACCodec {
 		/**
 		 * バイト配列の並びをエンコードします。
 		 */
-		def encodeSeqOfByteArrays(seq: Seq[Array[Byte]]): Array[Byte] = {
+		def encodeSeqOfByteArrays(seq: Seq[ImmutableBytes]): ImmutableBytes = {
 			if (seq eq null) {
 				//要素なしのリストとする。
-				return Array(OFFSET_SHORT_LIST.asInstanceOf[Byte])
+				return ImmutableBytes.fromOneByte(OFFSET_SHORT_LIST.asInstanceOf[Byte])
 			}
 			//リスト要素の全ペイロードを合計する。
 			val totalLength = seq.foldLeft(0)((accum, each) => accum + each.length)
@@ -154,20 +154,20 @@ object RBACCodec {
 			var copyPos = initialPos
 			seq.foreach {
 				element => {
-					System.arraycopy(element, 0, data, copyPos, element.length)
+					element.copyTo(0, data, copyPos, element.length)
 					copyPos += element.length
 				}
 			}
-			data
+			ImmutableBytes(data)
 		}
 
-		private def encodeSeq(list: Seq[Any]): Array[Byte] = {
+		private def encodeSeq(list: Seq[Any]): ImmutableBytes = {
 			val listOfBytes = list.map(each => encodeElement(each))
 			encodeSeqOfByteArrays(listOfBytes)
 		}
 
 		@tailrec
-		private def encodeElement(elem: Any): Array[Byte] = {
+		private def encodeElement(elem: Any): ImmutableBytes = {
 			elem match {
 				case bytes: Array[Byte] => encodeItem(bytes)
 				case seq: Seq[_] => encodeSeq(seq)
@@ -182,18 +182,18 @@ object RBACCodec {
 		/**
 		 * アイテムをエンコードします。
 		 */
-		private def encodeItem(value: Any): Array[Byte] = {
+		private def encodeItem(value: Any): ImmutableBytes = {
 			value match {
 				case null =>
 					//空のアイテムとする。
-					Array(OFFSET_SHORT_ITEM.asInstanceOf[Byte])
+					ImmutableBytes.fromOneByte(OFFSET_SHORT_ITEM.asInstanceOf[Byte])
 				case _ =>
 					val bytes = toBytes(value)
 					if ((bytes.length == 1) && ((bytes(0) & 0xff) < OFFSET_SHORT_ITEM)) {
-						bytes
+						ImmutableBytes(bytes)
 					} else {
 						val firstByte = encodeLength(bytes.length, OFFSET_SHORT_ITEM)
-						firstByte ++: bytes
+						ImmutableBytes(firstByte ++: bytes)
 					}
 			}
 		}

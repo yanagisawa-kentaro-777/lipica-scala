@@ -49,7 +49,7 @@ class InternalTransaction(private val parentHash: ImmutableBytes, val deep: Int,
 			val encodedIndex = RBACCodec.Encoder.encode(index)
 			val encodedRejected = RBACCodec.Encoder.encode(rejected)
 
-			this.rbacBytes = ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNonce, encodedParentHash, encodedSenderAddress, encodedReceiveAddress, encodedValue, encodedManaPrice, encodedManaLimit, encodedData, encodedNote, encodedDeep, encodedIndex, encodedRejected)))
+			this.rbacBytes = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNonce, encodedParentHash, encodedSenderAddress, encodedReceiveAddress, encodedValue, encodedManaPrice, encodedManaLimit, encodedData, encodedNote, encodedDeep, encodedIndex, encodedRejected))
 		}
 		this.rbacBytes
 	}

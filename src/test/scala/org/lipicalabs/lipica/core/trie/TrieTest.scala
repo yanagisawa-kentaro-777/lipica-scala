@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datasource.HashMapDB
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 import org.specs2.mutable.Specification
@@ -25,7 +24,7 @@ class TrieTest extends Specification {
 	val mockDb = new HashMapDB
 
 	val LONG_STRING = "1234567890abcdefghijklmnopqrstuvwxxzABCEFGHIJKLMNOPQRSTUVWXYZ"
-	val EMPTY_ROOT_HASH = DigestUtils.sha3(RBACCodec.Encoder.encode(Array.empty[Byte]))
+	val EMPTY_ROOT_HASH = RBACCodec.Encoder.encode(ImmutableBytes.empty).sha3
 
 	"empty key" should {
 		"be right" in {
@@ -378,7 +377,7 @@ class TrieTest extends Specification {
 			val ROOT_HASH_BEFORE = "a84739b4762ddf15e3acc4e6957e5ab2bbfaaef00fe9d436a7369c6f058ec90d"
 
 			val trie = new TrieImpl(mockDb)
-			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual Hex.encodeHexString(EMPTY_ROOT_HASH)
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual EMPTY_ROOT_HASH.toHexString
 
 			trie.update("ca", "dude")
 			trie.update("cat", "dog")
@@ -388,7 +387,7 @@ class TrieTest extends Specification {
 			trie.delete("ca")
 			trie.delete("cat")
 			trie.delete("doge")
-			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual Hex.encodeHexString(EMPTY_ROOT_HASH)
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual EMPTY_ROOT_HASH.toHexString
 		}
 	}
 

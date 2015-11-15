@@ -53,7 +53,7 @@ class ContractDetailsImpl() extends ContractDetails {
 			this.storageTrie.delete(key.data)
 			removeKey(key.data)
 		} else {
-			val encodedValue = ImmutableBytes(RBACCodec.Encoder.encode(value.getDataWithoutLeadingZeros))
+			val encodedValue = RBACCodec.Encoder.encode(value.getDataWithoutLeadingZeros)
 			this.storageTrie.update(key.data, encodedValue)
 			addKey(key.data)
 		}
@@ -159,8 +159,7 @@ class ContractDetailsImpl() extends ContractDetails {
 		val encodedCode = RBACCodec.Encoder.encode(this.code)
 		val encodedKeys = RBACCodec.Encoder.encode(this.keys.toSeq)
 
-		val result = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedIsExternalStorage, encodedStorage, encodedCode, encodedKeys, encodedStorageRoot))
-		ImmutableBytes(result)
+		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedIsExternalStorage, encodedStorage, encodedCode, encodedKeys, encodedStorageRoot))
 	}
 
 	override def decode(data: ImmutableBytes) = {

@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
  */
 case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: ImmutableBytes) {
 
-	def getEncoded: Array[Byte] = {
+	def getEncoded: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
 		val encodedTopics = this.topics.map(each => RBACCodec.Encoder.encode(each))
 		val encodedData = RBACCodec.Encoder.encode(this.data)

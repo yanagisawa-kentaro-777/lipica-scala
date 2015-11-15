@@ -7,8 +7,8 @@ import org.spongycastle.crypto.digests.RIPEMD160Digest
 
 object DigestUtils {
 
-	val EmptyDataHash = ImmutableBytes(sha3(Array.empty[Byte]))
-	val EmptyTrieHash = ImmutableBytes(sha3(RBACCodec.Encoder.encode(Array.emptyByteArray)))
+	val EmptyDataHash = ImmutableBytes.empty.sha3
+	val EmptyTrieHash = RBACCodec.Encoder.encode(ImmutableBytes.empty).sha3
 
 	def sha3(data: Array[Byte]): Array[Byte] = {
 		val digest = new Keccak256
@@ -46,7 +46,7 @@ object DigestUtils {
 	def computeNewAddress(address: ImmutableBytes, nonce: ImmutableBytes): ImmutableBytes = {
 		val encodedSender = RBACCodec.Encoder.encode(address)
 		val encodedNonce = RBACCodec.Encoder.encode(nonce.toPositiveBigInt)
-		sha3omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)))
+		sha3omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray)
 	}
 
 }

@@ -2,11 +2,8 @@ package org.lipicalabs.lipica.core.bytes_codec
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.RBACCodec
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 import org.lipicalabs.lipica.core.utils.RBACCodec.Encoder
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.RBACCodec
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -102,7 +99,7 @@ class EncodingTest extends Specification {
 			val hexString = "ce73660a06626c1b3fda7b18ef7ba3ce17b6bf604f9541d3c6c654b7ae88b239407f659c78f419025d785727ed017b6add21952d7e12007373e321dbc31824ba"
 			val bytes = Hex.decodeHex(hexString.toCharArray)
 			val expected = "b840" + hexString
-			new String(Hex.encodeHex(RBACCodec.Encoder.encode(bytes))).toLowerCase mustEqual expected
+			new String(Hex.encodeHex(RBACCodec.Encoder.encode(bytes).toByteArray)).toLowerCase mustEqual expected
 		}
 	}
 
@@ -135,7 +132,7 @@ class EncodingTest extends Specification {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 			))
-			val elem2 = DigestUtils.sha3(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(Array.empty[Byte])))
+			val elem2 = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(ImmutableBytes.empty)).sha3
 			val elem3 = RBACCodec.Encoder.encode(Array[Byte](
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -143,7 +140,7 @@ class EncodingTest extends Specification {
 			))
 			val encoded = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(elem1, elem2, elem3))
 
-			new String(Hex.encodeHex(encoded)) mustEqual
+			encoded.toHexString mustEqual
 				"f856a000000000000000000000000000000000000000000000000000000000000000001dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000"
 		}
 	}
@@ -154,7 +151,7 @@ class EncodingTest extends Specification {
 			val data = Seq(Array[Byte](32.toByte, 99.toByte, 97.toByte, 116.toByte), Array[Byte](100.toByte, 111.toByte, 103.toByte))
 			val encoded = RBACCodec.Encoder.encode(data)
 
-			Hex.encodeHexString(encoded) mustEqual "c9842063617483646f67"
+			encoded.toHexString mustEqual "c9842063617483646f67"
 		}
 	}
 

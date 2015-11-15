@@ -63,7 +63,7 @@ class AccountState(_n: BigInt, _b: BigInt) {
 		val balance = RBACCodec.Encoder.encode(this.balance)
 		val stateRoot = RBACCodec.Encoder.encode(this.stateRoot)
 		val codeHash = RBACCodec.Encoder.encode(this.codeHash)
-		ImmutableBytes(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, balance, stateRoot, codeHash)))
+		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, balance, stateRoot, codeHash))
 	}
 
 	def createClone: AccountState = {

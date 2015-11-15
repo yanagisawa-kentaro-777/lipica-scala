@@ -123,7 +123,7 @@ class PlainValue private[utils](_value: Any) extends Value {
 	private def encode: EncodedValue = {
 		if (this.encodedValueOptionRef.get.isEmpty) {
 			val encoded = RBACCodec.Encoder.encode(value)
-			this.encodedValueOptionRef.set(Option(new EncodedValue(ImmutableBytes(encoded))))
+			this.encodedValueOptionRef.set(Option(new EncodedValue(encoded)))
 		}
 		this.encodedValueOptionRef.get.get
 	}

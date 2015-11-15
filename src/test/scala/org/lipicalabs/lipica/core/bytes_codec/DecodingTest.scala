@@ -26,7 +26,7 @@ class DecodingTest extends Specification {
 			val test = ""
 			val expected = "80"
 			val encodeResult = Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.asString(StandardCharsets.UTF_8) mustEqual test
@@ -38,7 +38,7 @@ class DecodingTest extends Specification {
 			val test = "d"
 			val expected = "64"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray, StandardCharsets.UTF_8) mustEqual test
@@ -50,7 +50,7 @@ class DecodingTest extends Specification {
 			val test = "dog"
 			val expected = "83646f67"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray, StandardCharsets.UTF_8) mustEqual test
@@ -62,7 +62,7 @@ class DecodingTest extends Specification {
 			val test = "Lorem ipsum dolor sit amet, consectetur adipisicing elit"
 			val expected = "b8384c6f72656d20697073756d20646f6c6f722073697420616d65742c20636f6e7365637465747572206164697069736963696e6720656c6974"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			new String(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray, StandardCharsets.UTF_8) mustEqual test
@@ -74,7 +74,7 @@ class DecodingTest extends Specification {
 			val test = 0
 			val expected = "80"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.isEmpty mustEqual true
@@ -86,7 +86,7 @@ class DecodingTest extends Specification {
 			val test = 15
 			val expected = "0f"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
@@ -98,7 +98,7 @@ class DecodingTest extends Specification {
 			val test = 1000
 			val expected = "8203e8"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
@@ -110,7 +110,7 @@ class DecodingTest extends Specification {
 			val test = 1024
 			val expected = "820400"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			intFromBytes(decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
@@ -122,7 +122,7 @@ class DecodingTest extends Specification {
 			val test = BigInt("100102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f", 16)
 			val expected = "a0100102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			BigInt(1, decodeResult.right.get.asInstanceOf[DecodedBytes].bytes.toByteArray) mustEqual test
@@ -134,7 +134,7 @@ class DecodingTest extends Specification {
 			val test = Seq.empty
 			val expected = "c0"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.isEmpty mustEqual true
@@ -146,7 +146,7 @@ class DecodingTest extends Specification {
 			val test = Seq("dog", "god", "cat")
 			val expected = "cc83646f6783676f6483636174"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.size mustEqual 3
@@ -164,7 +164,7 @@ class DecodingTest extends Specification {
 			val test = Seq(1, Seq("cat"), "dog", Seq(2))
 			val expected = "cc01c48363617483646f67c102"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.size mustEqual 4
@@ -184,7 +184,7 @@ class DecodingTest extends Specification {
 			val test = Seq(Seq("cat", "dog"), Seq(1, 2), Seq.empty)
 			val expected = "cdc88363617483646f67c20102c0"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.size mustEqual 3
@@ -206,7 +206,7 @@ class DecodingTest extends Specification {
 			val test = Seq(Seq.empty, Seq(Seq.empty), Seq(Seq.empty, Seq(Seq.empty)))
 			val expected = "c7c0c1c0c3c0c1c0"
 			val encodeResult = RBACCodec.Encoder.encode(test)
-			Hex.encodeHexString(encodeResult) mustEqual expected
+			encodeResult.toHexString mustEqual expected
 
 			val decodeResult = RBACCodec.Decoder.decode(encodeResult)
 			decodeResult.right.get.asInstanceOf[DecodedSeq].items.size mustEqual 3
