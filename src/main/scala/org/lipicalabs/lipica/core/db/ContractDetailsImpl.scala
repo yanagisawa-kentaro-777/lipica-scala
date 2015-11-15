@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.db
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.datasource.{DataSourcePool, KeyValueDataSource, HashMapDB}
+import org.lipicalabs.lipica.core.datasource.{DataSourcePool, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils.{Value, RBACCodec, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -21,7 +21,7 @@ class ContractDetailsImpl() extends ContractDetails {
 	private var _code = ImmutableBytes.empty
 
 	private val keys = new mutable.HashSet[ImmutableBytes]
-	private var storageTrie = new SecureTrie(new HashMapDB)
+	private var storageTrie = new SecureTrie(null)
 
 	private var _isDirty = false
 	private var _isDeleted = false

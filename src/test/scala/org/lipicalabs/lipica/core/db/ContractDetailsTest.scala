@@ -3,11 +3,14 @@ package org.lipicalabs.lipica.core.db
 import java.util.Random
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.datasource.HashMapDB
+import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.datasource.{KeyValueDataSource, HashMapDB}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
+
+import scala.collection.mutable
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,6 +28,8 @@ class ContractDetailsTest extends Specification {
 		random.nextBytes(result)
 		ImmutableBytes(result)
 	}
+
+	private def randomWord: DataWord = DataWord(randomBytes(32))
 
 	"test (1)" should {
 		"be right" in {
@@ -137,4 +142,101 @@ class ContractDetailsTest extends Specification {
 		}
 	}
 
+	"test external storage serialization" should {
+		"be right" in {
+			val address = randomBytes(20)
+			val code = randomBytes(512)
+
+			val elements = new mutable.HashMap[DataWord, DataWord]
+			val externalStorage = new HashMapDB
+
+			val original = new ContractDetailsImpl
+			original.setExternalStorageDataSource(externalStorage)
+			original.address = address
+			original.code = code
+
+			(0 until SystemProperties.CONFIG.detailsInMemoryStorageLimit + 10).foreach {
+				_ => {
+					val key = randomWord
+					val value = randomWord
+					elements.put(key, value)
+					original.put(key, value)
+				}
+			}
+			original.syncStorage()
+
+			val encodedBytes = original.encode
+			val decodedDetails = new ContractDetailsImpl
+			decodedDetails.setExternalStorageDataSource(externalStorage)
+			decodedDetails.decode(encodedBytes)
+
+			code.toHexString mustEqual decodedDetails.code.toHexString
+			address.toHexString mustEqual decodedDetails.address.toHexString
+
+			val storageContent = decodedDetails.storageContent
+			storageContent.size mustEqual elements.size
+
+			for (entry <- storageContent) {
+				val (key, value) = entry
+				value mustEqual elements.get(key).get
+			}
+			ok
+		}
+	}
+
+	"test external storage transition" should {
+		"be right" in {
+			val address = randomBytes(20)
+			val code = randomBytes(512)
+
+			val elements = new mutable.HashMap[DataWord, DataWord]
+			val externalStorage = new HashMapDB
+
+			val original = new ContractDetailsImpl
+			original.setExternalStorageDataSource(externalStorage)
+			original.address = address
+			original.code = code
+
+			(0 until SystemProperties.CONFIG.detailsInMemoryStorageLimit - 1).foreach {
+				_ => {
+					val key = randomWord
+					val value = randomWord
+					elements.put(key, value)
+					original.put(key, value)
+				}
+			}
+			original.syncStorage()
+			externalStorage.getAddedItems mustEqual 0
+
+			val encodedBytes = original.encode
+			val decodedDetails = deserialize(encodedBytes, externalStorage)
+
+			(0 until 10).foreach {
+				_ => {
+					val key = randomWord
+					val value = randomWord
+					elements.put(key, value)
+					decodedDetails.put(key, value)
+				}
+			}
+			decodedDetails.syncStorage()
+			(0 < externalStorage.getAddedItems) mustEqual true
+
+			val decodedDetails2 = deserialize(decodedDetails.encode, externalStorage)
+			val storageContent = decodedDetails2.storageContent
+			storageContent.size mustEqual elements.size
+			for (entry <- storageContent) {
+				val (key, value) = entry
+				value mustEqual elements.get(key).get
+			}
+			ok
+		}
+	}
+
+	private def deserialize(encodedBytes: ImmutableBytes, externalStorage: KeyValueDataSource): ContractDetails = {
+		val result = new ContractDetailsImpl
+		result.setExternalStorageDataSource(externalStorage)
+		result.decode(encodedBytes)
+		result
+	}
 }

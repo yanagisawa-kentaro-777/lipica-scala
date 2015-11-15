@@ -52,7 +52,7 @@ class ContractDetailsCacheImpl(private[db] var originalContract: ContractDetails
 	}
 
 	override def storageHash: ImmutableBytes = {
-		val storageTrie = new SecureTrie(new HashMapDB)
+		val storageTrie = new SecureTrie(null)
 		for (entry <- this.storage) {
 			val (key, value) = entry
 			val encodedValue = RBACCodec.Encoder.encode(value.getDataWithoutLeadingZeros)

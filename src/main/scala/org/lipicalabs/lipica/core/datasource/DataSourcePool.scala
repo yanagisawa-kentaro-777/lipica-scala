@@ -10,6 +10,8 @@ object DataSourcePool {
 	//TODO
 
 	def levelDbByName(name: String): KeyValueDataSource = ???
-	def closeDataSource(name: String): Unit = ???
+	def closeDataSource(name: String): Unit = {
+		//TODO
+	}
 
 }
