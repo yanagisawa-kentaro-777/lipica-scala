@@ -1,6 +1,7 @@
 VMTestを充実させる。
 
-RepositoryImpl等々のテスト！
+AccountStateのテスト。
+RepositoryImplのテスト。
 Blockのモデル。
 CodecをImmutableBytesにする。
 
