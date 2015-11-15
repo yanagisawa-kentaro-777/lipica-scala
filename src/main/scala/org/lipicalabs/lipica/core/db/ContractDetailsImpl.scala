@@ -46,6 +46,8 @@ class ContractDetailsImpl() extends ContractDetails {
 		//this.keys.remove(key)
 	}
 
+	def put(key: ImmutableBytes, value: ImmutableBytes): Unit = put(DataWord(key), DataWord(value))
+
 	override def put(key: DataWord, value: DataWord) = {
 		if (value == DataWord.Zero) {
 			this.storageTrie.delete(key.data)
