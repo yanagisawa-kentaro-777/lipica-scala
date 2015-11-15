@@ -7,6 +7,7 @@ import org.lipicalabs.lipica.core.vm.program.Program.BadJumpDestinationException
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeMockImpl
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
+import org.specs2.specification.BeforeExample
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,10 +16,14 @@ import org.specs2.runner.JUnitRunner
  */
 
 @RunWith(classOf[JUnitRunner])
-class VMTest extends Specification {
+class VMTest extends Specification with BeforeExample {
 	sequential
 
-	private val invoke = new ProgramInvokeMockImpl(null)
+	private var invoke = new ProgramInvokeMockImpl(null)
+
+	override def before: scala.Any = {
+		this.invoke = new ProgramInvokeMockImpl(null)
+	}
 
 	"test push1" should {
 		"be right" in {
@@ -651,7 +656,46 @@ class VMTest extends Specification {
 		}
 	}
 
-	//TODO 以下、SStore 以下間を飛ばしている。
+	"test sstore (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("602260AA55"), invoke)
+			val expectedKey = "00000000000000000000000000000000000000000000000000000000000000AA"
+			val expectedValue = "0000000000000000000000000000000000000000000000000000000000000022"
+
+			(0 until 3).foreach {
+				_ => vm.step(program)
+			}
+			val value = program.storage.getStorageValue(invoke.getOwnerAddress.getDataWithoutLeadingZeros, DataWord(expectedKey)).get
+			value.data.toHexString mustEqual expectedValue
+		}
+	}
+
+	"test sload (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60AA54"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000000"
+
+			(0 until 2).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"test sload (2)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("602260AA5560AA54"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000022"
+
+			(0 until 5).foreach {
+				_ => vm.step(program)
+			}
+			program.stack.peek.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
 
 	"test pc (1)" should {
 		"be right" in {

@@ -19,9 +19,9 @@ class ProgramInvokeMockImpl(private val msgData: ImmutableBytes) extends Program
 	private val contractAddress = ImmutableBytes.parseHexString("471fd3ad3e9eeadeec4608b92d16ce6b500704cc")
 	private var manaLimit: Long = 1000000
 
-	//this.repository.createAccount(this.ownerAddress)//TODO new RepositoryDummy
-	//this.repository.createAccount(this.contractAddress)//TODO new RepositoryDummy
-	//this.repository.saveCode(contractAddress, ImmutableBytes.parseHexString("385E60076000396000605f556014600054601e60" + "205463abcddcba6040545b51602001600a525451" + "6040016014525451606001601e52545160800160" + "28525460a052546016604860003960166000f260" + "00603f556103e75660005460005360200235"))//TODO new RepositoryDummy
+	this.repository.createAccount(this.ownerAddress)
+	this.repository.createAccount(this.contractAddress)
+	this.repository.saveCode(contractAddress, ImmutableBytes.parseHexString("385E60076000396000605f556014600054601e60" + "205463abcddcba6040545b51602001600a525451" + "6040016014525451606001601e52545160800160" + "28525460a052546016604860003960166000f260" + "00603f556103e75660005460005360200235"))
 
 	override def getOwnerAddress: DataWord = {
 		DataWord(ownerAddress)
