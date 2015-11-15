@@ -88,21 +88,21 @@ object RBACCodec {
 		countBytesRecursively(v, 0)
 	}
 
-	private def encodeNumberInBigEndian(value: Long, length: Int): Array[Byte] = {
+	private def encodeNumberInBigEndian(value: Long, length: Int): ImmutableBytes = {
 		val result = new Array[Byte](length)
 		(0 until length).foreach {
 			i => {
 				result(length - 1 - i) = ((value >> (8 * i)) & 0xff).asInstanceOf[Byte]
 			}
 		}
-		result
+		ImmutableBytes(result)
 	}
 
 	/**
 	 * バイト数を節約して、整数をビッグエンディアンのバイト列に変換する。
 	 */
-	private def bytesFromInt(value: Int): Array[Byte] = {
-		if (value == 0) return Array.empty
+	private def bytesFromInt(value: Int): ImmutableBytes = {
+		if (value == 0) return ImmutableBytes.empty
 		val len = countBytesOfNumber(value)
 		encodeNumberInBigEndian(value, len)
 	}
@@ -147,7 +147,7 @@ object RBACCodec {
 					//ヘッダ部分を組み立てる。
 					val d = new Array[Byte](1 + lengthBytes.length + totalLength)
 					d(0) = (OFFSET_LONG_LIST + byteNum).asInstanceOf[Byte]
-					System.arraycopy(lengthBytes, 0, d, 1, lengthBytes.length)
+					lengthBytes.copyTo(0, d, 1, lengthBytes.length)
 					(d, lengthBytes.length + 1)
 				}
 			//リストの要素を、結果配列の中の本体部分にコピーする。
@@ -169,6 +169,7 @@ object RBACCodec {
 		@tailrec
 		private def encodeElement(elem: Any): ImmutableBytes = {
 			elem match {
+				case bytes: ImmutableBytes => encodeItem(bytes)
 				case bytes: Array[Byte] => encodeItem(bytes)
 				case seq: Seq[_] => encodeSeq(seq)
 				case v: Value => encodeElement(v.value)
@@ -209,12 +210,12 @@ object RBACCodec {
 					if (0xff < length) {
 						bytesFromInt(length)
 					} else {
-						Array(length.asInstanceOf[Byte])
+						ImmutableBytes(Array(length.asInstanceOf[Byte]))
 					}
 				//渡ってくる offset は、常に短いリストやアイテムの基準点なので、
 				//それを長いリストやアイテムに換算するために、SIZE_THRESHOLDを足す。
 				val firstByte = (binaryLength.length + offset + SIZE_THRESHOLD - 1).asInstanceOf[Byte]
-				ImmutableBytes(firstByte +: binaryLength)
+				firstByte +: binaryLength
 			}
 		}
 
