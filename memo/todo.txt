@@ -1,8 +1,9 @@
 VMTestを充実させる。
 
 Repositoryのメソッド名をrefactorする。
-ContractDetailsCacheImpl -> RepositoryImplのテスト！
+RepositoryImpl等々のテスト！
 Blockのモデル。
+CodecをImmutableBytesにする。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。
