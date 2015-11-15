@@ -222,8 +222,8 @@ object RBACCodec {
 		@tailrec
 		private def toBytes(input: Any): ImmutableBytes = {
 			input match {
-				case v: Array[Byte] => ImmutableBytes(v)
 				case v: ImmutableBytes => v
+				case v: Array[Byte] => ImmutableBytes(v)
 				case v: String => ImmutableBytes(v.getBytes(StandardCharsets.UTF_8))
 				case v: Long =>
 					if (v == 0L) {

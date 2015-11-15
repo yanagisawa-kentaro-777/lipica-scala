@@ -1,5 +1,4 @@
 Blockのモデル。
-CodecをImmutableBytesにする。
 
 RepositoryImplのテスト。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
@@ -7,3 +6,4 @@ VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。
 RepositoryImplのデバッグ用出力。
+ImmutableBytes#toByteArray を排除する。
