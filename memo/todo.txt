@@ -3,6 +3,8 @@ Blockのモデル。
 RepositoryImplのテスト。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
+Valueの型をrefactorする。
+
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。
 RepositoryImplのデバッグ用出力。
