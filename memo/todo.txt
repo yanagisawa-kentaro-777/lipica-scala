@@ -1,8 +1,8 @@
-RepositoryImplのテスト。
 Blockのモデル。
 CodecをImmutableBytesにする。
 
-VMTestを充実させる。
+RepositoryImplのテスト。
+VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。
