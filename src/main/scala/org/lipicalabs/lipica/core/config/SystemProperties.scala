@@ -32,6 +32,10 @@ class SystemProperties {
 		1000
 	}
 
+	def isFrontier: Boolean = {
+		false
+	}
+
 }
 
 object SystemProperties {
