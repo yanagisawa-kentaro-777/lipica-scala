@@ -1,8 +1,13 @@
 package org.lipicalabs.lipica.core.base
 
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import java.math.BigInteger
+
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.spongycastle.util.BigIntegers
 
 /**
+ * ブロックの主要な情報を保持するクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/16 21:05
  * YANAGISAWA, Kentaro
@@ -60,6 +65,7 @@ class BlockHeader {
 	private var _difficulty: ImmutableBytes = ImmutableBytes.empty
 	def difficulty: ImmutableBytes = this._difficulty
 	def difficulty_=(v: ImmutableBytes): Unit = this._difficulty = v
+	def difficultyAsBigInt: BigInt = this.difficulty.toPositiveBigInt
 
 	private var _timestamp: Long = 0L
 	def timestamp: Long = this._timestamp
@@ -101,5 +107,58 @@ class BlockHeader {
 	private var _nonce: ImmutableBytes = ImmutableBytes.empty
 	def nonce: ImmutableBytes = this._nonce
 	def nonce_=(v: ImmutableBytes): Unit = this._nonce = v
+
+	def getProofOfWorkBoundary: ImmutableBytes = {
+		ImmutableBytes(BigIntegers.asUnsignedByteArray(32, BigInteger.ONE.shiftLeft(256).divide(difficultyAsBigInt.bigInteger)))
+	}
+
+	def calculateProofOfWorkValue: ImmutableBytes = {
+		//TODO 未実装。
+		ImmutableBytes.empty
+	}
+
+	def calculateDifficulty(parent: BlockHeader): BigInt = {
+		import UtilConsts._
+
+		val parentDifficulty = parent.difficultyAsBigInt
+		val quotient = parentDifficulty / DifficultyBoundDivisor
+
+		val fromParent = if ((parent.timestamp + DurationLimit) <= this.timestamp) {
+			parentDifficulty - quotient
+		} else {
+			parentDifficulty + quotient
+		}
+
+		val periodCount = (this.blockNumber / ExpDifficultyPeriod).toInt
+		val difficulty = MinimumDifficulty max fromParent
+		if (1 < periodCount) {
+			MinimumDifficulty max (difficulty + (One << (periodCount - 2)))
+		} else {
+			difficulty
+		}
+	}
+
+	def toStringWithSuffix(suffix: String): String = {
+		val builder = (new StringBuilder).
+			append("parentHash=").append(this.parentHash.toHexString).append(suffix).
+			append("unclesHash=").append(this.uncleHash.toHexString).append(suffix).
+			append("coinbase=").append(this.coinbase.toHexString).append(suffix).
+			append("stateRoot=").append(this.stateRoot.toHexString).append(suffix).
+			append("txTrieHash=").append(this.txTrieRoot.toHexString).append(suffix).
+			append("receiptsTrieHash=").append(this.receiptTrieRoot.toHexString).append(suffix).
+			append("difficulty=").append(this.difficulty.toHexString).append(suffix).
+			append("blockNumber=").append(this.blockNumber.toHexString).append(suffix).
+			append("manaLimit=").append(this.manaLimit).append(suffix).
+			append("manaUsed=").append(this.manaUsed).append(suffix).
+			append("timestamp=").append(this.timestamp).append(suffix).
+			append("extraData=").append(this.extraData.toHexString).append(suffix).
+			append("mixHash=").append(this.mixHash.toHexString).append(suffix).
+			append("nonce=").append(this.nonce.toHexString).append(suffix)
+		builder.toString()
+	}
+
+	override def toString: String = toStringWithSuffix("\n")
+
+	def toFlatString: String = toStringWithSuffix("")
 
 }
