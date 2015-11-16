@@ -5,6 +5,7 @@ import java.nio.charset.Charset
 
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.spongycastle.util.Arrays
 
 /**
  * 不可変なバイト配列クラスの実装です。
@@ -79,6 +80,8 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	def `+:`(oneByte: Byte): ImmutableBytes = {
 		new ImmutableBytes(oneByte +: this.bytes)
 	}
+
+	def reverse: ImmutableBytes = ImmutableBytes(Arrays.reverse(this.bytes))
 
 	def sha3: ImmutableBytes = new ImmutableBytes(DigestUtils.sha3(this.bytes))
 	def sha256: ImmutableBytes = new ImmutableBytes(DigestUtils.sha256(this.bytes))
