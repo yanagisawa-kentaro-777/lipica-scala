@@ -108,6 +108,11 @@ class BlockHeader {
 	def nonce: ImmutableBytes = this._nonce
 	def nonce_=(v: ImmutableBytes): Unit = this._nonce = v
 
+	def encode(withNonce: Boolean): ImmutableBytes = {
+		//TODO 未実装。
+		ImmutableBytes.empty
+	}
+
 	def getProofOfWorkBoundary: ImmutableBytes = {
 		ImmutableBytes(BigIntegers.asUnsignedByteArray(32, BigInteger.ONE.shiftLeft(256).divide(difficultyAsBigInt.bigInteger)))
 	}
@@ -161,4 +166,9 @@ class BlockHeader {
 
 	def toFlatString: String = toStringWithSuffix("")
 
+}
+
+object BlockHeader {
+	//TODO
+	def decode(encodedBytes: ImmutableBytes): BlockHeader = ???
 }
