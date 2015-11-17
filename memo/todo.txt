@@ -4,6 +4,7 @@ Blockのモデル。
 RepositoryImplのテスト。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
+Keccak256等を排除できる可能性。
 Valueの型をrefactorする。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。

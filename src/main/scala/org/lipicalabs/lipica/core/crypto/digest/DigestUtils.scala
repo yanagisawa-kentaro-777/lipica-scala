@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.crypto.digest
 import java.security.MessageDigest
 
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
-import org.spongycastle.crypto.digests.RIPEMD160Digest
+import org.spongycastle.crypto.digests.{SHA3Digest, RIPEMD160Digest}
 
 object DigestUtils {
 
@@ -14,6 +14,16 @@ object DigestUtils {
 		val digest = new Keccak256
 		digest.update(data)
 		digest.digest
+	}
+
+	def sha512(data: Array[Byte]): Array[Byte] = {
+		val result = new Array[Byte](64)
+		val digest = new SHA3Digest(512)
+		if (data.nonEmpty) {
+			digest.update(data, 0, data.length)
+		}
+		digest.doFinal(result, 0)
+		result
 	}
 
 	def sha3omit12Bytes(data: Array[Byte]): Array[Byte] = {

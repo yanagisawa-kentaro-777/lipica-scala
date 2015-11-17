@@ -2,7 +2,9 @@ package org.lipicalabs.lipica.core.base
 
 import java.math.BigInteger
 
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
+import org.lipicalabs.lipica.core.utils.{RBACCodec, UtilConsts, ImmutableBytes}
 import org.spongycastle.util.BigIntegers
 
 /**
@@ -20,9 +22,9 @@ class BlockHeader {
 	def parentHash_=(v: ImmutableBytes): Unit = this._parentHash = v
 
 	/** uncle list のSHA3ダイジェスト値。 */
-	private var _uncleHash: ImmutableBytes = ImmutableBytes.empty
-	def uncleHash: ImmutableBytes = this._uncleHash
-	def uncleHash_=(v: ImmutableBytes): Unit = this._uncleHash = v
+	private var _unclesHash: ImmutableBytes = ImmutableBytes.empty
+	def unclesHash: ImmutableBytes = this._unclesHash
+	def unclesHash_=(v: ImmutableBytes): Unit = this._unclesHash = v
 
 	/**
 	 * このブロックのマイニング成功時に、すべての報酬が送られる先の
@@ -109,8 +111,27 @@ class BlockHeader {
 	def nonce_=(v: ImmutableBytes): Unit = this._nonce = v
 
 	def encode(withNonce: Boolean): ImmutableBytes = {
-		//TODO 未実装。
-		ImmutableBytes.empty
+		val encodedParentHash = RBACCodec.Encoder.encode(this.parentHash)
+		val encodedUnclesHash = RBACCodec.Encoder.encode(this.unclesHash)
+		val encodedCoinbase = RBACCodec.Encoder.encode(this.coinbase)
+		val encodedStateRoot = RBACCodec.Encoder.encode(this.stateRoot)
+		val encodedTxTrieRoot = RBACCodec.Encoder.encode(Option(this.txTrieRoot).getOrElse(DigestUtils.EmptyTrieHash))
+		val encodedReceiptTrieRoot = RBACCodec.Encoder.encode(Option(this.receiptTrieRoot).getOrElse(DigestUtils.EmptyTrieHash))
+		val encodedLogsBloom = RBACCodec.Encoder.encode(this.logsBloom)
+		val encodedDifficulty = RBACCodec.Encoder.encode(this.difficulty)
+		val encodedBlockNumber = RBACCodec.Encoder.encode(BigInt(this.blockNumber))
+		val encodedManaLimit = RBACCodec.Encoder.encode(BigInt(this.manaLimit))
+		val encodedManaUsed = RBACCodec.Encoder.encode(BigInt(this.manaUsed))
+		val encodedTimestamp = RBACCodec.Encoder.encode(BigInt(this.timestamp))
+		val encodedExtraData = RBACCodec.Encoder.encode(this.extraData)
+
+		if (withNonce) {
+			val encodedMixHash = RBACCodec.Encoder.encode(this.mixHash)
+			val encodedNonce = RBACCodec.Encoder.encode(this.nonce)
+			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedParentHash, encodedUnclesHash, encodedCoinbase, encodedStateRoot, encodedTxTrieRoot, encodedReceiptTrieRoot, encodedLogsBloom, encodedDifficulty, encodedBlockNumber, encodedManaLimit, encodedManaUsed, encodedTimestamp, encodedExtraData, encodedMixHash, encodedNonce))
+		} else {
+			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedParentHash, encodedUnclesHash, encodedCoinbase, encodedStateRoot, encodedTxTrieRoot, encodedReceiptTrieRoot, encodedLogsBloom, encodedDifficulty, encodedBlockNumber, encodedManaLimit, encodedManaUsed, encodedTimestamp, encodedExtraData))
+		}
 	}
 
 	def getProofOfWorkBoundary: ImmutableBytes = {
@@ -118,8 +139,14 @@ class BlockHeader {
 	}
 
 	def calculateProofOfWorkValue: ImmutableBytes = {
-		//TODO 未実装。
-		ImmutableBytes.empty
+		//リトルエンディアンに変換する。
+		val revertedNonce = this.nonce.reverse
+		val hashWithoutNonce = this.encode(withNonce = false)
+		val seed = hashWithoutNonce ++ revertedNonce
+		val seedHash = seed.sha512
+		val concat = seedHash ++ this.mixHash
+
+		concat.sha3
 	}
 
 	def calculateDifficulty(parent: BlockHeader): BigInt = {
@@ -146,7 +173,7 @@ class BlockHeader {
 	def toStringWithSuffix(suffix: String): String = {
 		val builder = (new StringBuilder).
 			append("parentHash=").append(this.parentHash.toHexString).append(suffix).
-			append("unclesHash=").append(this.uncleHash.toHexString).append(suffix).
+			append("unclesHash=").append(this.unclesHash.toHexString).append(suffix).
 			append("coinbase=").append(this.coinbase.toHexString).append(suffix).
 			append("stateRoot=").append(this.stateRoot.toHexString).append(suffix).
 			append("txTrieHash=").append(this.txTrieRoot.toHexString).append(suffix).
@@ -169,6 +196,26 @@ class BlockHeader {
 }
 
 object BlockHeader {
-	//TODO
-	def decode(encodedBytes: ImmutableBytes): BlockHeader = ???
+	def decode(decodedResult: DecodedResult): BlockHeader = {
+		val result = new BlockHeader
+		result.parentHash = decodedResult.items.head.bytes
+		result.unclesHash = decodedResult.items(1).bytes
+		result.coinbase = decodedResult.items(2).bytes
+		result.stateRoot = decodedResult.items(3).bytes
+		result.txTrieRoot = decodedResult.items(4).bytes
+		result.receiptTrieRoot = decodedResult.items(5).bytes
+		result.logsBloom = decodedResult.items(6).bytes
+		result.difficulty = decodedResult.items(7).bytes
+
+		result.blockNumber = decodedResult.items(8).bytes.toPositiveBigInt.longValue()
+		result.manaLimit = decodedResult.items(9).bytes.toPositiveBigInt.longValue()
+		result.manaUsed = decodedResult.items(10).bytes.toPositiveBigInt.longValue()
+		result.timestamp = decodedResult.items(11).bytes.toPositiveBigInt.longValue()
+
+		result.extraData = decodedResult.items(12).bytes
+		result.mixHash = decodedResult.items(13).bytes
+		result.nonce = decodedResult.items(14).bytes
+
+		result
+	}
 }
