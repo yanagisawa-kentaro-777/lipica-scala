@@ -286,7 +286,134 @@ class RepositoryTest extends Specification {
 		}
 	}
 
-	//TODO test (11) 以下未実装。
+	"test (11)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
+				val cowCode = ImmutableBytes.parseHexString("A1A2A3")
+				val horseCode = ImmutableBytes.parseHexString("B1B2B3")
+
+				track.saveCode(cow, cowCode)
+				track.saveCode(horse, horseCode)
+
+				track.getCode(cow).get mustEqual cowCode
+				track.getCode(horse).get mustEqual horseCode
+				repository.getCode(cow).isEmpty mustEqual true
+				repository.getCode(horse).isEmpty mustEqual true
+
+				track.commit()
+
+				track.getCode(cow).get.isEmpty mustEqual true
+				track.getCode(horse).get.isEmpty mustEqual true
+				repository.getCode(cow).get mustEqual cowCode
+				repository.getCode(horse).get mustEqual horseCode
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (12)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repository.startTracking
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val cowCode = ImmutableBytes.parseHexString("A1A2A3")
+				val horseCode = ImmutableBytes.parseHexString("B1B2B3")
+
+				track.saveCode(cow, cowCode)
+				track.saveCode(horse, horseCode)
+
+				track.getCode(cow).get mustEqual cowCode
+				track.getCode(horse).get mustEqual horseCode
+				repository.getCode(cow).isEmpty mustEqual true
+				repository.getCode(horse).isEmpty mustEqual true
+
+				track.rollback()
+
+				track.getCode(cow).isEmpty mustEqual true
+				track.getCode(horse).isEmpty mustEqual true
+				repository.getCode(cow).isEmpty mustEqual true
+				repository.getCode(horse).isEmpty mustEqual true
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	//TODO test (13) をスキップする。
+
+	"test (14)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val track1 = repository.startTracking
+				track1.addBalance(cow, BigInt(10))
+				track1.addBalance(horse, BigInt(1))
+
+				track1.getBalance(cow).get mustEqual BigInt(10)
+				track1.getBalance(horse).get mustEqual BigInt(1)
+
+				val track2 = track1.startTracking
+				track2.addBalance(cow, BigInt(1))
+				track2.addBalance(horse, BigInt(10))
+
+				track2.getBalance(cow).get mustEqual BigInt(11)
+				track2.getBalance(horse).get mustEqual BigInt(11)
+
+				track2.commit()
+				track1.commit()
+
+				repository.getBalance(cow).get mustEqual BigInt(11)
+				repository.getBalance(horse).get mustEqual BigInt(11)
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (15)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val track1 = repository.startTracking
+				track1.addBalance(cow, BigInt(10))
+				track1.addBalance(horse, BigInt(1))
+
+				track1.getBalance(cow).get mustEqual BigInt(10)
+				track1.getBalance(horse).get mustEqual BigInt(1)
+
+				val track2 = track1.startTracking
+				track2.addBalance(cow, BigInt(1))
+				track2.addBalance(horse, BigInt(10))
+
+				track2.getBalance(cow).get mustEqual BigInt(11)
+				track2.getBalance(horse).get mustEqual BigInt(11)
+
+				track2.rollback()
+				track1.commit()
+
+				repository.getBalance(cow).get mustEqual BigInt(10)
+				repository.getBalance(horse).get mustEqual BigInt(1)
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	//TODO (16)以下未実装。
 
 }
