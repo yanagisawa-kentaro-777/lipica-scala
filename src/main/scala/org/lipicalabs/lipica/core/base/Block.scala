@@ -76,9 +76,7 @@ trait Block {
 
 }
 
-class PlainBlock(override val blockHeader: BlockHeader, override val transactions: Seq[TransactionLike], override val uncles: Seq[BlockHeader]) extends Block {
-
-	import Block._
+class PlainBlock private[base](override val blockHeader: BlockHeader, override val transactions: Seq[TransactionLike], override val uncles: Seq[BlockHeader]) extends Block {
 
 	override def hash = this.blockHeader.encode.sha3
 
@@ -200,4 +198,15 @@ object Block {
 	val UncleReward = BlockReward * BigInt(15) / BigInt(16)
 
 	val InclusionReward = BlockReward / BigInt(32)
+
+	def decode(encodedBytes: ImmutableBytes): Block = {
+		val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
+
+		val blockHeader = BlockHeader.decode(decodedResult.items.head)
+		val transactions = decodedResult.items(1).items.map(_.bytes).map(each => Transaction(each))
+		val uncles = decodedResult.items(2).items.map(each => BlockHeader.decode(each))
+
+		new PlainBlock(blockHeader, transactions, uncles)
+	}
+
 }

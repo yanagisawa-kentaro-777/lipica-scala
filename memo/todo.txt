@@ -1,4 +1,4 @@
-Blockのモデル。
+基本モデルクラスを実装する。
 
 RepositoryImplのテスト。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
