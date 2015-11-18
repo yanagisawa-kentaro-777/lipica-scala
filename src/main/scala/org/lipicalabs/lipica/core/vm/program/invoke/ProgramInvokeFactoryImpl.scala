@@ -38,7 +38,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val lastHash = lastBlock.hash
 		val coinbase = block.coinbase
 		val timestamp = block.timestamp
-		val blockNumber = block.number
+		val blockNumber = block.blockNumber
 		val difficulty = block.difficulty
 		val blockManaLimit = block.manaLimit
 

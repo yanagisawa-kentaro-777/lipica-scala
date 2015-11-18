@@ -110,6 +110,10 @@ class BlockHeader {
 	def nonce: ImmutableBytes = this._nonce
 	def nonce_=(v: ImmutableBytes): Unit = this._nonce = v
 
+	def isGenesis: Boolean = this.blockNumber == 0
+
+	def encode: ImmutableBytes = this.encode(withNonce = true)
+
 	def encode(withNonce: Boolean): ImmutableBytes = {
 		val encodedParentHash = RBACCodec.Encoder.encode(this.parentHash)
 		val encodedUnclesHash = RBACCodec.Encoder.encode(this.unclesHash)

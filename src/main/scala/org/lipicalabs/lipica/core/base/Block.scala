@@ -1,49 +1,194 @@
 package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.trie.TrieImpl
+import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
+ * ブロックは、ヘッダ、トランザクションリスト、アンクルリストの
+ * ３要素から構成される。
+ *
  * Created by IntelliJ IDEA.
  * 2015/10/25 14:04
  * YANAGISAWA, Kentaro
  */
 trait Block {
-	//TODO
 
-	def number: Long
+	def blockHeader: BlockHeader
 
 	def hash: ImmutableBytes
 
+	def parentHash: ImmutableBytes
+
+	def unclesHash: ImmutableBytes
+
 	def coinbase: ImmutableBytes
 
-	def timestamp: Long
+	def stateRoot: ImmutableBytes
+
+	def stateRoot_=(v: ImmutableBytes): Unit
+
+	def txTrieRoot: ImmutableBytes
+
+	def receiptsRoot: ImmutableBytes
+
+	def logsBloom: ImmutableBytes
 
 	def difficulty: ImmutableBytes
 
+	def difficultyAsBigInt: BigInt
+
+	def cumulativeDifficulty: BigInt
+
+	def timestamp: Long
+
+	def blockNumber: Long
+
 	def manaLimit: Long
+
+	def manaUsed: Long
+
+	def extraData: ImmutableBytes
+
+	def mixHash: ImmutableBytes
+
+	def nonce: ImmutableBytes
+
+	def nonce_=(v: ImmutableBytes): Unit
+
+	def transactions: Seq[TransactionLike]
+
+	def uncles: Seq[BlockHeader]
+
+	def encode: ImmutableBytes
+
+	def encodeWithoutNonce: ImmutableBytes
+
+	def isParentOf(another: Block): Boolean
+
+	def isGenesis: Boolean
+
+	def isEqualTo(another: Block): Boolean
+
+	def shortHash: String
+
 }
 
-class PlainBlock(header: BlockHeader, transactions: Seq[TransactionLike], uncles: Seq[BlockHeader]) extends Block {
+class PlainBlock(override val blockHeader: BlockHeader, override val transactions: Seq[TransactionLike], override val uncles: Seq[BlockHeader]) extends Block {
 
 	import Block._
 
-	override def number = ???
+	override def hash = this.blockHeader.encode.sha3
 
-	override def coinbase = ???
+	override def parentHash = this.blockHeader.parentHash
 
-	override def manaLimit = ???
+	override def unclesHash = this.blockHeader.unclesHash
 
-	override def hash = ???
+	override def coinbase = this.blockHeader.coinbase
 
-	override def difficulty = ???
+	override def stateRoot = this.blockHeader.stateRoot
 
-	override def timestamp = ???
+	override def stateRoot_=(v: ImmutableBytes): Unit = {
+		this.blockHeader.stateRoot = v
+	}
+
+	override def txTrieRoot = this.blockHeader.txTrieRoot
+
+	override def receiptsRoot = this.blockHeader.receiptTrieRoot
+
+	override def logsBloom = this.blockHeader.logsBloom
+
+	override def difficulty = this.blockHeader.difficulty
+
+	override def difficultyAsBigInt = this.blockHeader.difficultyAsBigInt
+
+	override def cumulativeDifficulty = {
+		val thisDifficulty = this.blockHeader.difficultyAsBigInt
+		this.uncles.foldLeft(thisDifficulty)((accum, each) => accum + each.difficultyAsBigInt)
+	}
+
+	override def timestamp = this.blockHeader.timestamp
+
+	override def blockNumber = this.blockHeader.blockNumber
+
+	override def manaLimit = this.blockHeader.manaLimit
+
+	override def manaUsed = this.blockHeader.manaUsed
+
+	override def extraData = this.blockHeader.extraData
+
+	override def mixHash = this.blockHeader.mixHash
+
+	override def nonce = this.blockHeader.nonce
+
+	override def nonce_=(v: ImmutableBytes): Unit = {
+		this.blockHeader.nonce = v
+	}
+
+	override def isParentOf(another: Block): Boolean = this.hash == another.parentHash
+
+	override def isGenesis: Boolean = this.blockHeader.isGenesis
+
+	override def isEqualTo(another: Block): Boolean = this.hash == another.hash
+
+	override def encode: ImmutableBytes = {
+		val encodedHeader = this.blockHeader.encode
+		val encodedTransactions = RBACCodec.Encoder.encodeSeqOfByteArrays(this.transactions.map(_.encodedBytes))
+		val encodedUncles = RBACCodec.Encoder.encodeSeqOfByteArrays(this.uncles.map(_.encode))
+		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedHeader, encodedTransactions, encodedUncles))
+	}
+
+	override def encodeWithoutNonce: ImmutableBytes = this.blockHeader.encode(withNonce = false)
+
+	override def toString: String = {
+		val result = new StringBuilder
+		result.append(this.encode.toHexString).append("\n")
+		result.append("BlockData[ ")
+		result.append("hash=").append(this.hash.toHexString).append("\n")
+		result.append(this.blockHeader.toString)
+
+		result.append("\nUncles [\n")
+		for (uncle <- this.uncles) {
+			result.append(uncle.toString).append("\n")
+		}
+		result.append("]")
+		result.append("\n]")
+
+		result.toString()
+	}
+
+	def toFlatString: String = {
+		val result = new StringBuilder
+		result.append("BlockData[ ")
+		result.append("hash=").append(this.hash.toHexString).append("\n")
+		result.append(this.blockHeader.toFlatString)
+
+		for (tx <- this.transactions) {
+			result.append("\n").append(tx.toString)
+		}
+		result.append("]")
+		result.toString()
+	}
+
+	override def shortHash: String = this.hash.toHexString.substring(0, 6)
+
 }
 
 object Block {
-	private val logger = LoggerFactory.getLogger(getClass)
+	private[base] val logger = LoggerFactory.getLogger(getClass)
+
+	private def calculateTxTrie(txs: Seq[TransactionLike]): ImmutableBytes = {
+		val trie = new TrieImpl(null)
+		if (txs.isEmpty) {
+			return DigestUtils.EmptyTrieHash
+		}
+		txs.indices.foreach {
+			i => trie.update(RBACCodec.Encoder.encode(i), txs(i).encodedBytes)
+		}
+		trie.rootHash
+	}
 
 	val BlockReward =
 		if (SystemProperties.CONFIG.isFrontier) {
