@@ -203,9 +203,14 @@ object Block {
 		val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
 
 		val blockHeader = BlockHeader.decode(decodedResult.items.head)
-		val transactions = decodedResult.items(1).items.map(_.bytes).map(each => Transaction(each))
-		val uncles = decodedResult.items(2).items.map(each => BlockHeader.decode(each))
+		val transactions = decodedResult.items(1).items.map(_.bytes).map(Transaction.decode)
+		val uncles = decodedResult.items(2).items.map(BlockHeader.decode)
 
+		val calculatedTxTrieRoot = calculateTxTrie(transactions)
+		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
+			logger.warn("<Block> Transaction root unmatch! Given: %s != Calculated: %s".format(blockHeader.txTrieRoot, calculatedTxTrieRoot))
+			blockHeader.txTrieRoot = calculatedTxTrieRoot
+		}
 		new PlainBlock(blockHeader, transactions, uncles)
 	}
 

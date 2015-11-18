@@ -328,7 +328,7 @@ object Transaction {
 	private val DEFAULT_MANA_PRICE = BigInt("10000000000000")
 	private val DEFAULT_BALANCE_MANA = BigInt("21000")
 
-	def apply(rawData: ImmutableBytes): TransactionLike = {
+	def decode(rawData: ImmutableBytes): TransactionLike = {
 		new EncodedTransaction(rawData)
 	}
 
