@@ -59,7 +59,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		}
 	}
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+	override def loadAccount(address: ImmutableBytes, aCacheAccounts: mutable.Map[ImmutableBytes, AccountState], aCacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
 		val (account, details) =
 			this.cacheAccounts.get(address) match {
 				case Some(accountState) =>
@@ -69,8 +69,8 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 					this.repository.loadAccount(address, this.cacheAccounts, this.cacheDetails)
 					(this.cacheAccounts.get(address).get, this.cacheDetails.get(address).get)
 			}
-		this.cacheAccounts.put(address, account.createClone)
-		this.cacheDetails.put(address, new ContractDetailsCacheImpl(details))
+		aCacheAccounts.put(address, account.createClone)
+		aCacheDetails.put(address, new ContractDetailsCacheImpl(details))
 	}
 
 	override def delete(address: ImmutableBytes) = {
