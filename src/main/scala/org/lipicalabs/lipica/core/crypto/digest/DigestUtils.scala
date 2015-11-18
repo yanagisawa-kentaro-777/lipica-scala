@@ -11,8 +11,8 @@ object DigestUtils {
 	val EmptyTrieHash = RBACCodec.Encoder.encode(ImmutableBytes.empty).sha3
 
 	def sha3(data: Array[Byte]): Array[Byte] = {
-		val result = new Array[Byte](32)
 		val digest = new KeccakDigest(256)
+		val result = new Array[Byte](digest.getDigestSize)
 		if (data.nonEmpty) {
 			digest.update(data, 0, data.length)
 		}
@@ -21,8 +21,8 @@ object DigestUtils {
 	}
 
 	def sha512(data: Array[Byte]): Array[Byte] = {
-		val result = new Array[Byte](64)
-		val digest = new SHA3Digest(512)
+		val digest = new KeccakDigest(512)
+		val result = new Array[Byte](digest.getDigestSize)
 		if (data.nonEmpty) {
 			digest.update(data, 0, data.length)
 		}

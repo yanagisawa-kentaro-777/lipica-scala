@@ -145,7 +145,7 @@ class BlockHeader {
 	def calculateProofOfWorkValue: ImmutableBytes = {
 		//リトルエンディアンに変換する。
 		val revertedNonce = this.nonce.reverse
-		val hashWithoutNonce = this.encode(withNonce = false)
+		val hashWithoutNonce = this.encode(withNonce = false).sha3
 		val seed = hashWithoutNonce ++ revertedNonce
 		val seedHash = seed.sha512
 		val concat = seedHash ++ this.mixHash
