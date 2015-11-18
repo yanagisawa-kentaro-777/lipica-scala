@@ -33,7 +33,13 @@ class SystemProperties {
 	}
 
 	def isFrontier: Boolean = {
+		//TODO
 		false
+	}
+
+	def databaseDir: String = {
+		//TODO
+		new java.io.File("./work/database/").getAbsolutePath
 	}
 
 }

@@ -1,13 +1,17 @@
-BlockHeaderのモデル。
 Blockのモデル。
 
 RepositoryImplのテスト。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
-Keccak256等を排除できる可能性。
+永続化関係のパッケージ構造を見直す。
 Valueの型をrefactorする。
+「sha3」メソッド名を変更する。
+
+コールグラフの先頭は、samples/TransactionBomb あたりである。
 
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力。
 RepositoryImplのデバッグ用出力。
 ImmutableBytes#toByteArray を排除する。
+
+依存先およびライセンスをまとめる。

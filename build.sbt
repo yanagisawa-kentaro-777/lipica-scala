@@ -25,14 +25,17 @@ def parserComb   = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0
 def guava = "com.google.guava" % "guava" % "18.0"
 def spongyCastle = "com.madgag.spongycastle" % "core" % "1.53.0.0"
 
-// テストでしか利用しないライブラリ。
-def specs2 = "org.specs2" %% "specs2" % "2.4.2" % "test"
+def leveldbIF = "org.iq80.leveldb" % "leveldb" % "0.7"
+def leveldbJNI = "org.fusesource.leveldbjni" % "leveldbjni" % "1.8"
+def leveldbJNIAll = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
 def scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.6"
 def scalaXml = "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
 
-
 def commonsCli = "commons-cli" % "commons-cli" % "1.3.1"
+
+// テストでしか利用しないライブラリ。
+def specs2 = "org.specs2" %% "specs2" % "2.4.2" % "test"
 
 
 publishMavenStyle in ThisBuild := true
@@ -50,6 +53,9 @@ lazy val root =
 				commonsCodec,
 				commonsIo,
 				lang3,
+				leveldbIF,
+				leveldbJNI,
+				leveldbJNIAll,
 				slf4j,
 				logback,
 				logbackCore,
