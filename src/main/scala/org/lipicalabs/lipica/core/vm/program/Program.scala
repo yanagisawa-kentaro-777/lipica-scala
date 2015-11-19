@@ -533,8 +533,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def getBlockHash(index: Int): DataWord = {
 		if ((index < this.getBlockNumber.longValue) && (256.max(this.getBlockNumber.intValue) - 256 <= index)) {
 			//最近256ブロック内である。
-			val loaded = this.invoke.blockStore.getBlockHashByNumber(index, getParentHash.data)
-			DataWord(loaded)
+			this.invoke.blockStore.getBlockHashByNumber(index, getParentHash.data).map(DataWord(_)).getOrElse(DataWord.Zero)
 		} else {
 			//古すぎるか未知。
 			DataWord.Zero

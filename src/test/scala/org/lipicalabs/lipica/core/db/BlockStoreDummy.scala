@@ -11,28 +11,28 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class BlockStoreDummy extends BlockStore {
 
-	override def getBlockHashByNumber(blockNumber: Long): ImmutableBytes = {
+	override def getBlockHashByNumber(blockNumber: Long): Option[ImmutableBytes] = {
 		val data  = String.valueOf(blockNumber).getBytes
-		ImmutableBytes(DigestUtils.keccak256(data))
+		Option(ImmutableBytes(DigestUtils.keccak256(data)))
 	}
 
-	override def getBlockHashByNumber(blockNumber: Long, branchBlockHash: ImmutableBytes): ImmutableBytes = {
+	override def getBlockHashByNumber(blockNumber: Long, branchBlockHash: ImmutableBytes): Option[ImmutableBytes] = {
 		getBlockHashByNumber(blockNumber)
 	}
 
-	override def getChainBlockByNumber(blockNumber: Long): Block = null
+	override def getChainBlockByNumber(blockNumber: Long) = None
 
-	override def getBlockByHash(hash: ImmutableBytes): Block = null
+	override def getBlockByHash(hash: ImmutableBytes): Option[Block] = null
 
 	override def existsBlock(hash: ImmutableBytes): Boolean = false
 
 	override def getListHashesEndWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes] = null
 
-	override def saveBlock(block: Block, cummDifficulty: BigInt, mainChain: Boolean): Unit = ()
+	override def saveBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean): Unit = ()
 
 	override def getTotalDifficulty: BigInt = null
 
-	override def getBestBlock: Block = null
+	override def getBestBlock = None
 
 	override def flush(): Unit = ()
 

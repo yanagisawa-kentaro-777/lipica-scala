@@ -29,6 +29,9 @@ def leveldbIF = "org.iq80.leveldb" % "leveldb" % "0.7"
 def leveldbJNI = "org.fusesource.leveldbjni" % "leveldbjni" % "1.8"
 def leveldbJNIAll = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
+def mapdb = "org.mapdb" % "mapdb" % "2.0-beta10"
+
+
 def scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.6"
 def scalaXml = "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
 
@@ -56,6 +59,7 @@ lazy val root =
 				leveldbIF,
 				leveldbJNI,
 				leveldbJNIAll,
+				mapdb,
 				slf4j,
 				logback,
 				logbackCore,

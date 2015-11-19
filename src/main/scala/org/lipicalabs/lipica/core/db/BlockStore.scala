@@ -14,32 +14,32 @@ trait BlockStore {
 	 * ブロック番号で、ブロックハッシュを引いて返します。
 	 * フォークが発生している場合には、渡された枝の祖先に当たるものを返します。
 	 */
-	def getBlockHashByNumber(blockNumber: Long, branchBlockHash: ImmutableBytes): ImmutableBytes
+	def getBlockHashByNumber(blockNumber: Long, branchBlockHash: ImmutableBytes): Option[ImmutableBytes]
 
-	def getBlockHashByNumber(blockNumber: Long): ImmutableBytes
+	def getBlockHashByNumber(blockNumber: Long): Option[ImmutableBytes]
 
-	def getChainBlockByNumber(blockNumber: Long): Block
+	def getChainBlockByNumber(blockNumber: Long): Option[Block]
 
-	def getBlockByHash(hash: ImmutableBytes): Block
+	def getBlockByHash(hash: ImmutableBytes): Option[Block]
 
 	def existsBlock(hash: ImmutableBytes): Boolean
 
 	def getListHashesEndWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes]
 
-	def saveBlock(block: Block, cummDifficulty: BigInt, mainChain: Boolean)
+	def saveBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean): Unit
 
 	def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt
 
 	def getTotalDifficulty: BigInt
 
-	def getBestBlock: Block
+	def getBestBlock: Option[Block]
 
 	def getMaxNumber: Long
 
-	def flush()
+	def flush(): Unit
 
-	def reBranch(forkBlock: Block)
+	def reBranch(forkBlock: Block): Unit
 
-	def load()
+	def load(): Unit
 
 }
