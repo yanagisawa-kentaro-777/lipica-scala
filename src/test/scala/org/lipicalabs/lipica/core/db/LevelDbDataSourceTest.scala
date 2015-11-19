@@ -24,9 +24,12 @@ class LevelDbDataSourceTest extends Specification {
 
 	"io (1)" should {
 		"be right" in {
-			val dataSource = new LevelDbDataSource("test")
+			val dataSource = new LevelDbDataSource("test1")
 			try {
-				FileUtils.forceDelete(Paths.get(SystemProperties.CONFIG.databaseDir).toFile)
+				val path = Paths.get(SystemProperties.CONFIG.databaseDir)
+				if (Files.exists(path)) {
+					FileUtils.forceDelete(path.toFile)
+				}
 				dataSource.init()
 
 				val batchSize = 100
@@ -40,15 +43,20 @@ class LevelDbDataSourceTest extends Specification {
 				dataSource.keys.size mustEqual batchSize
 			} finally {
 				dataSource.close()
+				Thread.sleep(100L)
 			}
 		}
 	}
 
 	"io (2)" should {
 		"be right" in {
-			val dataSource = new LevelDbDataSource("test")
+			val dataSource = new LevelDbDataSource("test2")
 			try {
-				FileUtils.forceDelete(Paths.get(SystemProperties.CONFIG.databaseDir).toFile)
+				val path = Paths.get(SystemProperties.CONFIG.databaseDir)
+				println(path)
+				if (Files.exists(path)) {
+					FileUtils.forceDelete(path.toFile)
+				}
 				dataSource.init()
 
 				val r = new Random
@@ -66,6 +74,7 @@ class LevelDbDataSourceTest extends Specification {
 				dataSource.get(key).isEmpty mustEqual true
 			} finally {
 				dataSource.close()
+				Thread.sleep(100L)
 			}
 		}
 	}

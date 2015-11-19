@@ -2,15 +2,28 @@ package org.lipicalabs.lipica.core.db
 
 import org.lipicalabs.lipica.core.base.Block
 import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.mapdb.DB
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 
 class BlockInfo {
-	//TODO
+	//TODO case class にできそう。
+
+	private var _hash: ImmutableBytes = ImmutableBytes.empty
+	def hash: ImmutableBytes = this._hash
+	def hash_=(v: ImmutableBytes): Unit = this._hash = v
+
+	private var _cumulativeDifficulty: BigInt = UtilConsts.Zero
+	def cumulativeDifficulty: BigInt = this._cumulativeDifficulty
+	def cumulativeDifficulty_=(v: BigInt): Unit = this._cumulativeDifficulty = v
+
+	private var _mainChain: Boolean = false
+	def mainChain: Boolean = this._mainChain
+	def mainChain_=(v: Boolean): Unit = this._mainChain = v
 }
 
 /**
@@ -19,6 +32,7 @@ class BlockInfo {
  * YANAGISAWA, Kentaro
  */
 class IndexedBlockStore(private val index: mutable.Map[Long, mutable.Buffer[BlockInfo]], private val blocks: KeyValueDataSource, private val cache: IndexedBlockStore, private val indexDB: DB) extends AbstractBlockStore {
+	//TODO Bufferではなくせそう。
 
 	import IndexedBlockStore._
 
@@ -38,7 +52,11 @@ class IndexedBlockStore(private val index: mutable.Map[Long, mutable.Buffer[Bloc
 		None
 	}
 
-	override def flush() = {
+	override def flush(): Unit = {
+		if (this.cache eq null) {
+			return
+		}
+
 		val startTime = System.nanoTime
 		for (key <- this.cache.blocks.keys) {
 			this.blocks.put(key, this.cache.blocks.get(key).get)
@@ -61,17 +79,70 @@ class IndexedBlockStore(private val index: mutable.Map[Long, mutable.Buffer[Bloc
 	}
 
 	override def saveBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean) = {
-		this.cache.saveBlock(block, cumulativeDifficulty, mainChain)
+		if (this.cache == null) {
+			addInternalBlock(block, cumulativeDifficulty, mainChain)
+		} else {
+			this.cache.saveBlock(block, cumulativeDifficulty, mainChain)
+		}
+	}
+
+	private def addInternalBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean): Unit = {
+		val blockInfoBuffer = this.index.getOrElse(block.blockNumber, new ArrayBuffer[BlockInfo])
+
+		val blockInfo = new BlockInfo
+		blockInfo.cumulativeDifficulty = cumulativeDifficulty
+		blockInfo.hash = block.hash
+		blockInfo.mainChain = mainChain
+
+		blockInfoBuffer.append(blockInfo)
+
+		this.index.put(block.blockNumber, blockInfoBuffer)
+		this.blocks.put(block.hash, block.encode)
 	}
 
 	override def getBlockHashByNumber(blockNumber: Long): Option[ImmutableBytes] = getChainBlockByNumber(blockNumber).map(_.hash)
 
-	def getBlocksByNumber(number: Long): Seq[Block] = ???
+	def getBlocksByNumber(number: Long): Seq[Block] = {
+		val result =
+			if (this.cache ne null) {
+				this.cache.getBlocksByNumber(number).toBuffer
+			} else {
+				new ArrayBuffer[Block]
+			}
+		this.index.get(number) match {
+			case Some(blockInfoBuffer) =>
+				for (blockInfo <- blockInfoBuffer) {
+					val hash = blockInfo.hash
+					val encodedBytes = this.blocks.get(hash).get
+					result.append(Block.decode(encodedBytes))
+				}
+				result.toSeq
+			case None =>
+				result.toSeq
+		}
+	}
 
-	override def getChainBlockByNumber(blockNumber: Long): Option[Block] = ???
+	override def getChainBlockByNumber(blockNumber: Long): Option[Block] = {
+		Option(this.cache).flatMap(_.getChainBlockByNumber(blockNumber)) match {
+			case Some(block) => Some(block)
+			case None =>
+				this.index.get(blockNumber) match {
+					case Some(blockInfoBuffer) =>
+						for (blockInfo <- blockInfoBuffer) {
+							if (blockInfo.mainChain) {
+								val encodedBytes = this.blocks.get(blockInfo.hash).get
+								return Some(Block.decode(encodedBytes))
+							}
+						}
+						None
+					case None =>
+						None
+				}
+		}
+	}
 
 	override def getBlockByHash(hash: ImmutableBytes): Option[Block] = {
-		this.cache.getBlockByHash(hash) match {
+		Option(this.cache).flatMap(_.getBlockByHash(hash)) match {
 			case Some(block) => Some(block)
 			case None =>
 				this.blocks.get(hash) match {
@@ -82,7 +153,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, mutable.Buffer[Bloc
 	}
 
 	override def existsBlock(hash: ImmutableBytes): Boolean = {
-		this.cache.getBlockByHash(hash) match {
+		Option(this.cache).flatMap(_.getBlockByHash(hash)) match {
 			case Some(block) => true
 			case None => this.blocks.get(hash).isDefined
 		}
@@ -94,7 +165,11 @@ class IndexedBlockStore(private val index: mutable.Map[Long, mutable.Buffer[Bloc
 
 	override def getMaxNumber: Long = {
 		val bestIndex = 0.max(this.index.size).toLong
-		bestIndex + this.cache.index.size - 1L
+		if (this.cache ne null) {
+			bestIndex + this.cache.index.size - 1L
+		} else {
+			bestIndex - 1L
+		}
 	}
 
 	override def reBranch(forkBlock: Block) = ???
