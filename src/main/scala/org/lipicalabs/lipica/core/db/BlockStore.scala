@@ -9,7 +9,6 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * YANAGISAWA, Kentaro
  */
 trait BlockStore {
-	//TODO
 
 	/**
 	 * ブロック番号で、ブロックハッシュを引いて返します。
@@ -23,7 +22,7 @@ trait BlockStore {
 
 	def getBlockByHash(hash: ImmutableBytes): Block
 
-	def isBlockExist(hash: ImmutableBytes): Boolean
+	def existsBlock(hash: ImmutableBytes): Boolean
 
 	def getListHashesEndWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes]
 
@@ -43,6 +42,4 @@ trait BlockStore {
 
 	def load()
 
-	//TODO Hibernateには依存できない！
-	//def setSessionFactory(sessionFactory: SessionFactory)
 }

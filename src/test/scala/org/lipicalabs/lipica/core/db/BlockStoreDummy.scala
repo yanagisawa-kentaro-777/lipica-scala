@@ -20,51 +20,28 @@ class BlockStoreDummy extends BlockStore {
 		getBlockHashByNumber(blockNumber)
 	}
 
-	override def getChainBlockByNumber(blockNumber: Long): Block = {
-		null
-	}
+	override def getChainBlockByNumber(blockNumber: Long): Block = null
 
-	override def getBlockByHash(hash: ImmutableBytes): Block = {
-		null
-	}
+	override def getBlockByHash(hash: ImmutableBytes): Block = null
 
-	override def isBlockExist(hash: ImmutableBytes): Boolean = {
-		false
-	}
+	override def existsBlock(hash: ImmutableBytes): Boolean = false
 
-	override def getListHashesEndWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes] = {
-		null
-	}
+	override def getListHashesEndWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes] = null
 
-	override def saveBlock(block: Block, cummDifficulty: BigInt, mainChain: Boolean) {
-	}
+	override def saveBlock(block: Block, cummDifficulty: BigInt, mainChain: Boolean): Unit = ()
 
-	override def getTotalDifficulty: BigInt = {
-		null
-	}
+	override def getTotalDifficulty: BigInt = null
 
-	override def getBestBlock: Block = {
-		null
-	}
+	override def getBestBlock: Block = null
 
-	override def flush(): Unit = {
-		//
-	}
+	override def flush(): Unit = ()
 
-	override def load(): Unit = {
-		//
-	}
+	override def load(): Unit = ()
 
-	override def getMaxNumber: Long = {
-		0
-	}
+	override def getMaxNumber: Long = 0
 
-	override def reBranch(forkBlock: Block): Unit = {
-		//
-	}
+	override def reBranch(forkBlock: Block): Unit = ()
 
-	override def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt = {
-		null
-	}
+	override def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt = null
 
 }
