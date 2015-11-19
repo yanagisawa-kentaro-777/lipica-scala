@@ -50,7 +50,7 @@ class VMTest3 extends Specification with BeforeExample {
 			val contractAddr = ImmutableBytes.parseHexString("77045e71a7a2c50903d88e564cd72fab11e82051")
 			val code = ImmutableBytes.parseHexString("6103e75460005260006000511115630000004c576001600051036103e755600060006000600060007377045e71a7a2c50903d88e564cd72fab11e820516008600a5a0402f1630000004c00565b00")
 
-			val codeKey = code.sha3
+			val codeKey = code.keccak256
 			val accountState = new AccountState
 			accountState.codeHash = codeKey
 

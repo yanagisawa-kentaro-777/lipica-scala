@@ -3,15 +3,15 @@ package org.lipicalabs.lipica.core.crypto.digest
 import java.security.MessageDigest
 
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
-import org.spongycastle.crypto.digests.{KeccakDigest, SHA3Digest, RIPEMD160Digest}
+import org.spongycastle.crypto.Digest
+import org.spongycastle.crypto.digests.{KeccakDigest, RIPEMD160Digest}
 
 object DigestUtils {
 
-	val EmptyDataHash = ImmutableBytes.empty.sha3
-	val EmptyTrieHash = RBACCodec.Encoder.encode(ImmutableBytes.empty).sha3
+	val EmptyDataHash = ImmutableBytes.empty.keccak256
+	val EmptyTrieHash = RBACCodec.Encoder.encode(ImmutableBytes.empty).keccak256
 
-	def sha3(data: Array[Byte]): Array[Byte] = {
-		val digest = new KeccakDigest(256)
+	private def calculateDigest(digest: Digest, data: Array[Byte]): Array[Byte] = {
 		val result = new Array[Byte](digest.getDigestSize)
 		if (data.nonEmpty) {
 			digest.update(data, 0, data.length)
@@ -20,23 +20,26 @@ object DigestUtils {
 		result
 	}
 
-	def sha512(data: Array[Byte]): Array[Byte] = {
-		val digest = new KeccakDigest(512)
-		val result = new Array[Byte](digest.getDigestSize)
-		if (data.nonEmpty) {
-			digest.update(data, 0, data.length)
-		}
-		digest.doFinal(result, 0)
-		result
+	private def keccakDigest(bits: Int, data: Array[Byte]): Array[Byte] = {
+		val digest = new KeccakDigest(bits)
+		calculateDigest(digest, data)
 	}
 
-	def sha3omit12Bytes(data: Array[Byte]): Array[Byte] = {
-		val digest = sha3(data)
+	def keccak256(data: Array[Byte]): Array[Byte] = {
+		keccakDigest(256, data)
+	}
+
+	def keccak512(data: Array[Byte]): Array[Byte] = {
+		keccakDigest(512, data)
+	}
+
+	def keccak256omit12Bytes(data: Array[Byte]): Array[Byte] = {
+		val digest = keccak256(data)
 		java.util.Arrays.copyOfRange(digest, 12, digest.length)
 	}
 
-	def sha3omit12(data: Array[Byte]): ImmutableBytes = {
-		val digest = sha3(data)
+	def keccak256omit12(data: Array[Byte]): ImmutableBytes = {
+		val digest = keccak256(data)
 		ImmutableBytes(digest, 12, digest.length)
 	}
 
@@ -51,16 +54,13 @@ object DigestUtils {
 
 	def ripemd160(data: Array[Byte]): Array[Byte] = {
 		val digest = new RIPEMD160Digest
-		val result = new Array[Byte](digest.getDigestSize)
-		digest.update(data, 0, data.length)
-		digest.doFinal(result, 0)
-		result
+		calculateDigest(digest, data)
 	}
 
 	def computeNewAddress(address: ImmutableBytes, nonce: ImmutableBytes): ImmutableBytes = {
 		val encodedSender = RBACCodec.Encoder.encode(address)
 		val encodedNonce = RBACCodec.Encoder.encode(nonce.toPositiveBigInt)
-		sha3omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray)
+		keccak256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray)
 	}
 
 }

@@ -145,12 +145,12 @@ class BlockHeader {
 	def calculateProofOfWorkValue: ImmutableBytes = {
 		//リトルエンディアンに変換する。
 		val revertedNonce = this.nonce.reverse
-		val hashWithoutNonce = this.encode(withNonce = false).sha3
+		val hashWithoutNonce = this.encode(withNonce = false).keccak256
 		val seed = hashWithoutNonce ++ revertedNonce
-		val seedHash = seed.sha512
+		val seedHash = seed.keccak512
 		val concat = seedHash ++ this.mixHash
 
-		concat.sha3
+		concat.keccak256
 	}
 
 	def calculateDifficulty(parent: BlockHeader): BigInt = {

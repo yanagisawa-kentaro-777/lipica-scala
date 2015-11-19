@@ -290,7 +290,7 @@ public class ECKey implements Serializable {
     public byte[] getAddress() {
         if (pubKeyHash == null) {
             byte[] pubBytes = this.pub.getEncoded(false);
-            pubKeyHash = DigestUtils.sha3omit12Bytes(Arrays.copyOfRange(pubBytes, 1, pubBytes.length));
+            pubKeyHash = DigestUtils.keccak256omit12Bytes(Arrays.copyOfRange(pubBytes, 1, pubBytes.length));
         }
         return pubKeyHash;
     }

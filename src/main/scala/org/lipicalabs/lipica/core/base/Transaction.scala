@@ -80,9 +80,9 @@ trait TransactionLike {
 		ManaCost.TRANSACTION + zeroVals * ManaCost.TX_ZERO_DATA + nonZeroes * ManaCost.TX_NO_ZERO_DATA
 	}
 
-	def hash: ImmutableBytes = encodedBytes.sha3
+	def hash: ImmutableBytes = encodedBytes.keccak256
 
-	def rawHash: ImmutableBytes = encodedRawBytes.sha3
+	def rawHash: ImmutableBytes = encodedRawBytes.keccak256
 
 	def getContractAddress: ImmutableBytes = {
 		if (!isContractCreation) return null

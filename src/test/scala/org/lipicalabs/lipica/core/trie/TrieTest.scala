@@ -24,7 +24,7 @@ class TrieTest extends Specification {
 	val mockDb = new HashMapDB
 
 	val LONG_STRING = "1234567890abcdefghijklmnopqrstuvwxxzABCEFGHIJKLMNOPQRSTUVWXYZ"
-	val EMPTY_ROOT_HASH = RBACCodec.Encoder.encode(ImmutableBytes.empty).sha3
+	val EMPTY_ROOT_HASH = RBACCodec.Encoder.encode(ImmutableBytes.empty).keccak256
 
 	"empty key" should {
 		"be right" in {

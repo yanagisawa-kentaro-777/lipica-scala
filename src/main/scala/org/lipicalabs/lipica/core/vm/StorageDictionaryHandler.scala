@@ -20,10 +20,10 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 	private val ConstHashes = {
 		var storageIndex = DataWord.Zero
 		(0 until 5000).map(i => {
-			val sha3 = storageIndex.data.sha3
-			val entry = new Entry(DataWord(sha3), storageIndex.data)
+			val digest = storageIndex.data.keccak256
+			val entry = new Entry(DataWord(digest), storageIndex.data)
 			storageIndex = storageIndex + DataWord.One
-			getMapKey(sha3) -> entry
+			getMapKey(digest) -> entry
 		}).toMap
 	}
 	private val hashes = new mutable.HashMap[ImmutableBytes, Entry]

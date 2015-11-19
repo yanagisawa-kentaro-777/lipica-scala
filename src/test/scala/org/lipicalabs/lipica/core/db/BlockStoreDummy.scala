@@ -13,7 +13,7 @@ class BlockStoreDummy extends BlockStore {
 
 	override def getBlockHashByNumber(blockNumber: Long): ImmutableBytes = {
 		val data  = String.valueOf(blockNumber).getBytes
-		ImmutableBytes(DigestUtils.sha3(data))
+		ImmutableBytes(DigestUtils.keccak256(data))
 	}
 
 	override def getBlockHashByNumber(blockNumber: Long, branchBlockHash: ImmutableBytes): ImmutableBytes = {

@@ -1,3 +1,5 @@
+
+BlockStore -> BlockStoreDummy
 基本モデルクラスを実装する。
 
 RepositoryImplのテスト。
@@ -5,7 +7,6 @@ VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
 永続化関係のパッケージ構造を見直す。
 Valueの型をrefactorする。
-「sha3」および「sha512」のメソッド名を変更する。
 
 コールグラフの先頭は、samples/TransactionBomb あたりである。
 

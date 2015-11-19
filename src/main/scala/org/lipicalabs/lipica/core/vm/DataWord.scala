@@ -42,7 +42,7 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	/**
 	 * この値のSHA3ダイジェスト値を返します。
 	 */
-	def computeSHA3OfData: ImmutableBytes = this.data.sha3
+	def computeSHA3OfData: ImmutableBytes = this.data.keccak256
 
 	/**
 	 * この値をInt値として返します。

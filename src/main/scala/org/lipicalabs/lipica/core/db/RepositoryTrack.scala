@@ -6,7 +6,6 @@ import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.LoggerFactory
 
-import scala.annotation.tailrec
 import scala.collection.mutable
 
 /**
@@ -130,7 +129,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 				each.isDirty = true
 			}
 		}
-		getAccountState(address).foreach(_.codeHash = code.sha3)
+		getAccountState(address).foreach(_.codeHash = code.keccak256)
 	}
 
 	override def getCode(address: ImmutableBytes): Option[ImmutableBytes] = {
