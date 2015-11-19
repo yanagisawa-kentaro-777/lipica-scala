@@ -7,8 +7,8 @@ import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
- * ブロックは、ヘッダ、トランザクションリスト、アンクルリストの
- * ３要素から構成される。
+ * ブロックは大略、
+ * ヘッダ、トランザクションリスト、アンクルリストの３要素から構成される。
  *
  * Created by IntelliJ IDEA.
  * 2015/10/25 14:04

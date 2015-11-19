@@ -90,7 +90,7 @@ class ProgramInvokeMockImpl(private val msgData: ImmutableBytes) extends Program
 		ImmutableBytes(data)
 	}
 
-	override def getLastHash: DataWord = {
+	override def getParentHash: DataWord = {
 		val prevHash = ImmutableBytes.parseHexString("961CB117ABA86D1E596854015A1483323F18883C2D745B0BC03E87F146D2BB1C")
 		DataWord(prevHash)
 	}

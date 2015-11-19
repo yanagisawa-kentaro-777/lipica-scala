@@ -533,7 +533,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def getBlockHash(index: Int): DataWord = {
 		if ((index < this.getBlockNumber.longValue) && (256.max(this.getBlockNumber.intValue) - 256 <= index)) {
 			//最近256ブロック内である。
-			val loaded = this.invoke.blockStore.getBlockHashByNumber(index, getLastHash.data)
+			val loaded = this.invoke.blockStore.getBlockHashByNumber(index, getParentHash.data)
 			DataWord(loaded)
 		} else {
 			//古すぎるか未知。
@@ -557,7 +557,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def getDataSize = this.invoke.getDataSize
 	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
 	def getDataCopy(offset: DataWord, length: DataWord): ImmutableBytes = this.invoke.getDataCopy(offset, length)
-	def getLastHash = this.invoke.getLastHash
+	def getParentHash = this.invoke.getParentHash
 	def getCoinbase = this.invoke.getCoinbase
 	def getTimestamp = this.invoke.getTimestamp
 	def getBlockNumber = this.invoke.getBlockNumber

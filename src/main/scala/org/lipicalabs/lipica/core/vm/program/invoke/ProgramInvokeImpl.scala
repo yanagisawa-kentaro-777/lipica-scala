@@ -21,7 +21,7 @@ class ProgramInvokeImpl private(
 	private val callValue: DataWord,
 	private val messageData: ImmutableBytes,
 	//最終ブロックに関する情報。
-	private val lastHash: DataWord,
+	private val parentHash: DataWord,
 	private val coinbase: DataWord,
 	private val timestamp: DataWord,
 	private val blockNumber: DataWord,
@@ -104,7 +104,7 @@ class ProgramInvokeImpl private(
 	}
 
 	/** PREVHASH op. */
-	override def getLastHash = this.lastHash
+	override def getParentHash = this.parentHash
 
 	/** COINBASE op. */
 	override def getCoinbase = this.coinbase
@@ -126,8 +126,8 @@ class ProgramInvokeImpl private(
 	override def getRepository = this.repository
 
 	override def toString: String = {
-		"ProgramInvokeImpl{address=%s, origin=%s, caller=%s, balance=%s, mana=%s, manaPrice=%s, callValue=%s, messageData=%s, lastHash=%s, coinbase=%s, timestamp=%s, blockNumber=%s, difficulty=%s, blockManaLimit=%s, byTransaction=%s, byTestingSuite=%s, callDepth=%s}".format(
-			this.address, this.origin, this.caller, this.balance, this.mana, this.manaPrice, this.callValue, this.messageData, this.lastHash, this.coinbase, this.timestamp, this.blockNumber, this.difficulty, this.blockManaLimit, this.byTransaction, this.byTestingSuite, this.callDepth
+		"ProgramInvokeImpl{address=%s, origin=%s, caller=%s, balance=%s, mana=%s, manaPrice=%s, callValue=%s, messageData=%s, parentHash=%s, coinbase=%s, timestamp=%s, blockNumber=%s, difficulty=%s, blockManaLimit=%s, byTransaction=%s, byTestingSuite=%s, callDepth=%s}".format(
+			this.address, this.origin, this.caller, this.balance, this.mana, this.manaPrice, this.callValue, this.messageData, this.parentHash, this.coinbase, this.timestamp, this.blockNumber, this.difficulty, this.blockManaLimit, this.byTransaction, this.byTestingSuite, this.callDepth
 		)
 	}
 
@@ -152,7 +152,7 @@ object ProgramInvokeImpl {
 		mana: DataWord,
 		callValue: DataWord,
 		messageData: ImmutableBytes,
-		lastHash: DataWord,
+		parentHash: DataWord,
 		coinbase: DataWord,
 		timestamp: DataWord,
 		blockNumber: DataWord,
@@ -165,7 +165,7 @@ object ProgramInvokeImpl {
 	): ProgramInvokeImpl = {
 		new ProgramInvokeImpl(
 			address = address, origin = origin, caller = caller, balance = balance, manaPrice = manaPrice, mana = mana, callValue = callValue, messageData = messageData,
-			lastHash = lastHash, coinbase = coinbase, timestamp = timestamp, blockNumber = blockNumber, difficulty = difficulty, blockManaLimit = blockManaLimit,
+			parentHash = parentHash, coinbase = coinbase, timestamp = timestamp, blockNumber = blockNumber, difficulty = difficulty, blockManaLimit = blockManaLimit,
 			repository = repository, callDepth = callDepth, blockStore = blockStore, byTransaction = false,  byTestingSuite = byTestingSuite
 		)
 	}
@@ -179,7 +179,7 @@ object ProgramInvokeImpl {
 		mana: ImmutableBytes,
 		callValue: ImmutableBytes,
 		messageData: ImmutableBytes,
-		lastHash: ImmutableBytes,
+		parentHash: ImmutableBytes,
 		coinbase: ImmutableBytes,
 		timestamp: Long,
 		blockNumber: Long,
@@ -193,7 +193,7 @@ object ProgramInvokeImpl {
 			address = DataWord(address), origin = DataWord(origin), caller = DataWord(caller),
 			balance = DataWord(balance), manaPrice = DataWord(manaPrice), mana = DataWord(mana),
 			callValue = DataWord(callValue), messageData = messageData,
-			lastHash = DataWord(lastHash), coinbase = DataWord(coinbase), timestamp = DataWord(timestamp),
+			parentHash = DataWord(parentHash), coinbase = DataWord(coinbase), timestamp = DataWord(timestamp),
 			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty), blockManaLimit = DataWord(blockManaLimit),
 			repository = repository, callDepth = 0, blockStore = blockStore, byTransaction = true, byTestingSuite = byTestingSuite
 		)

@@ -58,14 +58,14 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val callValue = inValue
 
 		val data = dataIn
-		val lastHash = program.getLastHash
+		val parentHash = program.getParentHash
 		val coinbase = program.getCoinbase
 		val timestamp = program.getTimestamp
 		val blockNumber = program.getBlockNumber
 		val difficulty = program.getDifficulty
 		val blockManaLimit = program.getBlockManaLimit
 
-		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDepth + 1, blockStore, byTestingSuite)
+		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, parentHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDepth + 1, blockStore, byTestingSuite)
 		logger.info("Internal call: %s".format(result))
 		result
 	}

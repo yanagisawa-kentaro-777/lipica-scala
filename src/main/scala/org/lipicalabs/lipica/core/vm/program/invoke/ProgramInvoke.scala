@@ -47,7 +47,7 @@ trait ProgramInvoke {
 
 	def getDataCopy(offsetData: DataWord, lengthData: DataWord): ImmutableBytes
 
-	def getLastHash: DataWord
+	def getParentHash: DataWord
 
 	def getCoinbase: DataWord
 
