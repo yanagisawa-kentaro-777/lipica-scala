@@ -69,7 +69,7 @@ class ProgramInvokeMockImpl(private val msgData: ImmutableBytes) extends Program
 		if (msgData == null) return DataWord(data)
 		if (index > msgData.length) return DataWord(data)
 		if (index + 32 > msgData.length) size = msgData.length - index
-		System.arraycopy(msgData, index, data, 0, size)
+		msgData.copyTo(index, data, 0, size)
 		DataWord(data)
 	}
 
@@ -86,7 +86,7 @@ class ProgramInvokeMockImpl(private val msgData: ImmutableBytes) extends Program
 		if (msgData == null) return ImmutableBytes(data)
 		if (offset > msgData.length) return ImmutableBytes(data)
 		if (offset + length > msgData.length) length = msgData.length - offset
-		System.arraycopy(msgData, offset, data, 0, length)
+		msgData.copyTo(offset, data, 0, length)
 		ImmutableBytes(data)
 	}
 

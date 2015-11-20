@@ -25,7 +25,7 @@ class VMTest3 extends Specification with BeforeExample {
 		this.invoke = new ProgramInvokeMockImpl(null)
 	}
 
-	"test push1" should {
+	"test (1)" should {
 		"be right" in {
 			/**
 				#The code will run
@@ -40,7 +40,6 @@ class VMTest3 extends Specification with BeforeExample {
 				 else:
 				 stop
 			 */
-			val expectedMana = 1000000
 
 			val key1 = DataWord(999)
 			val value1 = DataWord(3)
