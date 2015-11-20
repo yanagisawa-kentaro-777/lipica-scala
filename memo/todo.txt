@@ -1,6 +1,9 @@
 
-IndexedBlockStoreを実装する。
 BlockStoreのインターフェイスのOption化。
+IndexedBlockStoreを目視して見直す。
+IndexBlockStoreTestを実装する。
+IndexedBlockStoreを徹底refactorする。
+
 基本モデルクラスを実装する。
 
 RepositoryImplのテスト。
@@ -9,6 +12,7 @@ VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 永続化関係のパッケージ構造を見直す。
 Valueの型をrefactorする。
 DigestUtilsは、もっとうまくやれるかも。digest256、digest512 といったメソッド名にして、静的に実装を切り替える？
+Trieの型は、本当にどうにもならないのだろうか？
 
 コールグラフの先頭は、samples/TransactionBomb あたりである。
 
