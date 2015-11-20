@@ -1,27 +1,16 @@
 package org.lipicalabs.lipica.core.db
 
+import java.io._
+
 import org.lipicalabs.lipica.core.base.Block
 import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
-import org.mapdb.DB
+import org.mapdb.{DataIO, Serializer, DB}
 import org.slf4j.LoggerFactory
 
-import scala.collection.mutable
+import scala.collection.{JavaConversions, mutable}
 import scala.collection.mutable.ArrayBuffer
 
-
-class BlockInfo(private var _hash: ImmutableBytes, private var _cumulativeDifficulty: BigInt, private var _mainChain: Boolean) extends Serializable {
-	def hash: ImmutableBytes = this._hash
-	def hash_=(v: ImmutableBytes): Unit = this._hash = v
-
-	def cumulativeDifficulty: BigInt = this._cumulativeDifficulty
-	def cumulativeDifficulty_=(v: BigInt): Unit = this._cumulativeDifficulty = v
-
-	def mainChain: Boolean = this._mainChain
-	def mainChain_=(v: Boolean): Unit = this._mainChain = v
-}
-
-//TODO Serializer/Deserializer が未実装。
 
 /**
  * Created by IntelliJ IDEA.
@@ -364,5 +353,46 @@ object IndexedBlockStore {
 	def newInstance(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource, cache: IndexedBlockStore, indexDB: DB): IndexedBlockStore = new IndexedBlockStore(index, blocks, cache, indexDB)
 
 	def newInstance(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource): IndexedBlockStore = new IndexedBlockStore(index, blocks, null, null)
+
+}
+
+class BlockInfo(private var _hash: ImmutableBytes, private var _cumulativeDifficulty: BigInt, private var _mainChain: Boolean) extends Serializable {
+
+	def hash: ImmutableBytes = this._hash
+	def hash_=(v: ImmutableBytes): Unit = this._hash = v
+
+	def cumulativeDifficulty: BigInt = this._cumulativeDifficulty
+	def cumulativeDifficulty_=(v: BigInt): Unit = this._cumulativeDifficulty = v
+
+	def mainChain: Boolean = this._mainChain
+	def mainChain_=(v: Boolean): Unit = this._mainChain = v
+}
+
+object BlockInfoSerializer extends Serializer[Seq[BlockInfo]] {
+
+	override def serialize(out: DataOutput, value: Seq[BlockInfo]): Unit = {
+		import JavaConversions._
+		val outputStream = new ByteArrayOutputStream()
+		val objectOutputStream = new ObjectOutputStream(outputStream)
+
+		objectOutputStream.writeObject(seqAsJavaList(value))
+		objectOutputStream.flush()
+		val data = outputStream.toByteArray
+		DataIO.packInt(out, data.length)
+		out.write(data)
+	}
+
+	override def deserialize(in: DataInput, available: Int): Seq[BlockInfo] = {
+		import JavaConversions._
+
+		val size = DataIO.unpackInt(in)
+		val data = new Array[Byte](size)
+		in.readFully(data)
+
+		val inputStream = new ByteArrayInputStream(data, 0, data.length)
+		val objectInputStream = new ObjectInputStream(inputStream)
+		val value = objectInputStream.readObject().asInstanceOf[java.util.List[BlockInfo]]
+		value
+	}
 
 }
