@@ -1,10 +1,10 @@
 
-BlockStoreのインターフェイスのOption化。
-IndexedBlockStoreを目視して見直す。
+IndexedBlockStore.BlockInfoのSerializer/Deserializerを実装する。
 IndexBlockStoreTestを実装する。
-IndexedBlockStoreを徹底refactorする。
 
 基本モデルクラスを実装する。
+
+sbtによるleveldbのテストの問題。
 
 RepositoryImplのテスト。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。

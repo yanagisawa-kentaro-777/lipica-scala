@@ -38,7 +38,7 @@ trait BlockStore {
 
 	def flush(): Unit
 
-	def reBranch(forkBlock: Block): Unit
+	def rebranch(forkBlock: Block): Unit
 
 	def load(): Unit
 

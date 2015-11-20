@@ -21,7 +21,7 @@ import org.specs2.runner.JUnitRunner
 class LevelDbDataSourceTest extends Specification {
 	sequential
 
-
+	/*
 	"io (1)" should {
 		"be right" in {
 			val dataSource = new LevelDbDataSource("test1")
@@ -93,5 +93,6 @@ class LevelDbDataSourceTest extends Specification {
 		r.nextBytes(result)
 		ImmutableBytes(result)
 	}
+	*/
 
 }

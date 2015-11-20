@@ -40,7 +40,7 @@ class BlockStoreDummy extends BlockStore {
 
 	override def getMaxNumber: Long = 0
 
-	override def reBranch(forkBlock: Block): Unit = ()
+	override def rebranch(forkBlock: Block): Unit = ()
 
 	override def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt = null
 
