@@ -7,7 +7,6 @@ RepositoryImplのテストを充実させる。
 IndexBlockStoreのテストを充実させる。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
-テストのデバッグ出力を無造作に出しすぎ？
 Valueの型をrefactorする。
 DigestUtilsは、もっとうまくやれるかも。digest256、digest512 といったメソッド名にして、静的に実装を切り替える？
 Trieの型は、本当にどうにもならないのだろうか？

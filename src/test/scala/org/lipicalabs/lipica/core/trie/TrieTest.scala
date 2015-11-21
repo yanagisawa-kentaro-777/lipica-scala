@@ -634,7 +634,7 @@ class TrieTest extends Specification {
 
 					val retrieved = trie.get(word1).asString(StandardCharsets.UTF_8)
 					retrieved mustEqual word2
-					println("Updated: [%d] %s -> %s".format(i, word1, retrieved))
+					//println("Updated: [%d] %s -> %s".format(i, word1, retrieved))
 				}
 			}
 			val half = testerMap.size / 2
@@ -646,7 +646,7 @@ class TrieTest extends Specification {
 
 					val retrieved = trie.get(word1).asString(StandardCharsets.UTF_8)
 					retrieved mustEqual ""
-					println("Deleted: [%d] %s".format(i, word1))
+					//println("Deleted: [%d] %s".format(i, word1))
 				}
 			}
 
@@ -658,7 +658,7 @@ class TrieTest extends Specification {
 			var i = 0
 			testerMap.foreach {
 				entry => {
-					println("[%d] %s -> %s".format(i, entry._1, entry._2))
+					//println("[%d] %s -> %s".format(i, entry._1, entry._2))
 					val trieWord2 = trie.get(entry._1).asString(StandardCharsets.UTF_8)
 					trieWord2 mustEqual entry._2
 					i += 1

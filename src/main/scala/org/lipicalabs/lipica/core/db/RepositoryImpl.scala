@@ -33,9 +33,8 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	stateDS.setName(STATE_DB)
 	stateDS.init()
 
-	private var dds = new ContractDetailsDataStore
 	private var detailsDB = new DatabaseImpl(detailsDS)
-	dds.db = detailsDB
+	private var dds = new ContractDetailsStore(this.detailsDB)
 
 	private var stateDB = new DatabaseImpl(stateDS)
 	private var worldState = new SecureTrie(stateDB.getDB)

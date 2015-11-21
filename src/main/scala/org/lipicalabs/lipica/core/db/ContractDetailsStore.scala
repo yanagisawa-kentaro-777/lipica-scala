@@ -13,17 +13,13 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class ContractDetailsDataStore {
-	import ContractDetailsDataStore._
+class ContractDetailsStore(private val _db: DatabaseImpl) {
+	import ContractDetailsStore._
 	import scala.collection.JavaConversions._
 
-	private var _db: DatabaseImpl = null
 	private val cache = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, ContractDetails])
 	private val removes = new mutable.HashSet[ImmutableBytes]
 
-	def db_=(value: DatabaseImpl): Unit = {
-		this._db = value
-	}
 	def db: DatabaseImpl = this._db
 
 	def get(key: ImmutableBytes): Option[ContractDetails] = {
@@ -100,6 +96,6 @@ class ContractDetailsDataStore {
 
 }
 
-object ContractDetailsDataStore {
+object ContractDetailsStore {
 	private val gLogger = LoggerFactory.getLogger("general")
 }

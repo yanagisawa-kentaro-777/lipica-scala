@@ -356,7 +356,7 @@ class DataWordTest extends Specification {
 					val value3 = Math.abs(random.nextInt(Int.MaxValue - 1)) + 1
 					val word3 = DataWord(value3)
 					word1.mulMod(word2, word3).longValue mustEqual (BigInt(value1) * BigInt(value2)) % BigInt(value3)
-					println("[MulMod] %,d == %,d".format(word1.mulMod(word2, word3).longValue, (BigInt(value1) * BigInt(value2)) % BigInt(value3)))
+					//println("[MulMod] %,d == %,d".format(word1.mulMod(word2, word3).longValue, (BigInt(value1) * BigInt(value2)) % BigInt(value3)))
 				}
 			}
 			ok
