@@ -138,7 +138,7 @@ class RepositoryDummy extends RepositoryImpl {
 				if (accountState.isDirty || contractDetails.isDirty) {
 					detailsDB.put(hash, contractDetails)
 					accountState.stateRoot = contractDetails.storageHash
-					accountState.codeHash = contractDetails.code.keccak256
+					accountState.codeHash = contractDetails.code.digest256
 					worldState.put(hash, accountState)
 				}
 			}

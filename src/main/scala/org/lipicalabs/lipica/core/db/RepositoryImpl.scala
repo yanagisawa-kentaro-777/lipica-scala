@@ -253,7 +253,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		}
 		details.code = code
 		val account = getAccountState(address).get
-		account.codeHash = code.keccak256
+		account.codeHash = code.digest256
 
 		updateContractDetails(address, details)
 		updateAccountState(address, account)

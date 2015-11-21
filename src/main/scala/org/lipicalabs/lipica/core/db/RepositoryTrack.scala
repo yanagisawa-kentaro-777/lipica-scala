@@ -129,7 +129,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 				each.isDirty = true
 			}
 		}
-		getAccountState(address).foreach(_.codeHash = code.keccak256)
+		getAccountState(address).foreach(_.codeHash = code.digest256)
 	}
 
 	override def getCode(address: ImmutableBytes): Option[ImmutableBytes] = {

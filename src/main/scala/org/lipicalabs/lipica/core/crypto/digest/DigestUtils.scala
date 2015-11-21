@@ -8,9 +8,9 @@ import org.spongycastle.crypto.digests.{KeccakDigest, RIPEMD160Digest}
 
 object DigestUtils {
 
-	val EmptyDataHash = ImmutableBytes.empty.keccak256
-	val EmptySeqHash = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq.empty[ImmutableBytes]).keccak256
-	val EmptyTrieHash = RBACCodec.Encoder.encode(ImmutableBytes.empty).keccak256
+	val EmptyDataHash = ImmutableBytes.empty.digest256
+	val EmptySeqHash = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq.empty[ImmutableBytes]).digest256
+	val EmptyTrieHash = RBACCodec.Encoder.encode(ImmutableBytes.empty).digest256
 
 	private def calculateDigest(digest: Digest, data: Array[Byte]): Array[Byte] = {
 		val result = new Array[Byte](digest.getDigestSize)
@@ -26,25 +26,25 @@ object DigestUtils {
 		calculateDigest(digest, data)
 	}
 
-	def keccak256(data: Array[Byte]): Array[Byte] = {
+	def digest256(data: Array[Byte]): Array[Byte] = {
 		keccakDigest(256, data)
 	}
 
-	def keccak512(data: Array[Byte]): Array[Byte] = {
+	def digest512(data: Array[Byte]): Array[Byte] = {
 		keccakDigest(512, data)
 	}
 
-	def keccak256omit12Bytes(data: Array[Byte]): Array[Byte] = {
-		val digest = keccak256(data)
+	def digest256omit12Bytes(data: Array[Byte]): Array[Byte] = {
+		val digest = digest256(data)
 		java.util.Arrays.copyOfRange(digest, 12, digest.length)
 	}
 
-	def keccak256omit12(data: Array[Byte]): ImmutableBytes = {
-		val digest = keccak256(data)
+	def digest256omit12(data: Array[Byte]): ImmutableBytes = {
+		val digest = digest256(data)
 		ImmutableBytes(digest, 12, digest.length)
 	}
 
-	def sha256(data: Array[Byte]): Array[Byte] = {
+	def sha2_256(data: Array[Byte]): Array[Byte] = {
 		try {
 			val digest = MessageDigest.getInstance("SHA-256")
 			digest.digest(data)
@@ -61,7 +61,7 @@ object DigestUtils {
 	def computeNewAddress(address: ImmutableBytes, nonce: ImmutableBytes): ImmutableBytes = {
 		val encodedSender = RBACCodec.Encoder.encode(address)
 		val encodedNonce = RBACCodec.Encoder.encode(nonce.toPositiveBigInt)
-		keccak256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray)
+		digest256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray)
 	}
 
 }

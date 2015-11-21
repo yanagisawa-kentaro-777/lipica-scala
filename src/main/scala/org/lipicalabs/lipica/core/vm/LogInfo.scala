@@ -19,7 +19,7 @@ case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: Immutab
 	}
 
 	def getBloom: Bloom = {
-		var result = Bloom.create(address.keccak256)
+		var result = Bloom.create(address.digest256)
 		for (eachTopic <- this.topics) {
 			result = result | Bloom.create(eachTopic.computeSHA3OfData)
 		}

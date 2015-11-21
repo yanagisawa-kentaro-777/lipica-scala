@@ -43,9 +43,9 @@ object PrecompiledContracts {
 		}
 		override def execute(data: ImmutableBytes): ImmutableBytes = {
 			if (data eq null) {
-				ImmutableBytes(DigestUtils.sha256(Array.emptyByteArray))
+				ImmutableBytes(DigestUtils.sha2_256(Array.emptyByteArray))
 			} else {
-				data.sha256
+				data.sha2_256
 			}
 		}
 	}

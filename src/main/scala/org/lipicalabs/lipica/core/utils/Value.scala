@@ -267,7 +267,7 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 
 	def sha3: ImmutableBytes = {
 		if (this.sha3OptionRef.get.isEmpty) {
-			val sha3 = encodedBytes.keccak256
+			val sha3 = encodedBytes.digest256
 			this.sha3OptionRef.set(Some(sha3))
 		}
 		this.sha3OptionRef.get.get

@@ -32,13 +32,13 @@ class ProgramInvokeMockImpl(private val msgData: ImmutableBytes) extends Program
 	}
 
 	override def getOriginAddress: DataWord = {
-		val cowPrivKey: Array[Byte] = DigestUtils.keccak256("horse".getBytes)
+		val cowPrivKey: Array[Byte] = DigestUtils.digest256("horse".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
 		DataWord(addr)
 	}
 
 	override def getCallerAddress: DataWord = {
-		val cowPrivKey: Array[Byte] = DigestUtils.keccak256("monkey".getBytes)
+		val cowPrivKey: Array[Byte] = DigestUtils.digest256("monkey".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
 		DataWord(addr)
 	}
