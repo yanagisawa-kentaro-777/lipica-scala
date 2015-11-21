@@ -15,6 +15,8 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts, JsonUtils}
 object GenesisLoader {
 
 	def loadGenesisBlock: Genesis = {
+		val uri = ClassLoader.getSystemResource(SystemProperties.CONFIG.genesisInfo)
+		println("URI: " + uri)//TODO
 		val in = ClassLoader.getSystemResourceAsStream(SystemProperties.CONFIG.genesisInfo)
 		try {
 			val json = ByteStreams.toByteArray(in)
@@ -25,7 +27,7 @@ object GenesisLoader {
 			genesisBlock.stateRoot = calculateRootHash(genesisBlock.premine)
 			genesisBlock
 		} finally {
-			in.close()
+			Option(in).foreach(_.close())
 		}
 	}
 
