@@ -26,7 +26,7 @@ class BlockStoreDummy extends BlockStore {
 
 	override def existsBlock(hash: ImmutableBytes): Boolean = false
 
-	override def getListHashesEndWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes] = null
+	override def getHashesEndingWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes] = null
 
 	override def saveBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean): Unit = ()
 
@@ -38,7 +38,7 @@ class BlockStoreDummy extends BlockStore {
 
 	override def load(): Unit = ()
 
-	override def getMaxNumber: Long = 0
+	override def getMaxBlockNumber: Long = 0
 
 	override def rebranch(forkBlock: Block): Unit = ()
 

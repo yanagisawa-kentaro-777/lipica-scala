@@ -63,7 +63,7 @@ class IndexedBlockStoreTest extends Specification {
 				blockStore.saveBlock(each, cumulativeDifficulty, mainChain = true)
 			}
 			val bestIndex = this.blocks.last.blockNumber
-			blockStore.getMaxNumber mustEqual bestIndex
+			blockStore.getMaxBlockNumber mustEqual bestIndex
 			blockStore.getTotalDifficulty mustEqual this.cumulativeDifficulty
 
 			Seq(0, 50, 150, 8003).foreach {
@@ -71,7 +71,7 @@ class IndexedBlockStoreTest extends Specification {
 			}
 
 			val lastBlock = this.blocks.last
-			val endingHashes = blockStore.getListHashesEndWith(lastBlock.hash, 100)
+			val endingHashes = blockStore.getHashesEndingWith(lastBlock.hash, 100)
 			(0 until 100).foreach {
 				i => {
 					val block = this.blocks(8003 - i)
@@ -84,7 +84,7 @@ class IndexedBlockStoreTest extends Specification {
 			blockStore.getBlocksByNumber(8004).isEmpty mustEqual true
 
 			val indexBlock = this.blocks(7003)
-			val startingHashes = blockStore.getListHashesStartWith(indexBlock.blockNumber, 100)
+			val startingHashes = blockStore.getHashesStartingWith(indexBlock.blockNumber, 100)
 			(0 until 100).foreach {
 				i => {
 					val block = this.blocks(7003 + i)

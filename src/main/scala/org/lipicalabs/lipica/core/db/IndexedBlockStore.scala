@@ -25,7 +25,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 	 * 最大番号のブロックを取得します。
 	 */
 	override def getBestBlock: Option[Block] = {
-		val maxLevel = getMaxNumber
+		val maxLevel = getMaxBlockNumber
 		if (maxLevel < 0) {
 			return None
 		}
@@ -189,13 +189,13 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 
 	override def getTotalDifficulty: BigInt = {
 		if (Option(this.cache).isDefined) {
-			val blockInfoSeqOrNone = getBlockInfoSeqForLevel(getMaxNumber)
+			val blockInfoSeqOrNone = getBlockInfoSeqForLevel(getMaxBlockNumber)
 			if (blockInfoSeqOrNone.isDefined) {
 				val foundOrNone = blockInfoSeqOrNone.get.find(_.mainChain)
 				if (foundOrNone.isDefined) {
 					return foundOrNone.get.cumulativeDifficulty
 				}
-				var number = getMaxNumber
+				var number = getMaxBlockNumber
 				while (0 <= number) {
 					number -= 1
 					getBlockInfoSeqForLevel(number).foreach {
@@ -209,7 +209,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 				}
 			}
 		}
-		val blockInfoSeq = this.index.get(getMaxNumber).get
+		val blockInfoSeq = this.index.get(getMaxBlockNumber).get
 		blockInfoSeq.find(_.mainChain) match {
 			case Some(block) => block.cumulativeDifficulty
 			case None => UtilConsts.Zero
@@ -220,7 +220,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 	/**
 	 * 最大のブロック番号を返します。
 	 */
-	override def getMaxNumber: Long = {
+	override def getMaxBlockNumber: Long = {
 		val bestIndex = 0.max(this.index.size).toLong
 		if (Option(this.cache).isDefined) {
 			bestIndex + this.cache.index.size - 1L
@@ -232,10 +232,10 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 	/**
 	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
 	 */
-	override def getListHashesEndWith(hash: ImmutableBytes, number: Long): Seq[ImmutableBytes] = {
+	override def getHashesEndingWith(hash: ImmutableBytes, number: Long): Seq[ImmutableBytes] = {
 		val seq =
 			if (Option(this.cache).isDefined) {
-				this.cache.getListHashesEndWith(hash, number)
+				this.cache.getHashesEndingWith(hash, number)
 			} else {
 				Seq.empty[ImmutableBytes]
 			}
@@ -262,7 +262,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 	/**
 	 * genesisから始まって指定された個数のブロックのハッシュ値を並べて返します。
 	 */
-	def getListHashesStartWith(number: Long, aMaxBlocks: Long): Seq[ImmutableBytes] = {
+	def getHashesStartingWith(number: Long, aMaxBlocks: Long): Seq[ImmutableBytes] = {
 		val result = new ArrayBuffer[ImmutableBytes]
 		var i = 0
 		var shouldContinue = true
@@ -277,7 +277,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 		}
 		val maxBlocks = aMaxBlocks - i
 		Option(this.cache).foreach {
-			c => result.appendAll(c.getListHashesStartWith(number, maxBlocks))
+			c => result.appendAll(c.getHashesStartingWith(number, maxBlocks))
 		}
 		result.toSeq
 	}

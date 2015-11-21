@@ -24,7 +24,7 @@ trait BlockStore {
 
 	def existsBlock(hash: ImmutableBytes): Boolean
 
-	def getListHashesEndWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes]
+	def getHashesEndingWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes]
 
 	def saveBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean): Unit
 
@@ -34,7 +34,7 @@ trait BlockStore {
 
 	def getBestBlock: Option[Block]
 
-	def getMaxNumber: Long
+	def getMaxBlockNumber: Long
 
 	def flush(): Unit
 
