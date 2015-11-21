@@ -1,13 +1,10 @@
-
+auto wiring の問題。
 基本モデルクラスを実装する。
-
-sbtによるleveldbのテストの問題。
 
 RepositoryImplのテストを充実させる。
 IndexBlockStoreのテストを充実させる。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
-Valueの型をrefactorする。
 Trieの型は、本当にどうにもならないのだろうか？
 Repository.transfer はおかしい。
 
@@ -19,5 +16,10 @@ RepositoryImplのデバッグ用出力。
 ImmutableBytes#toByteArray を排除する。
 
 依存先およびライセンスをまとめる。
-deprecated問題。
 楕円曲線暗号について調べる。
+
+一通りの実装が終わったら：
+ECKey の deprecated問題は解消可能。
+Value 内包する型の大部分はパージ可能。
+
+sbtによるleveldbのテストの問題？
