@@ -44,7 +44,7 @@ class SystemProperties {
 
 	def genesisInfo: String = {
 		//TODO
-		"genesis/genesis1.json"
+		"genesis1.json"
 	}
 
 }
