@@ -9,6 +9,7 @@ import org.spongycastle.crypto.digests.{KeccakDigest, RIPEMD160Digest}
 object DigestUtils {
 
 	val EmptyDataHash = ImmutableBytes.empty.keccak256
+	val EmptySeqHash = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq.empty[ImmutableBytes]).keccak256
 	val EmptyTrieHash = RBACCodec.Encoder.encode(ImmutableBytes.empty).keccak256
 
 	private def calculateDigest(digest: Digest, data: Array[Byte]): Array[Byte] = {

@@ -1,5 +1,5 @@
 
-JSON関連ユーティリティ -> Genesis -> IndexBlockStoreTestを実装する。
+IndexBlockStoreTestを実装する。
 
 基本モデルクラスを実装する。
 

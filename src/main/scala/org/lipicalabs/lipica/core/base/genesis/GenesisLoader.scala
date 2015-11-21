@@ -39,6 +39,7 @@ object GenesisLoader {
 		blockHeader.parentHash = JsonUtils.parseHexStringToImmutableBytes(genesisJson.parentHash)
 		blockHeader.extraData = JsonUtils.parseHexStringToImmutableBytes(genesisJson.extraData)
 		blockHeader.manaLimit = JsonUtils.parseHexStringToLong(genesisJson.manaLimit)
+		blockHeader.logsBloom = ImmutableBytes.create(256)
 
 		import scala.collection.JavaConversions._
 		val premine = genesisJson.getAlloc.map {

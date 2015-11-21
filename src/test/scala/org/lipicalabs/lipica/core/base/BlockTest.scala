@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -22,6 +22,7 @@ class BlockTest extends Specification {
 			val expectedStateRoot = "9178d0f23c965d81f0834a4c72c6253ce6830f4022b1359aaebfc1ecba442d4e"
 
 			val block = Block.decode(ImmutableBytes.parseHexString(encoded))
+			block.toString.nonEmpty mustEqual true
 			block.hash.toHexString mustEqual expectedHash
 			block.stateRoot.toHexString mustEqual expectedStateRoot
 			block.encode.toHexString mustEqual encoded

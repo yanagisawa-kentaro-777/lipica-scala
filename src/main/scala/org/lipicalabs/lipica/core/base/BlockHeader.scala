@@ -22,7 +22,7 @@ class BlockHeader {
 	def parentHash_=(v: ImmutableBytes): Unit = this._parentHash = v
 
 	/** uncle list のSHA3ダイジェスト値。 */
-	private var _unclesHash: ImmutableBytes = ImmutableBytes.empty
+	private var _unclesHash: ImmutableBytes = DigestUtils.EmptySeqHash
 	def unclesHash: ImmutableBytes = this._unclesHash
 	def unclesHash_=(v: ImmutableBytes): Unit = this._unclesHash = v
 
@@ -38,14 +38,14 @@ class BlockHeader {
 	 * すべてのトランザクションが実行された後の、
 	 * 状態trieのSHA3ルートハッシュ値。
 	 */
-	private var _stateRoot: ImmutableBytes = ImmutableBytes.empty
+	private var _stateRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
 	def stateRoot: ImmutableBytes = this._stateRoot
 	def stateRoot_=(v: ImmutableBytes): Unit = this._stateRoot = v
 
 	/**
 	 * トランザクションを格納したtrieのルートハッシュ値。
 	 */
-	private var _txTrieRoot: ImmutableBytes = ImmutableBytes.empty
+	private var _txTrieRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
 	def txTrieRoot: ImmutableBytes = this._txTrieRoot
 	def txTrieRoot_=(v: ImmutableBytes): Unit = this._txTrieRoot = v
 
@@ -53,7 +53,7 @@ class BlockHeader {
  * populated with each transaction recipe in the transaction recipes
  * list portion, the trie is populate by [key, val] --> [rlp(index), rlp(tx_recipe)]
  * of the block */
-	private var _receiptTrieRoot: ImmutableBytes = ImmutableBytes.empty
+	private var _receiptTrieRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
 	def receiptTrieRoot: ImmutableBytes = this._receiptTrieRoot
 	def receiptTrieRoot_=(v: ImmutableBytes): Unit = this._receiptTrieRoot = v
 
@@ -95,7 +95,7 @@ class BlockHeader {
 	def manaUsed: Long = this._manaUsed
 	def manaUsed_=(v: Long): Unit = this._manaUsed = v
 
-	private var _mixHash: ImmutableBytes = ImmutableBytes.empty
+	private var _mixHash: ImmutableBytes = DigestUtils.EmptyDataHash
 	def mixHash: ImmutableBytes = this._mixHash
 	def mixHash_=(v: ImmutableBytes): Unit = this._mixHash = v
 
