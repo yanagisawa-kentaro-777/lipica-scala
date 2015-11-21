@@ -201,10 +201,13 @@ object Block {
 
 	def decode(encodedBytes: ImmutableBytes): Block = {
 		val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
+		decode(decodedResult.items)
+	}
 
-		val blockHeader = BlockHeader.decode(decodedResult.items.head)
-		val transactions = decodedResult.items(1).items.map(_.bytes).map(Transaction.decode)
-		val uncles = decodedResult.items(2).items.map(BlockHeader.decode)
+	def decode(items: Seq[RBACCodec.Decoder.DecodedResult]): Block = {
+		val blockHeader = BlockHeader.decode(items.head)
+		val transactions = items(1).items.map(_.bytes).map(Transaction.decode)
+		val uncles = items(2).items.map(BlockHeader.decode)
 
 		val calculatedTxTrieRoot = calculateTxTrie(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
