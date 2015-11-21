@@ -22,7 +22,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 
 	private val isDirtyRef = new AtomicBoolean(false)
 	def isDirty: Boolean = this.isDirtyRef.get
-	def setDirty(value: Boolean): Unit = {
+	def isDirty_=(value: Boolean): Unit = {
 		this.isDirtyRef.set(value)
 	}
 
@@ -44,7 +44,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, value))
 			}
 			this.nodes.put(hash, new CachedNode(value, _dirty = true))
-			this.setDirty(true)
+			this.isDirty = true
 			Right(hash)
 		} else {
 			Left(value)
@@ -104,7 +104,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 		}.toMap
 		//保存する。
 		this.dataSource.updateBatch(batch)
-		this.setDirty(false)
+		this.isDirty = false
 		this.nodes.clear()
 
 		val finish = System.nanoTime
@@ -116,7 +116,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 		dirtyKeys.foreach {
 			eachKey => this.nodes.remove(eachKey)
 		}
-		this.setDirty(false)
+		this.isDirty = false
 	}
 
 	def setDB(aDataSource: KeyValueDataSource): Unit = {

@@ -20,3 +20,4 @@ ImmutableBytes#toByteArray を排除する。
 
 依存先およびライセンスをまとめる。
 deprecated問題。
+楕円曲線暗号について調べる。
