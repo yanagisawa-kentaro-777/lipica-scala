@@ -1,10 +1,10 @@
-package org.lipicalabs.lipica.core.db
+package org.lipicalabs.lipica.core.base
 
 import java.util.Random
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.datasource.{KeyValueDataSource, HashMapDB}
+import org.lipicalabs.lipica.core.db.datasource.{HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification

@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
-import org.lipicalabs.lipica.core.base.Repository
-import org.lipicalabs.lipica.core.db.BlockStore
+import org.lipicalabs.lipica.core.db.{Repository, BlockStore}
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
-import org.lipicalabs.lipica.core.base.{BlockChain, Block, TransactionLike, Repository}
-import org.lipicalabs.lipica.core.db.BlockStore
+import org.lipicalabs.lipica.core.base.{BlockChain, Block, TransactionLike}
+import org.lipicalabs.lipica.core.db.{Repository, BlockStore}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.Program

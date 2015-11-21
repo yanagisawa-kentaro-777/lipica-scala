@@ -3,9 +3,9 @@ package org.lipicalabs.lipica.core.db
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
 
-import org.lipicalabs.lipica.core.base.{Block, AccountState, Repository}
+import org.lipicalabs.lipica.core.base._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.datasource.{HashMapDB, KeyValueDataSource}
+import org.lipicalabs.lipica.core.db.datasource.{HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -33,7 +33,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	stateDS.setName(STATE_DB)
 	stateDS.init()
 
-	private var dds = new DetailsDataStore
+	private var dds = new ContractDetailsDataStore
 	private var detailsDB = new DatabaseImpl(detailsDS)
 	dds.db = detailsDB
 

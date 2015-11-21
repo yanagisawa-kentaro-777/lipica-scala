@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.utils._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec

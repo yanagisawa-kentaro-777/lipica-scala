@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.trie
 
-import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{Value, ImmutableBytes}
 
 /**

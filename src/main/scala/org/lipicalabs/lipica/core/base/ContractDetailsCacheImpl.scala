@@ -1,7 +1,7 @@
-package org.lipicalabs.lipica.core.db
+package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.trie.SecureTrie
-import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable
@@ -11,7 +11,7 @@ import scala.collection.mutable
  * 2015/11/09 21:41
  * YANAGISAWA, Kentaro
  */
-class ContractDetailsCacheImpl(private[db] var originalContract: ContractDetails) extends ContractDetails {
+class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetails) extends ContractDetails {
 
 	private var storage = new mutable.HashMap[DataWord, DataWord]
 

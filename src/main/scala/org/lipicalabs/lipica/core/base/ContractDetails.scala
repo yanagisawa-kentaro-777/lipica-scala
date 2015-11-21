@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.db
+package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord

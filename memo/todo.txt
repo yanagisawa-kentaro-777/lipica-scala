@@ -8,10 +8,10 @@ IndexBlockStoreのテストを充実させる。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
 テストのデバッグ出力を無造作に出しすぎ？
-base、db、datasourceの帰属関係および構造を見直す。
 Valueの型をrefactorする。
 DigestUtilsは、もっとうまくやれるかも。digest256、digest512 といったメソッド名にして、静的に実装を切り替える？
 Trieの型は、本当にどうにもならないのだろうか？
+Repository.transfer はおかしい。
 
 コールグラフの先頭は、samples/TransactionBomb あたりである。
 
@@ -21,3 +21,4 @@ RepositoryImplのデバッグ用出力。
 ImmutableBytes#toByteArray を排除する。
 
 依存先およびライセンスをまとめる。
+deprecated問題。

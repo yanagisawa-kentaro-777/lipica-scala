@@ -1,9 +1,9 @@
-package org.lipicalabs.lipica.core.datasource
+package org.lipicalabs.lipica.core.db.datasource
 
-import java.nio.file.{Path, Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 
 import org.iq80.leveldb
-import org.iq80.leveldb.{CompressionType, Options, DB}
+import org.iq80.leveldb.{CompressionType, DB, Options}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.db
 
-import org.lipicalabs.lipica.core.base.{Block, AccountState, Repository}
+import org.lipicalabs.lipica.core.base._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord

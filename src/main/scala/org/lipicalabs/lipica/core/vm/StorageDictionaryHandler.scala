@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
-import org.lipicalabs.lipica.core.db.ContractDetails
+import org.lipicalabs.lipica.core.base.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.{LoggerFactory, Logger}
 

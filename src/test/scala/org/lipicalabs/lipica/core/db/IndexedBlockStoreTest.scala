@@ -5,7 +5,7 @@ import java.nio.file.Paths
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.base.{Genesis, Block}
-import org.lipicalabs.lipica.core.datasource.HashMapDB
+import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner

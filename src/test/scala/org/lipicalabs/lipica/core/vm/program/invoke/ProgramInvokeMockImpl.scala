@@ -1,9 +1,8 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
-import org.lipicalabs.lipica.core.base.Repository
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.db.{RepositoryDummy, BlockStoreDummy, BlockStore}
+import org.lipicalabs.lipica.core.db.{Repository, RepositoryDummy, BlockStoreDummy, BlockStore}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 

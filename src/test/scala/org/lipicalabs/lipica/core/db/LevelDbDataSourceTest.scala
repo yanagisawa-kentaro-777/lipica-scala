@@ -6,7 +6,7 @@ import java.util.Random
 import org.apache.commons.io.FileUtils
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.datasource.LevelDbDataSource
+import org.lipicalabs.lipica.core.db.datasource.LevelDbDataSource
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner

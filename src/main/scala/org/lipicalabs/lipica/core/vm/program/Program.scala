@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.base.{Repository, TransactionLike}
+import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.db.Repository
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}

@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.datasource
+package org.lipicalabs.lipica.core.db.datasource
 
 import java.util.concurrent.ConcurrentHashMap
 

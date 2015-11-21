@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.base.{AccountState, Block, Repository}
-import org.lipicalabs.lipica.core.db.ContractDetails
+import org.lipicalabs.lipica.core.base.{AccountState, Block}
+import org.lipicalabs.lipica.core.base.ContractDetails
+import org.lipicalabs.lipica.core.db.Repository
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke

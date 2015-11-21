@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.db
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.datasource.HashMapDB
+import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.{DataWord, LogInfo}
 import org.specs2.mutable.Specification

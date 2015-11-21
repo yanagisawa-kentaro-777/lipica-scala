@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.trie
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
-import org.lipicalabs.lipica.core.datasource.KeyValueDataSource
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, Value}
 import org.slf4j.LoggerFactory
 

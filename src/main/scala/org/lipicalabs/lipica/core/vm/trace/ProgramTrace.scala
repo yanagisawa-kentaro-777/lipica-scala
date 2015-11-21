@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.trace
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.ContractDetails
+import org.lipicalabs.lipica.core.base.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
