@@ -42,6 +42,11 @@ class SystemProperties {
 		new java.io.File("./work/database/").getAbsolutePath
 	}
 
+	def genesisInfo: String = {
+		//TODO
+		"genesis/genesis1.json"
+	}
+
 }
 
 object SystemProperties {
