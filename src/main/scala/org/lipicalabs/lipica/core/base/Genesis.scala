@@ -14,10 +14,14 @@ class Genesis private[base](_header: BlockHeader, val premine: Map[ImmutableByte
 
 object Genesis {
 
+	//TODO Genesisの属性変更を不可能にする。
+
 	/**
 	 * Genesisブロックのインスタンスを返します。
 	 * （可変の要素が多々あるので、毎回ロードする。）
 	 */
 	def getInstance: Genesis = GenesisLoader.loadGenesisBlock
+
+	val GenesisHash: ImmutableBytes = getInstance.hash
 
 }
