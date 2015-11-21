@@ -267,14 +267,9 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 		var i = 0
 		var shouldContinue = true
 		while ((i < aMaxBlocks) && shouldContinue) {
-			this.index.get(number) match {
+			this.index.get(number + i) match {
 				case Some(blockInfoSeq) =>
-					for (blockInfo <- blockInfoSeq) {
-						if (blockInfo.mainChain) {
-							result.append(blockInfo.hash)
-							shouldContinue = false
-						}
-					}
+					blockInfoSeq.find(_.mainChain).foreach(b => result.append(b.hash))
 				case None =>
 					shouldContinue = false
 			}
