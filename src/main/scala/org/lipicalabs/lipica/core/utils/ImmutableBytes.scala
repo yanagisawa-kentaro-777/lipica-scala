@@ -124,6 +124,11 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	def toSignedBigInteger: java.math.BigInteger = new java.math.BigInteger(this.bytes)
 
 	/**
+	 * このオブジェクトのバイト配列を、正のLong値として返します。
+	 */
+	def toPositiveLong: Long = toPositiveBigInt.longValue()
+
+	/**
 	 * このバイト列を、指定されたキャラクターセットでエンコードされた文字列として返します。
 	 * toString メソッドと異なり、十六進エンコーディングを行うわけではありません。
 	 *
