@@ -238,7 +238,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 			case Some(account) =>
 				val codeHash = account.codeHash
 				if (codeHash == DigestUtils.EmptyDataHash) {
-					return Some(ImmutableBytes.empty)
+					return None
 				}
 				getContractDetails(address).map(_.code)
 			case _ =>

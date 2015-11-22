@@ -136,7 +136,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		if (!existsAccount(address)) {
 			None
 		} else if (getAccountState(address).get.codeHash == DigestUtils.EmptyDataHash) {
-			Some(ImmutableBytes.empty)
+			None
 		} else {
 			Option(getContractDetails(address).get.code)
 		}

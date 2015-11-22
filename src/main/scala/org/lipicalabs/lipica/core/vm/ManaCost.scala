@@ -19,6 +19,8 @@ object ManaCost {
 	val RefundSStore = 15000
 	val Create = 32000
 
+	val SuicideRefund = 24000
+
 	val StipendCall = 2300
 	val Call = 40
 	val ValueTransferCall = 9000

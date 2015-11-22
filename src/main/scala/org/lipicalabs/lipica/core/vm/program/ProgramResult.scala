@@ -75,6 +75,7 @@ class ProgramResult {
 	def addDeletedAccounts(accounts: Iterable[DataWord]): Unit = {
 		this._deletedAccounts ++= accounts
 	}
+	def clearDeletedAccounts(): Unit = this._deletedAccounts.clear()
 
 	def logInfoList: Seq[LogInfo] = this._logInfoBuffer.toSeq
 	def addLogInfo(info: LogInfo): Unit = {
@@ -83,6 +84,7 @@ class ProgramResult {
 	def addLogInfos(infos: Iterable[LogInfo]): Unit = {
 		this._logInfoBuffer ++= infos
 	}
+	def clearLogInfoList(): Unit = this._logInfoBuffer.clear()
 
 	def getCallCreateList: Seq[CallCreate] = this.callCreateBuffer.toSeq
 	def addCallCreate(data: ImmutableBytes, destination: ImmutableBytes, manaLimit: ImmutableBytes, value: ImmutableBytes): Unit = {

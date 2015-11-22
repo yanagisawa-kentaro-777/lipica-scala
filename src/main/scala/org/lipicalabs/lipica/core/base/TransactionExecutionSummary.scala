@@ -71,7 +71,7 @@ object TransactionExecutionSummary {
 		}
 
 		private var storageDiff: Map[DataWord, DataWord] = Map.empty
-		def manaUsed(v: Map[DataWord, DataWord]): Builder = {
+		def storageDiff(v: Map[DataWord, DataWord]): Builder = {
 			this.storageDiff = v
 			this
 		}
