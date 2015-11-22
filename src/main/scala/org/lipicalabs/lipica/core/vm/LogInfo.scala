@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.lipicalabs.lipica.core.base.Bloom
+import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 
 /**
@@ -35,6 +36,21 @@ case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: Immutab
 		}
 		topicsString.append("]")
 		"LogInfo{address=%s, topics=%s, data=%s}".format(this.address.toHexString, topicsString, this.data.toHexString)
+	}
+
+}
+
+object LogInfo {
+
+	def decode(items: Seq[DecodedResult]): LogInfo = {
+		val address = items.head.bytes
+		val topics = items(1).items.map(each => DataWord(each.bytes))
+		val data = items(2).bytes
+		LogInfo(address, topics, data)
+	}
+
+	def decode(encodedBytes: ImmutableBytes): LogInfo = {
+		decode(RBACCodec.Decoder.decode(encodedBytes).right.get.items)
 	}
 
 }

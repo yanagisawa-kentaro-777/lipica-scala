@@ -16,9 +16,8 @@ VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
 Trieの型は、本当にどうにもならないのだろうか？
 
-コールグラフの先頭は、samples/TransactionBomb あたりである。
-
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
+Transactionのデバッグ用出力。
 VM関連のデバッグ用出力。
 RepositoryImplのデバッグ用出力。
 ImmutableBytes#toByteArray を排除する。

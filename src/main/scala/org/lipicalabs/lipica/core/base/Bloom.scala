@@ -11,6 +11,8 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
  */
 class Bloom private(private val data: Array[Byte]) {
 
+	val immutableBytes: ImmutableBytes = ImmutableBytes(this.data)
+
 	def copyData: Array[Byte] = {
 		java.util.Arrays.copyOf(this.data, this.data.length)
 	}
