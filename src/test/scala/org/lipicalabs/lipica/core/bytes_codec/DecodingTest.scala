@@ -21,6 +21,8 @@ import org.specs2.runner.JUnitRunner
 class DecodingTest extends Specification {
 	sequential
 
+	private val NUM_RANDOM_CASES = 500
+
 	"empty string" should {
 		"run right" in {
 			val test = ""
@@ -323,7 +325,7 @@ class DecodingTest extends Specification {
 
 	"various bytes" should {
 		"be right" in {
-			(0 until 10000).foreach {
+			(0 until 1000).foreach {
 				len => {
 					val bytes = generateByteArray(len)
 					val rebuilt = encodeAndRebuildByteArray(bytes)
@@ -349,7 +351,7 @@ class DecodingTest extends Specification {
 
 	"various seq" should {
 		"be right" in {
-			(0 until 5000).foreach {
+			(0 until NUM_RANDOM_CASES).foreach {
 				len => {
 					val seq = generateSeq(len)
 					val rebuilt = encodeAndRebuildSeq(seq)
