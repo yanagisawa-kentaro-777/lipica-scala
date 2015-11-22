@@ -151,6 +151,10 @@ trait TransactionLike {
 		if (ByteUtils.isNullOrEmpty(data)) return 0
 		this.data.count(each => each != 0)
 	}
+
+	override final def toString: String = {
+		"[Sender: %s, Receiver: %s, Value: %s]".format(this.sendAddress, this.receiveAddress, this.value)
+	}
 }
 
 
