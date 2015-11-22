@@ -123,14 +123,13 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 				//つまり、要求されたキーに対応する値は存在しない。
 				Value.empty
 			}
-		} else {
+		} else if (currentNode.length == LIST_SIZE) {
 			//このノードは、17要素の通常ノードである。
 			//子孫をたどり、キーを１ニブル消費して探索を継続する。
-			currentNode.get(key(0)) match {
-				case Some(child) =>
-					get(child, key.copyOfRange(1, key.length))
-				case None => Value.empty
-			}
+			val child = currentNode.get(key(0)).get
+			get(child, key.copyOfRange(1, key.length))
+		} else {
+			Value.empty
 		}
 	}
 
