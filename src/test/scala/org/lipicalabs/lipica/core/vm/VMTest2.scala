@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.base.AccountState
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.lipicalabs.lipica.core.vm.program.Program.IllegalOperationException
@@ -240,7 +239,7 @@ class VMTest2 extends Specification with BeforeExample {
 			program.stackPop.data.toHexString.toUpperCase mustEqual expected
 		}
 	}
-	//TODO mana
+	//TODO #POC9 問題がある模様。
 //	"mana" should {
 //		"be right" in {
 //			val vm = new VM
