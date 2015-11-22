@@ -104,7 +104,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 			//キーが消費し尽くされているか、ノードに子孫がいない場合、そのノードを返す。
 			return node
 		}
-		val currentNode = valueOf(node)
+		val currentNode = retrieveNode(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//このノードのキーを長ったらしい表現に戻す。
 			val k = unpackToNibbles(currentNode.get(0).get.asBytes)
@@ -196,7 +196,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 			val newNode = Seq(packNibbles(key), value)
 			return putToCache(Value.fromObject(newNode))
 		}
-		val currentNode = valueOf(node)
+		val currentNode = retrieveNode(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
 			val packedKey = currentNode.get(0).get.asBytes
@@ -250,7 +250,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 			//何もしない。
 			return Value.empty
 		}
-		val currentNode = valueOf(node)
+		val currentNode = retrieveNode(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
 			//長ったらしい表現に戻す。
@@ -264,7 +264,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
 				val deleteResult = delete(currentNode.get(1).get, key.copyOfRange(k.length, key.length))
-				val newChild = valueOf(deleteResult)
+				val newChild = retrieveNode(deleteResult)
 				val newNode =
 					if (newChild.length == PAIR_SIZE) {
 						//削除で発生する跳躍をつなぐ。
@@ -297,7 +297,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 				} else if (0 <= idx) {
 					//１ノードだけ子供がいて、このノードには値がない。
 					//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
-					val child = valueOf(items(idx))
+					val child = retrieveNode(items(idx))
 					if (child.length == PAIR_SIZE) {
 						val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.get(0).get.asBytes)
 						Seq(packNibbles(concat), child.get(1).get)
@@ -350,19 +350,15 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		}
 	}
 
-	private def valueOf(value: Value): Value = {
+	private def retrieveNode(value: Value): Value = {
 		if (!value.isBytes) {
 			return value
 		}
 		val keyBytes = value.asBytes
 		if (keyBytes.isEmpty) {
 			value
-		} else if (keyBytes.length < 32) {
-			//短いので、キーが値そのもの。
-			//Value.fromObject(keyBytes)
-			throw new RuntimeException
 		} else {
-			//長いので、対応する値を引いて返す。
+			//対応する値を引いて返す。
 			this.cache.get(keyBytes).nodeValue
 		}
 	}
