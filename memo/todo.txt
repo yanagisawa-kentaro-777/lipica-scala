@@ -1,6 +1,9 @@
 auto wiring の問題。
 基本モデルクラスを実装する。
 
+ethereum本家のテストデータとは合うのか？
+
+ログファイルを正しくする。
 RepositoryImplのテストを充実させる。
 IndexBlockStoreのテストを充実させる。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
