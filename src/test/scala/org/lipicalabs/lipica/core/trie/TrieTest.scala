@@ -426,7 +426,7 @@ class TrieTest extends Specification {
 
 	"values (4)" should {
 		"be right" in {
-			val trie = new TrieImpl(mockDb)
+			val trie = new TrieImpl(new HashMapDB)
 			trie.update("do", "verb")
 			trie.update("ether", "wookiedoo")
 			trie.update("horse", "stallion")
@@ -436,6 +436,21 @@ class TrieTest extends Specification {
 			trie.update("dog", "puppy")
 			trie.update("shaman", "")
 			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"
+		}
+	}
+
+	"values (4-1)" should {
+		"be right" in {
+			val trie = new SecureTrie(new HashMapDB)
+			trie.update("do", "verb")
+			trie.update("ether", "wookiedoo")
+			trie.update("horse", "stallion")
+			trie.update("shaman", "horse")
+			trie.update("doge", "coin")
+			trie.update("ether", "")
+			trie.update("dog", "puppy")
+			trie.update("shaman", "")
+			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual "29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"
 		}
 	}
 
