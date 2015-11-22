@@ -191,7 +191,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		for (each <- contractDetails) {
 			val hash = each._1
 			val contractDetailsCache = each._2.asInstanceOf[ContractDetailsCacheImpl]
-			if (Option(contractDetailsCache.originalContract).exists(original => original.isInstanceOf[ContractDetailsImpl])) {
+			if (Option(contractDetailsCache.originalContract).exists(original => !original.isInstanceOf[ContractDetailsImpl])) {
 				this.cacheDetails.put(hash, contractDetailsCache.originalContract)
 			} else {
 				this.cacheDetails.put(hash, contractDetailsCache)

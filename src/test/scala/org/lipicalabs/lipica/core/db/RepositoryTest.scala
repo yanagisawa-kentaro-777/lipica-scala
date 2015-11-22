@@ -414,6 +414,58 @@ class RepositoryTest extends Specification {
 		}
 	}
 
-	//TODO (16)以下未実装。
+	"test (16)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val cowKey1 = ImmutableBytes("key-c-1".getBytes)
+				val cowValue1 = ImmutableBytes("val-c-1".getBytes)
+
+				val horseKey1 = ImmutableBytes("key-h-1".getBytes)
+				val horseValue1 = ImmutableBytes("val-h-1".getBytes)
+
+				val cowKey2 = ImmutableBytes("key-c-2".getBytes)
+				val cowValue2 = ImmutableBytes("val-c-2".getBytes)
+
+				val horseKey2 = ImmutableBytes("key-h-2".getBytes)
+				val horseValue2 = ImmutableBytes("val-h-2".getBytes)
+
+				val track1 = repository.startTracking
+				track1.addStorageRow(cow, DataWord(cowKey1), DataWord(cowValue1))
+				track1.addStorageRow(horse, DataWord(horseKey1), DataWord(horseValue1))
+
+				val track2 = track1.startTracking
+				track2.addStorageRow(cow, DataWord(cowKey2), DataWord(cowValue2))
+				track2.addStorageRow(horse, DataWord(horseKey2), DataWord(horseValue2))
+
+				track2.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
+				track2.getStorageValue(horse, DataWord(horseKey1)).get mustEqual DataWord(horseValue1)
+				track2.getStorageValue(cow, DataWord(cowKey2)).get mustEqual DataWord(cowValue2)
+				track2.getStorageValue(horse, DataWord(horseKey2)).get mustEqual DataWord(horseValue2)
+
+				track2.commit()
+
+				track1.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
+				track1.getStorageValue(horse, DataWord(horseKey1)).get mustEqual DataWord(horseValue1)
+				track1.getStorageValue(cow, DataWord(cowKey2)).get mustEqual DataWord(cowValue2)
+				track1.getStorageValue(horse, DataWord(horseKey2)).get mustEqual DataWord(horseValue2)
+
+				track1.commit()
+
+				repository.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
+				repository.getStorageValue(horse, DataWord(horseKey1)).get mustEqual DataWord(horseValue1)
+				repository.getStorageValue(cow, DataWord(cowKey2)).get mustEqual DataWord(cowValue2)
+				repository.getStorageValue(horse, DataWord(horseKey2)).get mustEqual DataWord(horseValue2)
+
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	//TODO (16-2)以下スキップ。
 
 }
