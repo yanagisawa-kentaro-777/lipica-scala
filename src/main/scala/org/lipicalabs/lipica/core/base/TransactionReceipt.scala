@@ -4,13 +4,16 @@ import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.LogInfo
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by IntelliJ IDEA.
  * 2015/11/22 13:02
  * YANAGISAWA, Kentaro
  */
-class TransactionReceipt private(private var _bloomFilter: Bloom, private val logInfoBuffer: mutable.Buffer[LogInfo]) {
+class TransactionReceipt private(private var _bloomFilter: Bloom, logs: Seq[LogInfo]) {
+
+	private val logsBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
 
 	private var _transaction: TransactionLike = null
 	def transaction: TransactionLike = this._transaction
@@ -27,13 +30,13 @@ class TransactionReceipt private(private var _bloomFilter: Bloom, private val lo
 
 
 	def bloomFilter: Bloom = this._bloomFilter
-	def logInfoSeq: Seq[LogInfo] = this.logInfoBuffer.toSeq
+	def logsAsSeq: Seq[LogInfo] = this.logsBuffer.toSeq
 
-	def setLogInfoSeq(seq: Seq[LogInfo]): Unit = {
-		this.logInfoBuffer.clear()
-		this.logInfoBuffer.appendAll(seq)
+	def setLogs(seq: Seq[LogInfo]): Unit = {
+		this.logsBuffer.clear()
+		this.logsBuffer.appendAll(seq)
 
-		this.logInfoBuffer.foreach {
+		this.logsBuffer.foreach {
 			each => {
 				this._bloomFilter = this._bloomFilter | each.getBloom
 			}
@@ -44,30 +47,32 @@ class TransactionReceipt private(private var _bloomFilter: Bloom, private val lo
 		val encodedPostTxState = RBACCodec.Encoder.encode(this.postTxState)
 		val encodedCumulativeMana = RBACCodec.Encoder.encode(this.cumulativeMana)
 		val encodedBloom = RBACCodec.Encoder.encode(this.bloomFilter.immutableBytes)
-		val encodedLogInfoSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(this.logInfoSeq.map(_.getEncoded))
+		val encodedLogInfoSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(this.logsAsSeq.map(_.getEncoded))
 
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedPostTxState, encodedCumulativeMana, encodedBloom, encodedLogInfoSeq))
 	}
 
 	override def toString: String = {
 		"TransactionReceipt[postTxState=%s, cumulativeMana=%s, bloom=%s, logsSize=%,d]".format(
-			this.postTxState.toHexString, this.cumulativeMana.toHexString, this.bloomFilter.toString, this.logInfoBuffer.size
+			this.postTxState.toHexString, this.cumulativeMana.toHexString, this.bloomFilter.toString, this.logsBuffer.size
 		)
 	}
+
+	setLogs(logs)
 
 }
 
 object TransactionReceipt {
 
-	def apply(postTxState: ImmutableBytes, cumulativeMana: ImmutableBytes, bloom: Bloom, logInfos: Seq[LogInfo]): TransactionReceipt = {
-		val result = new TransactionReceipt(bloom, logInfos.toBuffer)
+	def apply(postTxState: ImmutableBytes, cumulativeMana: ImmutableBytes, bloom: Bloom, logs: Seq[LogInfo]): TransactionReceipt = {
+		val result = new TransactionReceipt(bloom, logs)
 		result.postTxState = postTxState
 		result.cumulativeMana = cumulativeMana
 		result
 	}
 
-	def decode(encodedByts: ImmutableBytes): TransactionReceipt = {
-		val items = RBACCodec.Decoder.decode(encodedByts).right.get.items
+	def decode(encodedBytes: ImmutableBytes): TransactionReceipt = {
+		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
 		val postTxState = items.head.bytes
 		val cumulativeMana = items(1).bytes
 		val bloom = items(2).bytes

@@ -13,7 +13,7 @@ case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: Immutab
 
 	def getEncoded: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
-		val encodedTopics = this.topics.map(each => RBACCodec.Encoder.encode(each))
+		val encodedTopics = this.topics.map(each => RBACCodec.Encoder.encode(each.data))
 		val encodedData = RBACCodec.Encoder.encode(this.data)
 
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, RBACCodec.Encoder.encodeSeqOfByteArrays(encodedTopics), encodedData))
