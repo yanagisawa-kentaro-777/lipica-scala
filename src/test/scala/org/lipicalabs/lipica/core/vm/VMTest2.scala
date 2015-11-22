@@ -4,6 +4,7 @@ import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.base.AccountState
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.Program
+import org.lipicalabs.lipica.core.vm.program.Program.IllegalOperationException
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeMockImpl
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -100,5 +101,192 @@ class VMTest2 extends Specification with BeforeExample {
 		}
 	}
 
-	//TODO origin以下未実装。
+	"origin" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("32"), invoke)
+			val expected = "00000000000000000000000013978AEE95F38490E9769C39B2773ED763D9CD5F"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"caller" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("33"), invoke)
+			val expected = "000000000000000000000000885F93EED577F2FC341EBB9A5C9B2CE4465D96C4"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"callvalue" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("34"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000DE0B6B3A7640000"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"sha3 (1)" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60016000536001600020"), invoke)
+			val expected = "5FE7F977E71DBA2EA1A68E21057BEEBB9BE2AC30C6410AA38D4F3FBE41DCFFD2"
+
+			(0 until 6).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"blockhash" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("600140"), invoke)
+			val expected = "C89EFDAA54C0F20C7ADF612882DF0950F5A951637E0307CDCB4C672F298B8BC6"
+
+			(0 until 2).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"coinbase" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("41"), invoke)
+			val expected = "000000000000000000000000E559DE5527492BCB42EC68D07DF0742A98EC3F1E"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"timestamp" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("42"), invoke)
+			val expected = "000000000000000000000000000000000000000000000000000000005387FE24"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"number" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("43"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000021"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"difficulty" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("44"), invoke)
+			val expected = "00000000000000000000000000000000000000000000000000000000003ED290"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"mana price" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("3A"), invoke)
+			val expected = "000000000000000000000000000000000000000000000000000009184E72A000"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+	//TODO mana
+//	"mana" should {
+//		"be right" in {
+//			val vm = new VM
+//			val program = new Program(ImmutableBytes.parseHexString("5A"), invoke)
+//			val expected = "00000000000000000000000000000000000000000000000000000000000F423F"
+//
+//			(0 until 1).foreach {
+//				_ => vm.step(program)
+//			}
+//
+//			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+//		}
+//	}
+
+	"mana limit" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("45"), invoke)
+			val expected = "00000000000000000000000000000000000000000000000000000000000F4240"
+
+			(0 until 1).foreach {
+				_ => vm.step(program)
+			}
+
+			program.stackPop.data.toHexString.toUpperCase mustEqual expected
+		}
+	}
+
+	"invalid op" should {
+		"be right" in {
+			val vm = new VM
+			val program = new Program(ImmutableBytes.parseHexString("60012F6002"), invoke)
+			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
+
+			try {
+				(0 until 2).foreach {
+					_ => vm.step(program)
+				}
+				ko
+			} catch {
+				case e: IllegalOperationException => ok
+				case e: Throwable => ko
+			} finally {
+				program.isStopped mustEqual true
+				program.stackPop.data.toHexString.toUpperCase mustEqual expected
+			}
+		}
+	}
 }
