@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.base.TransactionLike
+import org.lipicalabs.lipica.core.base.{Transfer, TransactionLike}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.Repository
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
@@ -218,7 +218,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		}
 
 		addInternalTx(ImmutableBytes.empty, DataWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
-		Repository.transfer(this.storage, owner, obtainer, balance)
+		Transfer.transfer(this.storage, owner, obtainer, balance)
 		result.addDeletedAccount(getOwnerAddress)
 	}
 
@@ -474,7 +474,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		val data = this.memoryChunk(message.inDataOffset.intValue, message.inDataSize.intValue)
 		//手数料を取る。
-		Repository.transfer(track, senderAddress, contextAddress, message.endowment.value)
+		Transfer.transfer(track, senderAddress, contextAddress, message.endowment.value)
 
 		if (byTestingSuite) {
 			//テストなので、生成されたコールを蓄積する。
