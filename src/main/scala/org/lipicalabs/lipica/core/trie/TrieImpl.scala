@@ -126,8 +126,11 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		} else {
 			//このノードは、17要素の通常ノードである。
 			//子孫をたどり、キーを１ニブル消費して探索を継続する。
-			val child = currentNode.get(key(0)).get
-			get(child, key.copyOfRange(1, key.length))
+			currentNode.get(key(0)) match {
+				case Some(child) =>
+					get(child, key.copyOfRange(1, key.length))
+				case None => Value.empty
+			}
 		}
 	}
 

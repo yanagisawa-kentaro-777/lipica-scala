@@ -468,4 +468,172 @@ class RepositoryTest extends Specification {
 
 	//TODO (16-2)以下スキップ。
 
+	"test (17)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val cowKey1 = ImmutableBytes("key-c-1".getBytes)
+				val cowValue1 = ImmutableBytes("val-c-1".getBytes)
+
+				val track1 = repository.startTracking
+
+				val track2 = track1.startTracking
+				track2.addStorageRow(cow, DataWord(cowKey1), DataWord(cowValue1))
+				track2.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
+
+				track2.rollback()
+				track1.commit()
+
+				repository.getStorageValue(cow, DataWord(cowKey1)).isEmpty mustEqual true
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (18)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val pig = ImmutableBytes.parseHexString("F0B8C9D84DD2B877E0B952130B73E218106FEC04")
+				val precompiled = ImmutableBytes.parseHexString("0000000000000000000000000000000000000002")
+
+				val track = repository.startTracking
+
+				val cowCode = ImmutableBytes.parseHexString("A1A2A3")
+				val horseCode = ImmutableBytes.parseHexString("B1B2B3")
+
+				repository.saveCode(cow, cowCode)
+				repository.saveCode(horse, horseCode)
+
+				repository.delete(horse)
+
+				track.existsAccount(cow) mustEqual true
+				track.existsAccount(horse) mustEqual false
+				track.existsAccount(pig) mustEqual false
+				track.existsAccount(precompiled) mustEqual false
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (19)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val cowKey1 = DataWord(ImmutableBytes("ck1".getBytes))
+				val cowVal1 = DataWord(ImmutableBytes("cv1".getBytes))
+				val cowVal0 = DataWord(ImmutableBytes("cv0".getBytes))
+
+				val horseKey1 = DataWord(ImmutableBytes("hk1".getBytes))
+				val horseVal1 = DataWord(ImmutableBytes("hv1".getBytes))
+				val horseVal0 = DataWord(ImmutableBytes("hv0".getBytes))
+
+				val track = repository.startTracking
+				track.addStorageRow(cow, cowKey1, cowVal0)
+				track.addStorageRow(horse, horseKey1, horseVal0)
+				track.commit()
+
+				val track2 = repository.startTracking
+				track2.addStorageRow(horse, horseKey1, horseVal0)
+
+				val track3 = track2.startTracking
+
+				val cowDetails = track3.getContractDetails(cow).get
+				cowDetails.put(cowKey1, cowVal1)
+
+				val horseDetails = track3.getContractDetails(horse).get
+				horseDetails.put(horseKey1, horseVal1)
+
+				track3.commit()
+				track2.rollback()
+
+				val cowDetailsOrigin = repository.getContractDetails(cow).get
+				val cowValOrigin = cowDetailsOrigin.get(cowKey1).get
+
+				val horseDetailsOrigin = repository.getContractDetails(horse).get
+				val horseValOrgin = horseDetailsOrigin.get(horseKey1).get
+
+				cowValOrigin mustEqual cowVal0
+				horseValOrgin mustEqual horseVal0
+			} finally {
+				repository.close()
+			}
+		}
+	}
+
+	"test (20)" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val root = repository.getRoot
+
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+
+				val cowKey1 = DataWord(ImmutableBytes("ck1".getBytes))
+				val cowKey2 = DataWord(ImmutableBytes("ck2".getBytes))
+				val cowVal1 = DataWord(ImmutableBytes("cv1".getBytes))
+				val cowVal0 = DataWord(ImmutableBytes("cv0".getBytes))
+
+				val horseKey1 = DataWord(ImmutableBytes("hk1".getBytes))
+				val horseKey2 = DataWord(ImmutableBytes("hk2".getBytes))
+				val horseVal1 = DataWord(ImmutableBytes("hv1".getBytes))
+				val horseVal0 = DataWord(ImmutableBytes("hv0".getBytes))
+
+
+
+				var track2 = repository.startTracking
+				track2.addStorageRow(cow, cowKey1, cowVal1)
+				track2.addStorageRow(horse, horseKey1, horseVal1)
+				track2.commit()
+
+				val root2 = repository.getRoot
+
+				track2 = repository.startTracking
+				track2.addStorageRow(cow, cowKey2, cowVal0)
+				track2.addStorageRow(horse, horseKey2, horseVal0)
+				track2.commit()
+
+				val root3 = repository.getRoot
+
+				var snapshot = repository.getSnapshotTo(root)
+				var cowDetails = snapshot.getContractDetails(cow).get
+				var horseDetails = snapshot.getContractDetails(horse).get
+				cowDetails.get(cowKey1).isEmpty mustEqual true
+				cowDetails.get(cowKey2).isEmpty mustEqual true
+				horseDetails.get(horseKey1).isEmpty mustEqual true
+				horseDetails.get(horseKey2).isEmpty mustEqual true
+
+				snapshot = repository.getSnapshotTo(root2)
+				cowDetails = snapshot.getContractDetails(cow).get
+				horseDetails = snapshot.getContractDetails(horse).get
+
+				cowDetails.get(cowKey1).get mustEqual cowVal1
+				cowDetails.get(cowKey2).isEmpty mustEqual true
+				horseDetails.get(horseKey1).get mustEqual horseVal1
+				horseDetails.get(horseKey2).isEmpty mustEqual true
+
+				snapshot = repository.getSnapshotTo(root3)
+				cowDetails = snapshot.getContractDetails(cow).get
+				horseDetails = snapshot.getContractDetails(horse).get
+
+				cowDetails.get(cowKey1).get mustEqual cowVal1
+				cowDetails.get(cowKey2).get mustEqual cowVal0
+				horseDetails.get(horseKey1).get mustEqual horseVal1
+				horseDetails.get(horseKey2).get mustEqual horseVal0
+			} finally {
+				repository.close()
+			}
+		}
+	}
 }
