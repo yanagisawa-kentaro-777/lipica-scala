@@ -425,7 +425,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	}
 
 	def copy: TrieImpl = {
-		val another = new TrieImpl(this.cache.dataSource, root)
+		val another = new TrieImpl(this.cache.dataSource, Value.fromObject(rootHash))
 		this.cache.getNodes.foreach {
 			each => another.cache.privatePut(each._1, each._2)
 		}
