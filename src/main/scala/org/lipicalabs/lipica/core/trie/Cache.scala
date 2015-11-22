@@ -148,5 +148,5 @@ class Cache(_dataSource: KeyValueDataSource) {
 }
 
 object Cache {
-	private val logger = LoggerFactory.getLogger(getClass)
+	private val logger = LoggerFactory.getLogger("general")
 }

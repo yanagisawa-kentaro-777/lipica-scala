@@ -181,7 +181,7 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 }
 
 object Block {
-	private[base] val logger = LoggerFactory.getLogger(getClass)
+	private[base] val logger = LoggerFactory.getLogger("block")
 
 	private def calculateTxTrie(txs: Seq[TransactionLike]): ImmutableBytes = {
 		val trie = new TrieImpl(null)

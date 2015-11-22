@@ -148,5 +148,5 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 }
 
 object LevelDbDataSource {
-	private val logger = LoggerFactory.getLogger(getClass)
+	private val logger = LoggerFactory.getLogger("db")
 }

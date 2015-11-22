@@ -343,7 +343,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 }
 
 object IndexedBlockStore {
-	private val logger = LoggerFactory.getLogger(getClass)
+	private val logger = LoggerFactory.getLogger("general")
 
 	def newInstance(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource, cache: IndexedBlockStore, indexDB: DB): IndexedBlockStore = new IndexedBlockStore(index, blocks, cache, indexDB)
 
