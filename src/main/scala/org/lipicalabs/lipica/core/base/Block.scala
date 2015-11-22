@@ -215,9 +215,6 @@ object Block {
 		val transactions = items(1).items.map(_.items).map(Transaction.decode)
 		val uncles = items(2).items.map(BlockHeader.decode)
 
-		//println(transactions.size)//TODO
-		//transactions.foreach(println)//TODO
-
 		val calculatedTxTrieRoot = calculateTxTrie(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
 			logger.warn("<Block> Transaction root unmatch! Given: %s != Calculated: %s".format(blockHeader.txTrieRoot, calculatedTxTrieRoot))

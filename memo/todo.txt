@@ -1,7 +1,7 @@
 auto wiring の問題。
 基本モデルクラスを実装する。
 
-ethereum本家のテストデータとは合うのか？
+https://github.com/ethereum/tests を活用したテストの実行方法を考える。
 
 ログファイルを正しくする。
 RepositoryImplのテストを充実させる。
