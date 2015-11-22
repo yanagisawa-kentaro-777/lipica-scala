@@ -6,6 +6,7 @@ import java.security.SignatureException
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils, RBACCodec}
 import org.lipicalabs.lipica.core.vm.ManaCost
 import org.slf4j.LoggerFactory
@@ -258,27 +259,27 @@ class SignedTransaction(
 	}
 }
 
-class EncodedTransaction(private val _encodedBytes: ImmutableBytes) extends TransactionLike {
+class EncodedTransaction(private val items: Seq[DecodedResult]) extends TransactionLike {
 	import Transaction._
 
 	private var parsed: TransactionLike = null
 	private def parse: TransactionLike = {
 		if (this.parsed eq null) {
-			val transaction = RBACCodec.Decoder.decode(this.encodedBytes).right.get.items
+			//val transaction = RBACCodec.Decoder.decode(this.encodedBytes).right.get.items
 			//val transaction = decodedTxList.items.head.items
 
-			val nonce = launderEmptyToZero(transaction.head.bytes)
-			val manaPrice = launderEmptyToZero(transaction(1).bytes)
-			val manaLimit = transaction(2).bytes
-			val receiveAddress = transaction(3).bytes
-			val value = launderEmptyToZero(transaction(4).bytes)
-			val data = transaction(5).bytes
-			val sixthElem = transaction(6).bytes
+			val nonce = launderEmptyToZero(items.head.bytes)
+			val manaPrice = launderEmptyToZero(items(1).bytes)
+			val manaLimit = items(2).bytes
+			val receiveAddress = items(3).bytes
+			val value = launderEmptyToZero(items(4).bytes)
+			val data = items(5).bytes
+			val sixthElem = items(6).bytes
 			this.parsed =
 				if (!ByteUtils.isNullOrEmpty(sixthElem)) {
-					val v = transaction(6).bytes(0)
-					val r = transaction(7).bytes
-					val s = transaction(8).bytes
+					val v = items(6).bytes(0)
+					val r = items(7).bytes
+					val s = items(8).bytes
 					val signature = ECDSASignature.fromComponents(r.toByteArray, s.toByteArray, v)
 					new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 				} else {
@@ -290,11 +291,12 @@ class EncodedTransaction(private val _encodedBytes: ImmutableBytes) extends Tran
 	}
 
 	override def encodedBytes: ImmutableBytes = {
-		if (this.parsed eq null) {
-			this._encodedBytes
-		} else {
-			parsed.encodedBytes
-		}
+		parse.encodedBytes
+//		if (this.parsed eq null) {
+//			this._encodedBytes
+//		} else {
+//			parsed.encodedBytes
+//		}
 	}
 
 	private var encodedRaw: ImmutableBytes = null
@@ -333,7 +335,11 @@ object Transaction {
 	private val DEFAULT_BALANCE_MANA = BigInt("21000")
 
 	def decode(rawData: ImmutableBytes): TransactionLike = {
-		new EncodedTransaction(rawData)
+		new EncodedTransaction(RBACCodec.Decoder.decode(rawData).right.get.items)
+	}
+
+	def decode(items: Seq[RBACCodec.Decoder.DecodedResult]): TransactionLike = {
+		new EncodedTransaction(items)
 	}
 
 	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes): TransactionLike = {

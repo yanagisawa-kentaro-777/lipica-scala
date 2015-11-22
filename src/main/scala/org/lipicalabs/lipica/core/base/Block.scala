@@ -152,6 +152,12 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 			result.append(uncle.toString).append("\n")
 		}
 		result.append("]")
+
+		result.append("\nTransactions [\n")
+		for (tx <- this.transactions) {
+			result.append(tx.toString).append("\n")
+		}
+		result.append("]")
 		result.append("\n]")
 
 		result.toString()
@@ -206,8 +212,11 @@ object Block {
 
 	def decode(items: Seq[RBACCodec.Decoder.DecodedResult]): Block = {
 		val blockHeader = BlockHeader.decode(items.head)
-		val transactions = items(1).items.map(_.bytes).map(Transaction.decode)
+		val transactions = items(1).items.map(_.items).map(Transaction.decode)
 		val uncles = items(2).items.map(BlockHeader.decode)
+
+		//println(transactions.size)//TODO
+		//transactions.foreach(println)//TODO
 
 		val calculatedTxTrieRoot = calculateTxTrie(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
