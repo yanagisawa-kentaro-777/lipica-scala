@@ -21,7 +21,7 @@ class ProgramResult {
 
 	private val _deletedAccounts: mutable.Buffer[DataWord] = new ArrayBuffer[DataWord]
 	private val _internalTransactions: mutable.Buffer[InternalTransaction] = new ArrayBuffer[InternalTransaction]
-	private val _logInfoBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
+	private val _logsBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
 
 	private var _futureRefund: Long = 0L
 
@@ -77,14 +77,14 @@ class ProgramResult {
 	}
 	def clearDeletedAccounts(): Unit = this._deletedAccounts.clear()
 
-	def logInfoList: Seq[LogInfo] = this._logInfoBuffer.toSeq
-	def addLogInfo(info: LogInfo): Unit = {
-		this._logInfoBuffer.append(info)
+	def logsAsSeq: Seq[LogInfo] = this._logsBuffer.toSeq
+	def addLog(info: LogInfo): Unit = {
+		this._logsBuffer.append(info)
 	}
-	def addLogInfos(infos: Iterable[LogInfo]): Unit = {
-		this._logInfoBuffer ++= infos
+	def addLogs(logs: Iterable[LogInfo]): Unit = {
+		this._logsBuffer ++= logs
 	}
-	def clearLogInfoList(): Unit = this._logInfoBuffer.clear()
+	def clearLogs(): Unit = this._logsBuffer.clear()
 
 	def getCallCreateList: Seq[CallCreate] = this.callCreateBuffer.toSeq
 	def addCallCreate(data: ImmutableBytes, destination: ImmutableBytes, manaLimit: ImmutableBytes, value: ImmutableBytes): Unit = {
@@ -108,7 +108,7 @@ class ProgramResult {
 	def mergeToThis(another: ProgramResult): Unit = {
 		addInternalTransactions(another.internalTransactions)
 		addDeletedAccounts(another.deletedAccounts)
-		addLogInfos(another.logInfoList)
+		addLogs(another.logsAsSeq)
 		addFutureRefund(another.futureRefund)
 	}
 

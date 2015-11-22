@@ -316,7 +316,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		track.commit()
 		this.result.addDeletedAccounts(programResult.deletedAccounts)
-		this.result.addLogInfos(programResult.logInfoList)
+		this.result.addLogs(programResult.logsAsSeq)
 
 		//生成されたアドレスを、スタックにプッシュする。
 		stackPush(DataWord(newAddress))

@@ -154,7 +154,8 @@ trait TransactionLike {
 	}
 
 	override final def toString: String = {
-		"[Sender: %s, Receiver: %s, Value: %s]".format(this.sendAddress, this.receiveAddress, this.value)
+		//TODO 実装を充実させる。
+		"Tx [Sender: %s, Receiver: %s, Value: %s]".format(this.sendAddress, this.receiveAddress, this.value)
 	}
 }
 

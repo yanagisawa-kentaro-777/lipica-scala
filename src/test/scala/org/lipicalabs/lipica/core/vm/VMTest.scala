@@ -553,7 +553,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 6).foreach {
 				_ => vm.step(program)
 			}
-			val logInfo = program.result.logInfoList.head
+			val logInfo = program.result.logsAsSeq.head
 			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
 			logInfo.topics.isEmpty mustEqual true
 			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
@@ -567,7 +567,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 7).foreach {
 				_ => vm.step(program)
 			}
-			val logInfo = program.result.logInfoList.head
+			val logInfo = program.result.logsAsSeq.head
 			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
 			logInfo.topics.size mustEqual 1
 			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
@@ -582,7 +582,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 8).foreach {
 				_ => vm.step(program)
 			}
-			val logInfo = program.result.logInfoList.head
+			val logInfo = program.result.logsAsSeq.head
 			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
 			logInfo.topics.size mustEqual 2
 			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
@@ -596,7 +596,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 9).foreach {
 				_ => vm.step(program)
 			}
-			val logInfo = program.result.logInfoList.head
+			val logInfo = program.result.logsAsSeq.head
 			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
 			logInfo.topics.size mustEqual 3
 			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"
@@ -610,7 +610,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 10).foreach {
 				_ => vm.step(program)
 			}
-			val logInfo = program.result.logInfoList.head
+			val logInfo = program.result.logsAsSeq.head
 			logInfo.address.toHexString mustEqual "cd2a3d9f938e13cd947ec05abc7fe734df8dd826"
 			logInfo.topics.size mustEqual 4
 			logInfo.data.toHexString mustEqual "0000000000000000000000000000000000000000000000000000000000001234"

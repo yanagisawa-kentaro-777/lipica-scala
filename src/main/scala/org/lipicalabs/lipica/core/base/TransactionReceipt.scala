@@ -38,7 +38,7 @@ class TransactionReceipt private(private var _bloomFilter: Bloom, logs: Seq[LogI
 
 		this.logsBuffer.foreach {
 			each => {
-				this._bloomFilter = this._bloomFilter | each.getBloom
+				this._bloomFilter = this._bloomFilter | each.createBloomFilter
 			}
 		}
 	}
@@ -47,7 +47,7 @@ class TransactionReceipt private(private var _bloomFilter: Bloom, logs: Seq[LogI
 		val encodedPostTxState = RBACCodec.Encoder.encode(this.postTxState)
 		val encodedCumulativeMana = RBACCodec.Encoder.encode(this.cumulativeMana)
 		val encodedBloom = RBACCodec.Encoder.encode(this.bloomFilter.immutableBytes)
-		val encodedLogInfoSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(this.logsAsSeq.map(_.getEncoded))
+		val encodedLogInfoSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(this.logsAsSeq.map(_.encode))
 
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedPostTxState, encodedCumulativeMana, encodedBloom, encodedLogInfoSeq))
 	}

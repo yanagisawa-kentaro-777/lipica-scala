@@ -26,7 +26,7 @@ class ProgramResultTest extends Specification {
 			(result.exception eq null) mustEqual true
 			result.internalTransactions.isEmpty mustEqual true
 			result.deletedAccounts.isEmpty mustEqual true
-			result.logInfoList.isEmpty mustEqual true
+			result.logsAsSeq.isEmpty mustEqual true
 
 			result.spendMana(5)
 			result.manaUsed mustEqual 5
@@ -42,14 +42,14 @@ class ProgramResultTest extends Specification {
 
 			result.addDeletedAccount(DataWord.Zero)
 			result.deletedAccounts.size mustEqual 1
-			result.addLogInfo(new LogInfo(ImmutableBytes.empty, Seq.empty, ImmutableBytes.empty))
-			result.addLogInfo(new LogInfo(ImmutableBytes.empty, Seq.empty, ImmutableBytes.empty))
-			result.logInfoList.size mustEqual 2
+			result.addLog(new LogInfo(ImmutableBytes.empty, Seq.empty, ImmutableBytes.empty))
+			result.addLog(new LogInfo(ImmutableBytes.empty, Seq.empty, ImmutableBytes.empty))
+			result.logsAsSeq.size mustEqual 2
 
 			val result2 = ProgramResult.createEmpty
 			result2.mergeToThis(result)
 			result.deletedAccounts.size mustEqual 1
-			result.logInfoList.size mustEqual 2
+			result.logsAsSeq.size mustEqual 2
 			result2.futureRefund mustEqual 6
 		}
 	}

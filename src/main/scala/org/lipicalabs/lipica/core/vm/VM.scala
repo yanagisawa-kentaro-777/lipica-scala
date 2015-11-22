@@ -619,7 +619,7 @@ class VM {
 				if (logger.isInfoEnabled) {
 					hint = logInfo.toString
 				}
-				program.result.addLogInfo(logInfo)
+				program.result.addLog(logInfo)
 				program.step()
 			case MLoad =>
 				val address = program.stackPop

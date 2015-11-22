@@ -40,9 +40,9 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	def sValue: BigInt = this.data.toSignedBigInt
 
 	/**
-	 * この値のSHA3ダイジェスト値を返します。
+	 * この値の256ビットダイジェスト値を返します。
 	 */
-	def computeSHA3OfData: ImmutableBytes = this.data.digest256
+	def computeDigest256OfData: ImmutableBytes = this.data.digest256
 
 	/**
 	 * この値をInt値として返します。

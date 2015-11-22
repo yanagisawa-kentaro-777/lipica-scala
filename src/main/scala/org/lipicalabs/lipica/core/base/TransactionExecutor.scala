@@ -162,7 +162,7 @@ class TransactionExecutor(
 			}
 			if (this.result.exception ne null) {
 				this.result.clearDeletedAccounts()
-				result.clearLogInfoList()
+				result.clearLogs()
 				result.resetFutureRefund()
 				throw result.exception
 			}
@@ -204,7 +204,7 @@ class TransactionExecutor(
 
 		Option(this.result).foreach {
 			r => {
-				this._logs = r.logInfoList
+				this._logs = r.logsAsSeq
 				r.deletedAccounts.foreach(address => this.track.delete(address.last20Bytes))
 			}
 		}

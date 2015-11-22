@@ -11,7 +11,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
  */
 case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: ImmutableBytes) {
 
-	def getEncoded: ImmutableBytes = {
+	def encode: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
 		val encodedTopics = this.topics.map(each => RBACCodec.Encoder.encode(each.data))
 		val encodedData = RBACCodec.Encoder.encode(this.data)
@@ -19,10 +19,10 @@ case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: Immutab
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, RBACCodec.Encoder.encodeSeqOfByteArrays(encodedTopics), encodedData))
 	}
 
-	def getBloom: Bloom = {
+	def createBloomFilter: Bloom = {
 		var result = Bloom.create(address.digest256)
 		for (eachTopic <- this.topics) {
-			result = result | Bloom.create(eachTopic.computeSHA3OfData)
+			result = result | Bloom.create(eachTopic.computeDigest256OfData)
 		}
 		result
 	}
