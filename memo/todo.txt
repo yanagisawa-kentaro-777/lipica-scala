@@ -3,7 +3,6 @@ Trieの型は、本当にどうにもならないのだろうか？
 
 ・CallTransaction
 ・BlockQueue、DiskStore、HashStore関連。
-・Wallet
 ・BlockchainImpl
 
 auto wiring の問題。
