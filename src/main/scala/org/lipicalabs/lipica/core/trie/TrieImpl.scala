@@ -16,17 +16,17 @@ import scala.collection.mutable
  * @author YANAGISAWA, Kentaro
  * @since 2015/09/30
  */
-class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
-
-	def this(_db: KeyValueDataSource) = this(_db, Value.empty)
+class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) extends Trie {
 
 	import TrieImpl._
 	import CompactEncoder._
 
+	def this(_db: KeyValueDataSource) = this(_db, DigestUtils.EmptyTrieHash)
+
 	/**
 	 * 木構造のルート要素。
 	 */
-	private val rootRef = new AtomicReference[Value](_root)
+	private val rootRef = new AtomicReference[Value](Value.fromObject(_root))
 	override def root_=(value: Value): TrieImpl = {
 		this.rootRef.set(value)
 		this
@@ -34,13 +34,13 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	def root_=(value: ImmutableBytes): TrieImpl = {
 		this.root = Value.fromObject(value)
 	}
-	def root: Value = this.rootRef.get
+	def root: Value = retrieveNode(this.rootRef.get)
 
 	/**
 	 * 最上位レベルのハッシュ値を計算して返します。
 	 */
 	override def rootHash: ImmutableBytes = {
-		computeHash(Right(this.root))
+		computeHash(Right(rootRef.get))
 	}
 
 	@tailrec
@@ -67,7 +67,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	/**
 	 * 前回のルート要素。（undo に利用する。）
 	 */
-	private val prevRootRef = new AtomicReference[Value](_root)
+	private val prevRootRef = new AtomicReference[Value](Value.fromObject(_root))
 	def prevRoot: Value = this.prevRootRef.get
 
 	/**
@@ -357,6 +357,8 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 		val keyBytes = value.asBytes
 		if (keyBytes.isEmpty) {
 			value
+		} else if (keyBytes == DigestUtils.EmptyTrieHash) {
+			Value.empty
 		} else {
 			//対応する値を引いて返す。
 			this.cache.get(keyBytes).nodeValue
@@ -392,7 +394,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 
 	override def undo(): Unit = {
 		this.cache.undo()
-		this.rootRef.set(this.prevRoot)
+		this.rootRef.set(prevRoot)
 	}
 
 	override def validate: Boolean = Option(this.cache.get(rootHash)).isDefined
@@ -425,7 +427,7 @@ class TrieImpl(_db: KeyValueDataSource, _root: Value) extends Trie {
 	}
 
 	def copy: TrieImpl = {
-		val another = new TrieImpl(this.cache.dataSource, Value.fromObject(rootHash))
+		val another = new TrieImpl(this.cache.dataSource, rootHash)
 		this.cache.getNodes.foreach {
 			each => another.cache.privatePut(each._1, each._2)
 		}

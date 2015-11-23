@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.trie
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{Value, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * 常にキーをSHA3ダイジェスト値に変換して
@@ -11,9 +12,9 @@ import org.lipicalabs.lipica.core.utils.{Value, ImmutableBytes}
  * 2015/11/04 20:49
  * YANAGISAWA, Kentaro
  */
-class SecureTrie(_db: KeyValueDataSource, _root: Value) extends TrieImpl(_db, _root) {
+class SecureTrie private[core](_db: KeyValueDataSource, _root: ImmutableBytes) extends TrieImpl(_db, _root) {
 
-	def this(_db: KeyValueDataSource) = this(_db, Value.empty)
+	def this(_db: KeyValueDataSource) = this(_db, DigestUtils.EmptyTrieHash)
 
 	override def get(key: ImmutableBytes): ImmutableBytes = super.get(key.digest256)
 

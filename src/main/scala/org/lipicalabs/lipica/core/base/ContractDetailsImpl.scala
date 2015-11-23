@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.datasource.{DataSourcePool, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec, Value}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable
@@ -124,9 +124,9 @@ class ContractDetailsImpl() extends ContractDetails {
 		val keyValueDataSource = this.storageTrie.cache.dataSource
 		val snapStorage =
 			if (hash == DigestUtils.EmptyTrieHash) {
-				new SecureTrie(keyValueDataSource, Value.empty)
+				new SecureTrie(keyValueDataSource)
 			} else {
-				new SecureTrie(keyValueDataSource, Value.fromObject(hash))
+				new SecureTrie(keyValueDataSource, hash)
 			}
 		snapStorage.cache = this.storageTrie.cache
 
