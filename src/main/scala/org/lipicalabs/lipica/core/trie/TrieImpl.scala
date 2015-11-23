@@ -26,43 +26,34 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * 木構造のルート要素。
 	 */
-	private val rootRef = new AtomicReference[Value](Value.fromObject(_root))
+	private val rootRef = new AtomicReference[TrieNode](TrieNode.fromDigest(_root))
 	override def root_=(value: Value): TrieImpl = {
-		this.rootRef.set(value)
+		val node =
+			if (value.isSeq && value.length == PAIR_SIZE) {
+				new ShortcutNode(value)
+			} else if (value.isSeq && value.length == LIST_SIZE) {
+				new RegularNode(value)
+			} else if (value.isBytes && value.asBytes.isEmpty) {
+				TrieNode.empty
+			} else {
+				TrieNode.fromDigest(value.asBytes)
+			}
+		this.rootRef.set(node)
 		this
 	}
 	def root_=(value: ImmutableBytes): TrieImpl = {
 		this.root = Value.fromObject(value)
 	}
-	def root: Value = retrieveNode(this.rootRef.get)
+	def root: Value = retrieveNode(this.rootRef.get.value)
 
 	/**
 	 * 最上位レベルのハッシュ値を計算して返します。
 	 */
 	override def rootHash: ImmutableBytes = {
-		computeHash(Right(rootRef.get))
+		this.rootRef.get.hash
 	}
 
-	@tailrec
-	private def computeHash(obj: Either[ImmutableBytes, Value]): ImmutableBytes = {
-		obj match {
-			case null =>
-				EMPTY_TRIE_HASH
-			case Left(bytes) =>
-				if (bytes.isEmpty) {
-					EMPTY_TRIE_HASH
-				} else {
-					//バイト配列である場合には、計算されたハッシュ値であるとみなす。
-					bytes
-				}
-			case Right(value) =>
-				if (value.isBytes) {
-					computeHash(Left(value.asBytes))
-				} else {
-					value.hash
-				}
-		}
-	}
+
 
 	/**
 	 * 前回のルート要素。（undo に利用する。）
@@ -394,7 +385,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 
 	override def undo(): Unit = {
 		this.cache.undo()
-		this.rootRef.set(prevRoot)
+		this.root = prevRoot
 	}
 
 	override def validate: Boolean = Option(this.cache.get(rootHash)).isDefined
@@ -515,4 +506,48 @@ object TrieImpl {
 	private val LIST_SIZE = 17.toByte
 
 	private val EMPTY_TRIE_HASH = DigestUtils.EmptyTrieHash
+
+	@tailrec
+	def computeHash(obj: Either[ImmutableBytes, Value]): ImmutableBytes = {
+		obj match {
+			case null =>
+				EMPTY_TRIE_HASH
+			case Left(bytes) =>
+				if (bytes.isEmpty) {
+					EMPTY_TRIE_HASH
+				} else {
+					//バイト配列である場合には、計算されたハッシュ値であるとみなす。
+					bytes
+				}
+			case Right(value) =>
+				if (value.isBytes) {
+					computeHash(Left(value.asBytes))
+				} else {
+					value.hash
+				}
+		}
+	}
 }
+
+trait TrieNode {
+	def value: Value
+	def hash: ImmutableBytes
+}
+
+object TrieNode {
+	val empty = new DigestNode(DigestUtils.EmptyTrieHash)
+	def fromDigest(hash: ImmutableBytes): DigestNode = new DigestNode(hash)
+}
+
+class ShortcutNode(override val value: Value) extends TrieNode {
+	override def hash = TrieImpl.computeHash(Right(value))
+}
+
+class RegularNode(override val value: Value) extends TrieNode {
+	override def hash = TrieImpl.computeHash(Right(value))
+}
+
+class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
+	override def value = Value.fromObject(hash)
+}
+
