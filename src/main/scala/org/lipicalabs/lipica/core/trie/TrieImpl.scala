@@ -529,25 +529,69 @@ object TrieImpl {
 	}
 }
 
+
 trait TrieNode {
+	def isDigestNode: Boolean
+	def isEmptyNode: Boolean
+	def isShortcutNode: Boolean
+	def shortcutKey: ImmutableBytes
+	def isRegularNode: Boolean
 	def value: Value
 	def hash: ImmutableBytes
+	def nodeValue: ImmutableBytes
+	def child(idx: Int): TrieNode
 }
 
 object TrieNode {
 	val empty = new DigestNode(DigestUtils.EmptyTrieHash)
-	def fromDigest(hash: ImmutableBytes): DigestNode = new DigestNode(hash)
+	def fromDigest(hash: ImmutableBytes): DigestNode = {
+		if (hash.isEmpty) {
+			empty
+		} else {
+			new DigestNode(hash)
+		}
+	}
+	def apply(value: Value): TrieNode = {
+		if (value.isBytes) {
+			fromDigest(value.asBytes)
+		} else if (value.length == 2) {
+			new ShortcutNode(value)
+		} else {
+			new RegularNode(value)
+		}
+	}
 }
 
 class ShortcutNode(override val value: Value) extends TrieNode {
+	override val isEmptyNode: Boolean = false
+	override val isDigestNode: Boolean = false
+	override val isShortcutNode: Boolean = true
+	override val isRegularNode: Boolean = false
 	override def hash = TrieImpl.computeHash(Right(value))
+	override def nodeValue: ImmutableBytes = this.value.asSeq(1).asInstanceOf[Value].asBytes
+	override def shortcutKey: ImmutableBytes = this.value.asSeq.head.asInstanceOf[ImmutableBytes]
+	override def child(idx: Int): TrieNode = TrieNode(Value.fromObject(Seq(ImmutableBytes.empty, Value.fromObject(this.value.asSeq(idx)))))
 }
 
 class RegularNode(override val value: Value) extends TrieNode {
+	override val isEmptyNode: Boolean = false
+	override val isDigestNode: Boolean = false
+	override val isShortcutNode: Boolean = false
+	override val isRegularNode: Boolean = true
 	override def hash = TrieImpl.computeHash(Right(value))
+	override def nodeValue: ImmutableBytes = this.value.asSeq(16).asInstanceOf[Value].asBytes
+	override def shortcutKey: ImmutableBytes = ImmutableBytes.empty
+	override def child(idx: Int): TrieNode = TrieNode(this.value.asSeq(idx).asInstanceOf[Value])
 }
 
 class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
+	override val isEmptyNode: Boolean = this.hash == DigestUtils.EmptyTrieHash
+	override val isDigestNode: Boolean = true
+	override val isShortcutNode: Boolean = false
+	override val isRegularNode: Boolean = false
 	override def value = Value.fromObject(hash)
+	override def nodeValue: ImmutableBytes = throw new UnsupportedOperationException
+	override def shortcutKey: ImmutableBytes = ImmutableBytes.empty
+	override def child(idx: Int): TrieNode = throw new UnsupportedOperationException
 }
 
