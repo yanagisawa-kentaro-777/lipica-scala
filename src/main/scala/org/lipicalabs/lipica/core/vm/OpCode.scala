@@ -73,6 +73,7 @@ object Tier {
  */
 sealed class OpCode(val opcode: Byte, val require: Int, val ret: Int, val tier: Tier) {
 	def name: String = "%s (%d)".format(getClass.getSimpleName, opcode)
+	override def toString: String = this.name
 }
 
 
@@ -221,10 +222,10 @@ object OpCode {
 	//暗号学的操作。
 
 	/**
-	 * 0x20：SHA3-256ダイジェスト値を計算する。
+	 * 0x20：Keccak-256ダイジェスト値を計算する。
 	 */
-	object SHA3 extends OpCode(0x20, 2, 1, SpecialTier)
-	set.add(SHA3)
+	object Keccak256 extends OpCode(0x20, 2, 1, SpecialTier)
+	set.add(Keccak256)
 
 	//環境情報。
 
@@ -329,8 +330,8 @@ object OpCode {
 	/**
 	 * 0x43：ブロックの番号を取得する。
 	 */
-	object Number extends OpCode(0x43, 0, 1, BaseTier)
-	set.add(Number)
+	object BlockNumber extends OpCode(0x43, 0, 1, BaseTier)
+	set.add(BlockNumber)
 
 	/**
 	 * 0x44：ブロックの難度を取得する。

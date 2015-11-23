@@ -14,8 +14,6 @@ RepositoryImplのテストを充実させる。
 IndexBlockStoreのテストを充実させる。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
-SHA3 オペコードは、おそらくkeccak256ではないか。
-
 StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 Transactionのデバッグ用出力。
 VM関連のデバッグ用出力（ProgramTrace等）。

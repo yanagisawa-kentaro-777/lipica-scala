@@ -25,6 +25,18 @@ class VMTest extends Specification with BeforeExample {
 		this.invoke = new ProgramInvokeMockImpl(null)
 	}
 
+	"test tiers" should {
+		"be right" in {
+			Tier.all.foreach {
+				each => {
+					each.level mustEqual each.asInt
+					each.toString.nonEmpty mustEqual true
+				}
+			}
+			ok
+		}
+	}
+
 	"test push1" should {
 		"be right" in {
 			val vm = new VM

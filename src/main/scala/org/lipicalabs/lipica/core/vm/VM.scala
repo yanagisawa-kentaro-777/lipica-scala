@@ -143,7 +143,7 @@ class VM {
 				(op.tier.asInt, memNeeded(stack.peek, DataWord(DataWord.NUM_BYTES)), 0L)
 			case Return =>
 				(ManaCost.Return, memNeeded(stack.peek, stack.get(-2)), 0L)
-			case SHA3 =>
+			case Keccak256 =>
 				val size = stack.get(-2)
 				val chunkUsed = DataWord.countWords(size.longValue)
 				val manaCost = ManaCost.SHA3 + (chunkUsed * ManaCost.SHA3Word)
@@ -420,7 +420,7 @@ class VM {
 				val result = word1.mulMod(word2, word3)
 				program.stackPush(result)
 				program.step()
-			case SHA3 =>
+			case Keccak256 =>
 				val offset = program.stackPop
 				val len = program.stackPop
 				val buffer = program.memoryChunk(offset.intValue, len.intValue)
@@ -572,7 +572,7 @@ class VM {
 				}
 				program.stackPush(timestamp)
 				program.step()
-			case Number =>
+			case BlockNumber =>
 				val number = program.getBlockNumber
 				if (logger.isInfoEnabled) {
 					hint = "number: " + number.value
