@@ -4,8 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util
 
 import org.codehaus.jackson.map.ObjectMapper
-import org.lipicalabs.lipica.core.base.CallTransaction.Type.IntType
-import org.lipicalabs.lipica.core.base.CallTransaction.{FT_Function, FunctionType, Param}
+import org.lipicalabs.lipica.core.base.CallTransaction.Type.{StringType, IntType}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 
@@ -237,7 +236,17 @@ object CallTransaction {
 		}
 	}
 
-	case class Param(name: String, paramType: Type)
+	class Param {
+		private var name: String = ""
+		def getName: String = this.name
+		def setName(v: String): Unit = this.name = v
+
+		private var paramType: Type = new StringType
+		def getParamType: Type = this.paramType
+		def setParamType(v: String): Unit = {
+			this.paramType = Type.getType(v)
+		}
+	}
 
 	sealed trait FunctionType
 	case object FT_Constructor extends FunctionType
@@ -245,11 +254,31 @@ object CallTransaction {
 
 	class Function {
 
-		var constant: Boolean = false
-		var name: String = ""
-		var inputs: Seq[Param] = Seq.empty
-		var outputs: Seq[Param] = Seq.empty
-		var functionType: FunctionType = FT_Function
+		private var constant: Boolean = false
+		def setConstant(v: Boolean): Unit = this.constant = v
+		def getConstant: Boolean = this.constant
+
+		private var name: String = ""
+		def setName(v: String): Unit = this.name = v
+		def getName: String = this.name
+
+		private var inputs: Array[Param] = Array.empty
+		def setInputs(v: Array[Param]): Unit = this.inputs = v
+		def getInputs: Array[Param] = this.inputs
+
+		private var outputs: Array[Param] = Array.empty
+		def setOutputs(v: Array[Param]): Unit = this.outputs = v
+		def getOutputs: Array[Param] = this.outputs
+
+		private var functionType: FunctionType = FT_Function
+		def setFunctionType(v: String): Unit = {
+			if (v.toLowerCase == "constructor") {
+				this.functionType = FT_Constructor
+			} else {
+				this.functionType = FT_Function
+			}
+		}
+		def getFunctionType: FunctionType = this.functionType
 
 		def encode(args: Any*): ImmutableBytes = {
 			if (this.inputs.length < args.length) {
@@ -259,7 +288,7 @@ object CallTransaction {
 				this.inputs.foldLeft((0, 0)) {
 					(accum, each) => {
 						val (accumStaticSize, accumDynamicCount) = accum
-						val eachSize = each.paramType.fixedSize
+						val eachSize = each.getParamType.fixedSize
 						if (eachSize < 0) {
 							(accumStaticSize + 32, accumDynamicCount + 1)
 						} else {
@@ -267,20 +296,21 @@ object CallTransaction {
 						}
 					}
 				}
+
 			val seqOfBytes = new Array[ImmutableBytes](args.length + 1 + dynamicCount)
 			seqOfBytes(0) = encodeSignature
 
 			var currentDynamicPointer = staticSize
 			var currentDynamicCount = 0
 			for (i <- 0 until args.length) {
-				if (inputs(i).paramType.fixedSize < 0) {
-					val dynamicBytes = inputs(i).paramType.encode(args(i))
+				if (inputs(i).getParamType.fixedSize < 0) {
+					val dynamicBytes = inputs(i).getParamType.encode(args(i))
 					seqOfBytes(i + 1) = IntType.encodeInt(currentDynamicPointer)
 					seqOfBytes(args.length + 1 + currentDynamicCount) = dynamicBytes
 					currentDynamicCount += 1
 					currentDynamicPointer += dynamicBytes.length
 				} else {
-					seqOfBytes(i + 1) = inputs(i).paramType.encode(args(i))
+					seqOfBytes(i + 1) = inputs(i).getParamType.encode(args(i))
 				}
 			}
 			seqOfBytes.foldLeft(ImmutableBytes.empty)((accum, each) => accum ++ each)
@@ -293,14 +323,14 @@ object CallTransaction {
 			if (outputs.isEmpty) {
 				return Seq.empty
 			}
-			val retType = this.outputs.head.paramType
+			val retType = this.outputs.head.getParamType
 			Seq(retType.decode(encodedResult))
 		}
 
 		def encodeSignature: ImmutableBytes = {
 			val part =
 				this.inputs.foldLeft(this.name + "(") {
-					(accum, each) => accum + each.paramType.canonicalName + ","
+					(accum, each) => accum + each.getParamType.canonicalName + ","
 				}
 			val signature =
 				if (part.endsWith(",")) {
@@ -308,7 +338,7 @@ object CallTransaction {
 				} else {
 					part + ")"
 				}
-			ImmutableBytes(util.Arrays.copyOfRange(DigestUtils.sha3_256(signature.getBytes), 0, 4))
+			ImmutableBytes(util.Arrays.copyOfRange(DigestUtils.digest256(signature.getBytes), 0, 4))
 		}
 	}
 
