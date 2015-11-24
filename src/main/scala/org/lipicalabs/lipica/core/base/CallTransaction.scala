@@ -131,7 +131,7 @@ object CallTransaction {
 		class BytesType(_name: String) extends Type(_name) {
 			override def encode(value: Any): ImmutableBytes = {
 				val original = value.asInstanceOf[Array[Byte]]
-				val result = new Array[Byte]((original.length - 1 / 32 + 1) * 32)//padding to N * 32 bytes
+				val result = new Array[Byte](((original.length - 1) / 32 + 1) * 32)//padding to N * 32 bytes
 				System.arraycopy(original, 0, result, 0, original.length)
 				IntType.encodeInt(original.length) ++ ImmutableBytes(result)
 			}
@@ -287,7 +287,7 @@ object CallTransaction {
 				throw new RuntimeException("Too many arguments. %d < %d".format(this.inputs.length, args.length))
 			}
 			val (staticSize, dynamicCount): (Int, Int) =
-				this.inputs.foldLeft((0, 0)) {
+				this.inputs.slice(0, args.length).foldLeft((0, 0)) {
 					(accum, each) => {
 						val (accumStaticSize, accumDynamicCount) = accum
 						val eachSize = each.getParamType.fixedSize
@@ -312,7 +312,8 @@ object CallTransaction {
 					currentDynamicCount += 1
 					currentDynamicPointer += dynamicBytes.length
 				} else {
-					seqOfBytes(i + 1) = inputs(i).getParamType.encode(args(i))
+					val encodedBytes = inputs(i).getParamType.encode(args(i))
+					seqOfBytes(i + 1) = encodedBytes
 				}
 			}
 			seqOfBytes.foldLeft(ImmutableBytes.empty)((accum, each) => accum ++ each)
