@@ -27,7 +27,7 @@ object CallTransaction {
 	}
 
 	def createCallTransaction(nonce: Long, manaPrice: Long, manaLimit: Long, toAddress: String, value: Long, callFunc: Function, funcArgs: Any*): TransactionLike = {
-		val callData = callFunc.encode(funcArgs)
+		val callData = callFunc.encode(funcArgs: _*)
 		createRawTransaction(nonce, manaPrice, manaLimit, toAddress, value, callData)
 	}
 
@@ -170,6 +170,8 @@ object CallTransaction {
 						case s: String =>
 							if (!s.startsWith("0x")) {
 								"0x" + s
+							} else {
+								s
 							}
 						case _ => value
 					}
@@ -243,7 +245,7 @@ object CallTransaction {
 
 		private var paramType: Type = new StringType
 		def getParamType: Type = this.paramType
-		def setParamType(v: String): Unit = {
+		def setType(v: String): Unit = {
 			this.paramType = Type.getType(v)
 		}
 	}
@@ -271,7 +273,7 @@ object CallTransaction {
 		def getOutputs: Array[Param] = this.outputs
 
 		private var functionType: FunctionType = FT_Function
-		def setFunctionType(v: String): Unit = {
+		def setType(v: String): Unit = {
 			if (v.toLowerCase == "constructor") {
 				this.functionType = FT_Constructor
 			} else {
@@ -282,7 +284,7 @@ object CallTransaction {
 
 		def encode(args: Any*): ImmutableBytes = {
 			if (this.inputs.length < args.length) {
-				throw new RuntimeException("Too many arguments.")
+				throw new RuntimeException("Too many arguments. %d < %d".format(this.inputs.length, args.length))
 			}
 			val (staticSize, dynamicCount): (Int, Int) =
 				this.inputs.foldLeft((0, 0)) {
