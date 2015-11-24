@@ -734,7 +734,7 @@ class VM {
 				val codeAddress = program.stackPop
 				val value = program.stackPop
 				if (!value.isZero) {
-					mana = DataWord(mana.intValue + ManaCost.StipendCall)
+					mana += DataWord(ManaCost.StipendCall)
 				}
 				val inDataOffset = program.stackPop
 				val inDataSize = program.stackPop

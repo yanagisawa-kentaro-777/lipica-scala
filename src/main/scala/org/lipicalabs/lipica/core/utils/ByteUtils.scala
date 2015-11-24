@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.utils
 
+import java.nio.ByteBuffer
+
 object ByteUtils {
 
 	/**
@@ -72,6 +74,11 @@ object ByteUtils {
 		} else {
 			value.toByteArray
 		}
+	}
+
+	def toByteArrayWithNoLeadingZeros(value: Long): ImmutableBytes = {
+		val data = ByteBuffer.allocate(8).putLong(value).array()
+		stripLeadingZeroes(ImmutableBytes(data))
 	}
 
 	/**
