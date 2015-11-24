@@ -130,9 +130,7 @@ class PlainValue private[utils](_value: Any) extends Value {
 
 	override def encodedBytes: ImmutableBytes = encode.encodedBytes
 
-	def sha3: ImmutableBytes = encode.sha3
-
-	override def hash: ImmutableBytes = sha3
+	override def hash: ImmutableBytes = encode.hash
 
 	override def asObj: Any = value
 
@@ -261,19 +259,17 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 	override def value: Any = decode.value
 
 	/**
-	 * SHA3ダイジェスト値。
+	 * ダイジェスト値。
 	 */
-	private val sha3OptionRef = new AtomicReference[Option[ImmutableBytes]](None)
+	private val hashOptionRef = new AtomicReference[Option[ImmutableBytes]](None)
 
-	def sha3: ImmutableBytes = {
-		if (this.sha3OptionRef.get.isEmpty) {
-			val sha3 = encodedBytes.digest256
-			this.sha3OptionRef.set(Some(sha3))
+	override def hash: ImmutableBytes = {
+		if (this.hashOptionRef.get.isEmpty) {
+			val digest = encodedBytes.digest256
+			this.hashOptionRef.set(Some(digest))
 		}
-		this.sha3OptionRef.get.get
+		this.hashOptionRef.get.get
 	}
-
-	override def hash: ImmutableBytes = sha3
 
 	def decode: PlainValue = {
 		if (this.plainValueRef.get.isEmpty) {
