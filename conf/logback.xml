@@ -79,6 +79,9 @@
 	<logger name="wallet" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
+	<logger name="blockqueue" level="DEBUG" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
 
 	<logger name="general" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>

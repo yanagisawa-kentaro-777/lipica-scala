@@ -47,6 +47,11 @@ class SystemProperties {
 		"genesis1.json"
 	}
 
+	def databaseReset: Boolean = {
+		//TODO
+		true
+	}
+
 }
 
 object SystemProperties {

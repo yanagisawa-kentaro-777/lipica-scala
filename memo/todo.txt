@@ -1,7 +1,8 @@
 
 Trieの型は、本当にどうにもならないのだろうか？
 
-・BlockQueue、HashStoreImpl。
+・datasource/mapdb
+・HashStoreImpl。
 ・BlockchainImpl
 
 auto wiring の問題。
