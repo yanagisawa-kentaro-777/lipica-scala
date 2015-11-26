@@ -1,7 +1,6 @@
 
 Trieの型は、本当にどうにもならないのだろうか？
 
-・HashStoreImplTest。
 ・BlockchainImpl
 
 auto wiring の問題。
