@@ -37,9 +37,13 @@ class SystemProperties {
 		false
 	}
 
+	private var _databaseDir: String = "./work/database/"
+	def databaseDir_=(v: String): Unit = {
+		this._databaseDir = v
+	}
 	def databaseDir: String = {
 		//TODO
-		new java.io.File("./work/database/").getAbsolutePath
+		new java.io.File(this._databaseDir).getAbsolutePath
 	}
 
 	def genesisInfo: String = {
@@ -47,9 +51,13 @@ class SystemProperties {
 		"genesis1.json"
 	}
 
+	private var _databaseReset: Boolean = false
+	def databaseReset_=(v: Boolean): Unit = {
+		this._databaseReset = v
+	}
 	def databaseReset: Boolean = {
 		//TODO
-		true
+		this._databaseReset
 	}
 
 }
