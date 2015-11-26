@@ -17,9 +17,9 @@ trait HashStore extends DiskStore {
 
 	def addBatchFirst(hashes: Seq[ImmutableBytes]): Unit
 
-	def peek: ImmutableBytes
+	def peek: Option[ImmutableBytes]
 
-	def poll: ImmutableBytes
+	def poll: Option[ImmutableBytes]
 
 	def pollBatch(count: Int): Seq[ImmutableBytes]
 
