@@ -174,6 +174,11 @@ class BlockHeader {
 		}
 	}
 
+	def encodeUncles(uncles: Seq[BlockHeader]): ImmutableBytes = {
+		val seqOfEncodedBytes = uncles.map(_.encode)
+		RBACCodec.Encoder.encodeSeqOfByteArrays(seqOfEncodedBytes)
+	}
+
 	def toStringWithSuffix(suffix: String): String = {
 		val builder = (new StringBuilder).
 			append("parentHash=").append(this.parentHash.toHexString).append(suffix).

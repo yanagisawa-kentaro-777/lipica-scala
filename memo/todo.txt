@@ -1,7 +1,8 @@
 
 Trieの型は、本当にどうにもならないのだろうか？
 
-・BlockchainImpl
+・BlockchainImplの実装を見直す。
+・ImportTestを実行する。
 
 auto wiring の問題。
 

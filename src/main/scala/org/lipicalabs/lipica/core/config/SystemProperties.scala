@@ -60,6 +60,28 @@ class SystemProperties {
 		this._databaseReset
 	}
 
+	private var _blockchainOnly = false
+	def blockchainOnly_=(v: Boolean): Unit = this._blockchainOnly = v
+	def blockchainOnly: Boolean = {
+		//TODO
+		this._blockchainOnly
+	}
+
+	//TODO
+	private var _recordBlocks = false
+	def recordBlocks_=(v: Boolean): Unit = this._recordBlocks = v
+	def recordBlocks: Boolean = this._recordBlocks
+
+	def dumpDir: String = {
+		//TODO
+		"dump"
+	}
+
+	def cacheFlushMemory: Double = 0d
+	def cacheFlushBlocks: Int = 0
+
+	def txOutdatedThreshold: Int = 3
+
 }
 
 object SystemProperties {

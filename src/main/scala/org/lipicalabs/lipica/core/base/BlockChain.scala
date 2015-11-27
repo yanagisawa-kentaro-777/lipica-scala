@@ -40,7 +40,7 @@ trait BlockChain {
 	def totalDifficulty: BigInt
 	def totalDifficulty_=(v: BigInt): Unit
 
-	def allChains: Iterable[Chain]
+	def altChains: Iterable[Chain]
 	def garbage: Iterable[Block]
 
 	def pendingTransactions: Set[TransactionLike]
