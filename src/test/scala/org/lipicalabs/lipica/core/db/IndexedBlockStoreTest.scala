@@ -64,6 +64,7 @@ class IndexedBlockStoreTest extends Specification {
 			}
 			val bestIndex = this.blocks.last.blockNumber
 			blockStore.getMaxBlockNumber mustEqual bestIndex
+			blockStore.getBestBlock.get.blockNumber mustEqual bestIndex
 			blockStore.getTotalDifficulty mustEqual this.cumulativeDifficulty
 
 			Seq(0, 50, 150, 8003).foreach {

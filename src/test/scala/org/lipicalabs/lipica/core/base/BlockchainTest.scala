@@ -51,6 +51,7 @@ class BlockchainTest extends Specification {
 			val uri = getClass.getResource("scenario1.dmp")
 			val lines = java.nio.file.Files.readAllLines(Paths.get(uri.toURI), StandardCharsets.UTF_8)
 
+			val chain = new Chain
 			import scala.collection.JavaConversions._
 			var root = ImmutableBytes.empty
 			for (each <- lines) {
@@ -66,9 +67,12 @@ class BlockchainTest extends Specification {
 				root = block.stateRoot
 
 				after mustEqual root
+				chain.tryToConnect(block)
 			}
 			blockchain.size mustEqual 40
 			repos.getRoot mustEqual root
+
+			chain.size mustEqual blockchain.size
 		}
 	}
 
