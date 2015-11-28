@@ -375,7 +375,7 @@ class BlockchainImpl(
 		}
 		for (i <- transactions.indices) {
 			val key = RBACCodec.Encoder.encode(i)
-			val value = transactions(i).encodedBytes
+			val value = transactions(i).toEncodedBytes
 			trie.update(key, value)
 		}
 		trie.rootHash
@@ -467,7 +467,7 @@ class BlockchainImpl(
 		val bestBlockNumber = this.bestBlock.blockNumber
 		for (tx <- transactions) {
 			val txNonce = tx.nonce.toPositiveBigInt
-			this.repository.getAccountState(tx.sendAddress) match {
+			this.repository.getAccountState(tx.senderAddress) match {
 				case Some(account) =>
 					val currentNonce = account.nonce
 					if (currentNonce == txNonce) {

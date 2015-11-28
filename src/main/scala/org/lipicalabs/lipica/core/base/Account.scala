@@ -47,10 +47,10 @@ class Account {
 		this._pendingTransactions.synchronized {
 			if (this._pendingTransactions.nonEmpty) {
 				for (tx <- this._pendingTransactions) {
-					if (tx.sendAddress == this.address) {
+					if (tx.senderAddress == this.address) {
 						result -= tx.value.toPositiveBigInt
 					}
-					if (tx.receiveAddress == this.address) {
+					if (tx.receiverAddress == this.address) {
 						result += tx.value.toPositiveBigInt
 					}
 				}

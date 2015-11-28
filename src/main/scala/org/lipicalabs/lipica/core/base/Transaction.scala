@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 
 
 /**
- * トランザクションは、Lipicaシステムの外部の行為者によって
+ * トランザクションは、このシステムの外部の行為者によって
  * 送信された、署名付きの指示です。
  *
  * トランザクションには２種類あります。
@@ -33,7 +33,7 @@ trait TransactionLike {
 	/**
 	 * 送信者のアドレス。
 	 */
-	def sendAddress: ImmutableBytes
+	def senderAddress: ImmutableBytes
 
 	/**
 	 * メッセージコールにおいては、受信者が受け取る金額。
@@ -44,7 +44,7 @@ trait TransactionLike {
 	/**
 	 *  受信者のアドレス。
 	 */
-	def receiveAddress: ImmutableBytes
+	def receiverAddress: ImmutableBytes
 
 	/**
 	 * マナ１単位を調達するのに必要な金額。
@@ -71,9 +71,25 @@ trait TransactionLike {
 	 * */
 	def signatureOption: Option[ECDSASignature]
 
-	def encodedBytes: ImmutableBytes
+	/**
+	 * 署名を含めてエンコードします。
+	 */
+	def toEncodedBytes: ImmutableBytes
 
-	def encodedRawBytes: ImmutableBytes
+	/**
+	 * 署名を含めてエンコードされたバイト列のダイジェスト値を返します。
+	 */
+	def hash: ImmutableBytes = toEncodedBytes.digest256
+
+	/**
+	 * 署名を含めずにエンコードします。
+	 */
+	def toEncodedRawBytes: ImmutableBytes
+
+	/**
+	 * 署名を含めずにエンコードされたバイト列のダイジェスト値を返します。
+	 */
+	def rawHash: ImmutableBytes = toEncodedRawBytes.digest256
 
 	/**
 	 * このトランザクションにかかるマナの量を返します。
@@ -84,17 +100,21 @@ trait TransactionLike {
 		ManaCost.TRANSACTION + zeroVals * ManaCost.TX_ZERO_DATA + nonZeroes * ManaCost.TX_NO_ZERO_DATA
 	}
 
-	def hash: ImmutableBytes = encodedBytes.digest256
-
-	def rawHash: ImmutableBytes = encodedRawBytes.digest256
-
-	def getContractAddress: ImmutableBytes = {
-		if (!isContractCreation) return null
-		DigestUtils.computeNewAddress(this.sendAddress, this.nonce)
+	/**
+	 * このトランザクションが、コントラクト作成用トランザクションであるか否かを返します。
+	 */
+	def isContractCreation: Boolean = {
+		this.receiverAddress.isEmpty || (this.receiverAddress == ImmutableBytes.zero)
 	}
 
-	def isContractCreation: Boolean = {
-		this.receiveAddress.isEmpty || (this.receiveAddress == ImmutableBytes.zero)
+	/**
+	 * このトランザクションがコントラクト作成用のものだった場合に、
+	 * そのコントラクト用のアドレスを生成して返します。
+	 * メッセージコール用のトランザクションだった場合、Noneを返します。
+	 */
+	def contractAddress: Option[ImmutableBytes] = {
+		if (!isContractCreation) return None
+		Some(DigestUtils.computeNewAddress(this.senderAddress, this.nonce))
 	}
 
 	def getKey: Option[ECKey] = {
@@ -114,7 +134,14 @@ trait TransactionLike {
 		}
 	}
 
-	protected[base] def encode: ImmutableBytes = encode(withSignature = true)
+	override final def toString: String = {
+		"Tx [Hash=%s, Nonce=%s, ManaPrice=%s, ManaLimit=%s, Sender=%s, Receiver=%s, Value=%s, Data=%s, Signature=%s]".format(
+			this.hash, this.nonce, this.manaPrice, this.manaLimit,
+			this.senderAddress, this.receiverAddress, this.value, this.data, this.signatureOption.map(sig => "V(%d) R(%d) S(%d)".format(sig.v, sig.r, sig.s)).getOrElse("")
+		)
+	}
+
+	protected def encode: ImmutableBytes = encode(withSignature = true)
 
 	protected[base] def encodeRaw: ImmutableBytes = encode(withSignature = false)
 
@@ -127,7 +154,7 @@ trait TransactionLike {
 			}
 		val manaPrice = RBACCodec.Encoder.encode(this.manaPrice)
 		val manaLimit = RBACCodec.Encoder.encode(this.manaLimit)
-		val receiveAddress = RBACCodec.Encoder.encode(this.receiveAddress)
+		val receiveAddress = RBACCodec.Encoder.encode(this.receiverAddress)
 		val value = RBACCodec.Encoder.encode(this.value)
 		val data = RBACCodec.Encoder.encode(this.data)
 
@@ -156,17 +183,13 @@ trait TransactionLike {
 		this.data.count(each => each != 0)
 	}
 
-	override final def toString: String = {
-		//TODO 実装を充実させる。
-		"Tx [Sender: %s, Receiver: %s, Value: %s]".format(this.sendAddress, this.receiveAddress, this.value)
-	}
 }
 
 
 class UnsignedTransaction(
 	override val nonce: ImmutableBytes,
 	override val value: ImmutableBytes,
-	override val receiveAddress: ImmutableBytes,
+	override val receiverAddress: ImmutableBytes,
 	override val manaPrice: ImmutableBytes,
 	override val manaLimit: ImmutableBytes,
 	override val data: ImmutableBytes
@@ -175,7 +198,7 @@ class UnsignedTransaction(
 	import Transaction._
 
 	private var encoded: ImmutableBytes = null
-	override def encodedBytes: ImmutableBytes = {
+	override def toEncodedBytes: ImmutableBytes = {
 		if (this.encoded eq null) {
 			this.encoded = encode
 		}
@@ -183,7 +206,7 @@ class UnsignedTransaction(
 	}
 
 	private var encodedRaw: ImmutableBytes = null
-	override def encodedRawBytes: ImmutableBytes = {
+	override def toEncodedRawBytes: ImmutableBytes = {
 		if (this.encodedRaw eq null) {
 			this.encodedRaw = encodeRaw
 		}
@@ -191,7 +214,7 @@ class UnsignedTransaction(
 	}
 
 	private var _sendAddress: ImmutableBytes = null
-	override def sendAddress: ImmutableBytes = {
+	override def senderAddress: ImmutableBytes = {
 		try {
 			if (this._sendAddress eq null) {
 				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
@@ -219,7 +242,7 @@ class UnsignedTransaction(
 class SignedTransaction(
 	override val nonce: ImmutableBytes,
 	override val value: ImmutableBytes,
-	override val receiveAddress: ImmutableBytes,
+	override val receiverAddress: ImmutableBytes,
 	override val manaPrice: ImmutableBytes,
 	override val manaLimit: ImmutableBytes,
 	override val data: ImmutableBytes,
@@ -232,7 +255,7 @@ class SignedTransaction(
 	override def sign(privateKeyBytes: ImmutableBytes): Unit = ()
 
 	private var encoded: ImmutableBytes = null
-	override def encodedBytes: ImmutableBytes = {
+	override def toEncodedBytes: ImmutableBytes = {
 		if (this.encoded eq null) {
 			this.encoded = encode
 		}
@@ -240,7 +263,7 @@ class SignedTransaction(
 	}
 
 	private var encodedRaw: ImmutableBytes = null
-	override def encodedRawBytes: ImmutableBytes = {
+	override def toEncodedRawBytes: ImmutableBytes = {
 		if (this.encodedRaw eq null) {
 			this.encodedRaw = encodeRaw
 		}
@@ -248,7 +271,7 @@ class SignedTransaction(
 	}
 
 	private var _sendAddress: ImmutableBytes = null
-	override def sendAddress: ImmutableBytes = {
+	override def senderAddress: ImmutableBytes = {
 		try {
 			if (this._sendAddress eq null) {
 				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
@@ -294,17 +317,12 @@ class EncodedTransaction(private val items: Seq[DecodedResult]) extends Transact
 		this.parsed
 	}
 
-	override def encodedBytes: ImmutableBytes = {
-		parse.encodedBytes
-//		if (this.parsed eq null) {
-//			this._encodedBytes
-//		} else {
-//			parsed.encodedBytes
-//		}
+	override def toEncodedBytes: ImmutableBytes = {
+		parse.toEncodedBytes
 	}
 
 	private var encodedRaw: ImmutableBytes = null
-	override def encodedRawBytes: ImmutableBytes = {
+	override def toEncodedRawBytes: ImmutableBytes = {
 		if (this.encodedRaw eq null) {
 			this.encodedRaw = parse.encodeRaw
 		}
@@ -315,11 +333,11 @@ class EncodedTransaction(private val items: Seq[DecodedResult]) extends Transact
 
 	override def nonce: ImmutableBytes = parse.nonce
 
-	override def sendAddress: ImmutableBytes = parse.sendAddress
+	override def senderAddress: ImmutableBytes = parse.senderAddress
 
 	override def value: ImmutableBytes = parse.value
 
-	override def receiveAddress: ImmutableBytes = parse.receiveAddress
+	override def receiverAddress: ImmutableBytes = parse.receiverAddress
 
 	override def manaPrice: ImmutableBytes = parse.manaPrice
 

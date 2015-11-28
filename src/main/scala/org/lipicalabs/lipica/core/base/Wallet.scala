@@ -86,15 +86,15 @@ class Wallet {
 	def removeTransactions(txs: Iterable[TransactionLike]): Unit = txs.foreach(this.removeTransaction)
 
 	def applyTransaction(tx: TransactionLike): Unit = {
-		val senderAddress = tx.sendAddress
+		val senderAddress = tx.senderAddress
 		this.rows.get(senderAddress).foreach {
 			sender => {
 				sender.addPendingTransaction(tx)
 				logger.info("<Wallet> Pending tx added to account [%s], tx [%s]".format(sender.address, tx.hash))
 			}
 		}
-		val receiveAddress = tx.receiveAddress
-		this.rows.get(receiveAddress).foreach {
+		val receiverAddress = tx.receiverAddress
+		this.rows.get(receiverAddress).foreach {
 			receiver => {
 				receiver.addPendingTransaction(tx)
 				logger.info("<Wallet> Pending tx added to account [%s], tx [%s]".format(receiver.address, tx.hash))

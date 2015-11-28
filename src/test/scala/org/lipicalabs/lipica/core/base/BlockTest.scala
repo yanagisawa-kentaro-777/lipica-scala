@@ -55,7 +55,7 @@ class BlockTest extends Specification {
 
 			block.transactions.size mustEqual 1
 			val tx = block.transactions.head
-			tx.receiveAddress.toHexString mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
+			tx.receiverAddress.toHexString mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
 			tx.nonce.toHexString mustEqual "00"
 			tx.data.isEmpty mustEqual true
 			tx.manaLimit.toHexString mustEqual "04cb2f"

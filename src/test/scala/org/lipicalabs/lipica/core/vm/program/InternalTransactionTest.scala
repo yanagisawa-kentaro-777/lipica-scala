@@ -23,20 +23,20 @@ class InternalTransactionTest extends Specification {
 			val nonce = ImmutableBytes(Array[Byte](0, 1, 2, 3, 4, 5, 6, 7))
 			val manaPrice = DataWord(12L)
 			val manaLimit = DataWord(100L)
-			val sendAddress = ImmutableBytes(Array[Byte](7, 8, 9, 10))
-			val receiveAddress = ImmutableBytes(Array[Byte](12, 13, 14, 15))
+			val senderAddress = ImmutableBytes(Array[Byte](7, 8, 9, 10))
+			val receiverAddress = ImmutableBytes(Array[Byte](12, 13, 14, 15))
 			val value = ImmutableBytes(Array[Byte](20, 21, 22, 23))
 			val data = ImmutableBytes.empty
 
-			val internalTx = new InternalTransaction(parentHash, 0, 1, nonce, manaPrice, manaLimit, sendAddress, receiveAddress, value, data, "xyz")
+			val internalTx = new InternalTransaction(parentHash, 0, 1, nonce, manaPrice, manaLimit, senderAddress, receiverAddress, value, data, "xyz")
 
 			internalTx.deep mustEqual 0
 			internalTx.index mustEqual 1
 			internalTx.nonce mustEqual nonce
 			internalTx.manaPrice mustEqual manaPrice.data
 			internalTx.manaLimit mustEqual manaLimit.data
-			internalTx.sendAddress mustEqual sendAddress
-			internalTx.receiveAddress mustEqual receiveAddress
+			internalTx.senderAddress mustEqual senderAddress
+			internalTx.receiverAddress mustEqual receiverAddress
 			internalTx.value mustEqual value
 			internalTx.data mustEqual data
 			internalTx.note mustEqual "xyz"
@@ -45,10 +45,10 @@ class InternalTransactionTest extends Specification {
 			internalTx.reject()
 			internalTx.isRejected mustEqual true
 
-			val encoded = internalTx.encodedBytes
+			val encoded = internalTx.toEncodedBytes
 			encoded.nonEmpty mustEqual true
 
-			internalTx.encodedRawBytes mustEqual encoded
+			internalTx.toEncodedRawBytes mustEqual encoded
 
 			try {
 				internalTx.sign(ImmutableBytes.empty)

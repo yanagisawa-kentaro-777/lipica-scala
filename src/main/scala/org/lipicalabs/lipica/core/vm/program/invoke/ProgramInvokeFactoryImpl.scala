@@ -25,11 +25,11 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val lastBlock = this._blockChain.bestBlock
 
 		//受信者もしくはコントラクトのアドレス。
-		val address = if (tx.isContractCreation) tx.getContractAddress else tx.receiveAddress
+		val address = if (tx.isContractCreation) tx.contractAddress.get else tx.receiverAddress
 		//トランザクションの開始者。これはコントラクトではあり得ない。
-		val origin = tx.sendAddress
+		val origin = tx.senderAddress
 		//この実行に直接関与しているアカウントのアドレス。
-		val caller = tx.sendAddress
+		val caller = tx.senderAddress
 		val balance = ImmutableBytes.asSignedByteArray(repository.getBalance(address).getOrElse(UtilConsts.Zero))
 		val manaPrice = tx.manaPrice
 		val mana = tx.manaLimit

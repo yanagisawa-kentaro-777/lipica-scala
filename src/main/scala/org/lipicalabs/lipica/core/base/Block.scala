@@ -186,7 +186,7 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 
 	override def encode: ImmutableBytes = {
 		val encodedHeader = this.blockHeader.encode
-		val encodedTransactions = RBACCodec.Encoder.encodeSeqOfByteArrays(this.transactions.map(_.encodedBytes))
+		val encodedTransactions = RBACCodec.Encoder.encodeSeqOfByteArrays(this.transactions.map(_.toEncodedBytes))
 		val encodedUncles = RBACCodec.Encoder.encodeSeqOfByteArrays(this.uncles.map(_.encode))
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedHeader, encodedTransactions, encodedUncles))
 	}
@@ -242,7 +242,7 @@ object Block {
 			return DigestUtils.EmptyTrieHash
 		}
 		txs.indices.foreach {
-			i => trie.update(RBACCodec.Encoder.encode(i), txs(i).encodedBytes)
+			i => trie.update(RBACCodec.Encoder.encode(i), txs(i).toEncodedBytes)
 		}
 		trie.rootHash
 	}

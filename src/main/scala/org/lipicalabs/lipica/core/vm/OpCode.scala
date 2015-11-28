@@ -242,13 +242,13 @@ object OpCode {
 	set.add(Balance)
 
 	/**
-	 * 0x32：実行を開始したアドレスを取得する。
+	 * 0x32：実行を開始したアドレスを取得する。（コントラクト用アドレスであることはない。）
 	 */
 	object Origin extends OpCode(0x32, 0, 1, BaseTier)
 	set.add(Origin)
 
 	/**
-	 * 0x33：呼び出し元アドレスを取得する。
+	 * 0x33：直接の呼び出し元アドレスを取得する。
 	 */
 	object Caller extends OpCode(0x33, 0, 1, BaseTier)
 	set.add(Caller)

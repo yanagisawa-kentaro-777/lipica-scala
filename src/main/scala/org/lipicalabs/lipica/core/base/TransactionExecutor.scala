@@ -56,7 +56,7 @@ class TransactionExecutor(
 			logger.info("<TxExecutor> Not enough mana for tx execution: %s < %s".format(txManaLimit, this.basicTxCost))
 			return
 		}
-		val reqNonce = this.track.getNonce(this.tx.sendAddress)
+		val reqNonce = this.track.getNonce(this.tx.senderAddress)
 		val txNonce = this.tx.nonce.toPositiveBigInt
 		if (reqNonce != txNonce) {
 			logger.info("<TxExecutor> Invalid nonce: Required: %s != Tx: %s".format(reqNonce, txNonce))
@@ -64,7 +64,7 @@ class TransactionExecutor(
 		}
 		val txManaCost = this.tx.manaPrice.toPositiveBigInt * BigInt(txManaLimit)
 		val totalCost = this.tx.value.toPositiveBigInt + txManaCost
-		val senderBalance = this.track.getBalance(this.tx.sendAddress).getOrElse(UtilConsts.Zero)
+		val senderBalance = this.track.getBalance(this.tx.senderAddress).getOrElse(UtilConsts.Zero)
 		if (senderBalance < totalCost) {
 			logger.info("<TxExecutor> Not enough coin: Required: %s, Sender balance: %s".format(totalCost, senderBalance))
 			return
@@ -77,11 +77,11 @@ class TransactionExecutor(
 			return
 		}
 		if (!localCall) {
-			this.track.increaseNonce(this.tx.sendAddress)
+			this.track.increaseNonce(this.tx.senderAddress)
 			val txManaPrice = this.tx.manaPrice.toPositiveBigInt
 			val txManaLimit = this.tx.manaLimit.toPositiveBigInt
 			val txManaCost = txManaPrice * txManaLimit
-			this.track.addBalance(tx.sendAddress, -txManaCost)
+			this.track.addBalance(tx.senderAddress, -txManaCost)
 			logger.info("<TxExecutor> Paying: TxManaCost: %s, ManaPrice: %s, ManaLimit: %s".format(txManaCost, txManaPrice, txManaLimit))
 		}
 		if (this.tx.isContractCreation) {
@@ -92,24 +92,32 @@ class TransactionExecutor(
 	}
 
 	private def create(): Unit = {
-		val newContractAddress = this.tx.getContractAddress
+		val newContractAddress = this.tx.contractAddress.get
 		if (this.tx.data.isEmpty) {
 			this.endMana = this.tx.manaLimit.toPositiveBigInt.longValue() - this.basicTxCost
-			this.cacheTrack.createAccount(this.tx.getContractAddress)
+			this.cacheTrack.createAccount(newContractAddress)
 		} else {
 			val invoke = this.programInvokeFactory.createProgramInvoke(tx, currentBlock, cacheTrack, blockStore)
 			this.vm = new VM
 			this.program = new Program(this.tx.data, invoke, this.tx)
+
+			this.program.storage.getContractDetails(newContractAddress).foreach {
+				contractDetails => {
+					for (key <- contractDetails.storageKeys) {
+						this.program.storageSave(key, DataWord.Zero)
+					}
+				}
+			}
 		}
 		val endowment = this.tx.value.toPositiveBigInt
-		Transfer.transfer(this.cacheTrack, this.tx.sendAddress, newContractAddress, endowment)
+		Transfer.transfer(this.cacheTrack, this.tx.senderAddress, newContractAddress, endowment)
 	}
 
 	private def call(): Unit = {
 		if (!readyToExecute) {
 			return
 		}
-		val targetAddress = this.tx.receiveAddress
+		val targetAddress = this.tx.receiverAddress
 		this.precompiledContract = PrecompiledContracts.getContractForAddress(DataWord(targetAddress))
 		this.precompiledContract match {
 			case Some(contract) =>
@@ -134,7 +142,7 @@ class TransactionExecutor(
 		}
 
 		val endowment = this.tx.value.toPositiveBigInt
-		Transfer.transfer(this.cacheTrack, this.tx.sendAddress, targetAddress, endowment)
+		Transfer.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment)
 	}
 
 	def go(): Unit = {
@@ -154,7 +162,7 @@ class TransactionExecutor(
 				val returnDataManaValue = result.hReturn.length * ManaCost.CreateData
 				if (returnDataManaValue <= this.endMana) {
 					this.endMana -= returnDataManaValue
-					this.cacheTrack.saveCode(this.tx.getContractAddress, result.hReturn)
+					this.cacheTrack.saveCode(this.tx.contractAddress.get, result.hReturn)
 				} else {
 					//足りない。
 					result.hReturn = ImmutableBytes.empty
@@ -182,7 +190,7 @@ class TransactionExecutor(
 		if (this.result ne null) {
 			this.result.addFutureRefund(this.result.deletedAccounts.size * ManaCost.SuicideRefund)
 			val manaRefund = this.result.futureRefund min (this.result.manaUsed / 2)
-			val address = if (this.tx.isContractCreation) this.tx.getContractAddress else this.tx.receiveAddress
+			val address = if (this.tx.isContractCreation) this.tx.contractAddress.get else this.tx.receiverAddress
 			this.endMana += manaRefund
 
 			summaryBuilder.manaUsed(BigInt(this.result.manaUsed)).manaRefund(BigInt(manaRefund)).
@@ -196,8 +204,8 @@ class TransactionExecutor(
 		val summary = summaryBuilder.build
 
 		//払い戻す。
-		this.track.addBalance(this.tx.sendAddress, summary.calculateLeftOver + summary.calculateRefund)
-		logger.info("<TxExecutor> Paying totla refund to sender: %s, refund val: %s".format(this.tx.sendAddress, summary.calculateRefund))
+		this.track.addBalance(this.tx.senderAddress, summary.calculateLeftOver + summary.calculateRefund)
+		logger.info("<TxExecutor> Paying totla refund to sender: %s, refund val: %s".format(this.tx.senderAddress, summary.calculateRefund))
 		//採掘報酬。
 		this.track.addBalance(this.coinbase, summary.calculateFee)
 		logger.info("<TxExecutor> Paying fee to miner: %s, fee: %s".format(this.coinbase, summary.calculateFee))

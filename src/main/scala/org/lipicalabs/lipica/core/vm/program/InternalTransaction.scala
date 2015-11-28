@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * 2015/10/31 15:36
  * YANAGISAWA, Kentaro
  */
-class InternalTransaction(private val parentHash: ImmutableBytes, val deep: Int, val index: Int, _nonce: ImmutableBytes, _manaPrice: DataWord, _manaLimit: DataWord, override val sendAddress: ImmutableBytes, _receiveAddress: ImmutableBytes, _value: ImmutableBytes, _data: ImmutableBytes, val note: String) extends TransactionLike {
+class InternalTransaction(private val parentHash: ImmutableBytes, val deep: Int, val index: Int, _nonce: ImmutableBytes, _manaPrice: DataWord, _manaLimit: DataWord, override val senderAddress: ImmutableBytes, _receiveAddress: ImmutableBytes, _value: ImmutableBytes, _data: ImmutableBytes, val note: String) extends TransactionLike {
 
 	private val core = Transaction(_nonce, _manaPrice.data, _manaLimit.data, _receiveAddress, _value, _data)
 
@@ -20,7 +20,7 @@ class InternalTransaction(private val parentHash: ImmutableBytes, val deep: Int,
 	override def manaLimit = this.core.manaLimit
 	override def manaPrice = this.core.manaPrice
 	override def value = this.core.value
-	override def receiveAddress = this.core.receiveAddress
+	override def receiverAddress = this.core.receiverAddress
 
 	def reject(): Unit = {
 		this.rejected = true
@@ -28,7 +28,7 @@ class InternalTransaction(private val parentHash: ImmutableBytes, val deep: Int,
 	def isRejected: Boolean = this.rejected
 
 	private var rbacBytes: ImmutableBytes = null
-	override def encodedBytes: ImmutableBytes = {
+	override def toEncodedBytes: ImmutableBytes = {
 		if (this.rbacBytes eq null) {
 			val thisNonce = nonce
 			val encodedNonce =
@@ -37,8 +37,8 @@ class InternalTransaction(private val parentHash: ImmutableBytes, val deep: Int,
 				} else {
 					RBACCodec.Encoder.encode(thisNonce)
 				}
-			val encodedSenderAddress = RBACCodec.Encoder.encode(sendAddress)
-			val encodedReceiveAddress = RBACCodec.Encoder.encode(receiveAddress)
+			val encodedSenderAddress = RBACCodec.Encoder.encode(senderAddress)
+			val encodedReceiverAddress = RBACCodec.Encoder.encode(receiverAddress)
 			val encodedValue = RBACCodec.Encoder.encode(value)
 			val encodedManaPrice = RBACCodec.Encoder.encode(manaPrice)
 			val encodedManaLimit = RBACCodec.Encoder.encode(manaLimit)
@@ -49,12 +49,12 @@ class InternalTransaction(private val parentHash: ImmutableBytes, val deep: Int,
 			val encodedIndex = RBACCodec.Encoder.encode(index)
 			val encodedRejected = RBACCodec.Encoder.encode(rejected)
 
-			this.rbacBytes = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNonce, encodedParentHash, encodedSenderAddress, encodedReceiveAddress, encodedValue, encodedManaPrice, encodedManaLimit, encodedData, encodedNote, encodedDeep, encodedIndex, encodedRejected))
+			this.rbacBytes = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNonce, encodedParentHash, encodedSenderAddress, encodedReceiverAddress, encodedValue, encodedManaPrice, encodedManaLimit, encodedData, encodedNote, encodedDeep, encodedIndex, encodedRejected))
 		}
 		this.rbacBytes
 	}
 
-	override def encodedRawBytes = this.encodedBytes
+	override def toEncodedRawBytes = this.toEncodedBytes
 
 	override def sign(privateKeyBytes: ImmutableBytes) = {
 		throw new UnsupportedOperationException("Cannot sign an internal transaction.")

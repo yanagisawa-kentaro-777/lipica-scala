@@ -13,7 +13,7 @@ class PendingTransaction private(val transaction: TransactionLike, val blockNume
 
 	def toBytes: ImmutableBytes = {
 		val blockNumberBytes = BigInt(this.blockNumer).toByteArray
-		val txBytes = this.transaction.encodedBytes.toByteArray
+		val txBytes = this.transaction.toEncodedBytes.toByteArray
 		val result = new Array[Byte](1 + blockNumberBytes.length + txBytes.length)
 		result(0) = blockNumberBytes.length.toByte
 		System.arraycopy(blockNumberBytes, 0, result, 1, blockNumberBytes.length)
