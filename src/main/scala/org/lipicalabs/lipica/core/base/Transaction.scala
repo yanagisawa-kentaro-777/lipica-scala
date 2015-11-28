@@ -141,6 +141,12 @@ trait TransactionLike {
 		)
 	}
 
+	def summaryString: String = {
+		"Tx [Hash=%s, Nonce=%s, Sender=%s, Receiver=%s, Value=%s, Data=%s]".format(
+			this.hash, this.nonce, this.senderAddress, this.receiverAddress, this.value, this.data
+		)
+	}
+
 	protected def encode: ImmutableBytes = encode(withSignature = true)
 
 	protected[base] def encodeRaw: ImmutableBytes = encode(withSignature = false)

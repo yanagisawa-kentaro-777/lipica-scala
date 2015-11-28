@@ -114,17 +114,20 @@ class RepositoryTrack private[db](private val repository: Repository) extends Re
 
 	override def addBalance(address: ImmutableBytes, value: BigInt) = {
 		val account = getAccountState(address).getOrElse(createAccount(address))
+		if (logger.isDebugEnabled) {
+			logger.debug("<RepositoryTrack> Adding to balance: [%s] Balance: [%,d], Delta: [%,d]".format(address, account.balance, value))
+		}
 		getContractDetails(address).foreach(_.isDirty = true)
 		val newBalance = account.addToBalance(value)
-		if (logger.isTraceEnabled) {
-			logger.trace("<RepositoryTrack> Added to balance: [%s] NewBalance: [%s], Delta: [%s]".format(address, newBalance, value))
+		if (logger.isDebugEnabled) {
+			logger.debug("<RepositoryTrack> Added to balance: [%s] NewBalance: [%,d], Delta: [%,d]".format(address, newBalance, value))
 		}
 		newBalance
 	}
 
 	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = {
-		if (logger.isTraceEnabled) {
-			logger.trace("<RepositoryTrack> Saving code. Address: [%s], Code: [%s]".format(address.toHexString, code.toHexString))
+		if (logger.isDebugEnabled) {
+			logger.debug("<RepositoryTrack> Saving code. Address: [%s], Code: [%s]".format(address.toHexString, code.toHexString))
 		}
 		getContractDetails(address).foreach {
 			each => {

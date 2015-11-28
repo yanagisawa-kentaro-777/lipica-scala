@@ -39,6 +39,7 @@ class BlockchainTest extends Specification {
 			}
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)
+
 			val track = repos.startTracking
 			genesis.premine.foreach {
 				each => track.addBalance(each._1, each._2.balance)

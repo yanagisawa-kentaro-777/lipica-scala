@@ -73,7 +73,13 @@ class BlockQueueTest extends Specification {
 
 	private def cleanUp(): Unit = {
 		this.blockQueue.close()
-		FileUtils.forceDelete(new java.io.File(this.testDBName))
+		try {
+			Thread.sleep(100L)
+			FileUtils.forceDelete(new java.io.File(this.testDBName))
+		} catch {
+			case e: Throwable => e.printStackTrace()
+		}
+
 	}
 
 	"test (1)" should {

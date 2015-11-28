@@ -121,30 +121,43 @@ class BlockchainImpl(
 	 * 渡されたブロックを、このチェーンに連結しようと試みます。
 	 */
 	override def tryToConnect(block: Block): ImportResult = {
-		logger.info("<BlockchainImpl> Trying to connect block: Hash=%s, BlockNumber=%,d".format(block.hash, block.blockNumber))
-		if (this.bestBlock eq null) {
-			recordBlock(block)
-			append(block)
-			ImportResult.ImportedBest
-		} else if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
-			//既存ブロック。
-			if (logger.isDebugEnabled) {
-				logger.debug("<BlockchainImpl> Block already exists: Hash=%s, BlockNumber=%d".format(block.hash, block.blockNumber))
+		logger.info("<Blockchain> Trying to connect %s. Repos state=%s".format(block.summaryString(short = true), this.repository.getRoot))
+		val result =
+			if (this.bestBlock eq null) {
+				if (logger.isDebugEnabled) {
+					logger.debug("<Blockchain> The first block: %s".format(block.summaryString(short = true)))
+				}
+				recordBlock(block)
+				append(block)
+				ImportResult.ImportedBest
+			} else if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
+				//既存ブロック。
+				if (logger.isDebugEnabled) {
+					logger.debug("<Blockchain> Block already exists: %s".format(block.summaryString(short = true)))
+				}
+				ImportResult.Exists
+			} else if (this.bestBlock.isParentOf(block)) {
+				//単純連結。
+				if (logger.isDebugEnabled) {
+					logger.debug("<Blockchain> Appending block: %s".format(block.summaryString(short = true)))
+				}
+				recordBlock(block)
+				append(block)
+				ImportResult.ImportedBest
+			} else if (this.blockStore.existsBlock(block.parentHash)) {
+				//フォーク連結。
+				if (logger.isDebugEnabled) {
+					logger.debug("<Blockchain> Forking block: %s".format(block.summaryString(short = true)))
+				}
+				recordBlock(block)
+				tryConnectAndFork(block)
+			} else {
+				//得体の知れないブロック。
+				logger.info("<Blockchain> Unknown block: %s".format(block.summaryString(short = true)))
+				ImportResult.NoParent
 			}
-			ImportResult.Exists
-		} else if (this.bestBlock.isParentOf(block)) {
-			//単純連結。
-			recordBlock(block)
-			append(block)
-			ImportResult.ImportedBest
-		} else if (this.blockStore.existsBlock(block.parentHash)) {
-			//フォーク連結。
-			recordBlock(block)
-			tryConnectAndFork(block)
-		} else {
-			//得体の知れないブロック。
-			ImportResult.NoParent
-		}
+		logger.info("<Blockchain> Tried to connect %s. Repos state=%s".format(block.summaryString(short = false), this.repository.getRoot))
+		result
 	}
 
 	def tryConnectAndFork(block: Block): ImportResult = {
@@ -223,46 +236,54 @@ class BlockchainImpl(
 				closeable.close()
 			} catch {
 				case e: Throwable =>
-					logger.warn("<BlockchainImpl>", e)
+					logger.warn("<Blockchain>", e)
 			}
 		}
 	}
 
 	override def append(block: Block): Unit = {
-		if (block eq null) {
-			return
-		}
-
 		if (this.exitOn < block.blockNumber) {
-			System.out.println("<BlockchainImpl> Exiting after BlockNumber: %,d".format(this.bestBlock.blockNumber))
+			System.out.println("<Blockchain> Exiting after BlockNumber: %,d".format(this.bestBlock.blockNumber))
 			System.exit(-1)
 		}
 
 		//ブロック自体の破損検査を行う。
 		if (!isValid(block)) {
-			logger.warn("<BlockchainImpl> Invalid block: BlockNumber=%,d".format(block.blockNumber))
+			logger.warn("<Blockchain> Invalid block: %s".format(block.summaryString(short = true)))
 			return
 		}
 		if ((this.bestBlock ne null) && this.bestBlock.hash != block.parentHash) {
+			logger.warn("<Blockchain> Cannot connect: %s is not the parent of %s".format(this.bestBlock.summaryString(short = true), block.summaryString(short = true)))
 			return
 		}
+
+		logger.info("<Blockchain> Before processing %s. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot))
 		this.track = this.repository.startTracking
 		//ブロック内のコードを実行する。
-		val receipts: Seq[TransactionReceipt] = processBlock(block)
+		val receipts = processBlock(block)
+		if (logger.isDebugEnabled) {
+			logger.info("<Blockchain> Current coinbase balance: %s".format(this.repository.getBalance(block.coinbase)))//TODO
+		}
+		logger.info("<Blockchain> %s is processed. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot))
+
 		val calculatedReceiptsHash = calculateReceiptsTrie(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
-			logger.warn("<BlockchainImpl> Block's given receipt hash doesn't match: %s != %s".format(block.receiptsRoot, calculatedReceiptsHash))
+			logger.warn("<Blockchain> Block's given receipt hash doesn't match: %s != %s".format(block.receiptsRoot, calculatedReceiptsHash))
+			return
 		}
 		val calculatedLogBloomHash = calculateLogBloom(receipts)
 		if (block.logsBloom != calculatedLogBloomHash) {
-			logger.warn("<BlockchainImpl> Block's given log bloom filter doesn't match: %s != %s".format(block.logsBloom, calculatedLogBloomHash))
+			logger.warn("<Blockchain> Block's given log bloom filter doesn't match: %s != %s".format(block.logsBloom, calculatedLogBloomHash))
+			return
 		}
-
 		track.commit()
+
 		//ブロックを保存する。
 		storeBlock(block, receipts)
+		logger.info("<Blockchain> %s is stored. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot))
 
 		if (needsFlushing(block)) {
+			logger.info("<Blockchain> Flushing data.")
 			this.repository.flush()
 			this.blockStore.flush()
 			System.gc()
@@ -274,6 +295,8 @@ class BlockchainImpl(
 
 		this.listener.trace("Block chain size: [%,d]".format(this.size))
 		this.listener.onBlock(block, receipts)
+
+		logger.info("<Blockchain> The block is successfully appended: %s".format(block.summaryString(short = true)))
 	}
 
 	private def processBlock(block: Block): Seq[TransactionReceipt] = {
@@ -288,7 +311,7 @@ class BlockchainImpl(
 	}
 
 	private def applyBlock(block: Block): Seq[TransactionReceipt] = {
-		logger.info("<BlockchainImpl> Applying block: BlockNumber=%,d, TxSize=%,d".format(block.blockNumber, block.transactions.size))
+		logger.info("<Blockchain> Applying block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
 		val startTime = System.nanoTime
 
 		val receipts = new ArrayBuffer[TransactionReceipt]
@@ -299,8 +322,11 @@ class BlockchainImpl(
 			executor.execute()
 			executor.go()
 			executor.finalization()
-
 			totalManaUsed = executor.manaUsed
+
+			if (logger.isDebugEnabled) {
+				logger.debug("<Blockchain> Mana used for %s is %d".format(tx.summaryString, totalManaUsed))
+			}
 
 			this.track.commit()
 			val usedManaBytes = ImmutableBytes.asUnsignedByteArray(BigInt(totalManaUsed))
@@ -327,6 +353,9 @@ class BlockchainImpl(
 				this.track.addBalance(uncle.coinbase, uncleReward.toBigInt())
 				totalBlockReward = totalBlockReward + Block.InclusionReward
 			}
+		}
+		if (logger.isDebugEnabled) {
+			logger.debug("<Blockchain> Total reward for %s is %,d. (Uncles=%,d)".format(block.summaryString(short = true), totalBlockReward, block.uncles.size))
 		}
 		this.track.addBalance(block.coinbase, totalBlockReward)
 	}
@@ -434,14 +463,15 @@ class BlockchainImpl(
 
 	override def updateTotalDifficulty(block: Block) = {
 		this._totalDifficulty += block.difficultyAsBigInt
-		logger.info("<BlockChainImpl> TotalDifficulty updated to %d".format(this._totalDifficulty))
+		logger.info("<Blockchain> Total difficulty is updated to %d".format(this._totalDifficulty))
 	}
 
 	override def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {
 		if (!SystemProperties.CONFIG.blockchainOnly) {
 			if (block.stateRoot != this.repository.getRoot) {
-				println("<BlockchainImpl> State conflict! BlockNumber: %d, %s != %s".format(block.blockNumber, block.stateRoot, this.repository.getRoot))
-				stateLogger.warn("<BlockchainImpl> State conflict! BlockNumber: %d, %s != %s".format(block.blockNumber, block.stateRoot, this.repository.getRoot))
+				val message = "<Blockchain> State conflict at %s! %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.getRoot)
+				println(message)
+				stateLogger.warn(message)
 				this.adminInfo.lostConsensus()
 				System.exit(1)
 			}
@@ -453,7 +483,7 @@ class BlockchainImpl(
 			this.blockStore.saveBlock(block, this.totalDifficulty, mainChain = true)
 		}
 		this.bestBlock = block
-		logger.info("<BlockchainImpl> Block appended to the chain: Number: %d, Hash: %s, TotalDifficulty: %d".format(block.blockNumber, block.shortHash, this.totalDifficulty))
+		logger.info("<Blockchain> Block is stored: %s, Total difficulty: %,d".format(block.summaryString(short = true), this.totalDifficulty))
 	}
 
 	override def addPendingTransactions(transactions: Set[TransactionLike]): Unit = {

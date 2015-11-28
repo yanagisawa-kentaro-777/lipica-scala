@@ -124,7 +124,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				}
 				updateAccountState(hash, accountState)
 				if (logger.isDebugEnabled) {
-					logger.debug("<RepositoryImpl> Update: [%s], nonce: [%s], balance: [%s] \n [%s]".format(
+					logger.debug("<RepositoryImpl> Update: [%s], nonce: [%s], balance: [%,d], storage: [%s]".format(
 						hash.toHexString, accountState.nonce, accountState.balance, contractDetails.storageContent
 					))
 				}

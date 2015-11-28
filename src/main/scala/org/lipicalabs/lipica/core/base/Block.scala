@@ -127,6 +127,8 @@ trait Block {
 
 	def shortHash: String
 
+	def summaryString(short: Boolean): String
+
 }
 
 class PlainBlock private[base](override val blockHeader: BlockHeader, override val transactions: Seq[TransactionLike], override val uncles: Seq[BlockHeader]) extends Block {
@@ -214,6 +216,13 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 		result.append("\n]")
 
 		result.toString()
+	}
+
+	override def summaryString(short: Boolean): String = {
+		val letters = if (short) 8 else 64
+		"Block[BlockNumber=%d, Hash=%s, ParentHash=%s]".format(
+			this.blockNumber, this.hash.toHexString.substring(0, letters), this.parentHash.toHexString.substring(0, letters)
+		)
 	}
 
 	def toFlatString: String = {
