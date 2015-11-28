@@ -16,47 +16,100 @@ import org.slf4j.LoggerFactory
  */
 trait Block {
 
+	/**
+	 * このブロックのコアとなる情報の集合。
+	 */
 	def blockHeader: BlockHeader
 
-	def hash: ImmutableBytes
-
+	/**
+	 * このブロックの親のダイジェスト値。
+	 */
 	def parentHash: ImmutableBytes
 
+	/**
+	 * アンクルリスト部分のダイジェスト値。
+	 */
 	def unclesHash: ImmutableBytes
 
+	/**
+	 * このブロックの採掘に成功した場合の報酬が送られるアドレス。
+	 */
 	def coinbase: ImmutableBytes
 
+	/**
+	 * このブロックに含まれるすべてのトランザクションの
+	 * 実行および終了処理が完了した時点における、状態のルートダイジェスト値。
+	 */
 	def stateRoot: ImmutableBytes
-
 	def stateRoot_=(v: ImmutableBytes): Unit
 
+	/**
+	 * トランザクションリスト部のダイジェスト値。
+	 */
 	def txTrieRoot: ImmutableBytes
 
+	/**
+	 * トランザクションレシートリスト部のダイジェスト値。
+	 */
 	def receiptsRoot: ImmutableBytes
 
+	/**
+	 * トランザクションリスト内のログ情報を格納したブルームフィルタ。
+	 */
 	def logsBloom: ImmutableBytes
 
+	/**
+	 * このブロックにおける難度。
+	 * 前ブロックの難度および経過時間から計算可能。
+	 */
 	def difficulty: ImmutableBytes
-
 	def difficultyAsBigInt: BigInt
 
+	/**
+	 * このブロックに至るまでの難度の合計。
+	 */
 	def cumulativeDifficulty: BigInt
 
-	def timestamp: Long
-
+	/**
+	 * このブロックの祖先の数と等しい連番。
+	 * Genesisブロックにおいてはゼロとなる。
+	 */
 	def blockNumber: Long
 
+	/**
+	 * １ブロックあたりの消費マナ上限。
+	 */
 	def manaLimit: Long
 
+	/**
+	 * このブロック内において消費されたマナ。
+	 */
 	def manaUsed: Long
 
+	/**
+	 * このブロック誕生時におけるUNIX時刻。
+	 */
+	def timestamp: Long
+
+	/**
+	 * このブロックに関係がある32バイト以下のデータ。
+	 */
 	def extraData: ImmutableBytes
 
+	/**
+	 * Proof of Work となるダイジェスト値。
+	 */
 	def mixHash: ImmutableBytes
 
+	/**
+	 * 64ビット値。Proof of Work の構成要素。
+	 */
 	def nonce: ImmutableBytes
-
 	def nonce_=(v: ImmutableBytes): Unit
+
+
+
+	def hash: ImmutableBytes
 
 	def transactions: Seq[TransactionLike]
 

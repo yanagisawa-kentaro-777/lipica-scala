@@ -7,6 +7,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * トランザクション実行後の情報の組み合わせクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/22 13:02
  * YANAGISAWA, Kentaro

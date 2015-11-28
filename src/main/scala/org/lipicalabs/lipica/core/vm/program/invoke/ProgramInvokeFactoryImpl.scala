@@ -24,7 +24,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 	override def createProgramInvoke(tx: TransactionLike, block: Block, repository: Repository, blockStore: BlockStore) = {
 		val lastBlock = this._blockChain.bestBlock
 
-		//現在実行中アカウントのアドレス。
+		//受信者もしくはコントラクトのアドレス。
 		val address = if (tx.isContractCreation) tx.getContractAddress else tx.receiveAddress
 		//トランザクションの開始者。これはコントラクトではあり得ない。
 		val origin = tx.sendAddress

@@ -37,6 +37,9 @@ trait BlockChain {
 
 	def updateTotalDifficulty(block: Block): Unit
 
+	/**
+	 * ブロックチェーンに属する全ブロックのdifficultyの合計値。
+	 */
 	def totalDifficulty: BigInt
 	def totalDifficulty_=(v: BigInt): Unit
 

@@ -25,39 +25,42 @@ import org.slf4j.LoggerFactory
  */
 trait TransactionLike {
 
-	/* a counter used to make sure each transaction can only be processed once */
+	/**
+	 * 送信者がこれまで送ったトランザクションの数と等しい連番。
+	 */
 	def nonce: ImmutableBytes
 
+	/**
+	 * 送信者のアドレス。
+	 */
 	def sendAddress: ImmutableBytes
 
-	/* the amount of lipica to transfer (calculated as wei) */
+	/**
+	 * メッセージコールにおいては、受信者が受け取る金額。
+	 * コントラクト作成においては、作成されたコントラクトアカウントへの寄託額。
+	 */
 	def value: ImmutableBytes
 
 	/**
-	 *  the address of the destination account
-	 * In creation transaction the receive address is - 0
+	 *  受信者のアドレス。
 	 */
 	def receiveAddress: ImmutableBytes
 
 	/**
-	 * the amount of lipica to pay as a transaction fee
-	 * to the miner for each unit of mana
+	 * マナ１単位を調達するのに必要な金額。
 	 */
 	def manaPrice: ImmutableBytes
 
 	/**
-	 * The amount of "mana" to allow for the computation.
-	 * Mana is the fuel of the computational engine;
-	 * every computational step taken and every byte added
-	 * to the state or transaction list consumes some mana.
-	 * */
+	 * このトランザクションで消費して良いマナの最大量。
+	 * 先払いとして引き当てられる。
+	 */
 	def manaLimit: ImmutableBytes
 
 	/**
-	 * An unlimited size byte array specifying
-	 * input [data] of the message call or
-	 * Initialization code for a new contract
-	 * */
+	 * メッセージコールの場合、コールに伴う入力値。
+	 * コントラクト作成の場合、初期実行コード。
+	 */
 	def data: ImmutableBytes
 
 	def sign(privateKeyBytes: ImmutableBytes): Unit
