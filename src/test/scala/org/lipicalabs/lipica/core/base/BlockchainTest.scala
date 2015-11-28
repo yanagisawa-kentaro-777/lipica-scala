@@ -39,9 +39,11 @@ class BlockchainTest extends Specification {
 			}
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val track = repos.startTracking
 			genesis.premine.foreach {
-				each => repos.addBalance(each._1, each._2.balance)
+				each => track.addBalance(each._1, each._2.balance)
 			}
+			track.commit()
 
 			val blockchain = new BlockchainImpl(blockStore, repos, new Wallet, new AdminInfo, listener, new ParentBlockHeaderValidator(Seq.empty))
 			blockchain.programInvokeFactory = new ProgramInvokeFactoryImpl
@@ -55,10 +57,15 @@ class BlockchainTest extends Specification {
 				val block = Block.decode(ImmutableBytes.parseHexString(each))
 				//println("ParentHash=%s".format(block.parentHash))
 				//println("Hash=%s".format(block.hash))
+				val before = repos.getRoot
 				val result = blockchain.tryToConnect(block)
 				result mustEqual ImportResult.ImportedBest
+				val after = repos.getRoot
 				//println(result)
+				//println("%s -> %s".format(before, after))
 				root = block.stateRoot
+
+				after mustEqual root
 			}
 			blockchain.size mustEqual 40
 			repos.getRoot mustEqual root

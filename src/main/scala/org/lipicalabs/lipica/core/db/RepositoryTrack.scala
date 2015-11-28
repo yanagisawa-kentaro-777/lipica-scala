@@ -9,11 +9,14 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable
 
 /**
+ * 頻繁な更新操作を一時的にキャッシュするための Repository 実装です。
+ * Repository#startTracking によってインスタンスが生成されます。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/09 20:37
  * YANAGISAWA, Kentaro
  */
-class RepositoryTrack(private val repository: Repository) extends Repository {
+class RepositoryTrack private[db](private val repository: Repository) extends Repository {
 
 	import RepositoryTrack._
 
@@ -27,7 +30,7 @@ class RepositoryTrack(private val repository: Repository) extends Repository {
 		val accountState = new AccountState
 		this.cacheAccounts.put(address, accountState)
 
-		val contractDetails = new ContractDetailsImpl
+		val contractDetails = new ContractDetailsCacheImpl(null)
 		contractDetails.isDirty = true
 		this.cacheDetails.put(address, contractDetails)
 

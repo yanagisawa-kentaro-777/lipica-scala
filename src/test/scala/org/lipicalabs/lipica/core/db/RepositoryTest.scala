@@ -636,4 +636,32 @@ class RepositoryTest extends Specification {
 			}
 		}
 	}
+
+	"manage accounts by track" should {
+		"be right" in {
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			try {
+				val track = repository.startTracking
+				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+
+				track.existsAccount(cow) mustEqual false
+				track.createAccount(cow)
+				track.existsAccount(cow) mustEqual true
+				repository.existsAccount(cow) mustEqual false
+				track.commit()
+				track.existsAccount(cow) mustEqual true
+				repository.existsAccount(cow) mustEqual true
+
+				track.delete(cow)
+
+				track.existsAccount(cow) mustEqual false
+				repository.existsAccount(cow) mustEqual true
+
+				track.commit()
+				repository.existsAccount(cow) mustEqual false
+			} finally {
+				repository.close()
+			}
+		}
+	}
 }

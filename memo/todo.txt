@@ -5,8 +5,7 @@ auto wiring の問題。
 
 https://github.com/ethereum/tests を活用した自動テストの実行方法を考える。
 
-Genesisの属性変更を不可能にする。
-RepositoryImplのテストを充実させる。
+BlockchainImplの精緻なテスト。
 IndexedBlockStoreのテストを充実させる。
 VMTest、VMCustomTest、VMComplexTest等々を充実させる。
 
