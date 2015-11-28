@@ -74,18 +74,30 @@ class BlockchainImpl(
 	var byTest: Boolean = false
 	private var fork: Boolean = false
 
-
+	/**
+	 * このブロックチェーンにおける最新ブロックのダイジェスト値を返します。
+	 */
 	override def bestBlockHash: ImmutableBytes = bestBlock.hash
 
+	/**
+	 * このブロックチェーンに登録されているブロック数を返します。
+	 */
 	override def size = this.bestBlock.blockNumber + 1
 
+	/**
+	 * ブロック番号に対応するブロックを返します。
+	 */
 	override def getBlockByNumber(blockNumber: Long) = this.blockStore.getChainBlockByNumber(blockNumber)
+
+	/**
+	 * ダイジェスト値に対応するブロックを返します。
+	 */
+	override def getBlockByHash(hash: ImmutableBytes) = this.blockStore.getBlockByHash(hash)
 
 	override def getTransactionReceiptByHash(hash: ImmutableBytes) = {
 		throw new UnsupportedOperationException("Not implemented.")
 	}
 
-	override def getBlockByHash(hash: ImmutableBytes) = this.blockStore.getBlockByHash(hash)
 
 	override def getSeqOfHashesStartingFrom(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes] = {
 		//逆順でよい。
@@ -104,6 +116,9 @@ class BlockchainImpl(
 		hashes.reverse
 	}
 
+	/**
+	 * 渡されたブロックを、このチェーンに連結しようと試みます。
+	 */
 	override def tryToConnect(block: Block): ImportResult = {
 		logger.info("<BlockchainImpl> Trying to connect block: Hash=%s, BlockNumber=%,d".format(block.hash, block.blockNumber))
 		if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
@@ -218,6 +233,7 @@ class BlockchainImpl(
 			System.exit(-1)
 		}
 
+		//ブロック自体の破損検査を行う。
 		if (!isValid(block)) {
 			logger.warn("<BlockchainImpl> Invalid block: BlockNumber=%,d".format(block.blockNumber))
 			return
@@ -226,6 +242,7 @@ class BlockchainImpl(
 		if (this.bestBlock.hash != block.parentHash) {
 			return
 		}
+		//ブロック内のコードを実行する。
 		val receipts: Seq[TransactionReceipt] = processBlock(block)
 		val calculatedReceiptsHash = calculateReceiptsTrie(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
@@ -237,6 +254,7 @@ class BlockchainImpl(
 		}
 
 		track.commit()
+		//ブロックを保存する。
 		storeBlock(block, receipts)
 
 		if (needsFlushing(block)) {
@@ -244,7 +262,7 @@ class BlockchainImpl(
 			this.blockStore.flush()
 			System.gc()
 		}
-		//approve された。
+		//approve されたのでペンディング状態を解消する。
 		this.wallet.removeTransactions(block.transactions)
 		clearPendingTransactions(block.transactions)
 		clearOutdatedTransactions(block.blockNumber)

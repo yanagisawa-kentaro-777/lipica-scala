@@ -60,6 +60,7 @@ class SystemProperties {
 		this._databaseReset
 	}
 
+	//ブロック内のコード実行を行わない場合、blockchainOnlyとする。
 	private var _blockchainOnly = false
 	def blockchainOnly_=(v: Boolean): Unit = this._blockchainOnly = v
 	def blockchainOnly: Boolean = {
