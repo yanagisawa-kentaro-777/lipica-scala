@@ -65,6 +65,7 @@ class BlockchainImpl(
 	def repository_=(v: Repository): Unit = this._repository = v
 
 	private var _programInvokeFactory: ProgramInvokeFactory = null
+	def programInvokeFactory: ProgramInvokeFactory = this._programInvokeFactory
 	def programInvokeFactory_=(v: ProgramInvokeFactory): Unit = this._programInvokeFactory = v
 
 	private var _exitOn = Long.MaxValue
@@ -121,7 +122,11 @@ class BlockchainImpl(
 	 */
 	override def tryToConnect(block: Block): ImportResult = {
 		logger.info("<BlockchainImpl> Trying to connect block: Hash=%s, BlockNumber=%,d".format(block.hash, block.blockNumber))
-		if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
+		if (this.bestBlock eq null) {
+			recordBlock(block)
+			append(block)
+			ImportResult.ImportedBest
+		} else if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
 			//既存ブロック。
 			if (logger.isDebugEnabled) {
 				logger.debug("<BlockchainImpl> Block already exists: Hash=%s, BlockNumber=%d".format(block.hash, block.blockNumber))
@@ -238,10 +243,10 @@ class BlockchainImpl(
 			logger.warn("<BlockchainImpl> Invalid block: BlockNumber=%,d".format(block.blockNumber))
 			return
 		}
-		this.track = this.repository.startTracking
-		if (this.bestBlock.hash != block.parentHash) {
+		if ((this.bestBlock ne null) && this.bestBlock.hash != block.parentHash) {
 			return
 		}
+		this.track = this.repository.startTracking
 		//ブロック内のコードを実行する。
 		val receipts: Seq[TransactionReceipt] = processBlock(block)
 		val calculatedReceiptsHash = calculateReceiptsTrie(receipts)
@@ -435,6 +440,7 @@ class BlockchainImpl(
 	override def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {
 		if (!SystemProperties.CONFIG.blockchainOnly) {
 			if (block.stateRoot != this.repository.getRoot) {
+				println("<BlockchainImpl> State conflict! BlockNumber: %d, %s != %s".format(block.blockNumber, block.stateRoot, this.repository.getRoot))
 				stateLogger.warn("<BlockchainImpl> State conflict! BlockNumber: %d, %s != %s".format(block.blockNumber, block.stateRoot, this.repository.getRoot))
 				this.adminInfo.lostConsensus()
 				System.exit(1)

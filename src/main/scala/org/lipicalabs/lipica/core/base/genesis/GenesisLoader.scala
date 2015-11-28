@@ -15,7 +15,11 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts, JsonUtils}
 object GenesisLoader {
 
 	def loadGenesisBlock: Genesis = {
-		val in = getClass.getResourceAsStream(SystemProperties.CONFIG.genesisInfo)
+		loadGenesisBlock(SystemProperties.CONFIG.genesisInfo)
+	}
+
+	def loadGenesisBlock(genesisFileName: String): Genesis = {
+		val in = getClass.getResourceAsStream(genesisFileName)
 		try {
 			val json = ByteStreams.toByteArray(in)
 			val mapper = new ObjectMapper

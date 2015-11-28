@@ -22,6 +22,8 @@ object Genesis {
 	 */
 	def getInstance: Genesis = GenesisLoader.loadGenesisBlock
 
+	def getInstance(genesisFileName: String): Genesis = GenesisLoader.loadGenesisBlock(genesisFileName)
+
 	val GenesisHash: ImmutableBytes = getInstance.hash
 
 }

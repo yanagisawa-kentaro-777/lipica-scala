@@ -1,9 +1,6 @@
 
 Trieの型は、本当にどうにもならないのだろうか？
 
-・BlockchainImplの実装を見直す。
-・ImportTestを実行する。
-
 auto wiring の問題。
 
 https://github.com/ethereum/tests を活用した自動テストの実行方法を考える。
