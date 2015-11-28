@@ -102,15 +102,16 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	}
 
 	override def updateBatch(stateCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
-		logger.info("<RepositoryImpl> Updating batch: detailsCache.size: %,d".format(detailsCache.size))
+		logger.info("<RepositoryImpl> Updating batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
 		for (eachEntry <- stateCache) {
 			val (hash, accountState) = eachEntry
 			var contractDetails = detailsCache.get(hash).get
 
 			if (accountState.isDeleted) {
 				delete(hash)
-				logger.debug("<RepositoryImpl> Delete: [%s]".format(hash.toHexString))
+				logger.debug("<RepositoryImpl> Deleted: [%s]".format(hash.toHexString))
 			} else if (contractDetails.isDirty) {
+				logger.debug("<RepositoryImpl> Updating: [%s]".format(hash.toHexString))
 				val contractDetailsCache = contractDetails.asInstanceOf[ContractDetailsCacheImpl]
 				if (contractDetailsCache.originalContract eq null) {
 					contractDetailsCache.originalContract = new ContractDetailsImpl
@@ -128,11 +129,13 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 						hash.toHexString, accountState.nonce, accountState.balance, contractDetails.storageContent
 					))
 				}
+			} else {
+				logger.debug("<RepositoryImpl> Passing: [%s]".format(hash.toHexString))
 			}
 		}
-		logger.info("<RepositoryImpl> Updated batch: detailsCache.size: %,d".format(detailsCache.size))
 		stateCache.clear()
 		detailsCache.clear()
+		logger.info("<RepositoryImpl> Updated batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
 	}
 
 	override def flushNoReconnect(): Unit = {
@@ -192,7 +195,11 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	private def updateAccountState(address: ImmutableBytes, account: AccountState): Unit = {
 		withAccessCounting {
 			() => {
-				this.worldState.update(address, account.encode)
+				val encoded = account.encode
+				this.worldState.update(address, encoded)
+				if (logger.isTraceEnabled) {
+					logger.trace("<RepositoryImpl> Updated account %s -> %s".format(address, encoded))
+				}
 			}
 		}
 	}
@@ -299,6 +306,9 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				if (bytes.nonEmpty) {
 					Some(AccountState.decode(bytes))
 				} else {
+					if (logger.isTraceEnabled) {
+						logger.trace("<RepositoryImpl> Failed to load account state for %s".format(address))
+					}
 					None
 				}
 			}

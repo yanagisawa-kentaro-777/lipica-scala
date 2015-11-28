@@ -39,10 +39,18 @@ class RepositoryTrack private[db](private val repository: Repository) extends Re
 
 	override def getAccountState(address: ImmutableBytes) = {
 		this.cacheAccounts.get(address) match {
-			case Some(account) => Some(account)
+			case Some(account) =>
+				if (logger.isTraceEnabled) {
+					logger.trace("<RepositoryTrack> Exists cached account state: %s -> %,d".format(address, account.balance))
+				}
+				Some(account)
 			case _ =>
 				this.repository.loadAccount(address, this.cacheAccounts, this.cacheDetails)
-				this.cacheAccounts.get(address)
+				val result = this.cacheAccounts.get(address)
+				if (logger.isTraceEnabled && result.isDefined) {
+					logger.trace("<RepositoryTrack> Loaded account state: %s -> %,d".format(address, result.get.balance))
+				}
+				result
 		}
 	}
 
