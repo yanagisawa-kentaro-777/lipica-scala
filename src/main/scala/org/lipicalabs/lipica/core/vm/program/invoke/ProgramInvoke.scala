@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
-import org.lipicalabs.lipica.core.db.{Repository, BlockStore}
+import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
@@ -65,7 +65,7 @@ trait ProgramInvoke {
 
 	def getCallDepth: Int
 
-	def getRepository: Repository
+	def getRepository: RepositoryLike
 
 	def blockStore: BlockStore
 

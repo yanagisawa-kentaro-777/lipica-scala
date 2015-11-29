@@ -5,7 +5,7 @@ import java.io.{Closeable, BufferedWriter, FileWriter}
 import org.lipicalabs.lipica.core.ImportResult
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.db.{Repository, BlockStore}
+import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.trie.TrieImpl
@@ -43,7 +43,7 @@ class BlockchainImpl(
 
 	private val _pendingTransactions = new mutable.HashSet[PendingTransaction]
 
-	private var track: Repository = null
+	private var track: RepositoryTrackLike = null
 
 	private var _bestBlock: Block = null
 	override def bestBlock: Block = this._bestBlock

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
 import org.lipicalabs.lipica.core.base.{BlockChain, Block, TransactionLike}
-import org.lipicalabs.lipica.core.db.{Repository, BlockStore}
+import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.Program
@@ -21,7 +21,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		this._blockChain = v
 	}
 
-	override def createProgramInvoke(tx: TransactionLike, block: Block, repository: Repository, blockStore: BlockStore) = {
+	override def createProgramInvoke(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore) = {
 		val lastBlock = this._blockChain.bestBlock
 
 		//受信者もしくはコントラクトのアドレス。
@@ -47,7 +47,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		result
 	}
 
-	override def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: Repository, blockStore: BlockStore, byTestingSuite: Boolean) = {
+	override def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore, byTestingSuite: Boolean) = {
 		val address = toAddress
 		val origin = program.getOriginAddress
 		val caller = program.getOwnerAddress

@@ -13,7 +13,7 @@ import scala.collection.mutable
  * 2015/10/25 13:46
  * YANAGISAWA, Kentaro
  */
-trait Repository {
+trait RepositoryLike {
 
 	/**
 	 * アカウントを作成します。
@@ -109,27 +109,14 @@ trait Repository {
 	/**
 	 * 迅速に更新処理を行うためのバッファを生成して返します。
 	 */
-	def startTracking: Repository
+	def startTracking: RepositoryTrackLike
 
-	/**
-	 * 永続化します。
-	 */
-	def flush(): Unit
+	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit
 
-	/**
-	 * 永続化します。
-	 */
-	def flushNoReconnect(): Unit
+}
 
-	/**
-	 * 変更を確定します。（Trackのみの操作。）
-	 */
-	def commit(): Unit
 
-	/**
-	 * 変更を巻き戻します。（Trackのみの操作。）
-	 */
-	def rollback(): Unit
+trait Repository extends RepositoryLike {
 
 	/**
 	 * このオブジェクトの現在のルートハッシュを返します。
@@ -143,10 +130,25 @@ trait Repository {
 
 	/**
 	 * 渡されたルートハッシュの状態に対応するオブジェクトを新たに生成して返します。
- 	 * @param root ルートハッシュ値。
+	 * @param root ルートハッシュ値。
 	 * @return 生成されたオブジェクト。
 	 */
 	def createSnapshotTo(root: ImmutableBytes): Repository
+
+	/**
+	 * 永続化します。
+	 */
+	def flush(): Unit
+
+	/**
+	 * 永続化します。
+	 */
+	def flushNoReconnect(): Unit
+
+	/**
+	 * このオブジェクトの内部状態を再初期化します。
+	 */
+	def reset(): Unit
 
 	/**
 	 * 動作を停止させます。
@@ -159,10 +161,23 @@ trait Repository {
 	 */
 	def isClosed: Boolean
 
-	/**
-	 * このオブジェクトの内部状態を再初期化します。
-	 */
-	def reset(): Unit
+}
 
-	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit
+trait RepositoryTrackLike extends RepositoryLike {
+
+	/**
+	 * 変更を確定します。（Trackのみの操作。）
+	 */
+	def commit(): Unit
+
+	/**
+	 * 変更を巻き戻します。（Trackのみの操作。）
+	 */
+	def rollback(): Unit
+
+	/**
+	 * この Track が依拠する元の RepositoryLike を返します。
+	 */
+	def originalRepository: RepositoryLike
+
 }

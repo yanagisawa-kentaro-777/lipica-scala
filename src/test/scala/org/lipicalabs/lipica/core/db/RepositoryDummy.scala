@@ -31,10 +31,6 @@ class RepositoryDummy extends RepositoryImpl {
 
 	override def flush() = throw new UnsupportedOperationException
 
-	override def rollback() = throw new UnsupportedOperationException
-
-	override def commit() = throw new UnsupportedOperationException
-
 	override def syncToRoot(root: ImmutableBytes) = throw new UnsupportedOperationException
 
 	override def startTracking = new RepositoryTrack(this)

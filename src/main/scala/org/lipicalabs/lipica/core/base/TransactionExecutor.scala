@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.{BlockStore, Repository}
+import org.lipicalabs.lipica.core.db.{RepositoryLike, RepositoryTrackLike, BlockStore}
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
@@ -16,13 +16,13 @@ import org.slf4j.LoggerFactory
  * YANAGISAWA, Kentaro
  */
 class TransactionExecutor(
-	private val tx: TransactionLike, private val coinbase: ImmutableBytes, private val track: Repository,
+	private val tx: TransactionLike, private val coinbase: ImmutableBytes, private val track: RepositoryLike,
 	private val blockStore: BlockStore, private val programInvokeFactory: ProgramInvokeFactory,
 	private val currentBlock: Block, private val listener: LipicaListener, private val manaUsedInTheBlock: Long
 ) {
 	import TransactionExecutor._
 
-	private val cacheTrack: Repository = this.track.startTracking
+	private val cacheTrack: RepositoryTrackLike = this.track.startTracking
 	private var vm: VM = null
 	private var program: Program = null
 	private var precompiledContract: Option[PrecompiledContract] = None

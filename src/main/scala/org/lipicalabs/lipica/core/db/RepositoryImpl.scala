@@ -162,10 +162,6 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		}
 	}
 
-	override def rollback(): Unit = throw new UnsupportedOperationException
-
-	override def commit(): Unit = throw new UnsupportedOperationException
-
 	override def syncToRoot(v: ImmutableBytes): Unit = {
 		withAccessCounting {
 			() => {
@@ -174,7 +170,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		}
 	}
 
-	override def startTracking: Repository = new RepositoryTrack(this)
+	override def startTracking: RepositoryTrackLike = new RepositoryTrack(this)
 
 	override def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit = {
 		//TODO 未実装。

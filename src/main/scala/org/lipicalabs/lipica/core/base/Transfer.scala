@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.base
 
-import org.lipicalabs.lipica.core.db.Repository
+import org.lipicalabs.lipica.core.db.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 object Transfer {
 
-	def transfer(repository: Repository, fromAddress: ImmutableBytes, toAddress: ImmutableBytes, value: BigInt): Unit = {
+	def transfer(repository: RepositoryLike, fromAddress: ImmutableBytes, toAddress: ImmutableBytes, value: BigInt): Unit = {
 		repository.addBalance(fromAddress, -value)
 		repository.addBalance(fromAddress, value)
 	}

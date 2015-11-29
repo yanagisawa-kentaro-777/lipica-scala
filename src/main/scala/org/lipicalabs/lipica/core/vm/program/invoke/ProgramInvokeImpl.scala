@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
-import org.lipicalabs.lipica.core.db.{Repository, BlockStore}
+import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
@@ -27,7 +27,7 @@ class ProgramInvokeImpl private(
 	private val difficulty: DataWord,
 	private val blockManaLimit: DataWord,
 
-	private val repository: Repository,
+	private val repository: RepositoryLike,
 	private val callDepth: Int,
 	override val blockStore: BlockStore,
 	override val byTransaction: Boolean,
@@ -157,7 +157,7 @@ object ProgramInvokeImpl {
 		blockNumber: DataWord,
 		difficulty: DataWord,
 		blockManaLimit: DataWord,
-		repository: Repository,
+		repository: RepositoryLike,
 		callDepth: Int,
 		blockStore: BlockStore,
 		byTestingSuite: Boolean
@@ -184,7 +184,7 @@ object ProgramInvokeImpl {
 		blockNumber: Long,
 		difficulty: ImmutableBytes,
 		blockManaLimit: Long,
-		repository: Repository,
+		repository: RepositoryLike,
 		blockStore: BlockStore,
 		byTestingSuite: Boolean
 	): ProgramInvokeImpl = {

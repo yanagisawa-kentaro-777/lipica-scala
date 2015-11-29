@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.base.{AccountState, Block}
 import org.lipicalabs.lipica.core.base.ContractDetails
-import org.lipicalabs.lipica.core.db.Repository
+import org.lipicalabs.lipica.core.db.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
@@ -15,7 +15,7 @@ import scala.collection.mutable
  * 2015/10/25 14:22
  * YANAGISAWA, Kentaro
  */
-class Storage private(private val address: DataWord, private val repository: Repository) extends Repository with ProgramListenerAware {
+class Storage private(private val address: DataWord, private val repository: RepositoryLike) extends RepositoryLike with ProgramListenerAware {
 
 	private var traceListener: ProgramListener = null
 
@@ -69,26 +69,6 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def startTracking = this.repository.startTracking
 
-	override def flush() = this.repository.flush()
-
-	override def flushNoReconnect() = {
-		throw new UnsupportedOperationException
-	}
-
-	override def commit() = this.repository.commit()
-
-	override def rollback() = this.repository.rollback()
-
-	override def syncToRoot(root: ImmutableBytes) = this.repository.syncToRoot(root)
-
-	override def close() = this.repository.close()
-
-	override def isClosed = this.repository.isClosed
-
-	override def reset() = this.repository.reset()
-
-	override def rootHash = this.repository.rootHash
-
 	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit  = {
 		for (each <- contractDetails) {
 			val (address, details) = each
@@ -109,10 +89,6 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
 		this.repository.loadAccount(address, cacheAccounts, cacheDetails)
-	}
-
-	override def createSnapshotTo(root: ImmutableBytes) = {
-		throw new UnsupportedOperationException
 	}
 
 	private def canListenTrace(address: ImmutableBytes): Boolean = {

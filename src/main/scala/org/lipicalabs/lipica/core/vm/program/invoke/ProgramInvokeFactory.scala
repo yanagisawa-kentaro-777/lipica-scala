@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
 import org.lipicalabs.lipica.core.base.{Block, TransactionLike}
-import org.lipicalabs.lipica.core.db.{Repository, BlockStore}
+import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.Program
@@ -13,8 +13,8 @@ import org.lipicalabs.lipica.core.vm.program.Program
  */
 trait ProgramInvokeFactory {
 
-	def createProgramInvoke(tx: TransactionLike, block: Block, repository: Repository, blockStore: BlockStore): ProgramInvoke
+	def createProgramInvoke(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore): ProgramInvoke
 
-	def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: Repository, blockStore: BlockStore, byTestingSuite: Boolean): ProgramInvoke
+	def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore, byTestingSuite: Boolean): ProgramInvoke
 
 }

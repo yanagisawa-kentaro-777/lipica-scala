@@ -16,7 +16,7 @@ import scala.collection.mutable
  * 2015/11/09 20:37
  * YANAGISAWA, Kentaro
  */
-class RepositoryTrack private[db](private val repository: Repository) extends Repository {
+class RepositoryTrack private[db](private val repository: RepositoryLike) extends RepositoryTrackLike {
 
 	import RepositoryTrack._
 
@@ -171,10 +171,6 @@ class RepositoryTrack private[db](private val repository: Repository) extends Re
 
 	override def startTracking = new RepositoryTrack(this)
 
-	override def flush() = throw new UnsupportedOperationException
-
-	override def flushNoReconnect() = throw new UnsupportedOperationException
-
 	override def commit() = {
 		if (this.cacheAccounts.nonEmpty || this.cacheDetails.nonEmpty) {
 			for (details <- this.cacheDetails.values) {
@@ -219,22 +215,10 @@ class RepositoryTrack private[db](private val repository: Repository) extends Re
 		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 
-	override def rootHash = throw new UnsupportedOperationException
-
-	override def createSnapshotTo(root: ImmutableBytes) = throw new UnsupportedOperationException
-
-	override def syncToRoot(root: ImmutableBytes) = throw new UnsupportedOperationException
-
-	override def close() = throw new UnsupportedOperationException
-
-	override def isClosed = throw new UnsupportedOperationException
-
-	override def reset() = throw new UnsupportedOperationException
-
-	def getOriginalRepository: Repository = {
+	override def originalRepository: RepositoryLike = {
 		this.repository match {
-			case r: RepositoryTrack => r.getOriginalRepository
-			case r: Repository => r
+			case r: RepositoryTrack => r.originalRepository
+			case _ => this.repository
 		}
 	}
 
