@@ -261,10 +261,10 @@ class BlockchainImpl(
 		this.track = this.repository.startTracking
 		//ブロック内のコードを実行する。
 		val receipts = processBlock(block)
+		logger.info("<Blockchain> %s is processed.".format(block.summaryString(short = true)))
 		if (logger.isDebugEnabled) {
-			logger.info("<Blockchain> Current coinbase balance: %s".format(this.repository.getBalance(block.coinbase)))//TODO
+			logger.info("<Blockchain> Current coinbase balance: %s".format(this.repository.getBalance(block.coinbase)))
 		}
-		logger.info("<Blockchain> %s is processed. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot))
 
 		val calculatedReceiptsHash = calculateReceiptsTrie(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
@@ -280,7 +280,7 @@ class BlockchainImpl(
 
 		//ブロックを保存する。
 		storeBlock(block, receipts)
-		logger.info("<Blockchain> %s is stored. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot))
+		logger.info("<Blockchain> %s is stored. Total difficulty is %,d".format(block.summaryString(short = true), this.totalDifficulty))
 
 		if (needsFlushing(block)) {
 			logger.info("<Blockchain> Flushing data.")
@@ -463,13 +463,13 @@ class BlockchainImpl(
 
 	override def updateTotalDifficulty(block: Block) = {
 		this._totalDifficulty += block.difficultyAsBigInt
-		logger.info("<Blockchain> Total difficulty is updated to %d".format(this._totalDifficulty))
+		logger.info("<Blockchain> Total difficulty is updated to %,d".format(this._totalDifficulty))
 	}
 
 	override def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {
 		if (!SystemProperties.CONFIG.blockchainOnly) {
 			if (block.stateRoot != this.repository.getRoot) {
-				val message = "<Blockchain> State conflict at %s! %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.getRoot)
+				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.getRoot)
 				println(message)
 				stateLogger.warn(message)
 				this.adminInfo.lostConsensus()
@@ -483,7 +483,6 @@ class BlockchainImpl(
 			this.blockStore.saveBlock(block, this.totalDifficulty, mainChain = true)
 		}
 		this.bestBlock = block
-		logger.info("<Blockchain> Block is stored: %s, Total difficulty: %,d".format(block.summaryString(short = true), this.totalDifficulty))
 	}
 
 	override def addPendingTransactions(transactions: Set[TransactionLike]): Unit = {

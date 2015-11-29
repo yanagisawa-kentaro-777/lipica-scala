@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 class HashMapDB extends KeyValueDataSource {
 
 	private[datasource] val storage = new scala.collection.mutable.HashMap[ImmutableBytes, ImmutableBytes]
-	private var _clearOnClose = true
+	private var _clearOnClose = false
 
 	override def delete(arg0: ImmutableBytes): Unit = {
 		storage.remove(arg0)
@@ -47,12 +47,8 @@ class HashMapDB extends KeyValueDataSource {
 		}
 	}
 
-	def clearOnClose(v: Boolean): HashMapDB = {
-		this._clearOnClose = v
-		this
-	}
-
 	def clearOnClose: Boolean = this._clearOnClose
+	def clearOnClose_=(v: Boolean): Unit = this._clearOnClose = v
 
 	override def close(): Unit = {
 		if (this.clearOnClose) {
