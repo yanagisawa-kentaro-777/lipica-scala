@@ -15,6 +15,11 @@ import scala.collection.mutable
  */
 trait Repository {
 
+	/**
+	 * アカウントを作成します。
+	 * @param address 作成対象のアドレス。
+	 * @return 作成されたアカウントの状態。
+	 */
 	def createAccount(address: ImmutableBytes): AccountState
 
 	/**
@@ -59,6 +64,16 @@ trait Repository {
 	def getCode(address: ImmutableBytes): Option[ImmutableBytes]
 
 	/**
+	 * 一括更新し、渡された可変な連想配列を消去します。
+	 */
+	def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit
+
+	/**
+	 * 渡されたアドレスに関する情報を一括ロードし、渡された可変な連想配列に書き込みます。
+	 */
+	def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit
+
+	/**
 	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
 	 */
 	def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord): Unit
@@ -68,6 +83,9 @@ trait Repository {
 	 */
 	def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord]
 
+	/**
+	 * 指定されたアカウントにおいて、キー（複数）に対応する「キー・値ペアの連想配列」を取得して返します。
+	 */
 	def getStorageContent(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord]
 
 	/**
@@ -81,36 +99,67 @@ trait Repository {
 	def addBalance(address: ImmutableBytes, value: BigInt): BigInt
 
 	/**
-	 * このアカウントのアドレスすべての集合を返します。
+	 * 管理対象アドレスすべての集合を返します。（実用性は疑問）
 	 */
 	def getAccountKeys: Set[ImmutableBytes]
 
-	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit
-
+	/**
+	 * 迅速に更新を行うためのバッファを生成して返します。
+	 */
 	def startTracking: Repository
 
+	/**
+	 * 永続化します。
+	 */
 	def flush(): Unit
 
+	/**
+	 * 永続化します。
+	 */
 	def flushNoReconnect(): Unit
 
+	/**
+	 * 変更を確定します。（Trackのみの操作。）
+	 */
 	def commit(): Unit
 
+	/**
+	 * 変更を巻き戻します。（Trackのみの操作。）
+	 */
 	def rollback(): Unit
 
-	def syncToRoot(root: ImmutableBytes)
-
-	def close(): Unit
-
-	def isClosed: Boolean
-
-	def reset(): Unit
-
+	/**
+	 * このオブジェクトの現在のルートハッシュを返します。
+	 */
 	def getRoot: ImmutableBytes
 
-	def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit
+	/**
+	 * このオブジェクトを、渡されたルートハッシュの状態に設定します。
+	 */
+	def syncToRoot(root: ImmutableBytes)
 
-	def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit
-
+	/**
+	 * 渡されたルートハッシュの状態に対応するオブジェクトを新たに生成して返します。
+ 	 * @param root ルートハッシュ値。
+	 * @return 生成されたオブジェクト。
+	 */
 	def getSnapshotTo(root: ImmutableBytes): Repository
 
+	/**
+	 * 動作を停止させます。
+	 */
+	def close(): Unit
+
+	/**
+	 * クローズ状態であるか否かを返します。
+	 * @return クローズ状態であれば真。
+	 */
+	def isClosed: Boolean
+
+	/**
+	 * このオブジェクトの内部状態を再初期化します。
+	 */
+	def reset(): Unit
+
+	def dumpState(block: Block, gasUsed: Long, txNumber: Int, txHash: ImmutableBytes): Unit
 }
