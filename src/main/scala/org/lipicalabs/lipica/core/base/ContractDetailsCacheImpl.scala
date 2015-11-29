@@ -50,7 +50,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 		}
 	}
 
-	override def storageHash: ImmutableBytes = {
+	override def storageRoot: ImmutableBytes = {
 		val storageTrie = new SecureTrie(null)
 		for (entry <- this.storage) {
 			val (key, value) = entry

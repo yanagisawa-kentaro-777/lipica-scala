@@ -50,7 +50,7 @@ trait ContractDetails {
 	/**
 	 * ストレージデータ全体のトップダイジェスト値を取得します。
 	 */
-	def storageHash: ImmutableBytes
+	def storageRoot: ImmutableBytes
 
 	/**
 	 * ストレージに格納されたデータ数を取得します。

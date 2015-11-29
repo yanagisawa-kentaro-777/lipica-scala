@@ -70,7 +70,7 @@ class ContractDetailsImpl() extends ContractDetails {
 		}
 	}
 
-	override def storageHash: ImmutableBytes = this.storageTrie.rootHash
+	override def storageRoot: ImmutableBytes = this.storageTrie.rootHash
 
 	override def storageKeys: Set[DataWord] = this.keys.map(DataWord(_)).toSet
 

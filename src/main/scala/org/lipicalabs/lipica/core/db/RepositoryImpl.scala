@@ -121,7 +121,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				contractDetails = contractDetailsCache.originalContract
 				updateContractDetails(hash, contractDetails)
 				if (accountState.codeHash != DigestUtils.EmptyTrieHash) {
-					accountState.stateRoot = contractDetails.storageHash
+					accountState.storageRoot = contractDetails.storageRoot
 				}
 				updateAccountState(hash, accountState)
 				if (logger.isDebugEnabled) {
@@ -293,7 +293,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	override def getContractDetails(address: ImmutableBytes): Option[ContractDetails] = {
 		withAccessCounting {
 			() => {
-				val storageRoot = getAccountState(address).map(_.stateRoot).getOrElse(DigestUtils.EmptyTrieHash)
+				val storageRoot = getAccountState(address).map(_.storageRoot).getOrElse(DigestUtils.EmptyTrieHash)
 				this.dds.get(address).map(_.getSnapshotTo(storageRoot))
 			}
 		}
