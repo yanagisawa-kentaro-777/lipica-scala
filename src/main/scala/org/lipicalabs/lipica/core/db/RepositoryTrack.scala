@@ -176,14 +176,18 @@ class RepositoryTrack private[db](private val repository: Repository) extends Re
 	override def flushNoReconnect() = throw new UnsupportedOperationException
 
 	override def commit() = {
-		for (details <- this.cacheDetails.values) {
-			details.asInstanceOf[ContractDetailsCacheImpl].commit()
-		}
-		this.repository.updateBatch(this.cacheAccounts, this.cacheDetails)
-		this.cacheAccounts.clear()
-		this.cacheDetails.clear()
-		if (logger.isDebugEnabled) {
-			logger.debug("<RepositoryTrack> Committed changes.")
+		if (this.cacheAccounts.nonEmpty || this.cacheDetails.nonEmpty) {
+			for (details <- this.cacheDetails.values) {
+				details.asInstanceOf[ContractDetailsCacheImpl].commit()
+			}
+			this.repository.updateBatch(this.cacheAccounts, this.cacheDetails)
+			this.cacheAccounts.clear()
+			this.cacheDetails.clear()
+			if (logger.isDebugEnabled) {
+				logger.debug("<RepositoryTrack> Committed changes.")
+			}
+		} else {
+			logger.debug("<RepositoryTrack> No data to commit.")
 		}
 	}
 

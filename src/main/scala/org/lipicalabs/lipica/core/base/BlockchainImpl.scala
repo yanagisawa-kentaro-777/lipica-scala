@@ -177,7 +177,7 @@ class BlockchainImpl(
 
 		if (savedTD < this.totalDifficulty) {
 			//こちらのほうがdifficultyが高いので、rebranchする！
-			logger.info("<BlockchainImpl> Rebranching: %s -> %s".format(savedBest.shortHash, block.shortHash))
+			logger.info("<Blockchain> Rebranching: %s -> %s".format(savedBest.shortHash, block.shortHash))
 			this.blockStore.rebranch(block)
 			this.repository = savedRepo
 			this.repository.syncToRoot(block.stateRoot)
@@ -223,7 +223,7 @@ class BlockchainImpl(
 			fw.flush()
 		} catch {
 			case e: Throwable =>
-				logger.warn("<BlockchainImpl>", e)
+				logger.warn("<Blockchain>", e)
 		} finally {
 			closeIfNotNull(bw)
 			closeIfNotNull(fw)
@@ -243,27 +243,29 @@ class BlockchainImpl(
 
 	override def append(block: Block): Unit = {
 		if (this.exitOn < block.blockNumber) {
-			System.out.println("<Blockchain> Exiting after BlockNumber: %,d".format(this.bestBlock.blockNumber))
+			val message = "<Blockchain> Exiting after BlockNumber: %,d".format(this.bestBlock.blockNumber)
+			logger.info(message)
+			System.out.println(message)
 			System.exit(-1)
 		}
 
 		//ブロック自体の破損検査を行う。
 		if (!isValid(block)) {
-			logger.warn("<Blockchain> Invalid block: %s".format(block.summaryString(short = true)))
+			logger.warn("<Blockchain> INVALID BLOCK: %s".format(block.summaryString(short = true)))
 			return
 		}
 		if ((this.bestBlock ne null) && this.bestBlock.hash != block.parentHash) {
-			logger.warn("<Blockchain> Cannot connect: %s is not the parent of %s".format(this.bestBlock.summaryString(short = true), block.summaryString(short = true)))
+			logger.warn("<Blockchain> CANNOT CONNECT: %s is not the parent of %s".format(this.bestBlock.summaryString(short = true), block.summaryString(short = true)))
 			return
 		}
 
-		logger.info("<Blockchain> Before processing %s. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot))
+		logger.info("<Blockchain> Before processing %s. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot.toShortString))
 		this.track = this.repository.startTracking
 		//ブロック内のコードを実行する。
 		val receipts = processBlock(block)
 		logger.info("<Blockchain> %s is processed.".format(block.summaryString(short = true)))
 		if (logger.isDebugEnabled) {
-			logger.info("<Blockchain> Current coinbase balance: %s".format(this.repository.getBalance(block.coinbase)))
+			logger.info("<Blockchain> Current coinbase balance: %,d".format(this.repository.getBalance(block.coinbase).getOrElse(UtilConsts.Zero)))
 		}
 
 		val calculatedReceiptsHash = calculateReceiptsTrie(receipts)
@@ -296,7 +298,7 @@ class BlockchainImpl(
 		this.listener.trace("Block chain size: [%,d]".format(this.size))
 		this.listener.onBlock(block, receipts)
 
-		logger.info("<Blockchain> The block is successfully appended: %s".format(block.summaryString(short = true)))
+		logger.info("<Blockchain> The block is successfully appended: %s. Chain size is now %,d.".format(block.summaryString(short = true), this.size))
 	}
 
 	private def processBlock(block: Block): Seq[TransactionReceipt] = {
@@ -325,7 +327,7 @@ class BlockchainImpl(
 			totalManaUsed = executor.manaUsed
 
 			if (logger.isDebugEnabled) {
-				logger.debug("<Blockchain> Mana used for %s is %d".format(tx.summaryString, totalManaUsed))
+				logger.debug("<Blockchain> Mana used for %s is %,d".format(tx.summaryString, totalManaUsed))
 			}
 
 			this.track.commit()

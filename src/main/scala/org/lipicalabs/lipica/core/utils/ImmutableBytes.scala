@@ -192,6 +192,16 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	def toHexString: String = Hex.encodeHexString(this.bytes)
 
 	override def toString: String = toHexString
+
+	def toShortString: String = {
+		val hex = toHexString
+		val NumberOfChars = 8
+		if (hex.length <= NumberOfChars) {
+			hex
+		} else {
+			hex.substring(0, NumberOfChars) + "..."
+		}
+	}
 }
 
 object ImmutableBytes {
