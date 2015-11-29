@@ -575,7 +575,7 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
 			try {
-				val root = repository.getRoot
+				val root = repository.rootHash
 
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -597,16 +597,16 @@ class RepositoryTest extends Specification {
 				track2.addStorageRow(horse, horseKey1, horseVal1)
 				track2.commit()
 
-				val root2 = repository.getRoot
+				val root2 = repository.rootHash
 
 				track2 = repository.startTracking
 				track2.addStorageRow(cow, cowKey2, cowVal0)
 				track2.addStorageRow(horse, horseKey2, horseVal0)
 				track2.commit()
 
-				val root3 = repository.getRoot
+				val root3 = repository.rootHash
 
-				var snapshot = repository.getSnapshotTo(root)
+				var snapshot = repository.createSnapshotTo(root)
 				var cowDetails = snapshot.getContractDetails(cow).get
 				var horseDetails = snapshot.getContractDetails(horse).get
 				cowDetails.get(cowKey1).isEmpty mustEqual true
@@ -614,7 +614,7 @@ class RepositoryTest extends Specification {
 				horseDetails.get(horseKey1).isEmpty mustEqual true
 				horseDetails.get(horseKey2).isEmpty mustEqual true
 
-				snapshot = repository.getSnapshotTo(root2)
+				snapshot = repository.createSnapshotTo(root2)
 				cowDetails = snapshot.getContractDetails(cow).get
 				horseDetails = snapshot.getContractDetails(horse).get
 
@@ -623,7 +623,7 @@ class RepositoryTest extends Specification {
 				horseDetails.get(horseKey1).get mustEqual horseVal1
 				horseDetails.get(horseKey2).isEmpty mustEqual true
 
-				snapshot = repository.getSnapshotTo(root3)
+				snapshot = repository.createSnapshotTo(root3)
 				cowDetails = snapshot.getContractDetails(cow).get
 				horseDetails = snapshot.getContractDetails(horse).get
 

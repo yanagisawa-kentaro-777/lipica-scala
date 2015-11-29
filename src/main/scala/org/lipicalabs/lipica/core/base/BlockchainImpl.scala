@@ -121,7 +121,7 @@ class BlockchainImpl(
 	 * 渡されたブロックを、このチェーンに連結しようと試みます。
 	 */
 	override def tryToConnect(block: Block): ImportResult = {
-		logger.info("<Blockchain> Trying to connect %s. Repos state=%s".format(block.summaryString(short = true), this.repository.getRoot))
+		logger.info("<Blockchain> Trying to connect %s. Repos state=%s".format(block.summaryString(short = true), this.repository.rootHash))
 		val result =
 			if (this.bestBlock eq null) {
 				if (logger.isDebugEnabled) {
@@ -156,7 +156,7 @@ class BlockchainImpl(
 				logger.info("<Blockchain> Unknown block: %s".format(block.summaryString(short = true)))
 				ImportResult.NoParent
 			}
-		logger.info("<Blockchain> Tried to connect %s. Repos state=%s".format(block.summaryString(short = false), this.repository.getRoot))
+		logger.info("<Blockchain> Tried to connect %s. Repos state=%s".format(block.summaryString(short = false), this.repository.rootHash))
 		result
 	}
 
@@ -168,7 +168,7 @@ class BlockchainImpl(
 		//渡されたブロックとこのチェーンとの共通祖先まで、状態を遡る。
 		this.bestBlock = this.blockStore.getBlockByHash(block.parentHash).get
 		this.totalDifficulty = this.blockStore.getTotalDifficultyForHash(block.parentHash)
-		this.repository = this.repository.getSnapshotTo(this.bestBlock.stateRoot)
+		this.repository = this.repository.createSnapshotTo(this.bestBlock.stateRoot)
 		this.fork = true
 		try {
 			//共通祖先に、渡されたブロックを追加する。
@@ -264,7 +264,7 @@ class BlockchainImpl(
 			return
 		}
 
-		logger.info("<Blockchain> Before processing %s. Current repos root: %s".format(block.summaryString(short = true), this.repository.getRoot.toShortString))
+		logger.info("<Blockchain> Before processing %s. Current repos root: %s".format(block.summaryString(short = true), this.repository.rootHash.toShortString))
 		this.track = this.repository.startTracking
 		//ブロック内のコードを実行する。
 		val receipts = processBlock(block)
@@ -344,7 +344,7 @@ class BlockchainImpl(
 
 			this.track.commit()
 			val usedManaBytes = ImmutableBytes.asUnsignedByteArray(BigInt(totalManaUsed))
-			val receipt = TransactionReceipt(this.repository.getRoot, usedManaBytes, Bloom(), executor.logs)
+			val receipt = TransactionReceipt(this.repository.rootHash, usedManaBytes, Bloom(), executor.logs)
 			receipt.transaction = tx
 
 			receipts.append(receipt)
@@ -503,8 +503,8 @@ class BlockchainImpl(
 
 	override def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {
 		if (!SystemProperties.CONFIG.blockchainOnly) {
-			if (block.stateRoot != this.repository.getRoot) {
-				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.getRoot)
+			if (block.stateRoot != this.repository.rootHash) {
+				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.rootHash)
 				println(message)
 				stateLogger.warn(message)
 				this.adminInfo.lostConsensus()

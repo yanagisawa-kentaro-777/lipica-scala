@@ -191,8 +191,6 @@ class RepositoryTrack private[db](private val repository: Repository) extends Re
 		}
 	}
 
-	override def syncToRoot(root: ImmutableBytes) = throw new UnsupportedOperationException
-
 	override def rollback() = {
 		this.cacheAccounts.clear()
 		this.cacheDetails.clear()
@@ -221,9 +219,11 @@ class RepositoryTrack private[db](private val repository: Repository) extends Re
 		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 
-	override def getRoot = throw new UnsupportedOperationException
+	override def rootHash = throw new UnsupportedOperationException
 
-	override def getSnapshotTo(root: ImmutableBytes) = throw new UnsupportedOperationException
+	override def createSnapshotTo(root: ImmutableBytes) = throw new UnsupportedOperationException
+
+	override def syncToRoot(root: ImmutableBytes) = throw new UnsupportedOperationException
 
 	override def close() = throw new UnsupportedOperationException
 

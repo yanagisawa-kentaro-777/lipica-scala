@@ -40,11 +40,13 @@ trait Repository {
 
 	/**
 	 * 指定されたアカウントのnonceを１増やします。
+	 * （アカウントが存在しなかったら作成します。）
 	 */
 	def increaseNonce(address: ImmutableBytes): BigInt
 
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。
+	 * （アカウントが存在しなかったら作成します。）
 	 */
 	def getNonce(address: ImmutableBytes): BigInt
 
@@ -99,12 +101,13 @@ trait Repository {
 	def addBalance(address: ImmutableBytes, value: BigInt): BigInt
 
 	/**
-	 * 管理対象アドレスすべての集合を返します。（実用性は疑問）
+	 * 管理対象アドレスすべての集合を返します。
+	 * （実用性は疑問。限定されたテスト用。）
 	 */
 	def getAccountKeys: Set[ImmutableBytes]
 
 	/**
-	 * 迅速に更新を行うためのバッファを生成して返します。
+	 * 迅速に更新処理を行うためのバッファを生成して返します。
 	 */
 	def startTracking: Repository
 
@@ -131,10 +134,10 @@ trait Repository {
 	/**
 	 * このオブジェクトの現在のルートハッシュを返します。
 	 */
-	def getRoot: ImmutableBytes
+	def rootHash: ImmutableBytes
 
 	/**
-	 * このオブジェクトを、渡されたルートハッシュの状態に設定します。
+	 * このオブジェクトを、渡されたルートハッシュの状態に巻き戻します。
 	 */
 	def syncToRoot(root: ImmutableBytes)
 
@@ -143,7 +146,7 @@ trait Repository {
  	 * @param root ルートハッシュ値。
 	 * @return 生成されたオブジェクト。
 	 */
-	def getSnapshotTo(root: ImmutableBytes): Repository
+	def createSnapshotTo(root: ImmutableBytes): Repository
 
 	/**
 	 * 動作を停止させます。

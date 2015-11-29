@@ -87,7 +87,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def reset() = this.repository.reset()
 
-	override def getRoot = this.repository.getRoot
+	override def rootHash = this.repository.rootHash
 
 	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit  = {
 		for (each <- contractDetails) {
@@ -111,7 +111,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 		this.repository.loadAccount(address, cacheAccounts, cacheDetails)
 	}
 
-	override def getSnapshotTo(root: ImmutableBytes) = {
+	override def createSnapshotTo(root: ImmutableBytes) = {
 		throw new UnsupportedOperationException
 	}
 

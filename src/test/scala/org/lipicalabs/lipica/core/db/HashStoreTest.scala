@@ -47,10 +47,16 @@ class HashStoreTest extends Specification {
 	}
 
 	private def cleanUp(): Unit = {
-		this.hashStore.clear()
-		this.hashStore.close()
-		this.hashes.clear()
-		FileUtils.forceDelete(new java.io.File(this.testDBName))
+		try {
+			Thread.sleep(100L)
+			this.hashStore.clear()
+			this.hashStore.close()
+			this.hashes.clear()
+			FileUtils.forceDelete(new java.io.File(this.testDBName))
+		} catch {
+			case e: Exception =>
+				e.printStackTrace()
+		}
 	}
 
 	"test (1)" should {

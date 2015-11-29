@@ -334,7 +334,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		cacheDetails.put(address, details)
 	}
 
-	override def getSnapshotTo(root: ImmutableBytes): Repository = {
+	override def createSnapshotTo(root: ImmutableBytes): Repository = {
 		val trie = new SecureTrie(this.stateDS)
 		trie.root = root
 		trie.cache = this.worldState.cache
@@ -353,7 +353,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		repo
 	}
 
-	override def getRoot: ImmutableBytes = this.worldState.rootHash
+	override def rootHash: ImmutableBytes = this.worldState.rootHash
 
 }
 

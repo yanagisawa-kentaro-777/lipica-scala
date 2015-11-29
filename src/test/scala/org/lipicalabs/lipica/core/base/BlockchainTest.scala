@@ -59,10 +59,10 @@ class BlockchainTest extends Specification {
 				val block = Block.decode(ImmutableBytes.parseHexString(each))
 				//println("ParentHash=%s".format(block.parentHash))
 				//println("Hash=%s".format(block.hash))
-				val before = repos.getRoot
+				val before = repos.rootHash
 				val result = blockchain.tryToConnect(block)
 				result mustEqual ImportResult.ImportedBest
-				val after = repos.getRoot
+				val after = repos.rootHash
 				//println(result)
 				//println("%s -> %s".format(before, after))
 				root = block.stateRoot
@@ -71,7 +71,7 @@ class BlockchainTest extends Specification {
 				chain.tryToConnect(block)
 			}
 			blockchain.size mustEqual 40
-			repos.getRoot mustEqual root
+			repos.rootHash mustEqual root
 
 			chain.size mustEqual blockchain.size
 		}
