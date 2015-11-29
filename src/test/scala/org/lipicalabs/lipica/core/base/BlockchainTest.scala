@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.db.{RepositoryImpl, BlockInfo, IndexedBlockSto
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.validator.ParentBlockHeaderValidator
+import org.lipicalabs.lipica.core.validator.{DifficultyRule, ParentNumberRule, ParentBlockHeaderValidator}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactoryImpl
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -46,7 +46,7 @@ class BlockchainTest extends Specification {
 			}
 			track.commit()
 
-			val blockchain = new BlockchainImpl(blockStore, repos, new Wallet, new AdminInfo, listener, new ParentBlockHeaderValidator(Seq.empty))
+			val blockchain = new BlockchainImpl(blockStore, repos, new Wallet, new AdminInfo, listener, new ParentBlockHeaderValidator(Seq(new ParentNumberRule, new DifficultyRule)))
 			blockchain.programInvokeFactory = new ProgramInvokeFactoryImpl
 
 			val uri = getClass.getResource("scenario1.dmp")

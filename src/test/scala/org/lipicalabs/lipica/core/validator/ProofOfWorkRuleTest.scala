@@ -24,8 +24,8 @@ class ProofOfWorkRuleTest extends Specification {
 			block.blockHeader.getProofOfWorkBoundary mustEqual ImmutableBytes.parseHexString("0000000000bd59a74a8619f14c3d793747f1989a29ed6c83a5a488bac185679b")
 			block.blockHeader.calculateProofOfWorkValue mustEqual ImmutableBytes.parseHexString("000000000017f78925469f2f18fe7866ef6d3ed28d36fb013bc93d081e05809c")
 
-			val rule = new ProofOfWorkRule
-			rule.validate(block.blockHeader) mustEqual true
+			val validator = new BlockHeaderValidator(Seq(new ProofOfWorkRule, new ManaValueRule, new ExtraDataRule))
+			validator.validate(block.blockHeader) mustEqual true
 		}
 	}
 
