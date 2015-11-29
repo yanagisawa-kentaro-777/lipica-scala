@@ -165,19 +165,22 @@ class BlockchainImpl(
 		val savedBest = this.bestBlock
 		val savedTD = this.totalDifficulty
 
+		//渡されたブロックとこのチェーンとの共通祖先まで、状態を遡る。
 		this.bestBlock = this.blockStore.getBlockByHash(block.parentHash).get
 		this.totalDifficulty = this.blockStore.getTotalDifficultyForHash(block.parentHash)
 		this.repository = this.repository.getSnapshotTo(this.bestBlock.stateRoot)
 		this.fork = true
 		try {
+			//共通祖先に、渡されたブロックを追加する。
 			append(block)
 		} finally {
 			this.fork = false
 		}
 
 		if (savedTD < this.totalDifficulty) {
-			//こちらのほうがdifficultyが高いので、rebranchする！
-			logger.info("<Blockchain> Rebranching: %s -> %s".format(savedBest.shortHash, block.shortHash))
+			//こちらのチェーンの方が、total difficultyが大きいので、PoW勝負で勝ちである。
+			//こちらにrebranchする！
+			logger.info("<Blockchain> Rebranching: %s -> %s".format(savedBest.summaryString(short = true), block.summaryString(short = true)))
 			this.blockStore.rebranch(block)
 			this.repository = savedRepo
 			this.repository.syncToRoot(block.stateRoot)
@@ -188,6 +191,8 @@ class BlockchainImpl(
 			}
 			ImportResult.ImportedBest
 		} else {
+			//巻き戻す。ただし追加されたフォークは残る。
+			logger.info("<Blockchain> No need to rebranch. Best block is still %s".format(savedBest.summaryString(short = true)))
 			this.repository = savedRepo
 			this.bestBlock = savedBest
 			this.totalDifficulty = savedTD
@@ -263,7 +268,6 @@ class BlockchainImpl(
 		this.track = this.repository.startTracking
 		//ブロック内のコードを実行する。
 		val receipts = processBlock(block)
-		logger.info("<Blockchain> %s is processed.".format(block.summaryString(short = true)))
 		if (logger.isDebugEnabled) {
 			logger.info("<Blockchain> Current coinbase balance: %,d".format(this.repository.getBalance(block.coinbase).getOrElse(UtilConsts.Zero)))
 		}
@@ -306,8 +310,12 @@ class BlockchainImpl(
 			this.wallet.addTransactions(block.transactions)
 			val result = applyBlock(block)
 			this.wallet.processBlock(block)
+			logger.info("<Blockchain> %s is processed. TxReceipts: %,d".format(block.summaryString(short = true), result.size))
 			result
 		} else {
+			logger.info("<Blockchain> Skipping block processing: %s (Genesis? %s, BlockchainOnly? %s).".format(
+				block.summaryString(short = true), block.isGenesis, SystemProperties.CONFIG.blockchainOnly)
+			)
 			Seq.empty
 		}
 	}
@@ -319,6 +327,10 @@ class BlockchainImpl(
 		val receipts = new ArrayBuffer[TransactionReceipt]
 		var totalManaUsed = 0L
 		for (tx <- block.transactions) {
+			if (logger.isDebugEnabled) {
+				logger.debug("<Blockchain> Executing %s".format(tx.summaryString))
+			}
+
 			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this._programInvokeFactory, block, this.listener, totalManaUsed)
 			executor.init()
 			executor.execute()
@@ -415,32 +427,52 @@ class BlockchainImpl(
 	def getParentOf(header: BlockHeader): Option[Block] = this.blockStore.getBlockByHash(header.parentHash)
 
 	private def isValid(block: Block): Boolean = {
+		if (logger.isDebugEnabled) {
+			logger.debug("<Blockchain> Validating %s".format(block.summaryString(short = true)))
+		}
+
 		if (block.isGenesis) {
+			if (logger.isDebugEnabled) {
+				logger.debug("<Blockchain> [Valid] Genesis block.")
+			}
 			return true
 		}
 		if (!isValid(block.blockHeader)) {
+			logger.info("<Blockchain> [Invalid] BAD BLOCK HEADER.")
 			return false
 		}
 		if (block.txTrieRoot != calculateTxTrie(block.transactions)) {
+			logger.info("<Blockchain> [Invalid] BAD TX HASH: %s != %s".format(block.txTrieRoot, calculateTxTrie(block.transactions)))
 			return false
 		}
-		val UncleListLimit = 2
+		val UncleListLimit = 2//TODO
 		if (UncleListLimit < block.uncles.size) {
+			logger.info("<Blockchain> [Invalid] TOO MANY UNCLES: %d < %d".format(UncleListLimit, block.uncles.size))
 			return false
 		}
 
 		if (block.blockHeader.unclesHash != ImmutableBytes(DigestUtils.digest256(block.blockHeader.encodeUncles(block.uncles).toByteArray))) {
+			logger.info("<Blockchain> [Invalid] BAD UNCLE HASH: %s != %s".format(block.blockHeader.unclesHash, ImmutableBytes(DigestUtils.digest256(block.blockHeader.encodeUncles(block.uncles).toByteArray))))
 			return false
 		}
 
-		val UncleGenerationLimit = 7
+		val UncleGenerationLimit = 7//TODO
 		for (uncle <- block.uncles) {
 			if (!isValid(uncle)) {
+				logger.info("<Blockchain> [Invalid] BAD UNCLE HEADER.")
 				return false
 			}
 			if (getParentOf(uncle).get.blockNumber < (block.blockNumber - UncleGenerationLimit)) {
+				if (logger.isDebugEnabled) {
+					val commonAncestor = getParentOf(uncle).get.blockNumber
+					val diff = block.blockNumber - commonAncestor
+					logger.info("<Blockchain> [Invalid] UNCLE TOO OLD: %d (limit) < %d (actual)".format(UncleGenerationLimit, diff))
+				}
 				return false
 			}
+		}
+		if (logger.isDebugEnabled) {
+			logger.debug("<Blockchain> [Valid] %s".format(block.summaryString(short = true)))
 		}
 		true
 	}
@@ -455,6 +487,7 @@ class BlockchainImpl(
 					true
 				}
 			case _ =>
+				logger.info("<Blockchain> [Invalid] FAILED TO FIND PARENT (%s) of %,d".format(header.parentHash, header.blockNumber))
 				false
 		}
 	}
@@ -514,7 +547,9 @@ class BlockchainImpl(
 
 	override def clearPendingTransactions(receivedTransactions: Iterable[TransactionLike]) = {
 		for (tx <- receivedTransactions) {
-			logger.info("<BlockChainImpl> Clear tx: hash=%s".format(tx.hash.toHexString))
+			if (logger.isDebugEnabled) {
+				logger.debug("<BlockChainImpl> Clear tx: hash=%s".format(tx.hash.toShortString))
+			}
 			this._pendingTransactions.remove(PendingTransaction(tx, 0))
 		}
 	}
@@ -525,6 +560,9 @@ class BlockchainImpl(
 		this._pendingTransactions.synchronized {
 			for (tx <- this._pendingTransactions) {
 				if (SystemProperties.CONFIG.txOutdatedThreshold < blockNumber - tx.blockNumer) {
+					if (logger.isDebugEnabled) {
+						logger.debug("<BlockChainImpl> Deleting outdated tx: hash=%s".format(tx.hash.toShortString))
+					}
 					outdated.append(tx)
 					transactions.append(tx.transaction)
 				}
