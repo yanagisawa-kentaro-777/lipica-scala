@@ -11,8 +11,8 @@ class ManaLimitRule extends BlockHeaderRule {
 
 	override def validate(header: BlockHeader): Boolean = {
 		errors.clear()
-		if (header.manaLimit < ManaLimitRule.MinManaLimit) {
-			errors.append("ManaLimit %,d < %,d".format(header.manaLimit, ManaLimitRule.MinManaLimit))
+		if (header.manaLimit.toPositiveBigInt < BigInt(ManaLimitRule.MinManaLimit)) {
+			errors.append("ManaLimit %,d < %,d".format(header.manaLimit.toPositiveBigInt, ManaLimitRule.MinManaLimit))
 			false
 		} else {
 			true

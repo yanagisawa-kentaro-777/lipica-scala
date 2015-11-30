@@ -79,7 +79,7 @@ trait Block {
 	/**
 	 * １ブロックあたりの消費マナ上限。
 	 */
-	def manaLimit: Long
+	def manaLimit: ImmutableBytes
 
 	/**
 	 * このブロック内において消費されたマナ。

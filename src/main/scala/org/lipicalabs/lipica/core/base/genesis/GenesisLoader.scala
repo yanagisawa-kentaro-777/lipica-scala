@@ -42,7 +42,7 @@ object GenesisLoader {
 		blockHeader.timestamp = JsonUtils.parseHexStringToLong(genesisJson.timestamp)
 		blockHeader.parentHash = JsonUtils.parseHexStringToImmutableBytes(genesisJson.parentHash)
 		blockHeader.extraData = JsonUtils.parseHexStringToImmutableBytes(genesisJson.extraData)
-		blockHeader.manaLimit = JsonUtils.parseHexStringToLong(genesisJson.manaLimit)
+		blockHeader.manaLimit = JsonUtils.parseHexStringToImmutableBytes(genesisJson.manaLimit)
 		blockHeader.logsBloom = ImmutableBytes.create(256)
 
 		import scala.collection.JavaConversions._

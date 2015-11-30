@@ -44,10 +44,10 @@ class TransactionExecutor(
 		}
 		val txManaLimit = this.tx.manaLimit.toPositiveBigInt.longValue()
 		//新たなトランザクションを処理すると、このブロックのマナ上限を超えるか？
-		val exceedingLimit = this.currentBlock.manaLimit < (this.manaUsedInTheBlock + txManaLimit)
+		val exceedingLimit = this.currentBlock.manaLimit.toPositiveBigInt < BigInt(this.manaUsedInTheBlock + txManaLimit)
 		if (exceedingLimit) {
-			logger.info("<TxExecutor> Mana limit reached: Limit of block: %s, Already used: %s, Required: %s".format(
-				this.currentBlock.manaLimit, this.manaUsedInTheBlock, txManaLimit
+			logger.info("<TxExecutor> Mana limit reached: Limit of block: %,d, Already used: %,d, Required: %,d".format(
+				this.currentBlock.manaLimit.toPositiveBigInt, this.manaUsedInTheBlock, txManaLimit
 			))
 			return
 		}

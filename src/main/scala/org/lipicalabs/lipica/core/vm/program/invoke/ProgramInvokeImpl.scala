@@ -183,7 +183,7 @@ object ProgramInvokeImpl {
 		timestamp: Long,
 		blockNumber: Long,
 		difficulty: ImmutableBytes,
-		blockManaLimit: Long,
+		blockManaLimit: ImmutableBytes,
 		repository: RepositoryLike,
 		blockStore: BlockStore,
 		byTestingSuite: Boolean

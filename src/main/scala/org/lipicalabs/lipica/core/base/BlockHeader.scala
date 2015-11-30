@@ -84,9 +84,9 @@ class BlockHeader {
 	/**
 	 * １ブロックあたりのマナ消費上限を表すスカラー値。
 	 */
-	private var _manaLimit: Long = 0L
-	def manaLimit: Long = this._manaLimit
-	def manaLimit_=(v: Long): Unit = this._manaLimit = v
+	private var _manaLimit: ImmutableBytes = ImmutableBytes.empty
+	def manaLimit: ImmutableBytes = this._manaLimit
+	def manaLimit_=(v: ImmutableBytes): Unit = this._manaLimit = v
 
 	/**
 	 * このブロックに含まれるトランザクションすべてによって消費されたマナの総量。
@@ -124,7 +124,7 @@ class BlockHeader {
 		val encodedLogsBloom = RBACCodec.Encoder.encode(this.logsBloom)
 		val encodedDifficulty = RBACCodec.Encoder.encode(this.difficulty)
 		val encodedBlockNumber = RBACCodec.Encoder.encode(BigInt(this.blockNumber))
-		val encodedManaLimit = RBACCodec.Encoder.encode(BigInt(this.manaLimit))
+		val encodedManaLimit = RBACCodec.Encoder.encode(this.manaLimit)
 		val encodedManaUsed = RBACCodec.Encoder.encode(BigInt(this.manaUsed))
 		val encodedTimestamp = RBACCodec.Encoder.encode(BigInt(this.timestamp))
 		val encodedExtraData = RBACCodec.Encoder.encode(this.extraData)
@@ -217,7 +217,7 @@ object BlockHeader {
 		result.difficulty = decodedResult.items(7).bytes
 
 		result.blockNumber = decodedResult.items(8).bytes.toPositiveBigInt.longValue()
-		result.manaLimit = decodedResult.items(9).bytes.toPositiveBigInt.longValue()
+		result.manaLimit = decodedResult.items(9).bytes
 		result.manaUsed = decodedResult.items(10).bytes.toPositiveBigInt.longValue()
 		result.timestamp = decodedResult.items(11).bytes.toPositiveBigInt.longValue()
 
