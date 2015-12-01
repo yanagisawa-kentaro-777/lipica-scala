@@ -10,22 +10,56 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 trait BlockChain {
 
-	def size: Long
-
-	def append(block: Block): Unit
-
+	/**
+	 * このチェーンに対して、渡されたブロックを連結することが可能であれば連結しようとします。
+	 */
 	def tryToConnect(block: Block): ImportResult
+
+	/**
+	 * このチェーンの末尾にブロックを加えます。
+	 */
+	def append(block: Block): Unit
 
 	def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit
 
-	def existsBlock(hash: ImmutableBytes): Boolean
-	def getBlockByNumber(blockNumber: Long): Option[Block]
-	def getBlockByHash(hash: ImmutableBytes): Option[Block]
-
+	/**
+	 * このチェーンにおける最新のブロック。
+	 */
 	def bestBlock: Block
 	def bestBlock_=(block: Block): Unit
 
+	/**
+	 * このチェーンにおける最新のブロックのダイジェスト値を返します。
+	 */
 	def bestBlockHash: ImmutableBytes
+
+	/**
+	 * ブロックチェーンに属する全ブロックのdifficultyの合計値。
+	 * フォークしたチェーンどうしの優劣をけっていするために利用。
+	 */
+	def totalDifficulty: BigInt
+	def totalDifficulty_=(v: BigInt): Unit
+
+	/**
+	 * このチェーンに登録されたブロックの数＝最大のブロック番号＋１を返します。
+	 */
+	def size: Long
+
+	/**
+	 * 指定されたブロックが、このチェーン上に存在するか否かを返します。
+	 */
+	def existsBlock(hash: ImmutableBytes): Boolean
+
+	/**
+	 * 指定されたブロック番号のブロックがこのチェーン上に存在すれば、そのブロックを返します。
+	 */
+	def getBlockByNumber(blockNumber: Long): Option[Block]
+
+	/**
+	 * 指定されたハッシュ値のブロックがこのチェーン上に存在すれば、そのブロックを返します。
+	 */
+	def getBlockByHash(hash: ImmutableBytes): Option[Block]
+
 
 	def getSeqOfHashesStartingFrom(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes]
 
@@ -36,12 +70,6 @@ trait BlockChain {
 	def hasParentOnTheChain(block: Block): Boolean
 
 	def updateTotalDifficulty(block: Block): Unit
-
-	/**
-	 * ブロックチェーンに属する全ブロックのdifficultyの合計値。
-	 */
-	def totalDifficulty: BigInt
-	def totalDifficulty_=(v: BigInt): Unit
 
 	def altChains: Iterable[Chain]
 	def garbage: Iterable[Block]
