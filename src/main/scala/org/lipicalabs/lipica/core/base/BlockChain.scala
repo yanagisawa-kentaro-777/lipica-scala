@@ -72,13 +72,17 @@ trait BlockChain {
 	def updateTotalDifficulty(block: Block): Unit
 
 	def altChains: Iterable[Chain]
+
 	def garbage: Iterable[Block]
 
 	def pendingTransactions: Set[TransactionLike]
+
 	def addPendingTransactions(transactions: Set[TransactionLike]): Unit
+
 	def clearPendingTransactions(receivedTransactions: Iterable[TransactionLike]): Unit
 
 	def exitOn: Long
+
 	def exitOn_=(v: Long): Unit
 
 	def close(): Unit
