@@ -6,5 +6,5 @@ package org.lipicalabs.lipica.core.net.server
  * YANAGISAWA, Kentaro
  */
 class Channel {
-	//
+	//TODO 未実装。
 }

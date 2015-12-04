@@ -39,7 +39,8 @@ class ChannelManager {
 
 	private def processNewPeers(): Unit = {
 		for (peer <- this.newPeers) {
-			//TODO
+			//TODO 未実装。
+
 		}
 	}
 

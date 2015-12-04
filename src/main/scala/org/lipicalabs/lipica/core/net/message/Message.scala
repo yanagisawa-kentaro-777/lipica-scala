@@ -9,8 +9,8 @@ trait Command {
 trait Message {
 	def isParsed: Boolean
 	def toEncodedBytes: ImmutableBytes
-	def command: Command
 	def code: Byte
+	def command: Command
 }
 
 /**
