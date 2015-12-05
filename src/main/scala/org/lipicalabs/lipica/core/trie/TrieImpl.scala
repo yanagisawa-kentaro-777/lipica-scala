@@ -159,7 +159,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		if (value.nonEmpty) {
 			TrieNode(insert(node, key, Value.fromObject(value)))
 		} else {
-			TrieNode(delete(node, key))
+			delete(node, key)
 		}
 	}
 
@@ -227,10 +227,10 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * キーに対応するエントリーを削除します。
 	 */
-	private def delete(node: Value, key: ImmutableBytes): Value = {
+	private def delete(node: Value, key: ImmutableBytes): TrieNode = {
 		if (key.isEmpty || isEmptyNode(node)) {
 			//何もしない。
-			return TrieNode.empty.value
+			return TrieNode.empty
 		}
 		val currentNode = retrieveNode(node)
 		if (currentNode.length == PAIR_SIZE) {
@@ -241,11 +241,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 
 			if (k == key) {
 				//ぴたり一致。 これが削除対象である。
-				Value.empty
+				TrieNode.empty
 			} else if (k == key.copyOfRange(0, k.length)) {
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
-				val deleteResult = delete(currentNode.get(1).get, key.copyOfRange(k.length, key.length))
+				val deleteResult = delete(currentNode.get(1).get, key.copyOfRange(k.length, key.length)).value
 				val newChild = retrieveNode(deleteResult)
 				val newNode =
 					if (newChild.length == PAIR_SIZE) {
@@ -256,16 +256,16 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					} else {
 						Seq(packedKey, deleteResult)
 					}
-				putToCache(Value.fromObject(newNode))
+				TrieNode(putToCache(Value.fromObject(newNode)))
 			} else {
 				//このノードは関係ない。
-				node
+				TrieNode(node)
 			}
 		} else {
 			//もともと17要素の通常ノードである。
 			val items = copyNode(currentNode)
 			//再帰的に削除する。
-			val newChild = delete(items(key(0)), key.copyOfRange(1, key.length))
+			val newChild = delete(items(key(0)), key.copyOfRange(1, key.length)).value
 			//新たな子供をつなぎ直す。これが削除操作の本体である。
 			items(key(0)) = newChild
 
@@ -290,7 +290,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					//２ノード以上子供がいるか、子どもと値がある。
 					items.toSeq
 				}
-			putToCache(Value.fromObject(newNode))
+			TrieNode(putToCache(Value.fromObject(newNode)))
 		}
 	}
 
