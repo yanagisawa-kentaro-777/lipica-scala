@@ -157,7 +157,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 
 	private def insertOrDelete(node: Value, key: ImmutableBytes, value: ImmutableBytes): TrieNode = {
 		if (value.nonEmpty) {
-			TrieNode(insert(node, key, Value.fromObject(value)))
+			insert(node, key, Value.fromObject(value))
 		} else {
 			delete(node, key)
 		}
@@ -166,18 +166,18 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * キーに対応する値を登録します。
 	 */
-	private def insert(aNode: Value, key: ImmutableBytes, value: Value): Value = {
+	private def insert(aNode: Value, key: ImmutableBytes, value: Value): TrieNode = {
 		if (key.isEmpty) {
 			//終端記号すらない空バイト列ということは、
 			//再帰的な呼び出しによってキーが消費しつくされたということ。
 			//これ以上は処理する必要がない。
-			return value
+			return TrieNode(value)
 		}
 		val currentNode = retrieveNode(aNode)
 		if (isEmptyNode(currentNode)) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
 			val newNode = Seq(packNibbles(key), value)
-			return putToCache(Value.fromObject(newNode))
+			return TrieNode(putToCache(Value.fromObject(newNode)))
 		}
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
@@ -192,14 +192,14 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					//既存ノードのキー全体が、新たなキーの接頭辞になっている。
 					val remainingKeyPart = key.copyOfRange(matchingLength, key.length)
 					//子孫を作る。
-					insert(v, remainingKeyPart, value)
+					insert(v, remainingKeyPart, value).value
 				} else {
 					//既存ノードのキーの途中で分岐がある。
 					//2要素のショートカットノードを、17要素の通常ノードに変換する。
 					//従来の要素。
-					val oldNode = insert(Value.empty, k.copyOfRange(matchingLength + 1, k.length), v)
+					val oldNode = insert(Value.empty, k.copyOfRange(matchingLength + 1, k.length), v).value
 					//追加された要素。
-					val newNode = insert(Value.empty, key.copyOfRange(matchingLength + 1, key.length), value)
+					val newNode = insert(Value.empty, key.copyOfRange(matchingLength + 1, key.length), value).value
 					//異なる最初のニブルに対応するノードを記録して、分岐させる。
 					val scaledSlice = emptyValueSlice(LIST_SIZE)
 					scaledSlice(k(matchingLength)) = oldNode
@@ -209,18 +209,18 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			if (matchingLength == 0) {
 				//既存ノードのキーと新たなキーとの間に共通点はないので、
 				//いま作成された通常ノードが、このノードの代替となる。
-				createdNode
+				TrieNode(createdNode)
 			} else {
 				//このノードと今作られたノードとをつなぐノードを作成する。
 				val bridgeNode = Seq(packNibbles(key.copyOfRange(0, matchingLength)), createdNode)
-				putToCache(Value.fromObject(bridgeNode))
+				TrieNode(putToCache(Value.fromObject(bridgeNode)))
 			}
 		} else {
 			//もともと17要素の通常ノードである。
 			val newNode = copyNode(currentNode)
 			//普通にノードを更新して、保存する。
-			newNode(key(0)) = insert(currentNode.get(key(0)).get, key.copyOfRange(1, key.length), value)
-			putToCache(Value.fromObject(newNode.toSeq))
+			newNode(key(0)) = insert(currentNode.get(key(0)).get, key.copyOfRange(1, key.length), value).value
+			TrieNode(putToCache(Value.fromObject(newNode.toSeq)))
 		}
 	}
 
