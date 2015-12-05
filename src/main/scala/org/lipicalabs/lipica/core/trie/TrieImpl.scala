@@ -323,8 +323,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			case null =>
 				true
 			case _ =>
-				val n = Value.fromObject(node)
-				(n.isString && n.asString.isEmpty) || (n.length == 0)
+				node.length == 0
 		}
 	}
 
