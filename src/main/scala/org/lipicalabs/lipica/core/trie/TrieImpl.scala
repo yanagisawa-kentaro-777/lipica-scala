@@ -82,7 +82,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 
 	@tailrec
 	private def get(node: Value, key: ImmutableBytes): Value = {
-		if (key.isEmpty || isEmptyNode(node)) {
+		if (key.isEmpty || TrieNode(node).isEmpty) {
 			//キーが消費し尽くされているか、ノードに子孫がいない場合、そのノードを返す。
 			return node
 		}
@@ -174,7 +174,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			return TrieNode(value)
 		}
 		val currentNode = retrieveNode(aNode)
-		if (isEmptyNode(currentNode)) {
+		if (TrieNode(currentNode).isEmpty) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
 			val newNode = Seq(packNibbles(key), value)
 			return putToCache(Value.fromObject(newNode))
@@ -228,7 +228,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 * キーに対応するエントリーを削除します。
 	 */
 	private def delete(node: Value, key: ImmutableBytes): TrieNode = {
-		if (key.isEmpty || isEmptyNode(node)) {
+		if (key.isEmpty || TrieNode(node).isEmpty) {
 			//何もしない。
 			return TrieNode.empty
 		}
@@ -322,14 +322,14 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * 渡されたノードに内容がない場合に真を返します。
 	 */
-	private def isEmptyNode(node: Value): Boolean = {
-		node match {
-			case null =>
-				true
-			case _ =>
-				node.length == 0
-		}
-	}
+//	private def isEmptyNode(node: Value): Boolean = {
+//		node match {
+//			case null =>
+//				true
+//			case _ =>
+//				TrieNode(node).isEmpty
+//		}
+//	}
 
 	private def retrieveNode(value: Value): Value = {
 		if (!value.isBytes) {
