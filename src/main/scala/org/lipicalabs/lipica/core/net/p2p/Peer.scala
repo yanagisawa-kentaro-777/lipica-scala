@@ -1,8 +1,10 @@
 package org.lipicalabs.lipica.core.net.p2p
 
 import java.net.InetAddress
+import java.nio.charset.StandardCharsets
 
 import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 
 import scala.collection.mutable
@@ -13,11 +15,9 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/12/04 20:37
  * YANAGISAWA, Kentaro
  */
-class Peer(val address: InetAddress, val port: Int, val peerId: String) {
+class Peer(val address: InetAddress, val port: Int, val peerId: String, val capabilities: Seq[Capability]) {
 
-	private val capabilities: mutable.Buffer[Capability] = new ArrayBuffer[Capability]
-
-	def encode: ImmutableBytes = {
+	def toEncodedBytes: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address.getAddress)
 		val encodedPort = RBACCodec.Encoder.encode(this.port)
 		val encodedPeerId = RBACCodec.Encoder.encode(this.peerId)
@@ -40,4 +40,19 @@ class Peer(val address: InetAddress, val port: Int, val peerId: String) {
 
 	override def toString: String = "Address=%s; Port=%d; PeerId=%s".format(this.address, this.port, this.peerId)
 
+}
+
+object Peer {
+	def decode(encodedBytes: ImmutableBytes): Peer = {
+		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
+		decode(items)
+	}
+
+	def decode(items: Seq[DecodedResult]): Peer = {
+		val address = items.head.bytes
+		val port = items(1).asPositiveLong.toInt
+		val peerId = items(2).bytes.asString(StandardCharsets.UTF_8)
+		val capabilities = items(3).items.map(each => Capability.decode(each.items))
+		new Peer(InetAddress.getByAddress(address.toByteArray), port, peerId, capabilities)
+	}
 }
