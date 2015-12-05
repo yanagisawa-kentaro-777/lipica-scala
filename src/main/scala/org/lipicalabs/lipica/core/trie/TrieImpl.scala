@@ -146,7 +146,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val nibbleKey = binToNibbles(key)
-		val result = insertOrDelete(this.root.value, nibbleKey, value)
+		val result = insertOrDelete(this.root, nibbleKey, value)
 		//ルート要素を更新する。
 		this.root = result
 		if (logger.isDebugEnabled) {
@@ -155,9 +155,9 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 	}
 
-	private def insertOrDelete(node: Value, key: ImmutableBytes, value: ImmutableBytes): TrieNode = {
+	private def insertOrDelete(node: TrieNode, key: ImmutableBytes, value: ImmutableBytes): TrieNode = {
 		if (value.nonEmpty) {
-			insert(TrieNode(node), key, Value.fromObject(value))
+			insert(node, key, Value.fromObject(value))
 		} else {
 			delete(node, key)
 		}
@@ -227,12 +227,12 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * キーに対応するエントリーを削除します。
 	 */
-	private def delete(node: Value, key: ImmutableBytes): TrieNode = {
-		if (key.isEmpty || TrieNode(node).isEmpty) {
+	private def delete(node: TrieNode, key: ImmutableBytes): TrieNode = {
+		if (key.isEmpty || node.isEmpty) {
 			//何もしない。
 			return TrieNode.empty
 		}
-		val currentNode = retrieveNode(node)
+		val currentNode = retrieveNode(node.value)
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
 			//長ったらしい表現に戻す。
@@ -245,7 +245,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			} else if (k == key.copyOfRange(0, k.length)) {
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
-				val deleteResult = delete(currentNode.get(1).get, key.copyOfRange(k.length, key.length)).value
+				val deleteResult = delete(TrieNode(currentNode.get(1).get), key.copyOfRange(k.length, key.length)).value
 				val newChild = retrieveNode(deleteResult)
 				val newNode =
 					if (newChild.length == PAIR_SIZE) {
@@ -259,13 +259,13 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				putToCache(TrieNode(Value.fromObject(newNode)))
 			} else {
 				//このノードは関係ない。
-				TrieNode(node)
+				node
 			}
 		} else {
 			//もともと17要素の通常ノードである。
 			val items = copyNode(TrieNode(currentNode))
 			//再帰的に削除する。
-			val newChild = delete(items(key(0)), key.copyOfRange(1, key.length)).value
+			val newChild = delete(TrieNode(items(key(0))), key.copyOfRange(1, key.length)).value
 			//新たな子供をつなぎ直す。これが削除操作の本体である。
 			items(key(0)) = newChild
 
