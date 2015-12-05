@@ -28,31 +28,20 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 */
 	private val rootRef = new AtomicReference[TrieNode](TrieNode.fromDigest(_root))
 	override def root_=(value: Value): TrieImpl = {
-		val node =
-			if (value.isSeq && value.length == PAIR_SIZE) {
-				new ShortcutNode(value)
-			} else if (value.isSeq && value.length == LIST_SIZE) {
-				new RegularNode(value)
-			} else if (value.isBytes && value.asBytes.isEmpty) {
-				TrieNode.empty
-			} else {
-				TrieNode.fromDigest(value.asBytes)
-			}
+		val node = TrieNode(value)
 		this.rootRef.set(node)
 		this
 	}
 	def root_=(value: ImmutableBytes): TrieImpl = {
-		this.root = Value.fromObject(value)
+		this.rootRef.set(TrieNode.fromDigest(value))
+		this
 	}
 	def root: TrieNode = this.rootRef.get
 
 	/**
 	 * 最上位レベルのハッシュ値を計算して返します。
 	 */
-	override def rootHash: ImmutableBytes = {
-		this.rootRef.get.hash
-	}
-
+	override def rootHash: ImmutableBytes = this.rootRef.get.hash
 
 
 	/**
@@ -543,6 +532,9 @@ trait TrieNode {
 }
 
 object TrieNode {
+	private val ShortcutSize = 2
+	private val RegularSize = 17
+
 	val empty = new DigestNode(DigestUtils.EmptyTrieHash)
 	def fromDigest(hash: ImmutableBytes): DigestNode = {
 		if (hash.isEmpty) {
@@ -552,14 +544,17 @@ object TrieNode {
 		}
 	}
 	def apply(value: Value): TrieNode = {
-		if (value.isBytes) {
-			fromDigest(value.asBytes)
-		} else if (value.length == 2) {
+		if (value.isSeq && value.length == ShortcutSize) {
 			new ShortcutNode(value)
-		} else {
+		} else if (value.isSeq && value.length == RegularSize) {
 			new RegularNode(value)
+		} else if (value.isBytes && value.asBytes.isEmpty) {
+			TrieNode.empty
+		} else {
+			TrieNode.fromDigest(value.asBytes)
 		}
 	}
+
 }
 
 class ShortcutNode(override val value: Value) extends TrieNode {
