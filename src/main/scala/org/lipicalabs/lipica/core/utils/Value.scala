@@ -20,6 +20,8 @@ trait Value {
 
 	def encodedBytes: ImmutableBytes
 
+	def decode: Value
+
 	def hash: ImmutableBytes
 
 	def asObj: Any
@@ -101,6 +103,8 @@ class PlainValue private[utils](_value: Any) extends Value {
 	 * 値。
 	 */
 	override val value: Any = launderValue(_value)
+
+	override val decode = this
 
 	/**
 	 * 入れ子になったValueクラスであった場合には、
@@ -275,7 +279,7 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 
 	override def hash: ImmutableBytes = sha3
 
-	def decode: PlainValue = {
+	override def decode: PlainValue = {
 		if (this.plainValueRef.get.isEmpty) {
 			RBACCodec.Decoder.decode(this.encodedBytes) match {
 				case Right(result) =>

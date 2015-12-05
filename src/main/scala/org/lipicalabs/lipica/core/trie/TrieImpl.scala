@@ -27,8 +27,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 * 木構造のルート要素。
 	 */
 	private val rootRef = new AtomicReference[TrieNode](TrieNode.fromDigest(_root))
-	override def root_=(value: Value): TrieImpl = {
-		val node = TrieNode(value)
+	override def root_=(node: TrieNode): TrieImpl = {
 		this.rootRef.set(node)
 		this
 	}
@@ -146,7 +145,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val nibbleKey = binToNibbles(key)
 		val result = insertOrDelete(retrieveNode(this.root.value), nibbleKey, value)
 		//ルート要素を更新する。
-		this.root = result
+		this.root = TrieNode(result)
 		if (logger.isDebugEnabled) {
 			logger.debug("<TrieImpl> Updated [%s] -> [%s]".format(key.toHexString, value.toHexString))
 			logger.debug("<TrieImpl> New root-hash: %s".format(rootHash.toHexString))
@@ -450,7 +449,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 
 					this.cache.put(ImmutableBytes(key), value)
 				}}
-				this.root = Value.fromEncodedBytes(encodedRoot)
+				this.root = TrieNode(Value.fromEncodedBytes(encodedRoot).decode)
 			case Left(e) =>
 				logger.warn("<TrieImpl> Deserialization error.", e)
 		}
