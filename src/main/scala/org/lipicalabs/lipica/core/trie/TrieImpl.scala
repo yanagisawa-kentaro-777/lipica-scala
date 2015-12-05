@@ -28,11 +28,15 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 */
 	private val rootRef = new AtomicReference[TrieNode](TrieNode.fromDigest(_root))
 	override def root_=(node: TrieNode): TrieImpl = {
-		this.rootRef.set(node)
+		if (node.isEmpty) {
+			this.rootRef.set(TrieNode.emptyTrieNode)
+		} else {
+			this.rootRef.set(node)
+		}
 		this
 	}
 	def root_=(value: ImmutableBytes): TrieImpl = {
-		this.rootRef.set(TrieNode.fromDigest(value))
+		this.root = TrieNode.fromDigest(value)
 		this
 	}
 	def root: TrieNode = this.rootRef.get
@@ -518,7 +522,7 @@ object TrieImpl {
 
 trait TrieNode {
 	def isDigestNode: Boolean
-	def isEmptyNode: Boolean
+	def isEmpty: Boolean
 	def isShortcutNode: Boolean
 	def shortcutKey: ImmutableBytes
 	def isRegularNode: Boolean
@@ -532,7 +536,8 @@ object TrieNode {
 	private val ShortcutSize = 2
 	private val RegularSize = 17
 
-	val empty = new DigestNode(DigestUtils.EmptyTrieHash)
+	val emptyTrieNode = new DigestNode(DigestUtils.EmptyTrieHash)
+	val empty = new DigestNode(ImmutableBytes.empty)
 	def fromDigest(hash: ImmutableBytes): DigestNode = {
 		if (hash.isEmpty) {
 			empty
@@ -555,7 +560,7 @@ object TrieNode {
 }
 
 class ShortcutNode(override val value: Value) extends TrieNode {
-	override val isEmptyNode: Boolean = false
+	override val isEmpty: Boolean = false
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = true
 	override val isRegularNode: Boolean = false
@@ -566,7 +571,7 @@ class ShortcutNode(override val value: Value) extends TrieNode {
 }
 
 class RegularNode(override val value: Value) extends TrieNode {
-	override val isEmptyNode: Boolean = false
+	override val isEmpty: Boolean = false
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = true
@@ -577,7 +582,7 @@ class RegularNode(override val value: Value) extends TrieNode {
 }
 
 class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
-	override val isEmptyNode: Boolean = this.hash == DigestUtils.EmptyTrieHash
+	override val isEmpty: Boolean = this.hash.isEmpty
 	override val isDigestNode: Boolean = true
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = false
