@@ -144,18 +144,18 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val nibbleKey = binToNibbles(key)
 		val result = insertOrDelete(this.root.value, nibbleKey, value)
 		//ルート要素を更新する。
-		this.root = TrieNode(result)
+		this.root = result
 		if (logger.isDebugEnabled) {
 			logger.debug("<TrieImpl> Updated [%s] -> [%s]".format(key.toHexString, value.toHexString))
 			logger.debug("<TrieImpl> New root-hash: %s".format(rootHash.toHexString))
 		}
 	}
 
-	private def insertOrDelete(node: Value, key: ImmutableBytes, value: ImmutableBytes): Value = {
+	private def insertOrDelete(node: Value, key: ImmutableBytes, value: ImmutableBytes): TrieNode = {
 		if (value.nonEmpty) {
-			insert(node, key, Value.fromObject(value))
+			TrieNode(insert(node, key, Value.fromObject(value)))
 		} else {
-			delete(node, key)
+			TrieNode(delete(node, key))
 		}
 	}
 
