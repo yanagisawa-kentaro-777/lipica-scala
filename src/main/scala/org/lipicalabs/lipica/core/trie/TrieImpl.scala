@@ -85,7 +85,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//キーが消費し尽くされているか、ノードに子孫がいない場合、そのノードを返す。
 			return aNode.value.asBytes
 		}
-		val currentNode = retrieveNode(aNode.value)
+		val currentNode = retrieveNode(aNode)
 		if (currentNode.length == PAIR_SIZE) {
 			//このノードのキーを長ったらしい表現に戻す。
 			val k = unpackToNibbles(currentNode.get(0).get.asBytes)
@@ -172,7 +172,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//これ以上は処理する必要がない。
 			return TrieNode(value)
 		}
-		val currentNode = retrieveNode(aNode.value)
+		val currentNode = retrieveNode(aNode)
 		if (TrieNode(currentNode).isEmpty) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
 			val newNode = Seq(packNibbles(key), value)
@@ -231,7 +231,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//何もしない。
 			return TrieNode.empty
 		}
-		val currentNode = retrieveNode(node.value)
+		val currentNode = retrieveNode(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
 			//長ったらしい表現に戻す。
@@ -244,7 +244,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			} else if (k == key.copyOfRange(0, k.length)) {
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
-				val deleteResult = delete(TrieNode(currentNode.get(1).get), key.copyOfRange(k.length, key.length)).value
+				val deleteResult = delete(TrieNode(currentNode.get(1).get), key.copyOfRange(k.length, key.length))
 				val newChild = retrieveNode(deleteResult)
 				val newNode =
 					if (newChild.length == PAIR_SIZE) {
@@ -253,7 +253,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						val newKey = k ++ unpackToNibbles(newChild.get(0).get.asBytes)
 						Seq(packNibbles(newKey), newChild.get(1).get)
 					} else {
-						Seq(packedKey, deleteResult)
+						Seq(packedKey, deleteResult.value)
 					}
 				putToCache(TrieNode(Value.fromObject(newNode)))
 			} else {
@@ -278,7 +278,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				} else if (0 <= idx) {
 					//１ノードだけ子供がいて、このノードには値がない。
 					//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
-					val child = retrieveNode(items(idx))
+					val child = retrieveNode(TrieNode(items(idx)))
 					if (child.length == PAIR_SIZE) {
 						val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.get(0).get.asBytes)
 						Seq(packNibbles(concat), child.get(1).get)
@@ -318,18 +318,17 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		idx
 	}
 
-	private def retrieveNode(value: Value): Value = {
-		if (!value.isBytes) {
-			return value
+	private def retrieveNode(node: TrieNode): Value = {
+		if (!node.isDigestNode) {
+			return node.value
 		}
-		val keyBytes = value.asBytes
-		if (keyBytes.isEmpty) {
-			value
-		} else if (keyBytes == DigestUtils.EmptyTrieHash) {
+		if (node.isEmpty) {
+			Value.empty
+		} else if (node.hash == DigestUtils.EmptyTrieHash) {
 			Value.empty
 		} else {
 			//対応する値を引いて返す。
-			this.cache.get(keyBytes).nodeValue
+			this.cache.get(node.hash).nodeValue
 		}
 	}
 
@@ -452,7 +451,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val nodes = this.cache.getNodes
 		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
 		val encodedValues = nodes.values.map(each => RBACCodec.Encoder.encode(each.nodeValue.value))
-		val encodedRoot = RBACCodec.Encoder.encode(retrieveNode(this.root.value).value)
+		val encodedRoot = RBACCodec.Encoder.encode(retrieveNode(this.root).value)
 		RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot))
 	}
 
