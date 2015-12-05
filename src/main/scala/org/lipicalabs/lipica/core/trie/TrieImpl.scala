@@ -217,7 +217,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			}
 		} else {
 			//もともと17要素の通常ノードである。
-			val newNode = copyNode(currentNode)
+			val newNode = copyNode(TrieNode(currentNode))
 			//普通にノードを更新して、保存する。
 			newNode(key(0)) = insert(currentNode.get(key(0)).get, key.copyOfRange(1, key.length), value).value
 			putToCache(Value.fromObject(newNode.toSeq))
@@ -263,7 +263,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			}
 		} else {
 			//もともと17要素の通常ノードである。
-			val items = copyNode(currentNode)
+			val items = copyNode(TrieNode(currentNode))
 			//再帰的に削除する。
 			val newChild = delete(items(key(0)), key.copyOfRange(1, key.length)).value
 			//新たな子供をつなぎ直す。これが削除操作の本体である。
@@ -364,8 +364,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * １７要素ノードの要素を、可変の配列に変換する。
 	 */
-	private def copyNode(node: Value): Array[Value] = {
-		(0 until LIST_SIZE).map(i => Option(node.get(i).get).getOrElse(Value.empty)).toArray
+	private def copyNode(node: TrieNode): Array[Value] = {
+		(0 until LIST_SIZE).map(i => Option(node.value.get(i).get).getOrElse(Value.empty)).toArray
 	}
 
 	override def sync(): Unit = {
