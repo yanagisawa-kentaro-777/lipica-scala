@@ -76,17 +76,17 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val convertedKey = binToNibbles(key)
 		//ルートノード以下の全体を探索する。
-		val found = get(this.root.value, convertedKey)
+		val found = get(this.root, convertedKey)
 		found.asBytes
 	}
 
 	@tailrec
-	private def get(node: Value, key: ImmutableBytes): Value = {
-		if (key.isEmpty || TrieNode(node).isEmpty) {
+	private def get(aNode: TrieNode, key: ImmutableBytes): Value = {
+		if (key.isEmpty || aNode.isEmpty) {
 			//キーが消費し尽くされているか、ノードに子孫がいない場合、そのノードを返す。
-			return node
+			return aNode.value
 		}
-		val currentNode = retrieveNode(node)
+		val currentNode = retrieveNode(aNode.value)
 		if (currentNode.length == PAIR_SIZE) {
 			//このノードのキーを長ったらしい表現に戻す。
 			val k = unpackToNibbles(currentNode.get(0).get.asBytes)
@@ -99,7 +99,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				}
 				//このノードのキーが、指定されたキーの接頭辞である。
 				//子孫を再帰的に探索する。
-				get(v, key.copyOfRange(k.length, key.length))
+				get(TrieNode(v), key.copyOfRange(k.length, key.length))
 			} else {
 				//このノードは、指定されたキーの接頭辞ではない。
 				//つまり、要求されたキーに対応する値は存在しない。
@@ -109,7 +109,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//このノードは、17要素の通常ノードである。
 			//子孫をたどり、キーを１ニブル消費して探索を継続する。
 			val child = currentNode.get(key(0)).get
-			get(child, key.copyOfRange(1, key.length))
+			get(TrieNode(child), key.copyOfRange(1, key.length))
 		} else {
 			Value.empty
 		}
