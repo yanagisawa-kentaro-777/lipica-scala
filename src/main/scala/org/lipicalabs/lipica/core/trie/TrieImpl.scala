@@ -72,7 +72,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val convertedKey = binToNibbles(key)
 		//ルートノード以下の全体を探索する。
-		val found = get(retrieveNode(this.root.value), convertedKey)
+		val found = get(this.root.value, convertedKey)
 		found.asBytes
 	}
 
@@ -142,7 +142,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val nibbleKey = binToNibbles(key)
-		val result = insertOrDelete(retrieveNode(this.root.value), nibbleKey, value)
+		val result = insertOrDelete(this.root.value, nibbleKey, value)
 		//ルート要素を更新する。
 		this.root = TrieNode(result)
 		if (logger.isDebugEnabled) {
@@ -162,19 +162,19 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * キーに対応する値を登録します。
 	 */
-	private def insert(node: Value, key: ImmutableBytes, value: Value): Value = {
+	private def insert(aNode: Value, key: ImmutableBytes, value: Value): Value = {
 		if (key.isEmpty) {
 			//終端記号すらない空バイト列ということは、
 			//再帰的な呼び出しによってキーが消費しつくされたということ。
 			//これ以上は処理する必要がない。
 			return value
 		}
-		if (isEmptyNode(node)) {
+		val currentNode = retrieveNode(aNode)
+		if (isEmptyNode(currentNode)) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
 			val newNode = Seq(packNibbles(key), value)
 			return putToCache(Value.fromObject(newNode))
 		}
-		val currentNode = retrieveNode(node)
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
 			val packedKey = currentNode.get(0).get.asBytes
