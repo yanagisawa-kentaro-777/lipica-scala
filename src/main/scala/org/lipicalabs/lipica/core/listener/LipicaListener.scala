@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.listener
 
 import org.lipicalabs.lipica.core.base.{TransactionReceipt, Block, TransactionLike, TransactionExecutionSummary}
+import org.lipicalabs.lipica.core.net.message.Message
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,4 +15,5 @@ trait LipicaListener {
 	def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]): Unit
 	def trace(s: String): Unit
 	def onBlock(block: Block, receipts: Iterable[TransactionReceipt]): Unit
+	def onSendMessage(message: Message): Unit
 }

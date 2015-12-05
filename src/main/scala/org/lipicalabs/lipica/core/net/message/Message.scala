@@ -11,6 +11,7 @@ trait Message {
 	def toEncodedBytes: ImmutableBytes
 	def code: Byte
 	def command: Command
+	def answerMessage: Option[Class[_ <: ParsedMessage]] = None
 }
 
 /**
@@ -19,7 +20,6 @@ trait Message {
  * YANAGISAWA, Kentaro
  */
 trait ParsedMessage extends Message {
-	def answerMessage: Option[Class[_ <: ParsedMessage]] = None
 	override val isParsed: Boolean = true
 }
 

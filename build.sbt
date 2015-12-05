@@ -34,6 +34,7 @@ def jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % "1.9.13"
 
 def mapdb = "org.mapdb" % "mapdb" % "2.0-beta10"
 
+def nettyAll = "io.netty" % "netty-all" % "4.0.33.Final"
 
 def scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.6"
 def scalaXml = "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
@@ -63,6 +64,7 @@ lazy val root =
 				leveldbJNI,
 				leveldbJNIAll,
 				mapdb,
+				nettyAll,
 				slf4j,
 				logback,
 				logbackCore,

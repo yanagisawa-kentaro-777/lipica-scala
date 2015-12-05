@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.manager
 
 import org.lipicalabs.lipica.core.db.Repository
+import org.lipicalabs.lipica.core.listener.LipicaListener
 
 /**
  * Created by IntelliJ IDEA.
@@ -10,5 +11,7 @@ import org.lipicalabs.lipica.core.db.Repository
 trait WorldManager {
 
 	def repository: Repository
+
+	def listener: LipicaListener
 
 }
