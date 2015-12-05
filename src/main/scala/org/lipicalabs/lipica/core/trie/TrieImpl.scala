@@ -177,7 +177,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		if (TrieNode(currentNode).isEmpty) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
 			val newNode = Seq(packNibbles(key), value)
-			return putToCache(Value.fromObject(newNode))
+			return putToCache(TrieNode(Value.fromObject(newNode)))
 		}
 		if (currentNode.length == PAIR_SIZE) {
 			//２要素のショートカットノードである。
@@ -204,7 +204,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					val scaledSlice = emptyValueSlice(LIST_SIZE)
 					scaledSlice(k(matchingLength)) = oldNode
 					scaledSlice(key(matchingLength)) = newNode
-					putToCache(Value.fromObject(scaledSlice.toSeq))
+					putToCache(TrieNode(Value.fromObject(scaledSlice.toSeq)))
 				}
 			if (matchingLength == 0) {
 				//既存ノードのキーと新たなキーとの間に共通点はないので、
@@ -213,14 +213,14 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			} else {
 				//このノードと今作られたノードとをつなぐノードを作成する。
 				val bridgeNode = Seq(packNibbles(key.copyOfRange(0, matchingLength)), createdNode.value)
-				putToCache(Value.fromObject(bridgeNode))
+				putToCache(TrieNode(Value.fromObject(bridgeNode)))
 			}
 		} else {
 			//もともと17要素の通常ノードである。
 			val newNode = copyNode(TrieNode(currentNode))
 			//普通にノードを更新して、保存する。
 			newNode(key(0)) = insert(currentNode.get(key(0)).get, key.copyOfRange(1, key.length), value).value
-			putToCache(Value.fromObject(newNode.toSeq))
+			putToCache(TrieNode(Value.fromObject(newNode.toSeq)))
 		}
 	}
 
@@ -256,7 +256,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					} else {
 						Seq(packedKey, deleteResult)
 					}
-				putToCache(Value.fromObject(newNode))
+				putToCache(TrieNode(Value.fromObject(newNode)))
 			} else {
 				//このノードは関係ない。
 				TrieNode(node)
@@ -290,7 +290,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					//２ノード以上子供がいるか、子どもと値がある。
 					items.toSeq
 				}
-			putToCache(Value.fromObject(newNode))
+			putToCache(TrieNode(Value.fromObject(newNode)))
 		}
 	}
 
@@ -319,18 +319,6 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		idx
 	}
 
-	/**
-	 * 渡されたノードに内容がない場合に真を返します。
-	 */
-//	private def isEmptyNode(node: Value): Boolean = {
-//		node match {
-//			case null =>
-//				true
-//			case _ =>
-//				TrieNode(node).isEmpty
-//		}
-//	}
-
 	private def retrieveNode(value: Value): Value = {
 		if (!value.isBytes) {
 			return value
@@ -346,8 +334,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 	}
 
-	private def putToCache(value: Value): TrieNode = {
-		this.cache.put(value) match {
+	private def putToCache(node: TrieNode): TrieNode = {
+		this.cache.put(node.value) match {
 			case Left(v) =>
 				//値がそのままである。
 				TrieNode(v)
