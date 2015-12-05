@@ -1,7 +1,5 @@
 package org.lipicalabs.lipica.core.net.p2p
 
-import java.nio.charset.StandardCharsets
-
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode.Hello
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
@@ -29,11 +27,11 @@ object HelloMessage {
 
 	def decode(encodedBytes: ImmutableBytes): HelloMessage = {
 		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
-		val p2pVersion = items.head.bytes.head
-		val clientId = items(1).bytes.asString(StandardCharsets.UTF_8)
+		val p2pVersion = items.head.asByte
+		val clientId = items(1).asString
 		val capabilities = items(2).items.map(each => Capability.decode(each.items))
-		val port = items(3).asPositiveLong.asInstanceOf[Int]
-		val peerId = items(4).bytes.asString(StandardCharsets.UTF_8)
+		val port = items(3).asInt
+		val peerId = items(4).asString
 		new HelloMessage(p2pVersion, clientId, capabilities, port, peerId)
 	}
 

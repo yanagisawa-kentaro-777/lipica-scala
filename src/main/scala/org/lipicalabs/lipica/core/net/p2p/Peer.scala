@@ -1,14 +1,11 @@
 package org.lipicalabs.lipica.core.net.p2p
 
 import java.net.InetAddress
-import java.nio.charset.StandardCharsets
 
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by IntelliJ IDEA.
@@ -49,10 +46,10 @@ object Peer {
 	}
 
 	def decode(items: Seq[DecodedResult]): Peer = {
-		val address = items.head.bytes
-		val port = items(1).asPositiveLong.toInt
-		val peerId = items(2).bytes.asString(StandardCharsets.UTF_8)
+		val address = InetAddress.getByAddress(items.head.bytes.toByteArray)
+		val port = items(1).asInt
+		val peerId = items(2).asString
 		val capabilities = items(3).items.map(each => Capability.decode(each.items))
-		new Peer(InetAddress.getByAddress(address.toByteArray), port, peerId, capabilities)
+		new Peer(address, port, peerId, capabilities)
 	}
 }

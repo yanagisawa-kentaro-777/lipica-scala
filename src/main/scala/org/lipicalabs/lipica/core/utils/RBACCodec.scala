@@ -303,6 +303,12 @@ object RBACCodec {
 
 			def asPositiveLong: Long = asPositiveBigInt.longValue()
 
+			def asInt: Int = asPositiveLong.toInt
+
+			def asByte: Byte = bytes.head
+
+			def asString: String = bytes.asString(StandardCharsets.UTF_8)
+
 			def asPositiveBigInt: BigInt = {
 				if (bytes.length == 0) {
 					UtilConsts.Zero

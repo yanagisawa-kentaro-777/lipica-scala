@@ -16,5 +16,5 @@ class PongMessage extends P2PParsedMessage {
 }
 
 object PongMessage {
-	private val Payload = ImmutableBytes.parseHexString("77")
+	private val Payload = ImmutableBytes.parseHexString("C0")
 }

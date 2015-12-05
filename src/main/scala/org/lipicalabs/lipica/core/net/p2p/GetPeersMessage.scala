@@ -16,5 +16,5 @@ class GetPeersMessage extends P2PParsedMessage {
 }
 
 object GetPeersMessage {
-	private val FixedPayload = ImmutableBytes.parseHexString("8804")
+	private val FixedPayload = ImmutableBytes.parseHexString("C104")
 }
