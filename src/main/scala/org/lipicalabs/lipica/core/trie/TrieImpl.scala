@@ -44,7 +44,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	def root_=(value: ImmutableBytes): TrieImpl = {
 		this.root = Value.fromObject(value)
 	}
-	def root: Value = retrieveNode(this.rootRef.get.value)
+	def root: TrieNode = this.rootRef.get
 
 	/**
 	 * 最上位レベルのハッシュ値を計算して返します。
@@ -58,8 +58,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * 前回のルート要素。（undo に利用する。）
 	 */
-	private val prevRootRef = new AtomicReference[Value](Value.fromObject(_root))
-	def prevRoot: Value = this.prevRootRef.get
+	private val prevRootRef = new AtomicReference[TrieNode](this.rootRef.get)
+	def prevRoot: TrieNode = this.prevRootRef.get
 
 	/**
 	 * 永続化機構のラッパー。
@@ -85,7 +85,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val convertedKey = binToNibbles(key)
 		//ルートノード以下の全体を探索する。
-		val found = get(this.root, convertedKey)
+		val found = get(retrieveNode(this.root.value), convertedKey)
 		found.asBytes
 	}
 
@@ -155,7 +155,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 		//終端記号がついた、１ニブル１バイトのバイト列に変換する。
 		val nibbleKey = binToNibbles(key)
-		val result = insertOrDelete(this.root, nibbleKey, value)
+		val result = insertOrDelete(retrieveNode(this.root.value), nibbleKey, value)
 		//ルート要素を更新する。
 		this.root = result
 		if (logger.isDebugEnabled) {
@@ -385,7 +385,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 
 	override def undo(): Unit = {
 		this.cache.undo()
-		this.root = prevRoot
+		this.rootRef.set(prevRoot)
 	}
 
 	override def validate: Boolean = Option(this.cache.get(rootHash)).isDefined
@@ -475,7 +475,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val nodes = this.cache.getNodes
 		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
 		val encodedValues = nodes.values.map(each => RBACCodec.Encoder.encode(each.nodeValue.value))
-		val encodedRoot = RBACCodec.Encoder.encode(this.root.value)
+		val encodedRoot = RBACCodec.Encoder.encode(retrieveNode(this.root.value).value)
 		RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot))
 	}
 
