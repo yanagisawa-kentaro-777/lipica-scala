@@ -42,7 +42,6 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 */
 	override def rootHash: ImmutableBytes = this.rootRef.get.hash
 
-
 	/**
 	 * 前回のルート要素。（undo に利用する。）
 	 */
@@ -319,7 +318,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * 渡されたノードに内容がない場合に真を返します。
 	 */
-	private def isEmptyNode(node: Any): Boolean = {
+	private def isEmptyNode(node: Value): Boolean = {
 		node match {
 			case null =>
 				true
