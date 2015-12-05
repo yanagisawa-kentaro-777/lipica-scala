@@ -58,6 +58,18 @@ trait Value {
 
 	def length: Int
 
+	override def toString: String = Value.toString(this)
+
+	override def hashCode: Int = toString.hashCode
+
+	override def equals(o: Any): Boolean = {
+		try {
+			this.toString == o.asInstanceOf[Value].toString
+		} catch {
+			case any: Throwable => false
+		}
+	}
+
 }
 
 object Value {

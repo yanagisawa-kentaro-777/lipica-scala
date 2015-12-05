@@ -230,7 +230,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	private def delete(node: Value, key: ImmutableBytes): Value = {
 		if (key.isEmpty || isEmptyNode(node)) {
 			//何もしない。
-			return Value.empty
+			return TrieNode.empty.value
 		}
 		val currentNode = retrieveNode(node)
 		if (currentNode.length == PAIR_SIZE) {
