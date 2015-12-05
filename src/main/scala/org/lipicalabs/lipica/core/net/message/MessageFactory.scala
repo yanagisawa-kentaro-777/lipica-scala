@@ -8,5 +8,5 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * YANAGISAWA, Kentaro
  */
 trait MessageFactory {
-	def create(code: Byte, encodedBytes: ImmutableBytes): Message
+	def create(code: Byte, encodedBytes: ImmutableBytes): Option[Message]
 }

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.p2p
 
-import org.lipicalabs.lipica.core.net.message.Message
+import org.lipicalabs.lipica.core.net.message.ImmutableMessages
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode.Ping
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
@@ -20,5 +20,5 @@ class PingMessage extends P2PParsedMessage {
 
 object PingMessage {
 	private val Payload = ImmutableBytes.parseHexString("77")
-	private val answerMessage: Class[_ <: P2PParsedMessage] = (new PongMessage).getClass
+	private val answerMessage: Class[_ <: P2PParsedMessage] = ImmutableMessages.PongMessage.getClass
 }
