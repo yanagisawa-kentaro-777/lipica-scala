@@ -9,6 +9,7 @@ import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.db.{RepositoryImpl, BlockInfo, IndexedBlockStore}
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
+import org.lipicalabs.lipica.core.net.message.Message
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.{DifficultyRule, ParentNumberRule, ParentBlockHeaderValidator}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactoryImpl
@@ -36,6 +37,7 @@ class BlockchainTest extends Specification {
 				override def trace(s: String) = ()
 				override def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]) = ()
 				override def onVMTraceCreated(txHash: String, trace: String) = ()
+				override def onSendMessage(message: Message) = ()
 			}
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)
