@@ -172,19 +172,19 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//これ以上は処理する必要がない。
 			return TrieNode(value)
 		}
-		val currentNode = retrieveNode(aNode)
-		if (TrieNode(currentNode).isEmpty) {
+		val currentNode = retrieveNode2(aNode)
+		if (currentNode.isEmpty) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
 			val newNode = Seq(packNibbles(key), value)
 			return putToCache(TrieNode(Value.fromObject(newNode)))
 		}
-		if (currentNode.length == PAIR_SIZE) {
+		if (currentNode.isShortcutNode) {
 			//２要素のショートカットノードである。
-			val packedKey = currentNode.get(0).get.asBytes
+			val packedKey = currentNode.child(0).value.asBytes
 			//キーを長ったらしい表現に戻す。
 			val k = unpackToNibbles(packedKey)
 			//値を取得する。
-			val v = currentNode.get(1).get
+			val v = currentNode.child(1).value
 			val matchingLength = ByteUtils.matchingLength(key, k)
 			val createdNode =
 				if (matchingLength == k.length) {
@@ -216,9 +216,9 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			}
 		} else {
 			//もともと17要素の通常ノードである。
-			val newNode = copyNode(TrieNode(currentNode))
+			val newNode = copyNode(currentNode)
 			//普通にノードを更新して、保存する。
-			newNode(key(0)) = insert(TrieNode(currentNode.get(key(0)).get), key.copyOfRange(1, key.length), value).value
+			newNode(key(0)) = insert(TrieNode(currentNode.child(key(0)).value), key.copyOfRange(1, key.length), value).value
 			putToCache(TrieNode(Value.fromObject(newNode.toSeq)))
 		}
 	}
