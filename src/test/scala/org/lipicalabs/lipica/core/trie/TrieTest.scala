@@ -635,10 +635,10 @@ class TrieTest extends Specification {
 			val mockDb = new HashMapDB
 			val trie = new TrieImpl(mockDb)
 
-			val seed = System.currentTimeMillis
+			val seed = System.currentTimeMillis//1449322958431L//
 			val generator = new java.util.Random(seed)
 			println("Seed of RNG is: %,d".format(seed))
-			(0 until 100).foreach {
+			(0 until 1000).foreach {
 				i => {
 					val randomIndex1 = generator.nextInt(randomWords.size)
 					val word1 = randomWords(randomIndex1)

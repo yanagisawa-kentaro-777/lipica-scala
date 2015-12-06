@@ -20,6 +20,8 @@ trait Value {
 
 	def encodedBytes: ImmutableBytes
 
+	def decode: Value
+
 	def hash: ImmutableBytes
 
 	def asObj: Any
@@ -55,6 +57,18 @@ trait Value {
 	def isNull: Boolean
 
 	def length: Int
+
+	override def toString: String = Value.toString(this)
+
+	override def hashCode: Int = toString.hashCode
+
+	override def equals(o: Any): Boolean = {
+		try {
+			this.toString == o.asInstanceOf[Value].toString
+		} catch {
+			case any: Throwable => false
+		}
+	}
 
 }
 
@@ -102,6 +116,8 @@ class PlainValue private[utils](_value: Any) extends Value {
 	 */
 	override val value: Any = launderValue(_value)
 
+	override val decode = this
+
 	/**
 	 * 入れ子になったValueクラスであった場合には、
 	 * その中身をたぐって値を取得します。
@@ -131,7 +147,7 @@ class PlainValue private[utils](_value: Any) extends Value {
 	override def encodedBytes: ImmutableBytes = encode.encodedBytes
 
 	override def hash: ImmutableBytes = encode.hash
-
+	
 	override def asObj: Any = value
 
 	override def asSeq: Seq[AnyRef] = this.value.asInstanceOf[Seq[AnyRef]]
@@ -271,7 +287,7 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 		this.hashOptionRef.get.get
 	}
 
-	def decode: PlainValue = {
+	override def decode: PlainValue = {
 		if (this.plainValueRef.get.isEmpty) {
 			RBACCodec.Decoder.decode(this.encodedBytes) match {
 				case Right(result) =>
