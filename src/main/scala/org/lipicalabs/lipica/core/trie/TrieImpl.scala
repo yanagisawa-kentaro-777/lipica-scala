@@ -171,8 +171,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val node = retrieveNode(aNode)
 		if (node.isEmpty) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
-			val newNode = Seq(packNibbles(key), valueNode.value)
-			return putToCache(TrieNode(Value.fromObject(newNode)))
+			val newNode = TrieNode(packNibbles(key), valueNode)
+			return putToCache(newNode)
 		}
 		node match {
 			case currentNode: ShortcutNode =>
@@ -206,8 +206,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					createdNode
 				} else {
 					//このノードと今作られたノードとをつなぐノードを作成する。
-					val bridgeNode = Seq(packNibbles(key.copyOfRange(0, matchingLength)), createdNode.value)
-					putToCache(TrieNode(Value.fromObject(bridgeNode)))
+					val bridgeNode = TrieNode(packNibbles(key.copyOfRange(0, matchingLength)), createdNode)
+					putToCache(bridgeNode)
 				}
 			case currentNode: RegularNode =>
 				//もともと17要素の通常ノードである。
@@ -247,11 +247,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 								//削除で発生する跳躍をつなぐ。
 								//この操作こそが、削除そのものである。
 								val newKey = nodeKey ++ unpackToNibbles(newChild.shortcutKey)
-								Seq(packNibbles(newKey), newChild.childNode.value)
+								TrieNode(packNibbles(newKey), newChild.childNode)
 							case _ =>
-								Seq(packedKey, deleteResult.value)
+								TrieNode(packedKey, deleteResult)
 						}
-					putToCache(TrieNode(Value.fromObject(newNode)))
+					putToCache(newNode)
 				} else {
 					//このノードは関係ない。
 					node
@@ -270,22 +270,22 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						//値以外は、すべてのキーが空白である。
 						//すなわち、このノードには子はいない。
 						//したがって、「終端記号 -> 値」のショートカットノードを生成する。
-						Seq(packNibbles(ImmutableBytes.fromOneByte(TERMINATOR)), items(idx))
+						TrieNode(packNibbles(ImmutableBytes.fromOneByte(TERMINATOR)), TrieNode(items(idx)))
 					} else if (0 <= idx) {
 						//１ノードだけ子供がいて、このノードには値がない。
 						//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
 							retrieveNode(TrieNode(items(idx))) match {
 							case child: ShortcutNode =>
 								val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.shortcutKey)
-								Seq(packNibbles(concat), child.childNode.value)
+								TrieNode(packNibbles(concat), child.childNode)
 							case _ =>
-								Seq(packNibbles(ImmutableBytes.fromOneByte(idx.toByte)), items(idx))
+								TrieNode(packNibbles(ImmutableBytes.fromOneByte(idx.toByte)), TrieNode(items(idx)))
 						}
 					} else {
 						//２ノード以上子供がいるか、子どもと値がある。
-						items.toSeq
+						TrieNode(Value.fromObject(items.toSeq))
 					}
-				putToCache(TrieNode(Value.fromObject(newNode)))
+				putToCache(newNode)
 			case _ =>
 				throw new RuntimeException
 		}
@@ -529,7 +529,8 @@ object TrieNode {
 	}
 	def apply(value: Value): TrieNode = {
 		if (value.isSeq && value.length == ShortcutSize) {
-			new ShortcutNode(value)
+			//throw new RuntimeException
+			apply(value.get(0).get.asBytes, TrieNode(value.get(1).get))
 		} else if (value.isSeq && value.length == RegularSize) {
 			new RegularNode(value)
 		} else if (value.isBytes && value.asBytes.isEmpty) {
@@ -539,17 +540,21 @@ object TrieNode {
 		}
 	}
 
+	def apply(key: ImmutableBytes, child: TrieNode): ShortcutNode = new ShortcutNode(key, child)
+
 }
 
-class ShortcutNode(override val value: Value) extends TrieNode {
+class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) extends TrieNode {
 	override val isEmpty: Boolean = false
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = true
 	override val isRegularNode: Boolean = false
 	override def hash = TrieImpl.computeHash(Right(value))
-	def shortcutKey: ImmutableBytes = this.value.get(0).get.asBytes
-	def childNode: TrieNode = TrieNode(this.value.get(1).get)
+//	def shortcutKey: ImmutableBytes = this.value.get(0).get.asBytes
+//	def childNode: TrieNode = TrieNode(this.value.get(1).get)
 	override def nodeValue: ImmutableBytes = this.childNode.value.asBytes
+
+	override def value: Value = Value.fromObject(Seq(Value.fromObject(this.shortcutKey), this.childNode.value))
 
 	override def equals(o: Any): Boolean = {
 		try {
