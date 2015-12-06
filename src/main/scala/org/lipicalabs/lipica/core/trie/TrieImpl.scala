@@ -191,14 +191,14 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						//既存ノードのキーの途中で分岐がある。
 						//2要素のショートカットノードを、17要素の通常ノードに変換する。
 						//従来の要素。
-						val oldNode = insert(TrieNode.empty, nodeKey.copyOfRange(matchingLength + 1, nodeKey.length), currentNode.childNode).value
+						val oldNode = insert(TrieNode.empty, nodeKey.copyOfRange(matchingLength + 1, nodeKey.length), currentNode.childNode)
 						//追加された要素。
-						val newNode = insert(TrieNode.empty, key.copyOfRange(matchingLength + 1, key.length), valueNode).value
+						val newNode = insert(TrieNode.empty, key.copyOfRange(matchingLength + 1, key.length), valueNode)
 						//異なる最初のニブルに対応するノードを記録して、分岐させる。
-						val scaledSlice = emptyValueSlice(LIST_SIZE)
+						val scaledSlice = createRegularNodeSlice
 						scaledSlice(nodeKey(matchingLength)) = oldNode
 						scaledSlice(key(matchingLength)) = newNode
-						putToCache(TrieNode(scaledSlice.toSeq.map(TrieNode(_))))
+						putToCache(TrieNode(scaledSlice.toSeq))
 					}
 				if (matchingLength == 0) {
 					//既存ノードのキーと新たなキーとの間に共通点はないので、
@@ -302,7 +302,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 */
 	private def analyzeRegularNode(node: Array[Value]): Int = {
 		var idx = -1
-		(0 until LIST_SIZE).foreach {
+		(0 until TrieNode.RegularSize).foreach {
 			i => {
 				if (node(i) != Value.empty) {
 					if (idx == -1) {
@@ -341,15 +341,15 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 	}
 
-	private def emptyValueSlice(i: Int): Array[Value] = {
-		(0 until i).map(_ => Value.empty).toArray
+	private def createRegularNodeSlice: Array[TrieNode] = {
+		(0 until TrieNode.RegularSize).map(_ => TrieNode.empty).toArray
 	}
 
 	/**
 	 * １７要素ノードの要素を、可変の配列に変換する。
 	 */
 	private def copyNode(node: RegularNode): Array[Value] = {
-		(0 until LIST_SIZE).map(i => Option(node.child(i).value).getOrElse(Value.empty)).toArray
+		(0 until TrieNode.RegularSize).map(i => Option(node.child(i).value).getOrElse(Value.empty)).toArray
 	}
 
 	override def sync(): Unit = {
@@ -403,11 +403,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val node = this.cache.get(hash)
 		if (node.nodeValue.isSeq) {
 			val siblings = node.nodeValue.asSeq
-			if (siblings.size == PAIR_SIZE) {
+			if (siblings.size == TrieNode.ShortcutSize) {
 				val value = Value.fromObject(siblings(1))
 				if (value.isHashCode) scanTree(value.asBytes, action)
 			} else {
-				(0 until LIST_SIZE).foreach {i => {
+				(0 until TrieNode.RegularSize).foreach {i => {
 					val value = Value.fromObject(siblings(i))
 					if (value.isHashCode) scanTree(value.asBytes, action)
 				}}
@@ -476,9 +476,6 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 object TrieImpl {
 	private val logger = LoggerFactory.getLogger("trie")
 
-	private val PAIR_SIZE = 2.toByte
-	private val LIST_SIZE = 17.toByte
-
 	private val EMPTY_TRIE_HASH = DigestUtils.EmptyTrieHash
 
 	@tailrec
@@ -515,7 +512,7 @@ trait TrieNode {
 }
 
 object TrieNode {
-	private val ShortcutSize = 2
+	val ShortcutSize = 2
 	val RegularSize = 17
 
 	val emptyTrieNode = new DigestNode(DigestUtils.EmptyTrieHash)
