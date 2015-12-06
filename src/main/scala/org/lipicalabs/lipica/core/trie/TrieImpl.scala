@@ -88,17 +88,16 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val currentNode = retrieveNode(aNode)
 		if (currentNode.isShortcutNode) {
 			//このノードのキーを長ったらしい表現に戻す。
-			val k = unpackToNibbles(currentNode.child(0).value.asBytes)
+			val k = unpackToNibbles(currentNode.shortcutKey)
 			//値を読み取る。
-			val v = currentNode.child(1).value
 			if ((k.length <= key.length) && key.copyOfRange(0, k.length) == k) {
 				if (key.length == k.length) {
 					//完全一致！
-					return v.asBytes
+					return currentNode.nodeValue
 				}
 				//このノードのキーが、指定されたキーの接頭辞である。
 				//子孫を再帰的に探索する。
-				get(TrieNode(v), key.copyOfRange(k.length, key.length))
+				get(currentNode.childNode, key.copyOfRange(k.length, key.length))
 			} else {
 				//このノードは、指定されたキーの接頭辞ではない。
 				//つまり、要求されたキーに対応する値は存在しない。
@@ -351,7 +350,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 * １７要素ノードの要素を、可変の配列に変換する。
 	 */
 	private def copyNode(node: TrieNode): Array[Value] = {
-		(0 until LIST_SIZE).map(i => Option(node.value.get(i).get).getOrElse(Value.empty)).toArray
+		(0 until LIST_SIZE).map(i => Option(node.child(i).value).getOrElse(Value.empty)).toArray
 	}
 
 	override def sync(): Unit = {
@@ -516,6 +515,7 @@ trait TrieNode {
 	def hash: ImmutableBytes
 	def nodeValue: ImmutableBytes
 	def child(idx: Int): TrieNode
+	def childNode: TrieNode
 }
 
 object TrieNode {
@@ -551,8 +551,10 @@ class ShortcutNode(override val value: Value) extends TrieNode {
 	override val isShortcutNode: Boolean = true
 	override val isRegularNode: Boolean = false
 	override def hash = TrieImpl.computeHash(Right(value))
-	override def nodeValue: ImmutableBytes = this.value.asSeq(1).asInstanceOf[Value].asBytes
-	override def shortcutKey: ImmutableBytes = this.value.asSeq.head.asInstanceOf[ImmutableBytes]
+	override def shortcutKey: ImmutableBytes = this.value.get(0).get.asBytes
+	override def childNode: TrieNode = TrieNode(this.value.get(1).get)
+	override def nodeValue: ImmutableBytes = this.value.get(1).get.asBytes
+
 	override def child(idx: Int): TrieNode = {
 		TrieNode(this.value.get(idx).get)
 	}
@@ -566,6 +568,7 @@ class RegularNode(override val value: Value) extends TrieNode {
 	override def hash = TrieImpl.computeHash(Right(value))
 	override def nodeValue: ImmutableBytes = this.value.asSeq(16).asInstanceOf[Value].asBytes
 	override def shortcutKey: ImmutableBytes = ImmutableBytes.empty
+	override def childNode: TrieNode = throw new UnsupportedOperationException
 	override def child(idx: Int): TrieNode = {
 		TrieNode(this.value.get(idx).get)
 	}
@@ -579,6 +582,7 @@ class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
 	override def value = Value.fromObject(hash)
 	override def nodeValue: ImmutableBytes = throw new UnsupportedOperationException
 	override def shortcutKey: ImmutableBytes = ImmutableBytes.empty
+	override def childNode: TrieNode = throw new UnsupportedOperationException
 	override def child(idx: Int): TrieNode = throw new UnsupportedOperationException
 }
 
