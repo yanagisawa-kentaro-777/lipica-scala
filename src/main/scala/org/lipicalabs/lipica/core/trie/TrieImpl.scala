@@ -179,23 +179,22 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 		if (currentNode.isShortcutNode) {
 			//２要素のショートカットノードである。
-			val packedKey = currentNode.child(0).value.asBytes
+			val packedKey = currentNode.shortcutKey
 			//キーを長ったらしい表現に戻す。
 			val k = unpackToNibbles(packedKey)
 			//値を取得する。
-			val v = currentNode.child(1).value
 			val matchingLength = ByteUtils.matchingLength(key, k)
 			val createdNode =
 				if (matchingLength == k.length) {
 					//既存ノードのキー全体が、新たなキーの接頭辞になっている。
 					val remainingKeyPart = key.copyOfRange(matchingLength, key.length)
 					//子孫を作る。
-					insert(TrieNode(v), remainingKeyPart, value)
+					insert(currentNode.childNode, remainingKeyPart, value)
 				} else {
 					//既存ノードのキーの途中で分岐がある。
 					//2要素のショートカットノードを、17要素の通常ノードに変換する。
 					//従来の要素。
-					val oldNode = insert(TrieNode.empty, k.copyOfRange(matchingLength + 1, k.length), v).value
+					val oldNode = insert(TrieNode.empty, k.copyOfRange(matchingLength + 1, k.length), currentNode.childNode.value).value
 					//追加された要素。
 					val newNode = insert(TrieNode.empty, key.copyOfRange(matchingLength + 1, key.length), value).value
 					//異なる最初のニブルに対応するノードを記録して、分岐させる。
