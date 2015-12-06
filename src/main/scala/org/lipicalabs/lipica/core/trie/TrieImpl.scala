@@ -341,17 +341,6 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 	}
 
-	private def createRegularNodeSlice: Array[TrieNode] = {
-		(0 until TrieNode.RegularSize).map(_ => TrieNode.empty).toArray
-	}
-
-	/**
-	 * １７要素ノードの要素を、可変の配列に変換する。
-	 */
-	private def copyRegularNode(node: RegularNode): Array[TrieNode] = {
-		(0 until TrieNode.RegularSize).map(i => Option(node.child(i)).getOrElse(TrieNode.empty)).toArray
-	}
-
 	override def sync(): Unit = {
 		this.cache.commit()
 		this.prevRootRef.set(root)
@@ -509,6 +498,18 @@ object TrieImpl {
 				Value.fromObject(node.nodeValue)
 		}
 	}
+
+	private def createRegularNodeSlice: Array[TrieNode] = {
+		(0 until TrieNode.RegularSize).map(_ => TrieNode.empty).toArray
+	}
+
+	/**
+	 * １７要素ノードの要素を、可変の配列に変換する。
+	 */
+	private def copyRegularNode(node: RegularNode): Array[TrieNode] = {
+		(0 until TrieNode.RegularSize).map(i => Option(node.child(i)).getOrElse(TrieNode.empty)).toArray
+	}
+
 
 }
 
