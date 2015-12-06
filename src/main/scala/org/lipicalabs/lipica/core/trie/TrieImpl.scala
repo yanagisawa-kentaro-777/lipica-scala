@@ -245,13 +245,13 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
 				val deleteResult = delete(TrieNode(currentNode.child(1).value), key.copyOfRange(k.length, key.length))
-				val newChild = retrieveNode(deleteResult)
+				val newChild = retrieveNode2(deleteResult)
 				val newNode =
-					if (newChild.length == PAIR_SIZE) {
+					if (newChild.isShortcutNode) {
 						//削除で発生する跳躍をつなぐ。
 						//この操作こそが、削除そのものである。
-						val newKey = k ++ unpackToNibbles(newChild.get(0).get.asBytes)
-						Seq(packNibbles(newKey), newChild.get(1).get)
+						val newKey = k ++ unpackToNibbles(newChild.child(0).value.asBytes)
+						Seq(packNibbles(newKey), newChild.child(1).value)
 					} else {
 						Seq(packedKey, deleteResult.value)
 					}
