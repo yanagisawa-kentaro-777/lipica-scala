@@ -552,7 +552,7 @@ class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) ext
 	override val isRegularNode: Boolean = false
 	override def hash = TrieImpl.computeHash(Right(value))
 
-	override def nodeValue: ImmutableBytes = this.childNode.value.asBytes
+	override def nodeValue: ImmutableBytes = this.childNode.nodeValue
 
 	override def value: Value = Value.fromObject(Seq(Value.fromObject(this.shortcutKey), this.childNode.value))
 
@@ -572,10 +572,8 @@ class RegularNode(private val children: Seq[TrieNode]) extends TrieNode {
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = true
 	override def hash = TrieImpl.computeHash(Right(value))
-	override def nodeValue: ImmutableBytes = this.value.get(16).get.asBytes
-	def child(idx: Int): TrieNode = {
-		TrieNode(this.value.get(idx).get)
-	}
+	override def nodeValue: ImmutableBytes = this.children(16).nodeValue
+	def child(idx: Int): TrieNode = this.children(idx)
 
 	override def value: Value = Value.fromObject(this.children.map(_.value))
 
