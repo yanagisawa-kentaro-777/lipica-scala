@@ -231,11 +231,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//何もしない。
 			return TrieNode.empty
 		}
-		val currentNode = retrieveNode(node)
-		if (currentNode.length == PAIR_SIZE) {
+		val currentNode = retrieveNode2(node)
+		if (currentNode.isShortcutNode) {
 			//２要素のショートカットノードである。
 			//長ったらしい表現に戻す。
-			val packedKey = currentNode.get(0).get.asBytes
+			val packedKey = currentNode.child(0).value.asBytes
 			val k = unpackToNibbles(packedKey)
 
 			if (k == key) {
@@ -244,7 +244,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			} else if (k == key.copyOfRange(0, k.length)) {
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
-				val deleteResult = delete(TrieNode(currentNode.get(1).get), key.copyOfRange(k.length, key.length))
+				val deleteResult = delete(TrieNode(currentNode.child(1).value), key.copyOfRange(k.length, key.length))
 				val newChild = retrieveNode(deleteResult)
 				val newNode =
 					if (newChild.length == PAIR_SIZE) {
@@ -262,7 +262,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			}
 		} else {
 			//もともと17要素の通常ノードである。
-			val items = copyNode(TrieNode(currentNode))
+			val items = copyNode(currentNode)
 			//再帰的に削除する。
 			val newChild = delete(TrieNode(items(key(0))), key.copyOfRange(1, key.length)).value
 			//新たな子供をつなぎ直す。これが削除操作の本体である。
