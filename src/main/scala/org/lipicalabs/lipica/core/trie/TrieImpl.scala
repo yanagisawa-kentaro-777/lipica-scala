@@ -529,10 +529,9 @@ object TrieNode {
 	}
 	def apply(value: Value): TrieNode = {
 		if (value.isSeq && value.length == ShortcutSize) {
-			//throw new RuntimeException
 			apply(value.get(0).get.asBytes, TrieNode(value.get(1).get))
 		} else if (value.isSeq && value.length == RegularSize) {
-			new RegularNode(value)
+			apply(value.asSeq.map(each => apply(Value.fromObject(each))))
 		} else if (value.isBytes && value.asBytes.isEmpty) {
 			TrieNode.empty
 		} else {
@@ -542,6 +541,8 @@ object TrieNode {
 
 	def apply(key: ImmutableBytes, child: TrieNode): ShortcutNode = new ShortcutNode(key, child)
 
+	def apply(children: Seq[TrieNode]): RegularNode = new RegularNode(children)
+
 }
 
 class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) extends TrieNode {
@@ -550,8 +551,7 @@ class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) ext
 	override val isShortcutNode: Boolean = true
 	override val isRegularNode: Boolean = false
 	override def hash = TrieImpl.computeHash(Right(value))
-//	def shortcutKey: ImmutableBytes = this.value.get(0).get.asBytes
-//	def childNode: TrieNode = TrieNode(this.value.get(1).get)
+
 	override def nodeValue: ImmutableBytes = this.childNode.value.asBytes
 
 	override def value: Value = Value.fromObject(Seq(Value.fromObject(this.shortcutKey), this.childNode.value))
@@ -566,7 +566,7 @@ class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) ext
 	}
 }
 
-class RegularNode(override val value: Value) extends TrieNode {
+class RegularNode(private val children: Seq[TrieNode]) extends TrieNode {
 	override val isEmpty: Boolean = false
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = false
@@ -576,6 +576,9 @@ class RegularNode(override val value: Value) extends TrieNode {
 	def child(idx: Int): TrieNode = {
 		TrieNode(this.value.get(idx).get)
 	}
+
+	override def value: Value = Value.fromObject(this.children.map(_.value))
+
 	override def equals(o: Any): Boolean = {
 		try {
 			val another = o.asInstanceOf[RegularNode]
