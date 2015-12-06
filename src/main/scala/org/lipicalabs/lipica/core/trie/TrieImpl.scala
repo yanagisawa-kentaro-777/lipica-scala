@@ -198,7 +198,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						val scaledSlice = emptyValueSlice(LIST_SIZE)
 						scaledSlice(nodeKey(matchingLength)) = oldNode
 						scaledSlice(key(matchingLength)) = newNode
-						putToCache(TrieNode(Value.fromObject(scaledSlice.toSeq)))
+						putToCache(TrieNode(scaledSlice.toSeq.map(TrieNode(_))))
 					}
 				if (matchingLength == 0) {
 					//既存ノードのキーと新たなキーとの間に共通点はないので、
@@ -214,7 +214,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				val newNode = copyNode(currentNode)
 				//普通にノードを更新して、保存する。
 				newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), valueNode).value
-				putToCache(TrieNode(Value.fromObject(newNode.toSeq)))
+				putToCache(TrieNode(newNode.toSeq.map(TrieNode(_))))
 			case _ =>
 				throw new RuntimeException
 		}
@@ -283,7 +283,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						}
 					} else {
 						//２ノード以上子供がいるか、子どもと値がある。
-						TrieNode(Value.fromObject(items.toSeq))
+						TrieNode(items.toSeq.map(TrieNode(_)))
 					}
 				putToCache(newNode)
 			case _ =>
