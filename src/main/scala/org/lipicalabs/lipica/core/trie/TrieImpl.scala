@@ -331,7 +331,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	}
 
 	private def putToCache(node: TrieNode): TrieNode = {
-		this.cache.put(node.value) match {
+		this.cache.put(convertNodeToValue(node)) match {
 			case Left(v) =>
 				//値がそのままである。
 				node
@@ -449,7 +449,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val nodes = this.cache.getNodes
 		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
 		val encodedValues = nodes.values.map(each => RBACCodec.Encoder.encode(each.nodeValue.value))
-		val encodedRoot = RBACCodec.Encoder.encode(retrieveNode(this.root).value.value)
+		val encodedRoot = RBACCodec.Encoder.encode(this.root.hash)
 		RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot))
 	}
 
@@ -498,6 +498,18 @@ object TrieImpl {
 				}
 		}
 	}
+
+	def convertNodeToValue(aNode: TrieNode): Value = {
+		aNode match {
+			case node: ShortcutNode =>
+				Value.fromObject(Seq(Value.fromObject(node.shortcutKey), convertNodeToValue(node.childNode)))
+			case node: RegularNode =>
+				Value.fromObject(node.children.map(each => convertNodeToValue(each)))
+			case node: TrieNode =>
+				Value.fromObject(node.nodeValue)
+		}
+	}
+
 }
 
 
@@ -507,7 +519,6 @@ trait TrieNode {
 	def isShortcutNode: Boolean
 	def isRegularNode: Boolean
 	def nodeValue: ImmutableBytes
-	def value: Value
 	def hash: ImmutableBytes
 }
 
@@ -547,11 +558,9 @@ class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) ext
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = true
 	override val isRegularNode: Boolean = false
-	override def hash = TrieImpl.computeHash(Right(value))
+	override def hash = TrieImpl.computeHash(Right(TrieImpl.convertNodeToValue(this)))
 
 	override def nodeValue: ImmutableBytes = this.childNode.nodeValue
-
-	override def value: Value = Value.fromObject(Seq(Value.fromObject(this.shortcutKey), this.childNode.value))
 
 	override def equals(o: Any): Boolean = {
 		try {
@@ -563,16 +572,14 @@ class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) ext
 	}
 }
 
-class RegularNode(private val children: Seq[TrieNode]) extends TrieNode {
+class RegularNode(val children: Seq[TrieNode]) extends TrieNode {
 	override val isEmpty: Boolean = false
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = true
-	override def hash = TrieImpl.computeHash(Right(value))
+	override def hash = TrieImpl.computeHash(Right(TrieImpl.convertNodeToValue(this)))
 	override def nodeValue: ImmutableBytes = this.children(16).nodeValue
 	def child(idx: Int): TrieNode = this.children(idx)
-
-	override def value: Value = Value.fromObject(this.children.map(_.value))
 
 	override def equals(o: Any): Boolean = {
 		try {
@@ -596,7 +603,6 @@ class ValueNode(override val nodeValue: ImmutableBytes) extends TrieNode {
 	override def isShortcutNode: Boolean = false
 	override def isEmpty: Boolean = false
 
-	override def value: Value = Value.fromObject(this.nodeValue)
 	override def hash: ImmutableBytes = TrieImpl.computeHash(Left(this.nodeValue))
 }
 
@@ -609,7 +615,7 @@ class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
 	override val isDigestNode: Boolean = true
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = false
-	override def value = Value.fromObject(hash)
+	override val nodeValue: ImmutableBytes = this.hash
 	override def equals(o: Any): Boolean = {
 		try {
 			this.hash == o.asInstanceOf[DigestNode].hash
@@ -617,6 +623,5 @@ class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
 			case any: Throwable => false
 		}
 	}
-	override val nodeValue: ImmutableBytes = this.hash
 }
 
