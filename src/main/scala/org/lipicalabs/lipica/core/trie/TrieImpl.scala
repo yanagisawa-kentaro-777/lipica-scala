@@ -85,12 +85,12 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//キーが消費し尽くされているか、ノードに子孫がいない場合、そのノードを返す。
 			return aNode.value.asBytes
 		}
-		val currentNode = retrieveNode(aNode)
-		if (currentNode.length == PAIR_SIZE) {
+		val currentNode = retrieveNode2(aNode)
+		if (currentNode.isShortcutNode) {
 			//このノードのキーを長ったらしい表現に戻す。
-			val k = unpackToNibbles(currentNode.get(0).get.asBytes)
+			val k = unpackToNibbles(currentNode.child(0).value.asBytes)
 			//値を読み取る。
-			val v = currentNode.get(1).get
+			val v = currentNode.child(1).value
 			if ((k.length <= key.length) && key.copyOfRange(0, k.length) == k) {
 				if (key.length == k.length) {
 					//完全一致！
@@ -104,10 +104,10 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				//つまり、要求されたキーに対応する値は存在しない。
 				ImmutableBytes.empty
 			}
-		} else if (currentNode.length == LIST_SIZE) {
+		} else if (currentNode.isRegularNode) {
 			//このノードは、17要素の通常ノードである。
 			//子孫をたどり、キーを１ニブル消費して探索を継続する。
-			val child = currentNode.get(key(0)).get
+			val child = currentNode.child(key(0)).value
 			get(TrieNode(child), key.copyOfRange(1, key.length))
 		} else {
 			ImmutableBytes.empty
@@ -332,6 +332,20 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 	}
 
+	private def retrieveNode2(node: TrieNode): TrieNode = {
+		if (!node.isDigestNode) {
+			return node
+		}
+		if (node.isEmpty) {
+			TrieNode.empty
+		} else if (node.hash == DigestUtils.EmptyTrieHash) {
+			TrieNode.empty
+		} else {
+			//対応する値を引いて返す。
+			TrieNode(this.cache.get(node.hash).nodeValue)
+		}
+	}
+
 	private def putToCache(node: TrieNode): TrieNode = {
 		this.cache.put(node.value) match {
 			case Left(v) =>
@@ -432,7 +446,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				valuesSeq.indices.foreach {i => {
 					val encodedValue = valuesSeq(i)
 					val key = new Array[Byte](32)
-					val value = Value.fromEncodedBytes(encodedValue)
+					val value = Value.fromEncodedBytes(encodedValue).decode
 					keys.copyTo(i * 32, key, 0, 32)
 
 					this.cache.put(ImmutableBytes(key), value)
@@ -553,7 +567,9 @@ class ShortcutNode(override val value: Value) extends TrieNode {
 	override def hash = TrieImpl.computeHash(Right(value))
 	override def nodeValue: ImmutableBytes = this.value.asSeq(1).asInstanceOf[Value].asBytes
 	override def shortcutKey: ImmutableBytes = this.value.asSeq.head.asInstanceOf[ImmutableBytes]
-	override def child(idx: Int): TrieNode = TrieNode(Value.fromObject(Seq(ImmutableBytes.empty, Value.fromObject(this.value.asSeq(idx)))))
+	override def child(idx: Int): TrieNode = {
+		TrieNode(this.value.get(idx).get)
+	}
 }
 
 class RegularNode(override val value: Value) extends TrieNode {
@@ -564,7 +580,9 @@ class RegularNode(override val value: Value) extends TrieNode {
 	override def hash = TrieImpl.computeHash(Right(value))
 	override def nodeValue: ImmutableBytes = this.value.asSeq(16).asInstanceOf[Value].asBytes
 	override def shortcutKey: ImmutableBytes = ImmutableBytes.empty
-	override def child(idx: Int): TrieNode = TrieNode(this.value.asSeq(idx).asInstanceOf[Value])
+	override def child(idx: Int): TrieNode = {
+		TrieNode(this.value.get(idx).get)
+	}
 }
 
 class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
