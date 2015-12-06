@@ -334,7 +334,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		this.cache.put(node.value) match {
 			case Left(v) =>
 				//値がそのままである。
-				TrieNode(v)
+				node
 			case Right(digest) =>
 				//長かったので、ハッシュ値が返ってきたということ。
 				TrieNode.fromDigest(digest)
