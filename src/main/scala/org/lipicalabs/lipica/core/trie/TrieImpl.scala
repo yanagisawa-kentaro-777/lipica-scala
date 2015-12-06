@@ -246,9 +246,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					//このノードのキーが、削除すべきキーの接頭辞である。
 					//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
 					val deleteResult = delete(currentNode.childNode, key.copyOfRange(k.length, key.length))
-					val newChild = retrieveNode(deleteResult)
-					val newNode =
-						newChild match {
+					val newNode = retrieveNode(deleteResult) match {
 							case newChild: ShortcutNode =>
 								//削除で発生する跳躍をつなぐ。
 								//この操作こそが、削除そのものである。
@@ -280,8 +278,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					} else if (0 <= idx) {
 						//１ノードだけ子供がいて、このノードには値がない。
 						//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
-						val child = retrieveNode(TrieNode(items(idx)))
-						child match {
+							retrieveNode(TrieNode(items(idx))) match {
 							case child: ShortcutNode =>
 								val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.shortcutKey)
 								Seq(packNibbles(concat), child.childNode.value)
