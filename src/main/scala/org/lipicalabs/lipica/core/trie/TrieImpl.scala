@@ -520,7 +520,7 @@ trait TrieNode {
 
 object TrieNode {
 	private val ShortcutSize = 2
-	private val RegularSize = 17
+	val RegularSize = 17
 
 	val emptyTrieNode = new DigestNode(DigestUtils.EmptyTrieHash)
 	val empty = new DigestNode(ImmutableBytes.empty)
@@ -554,6 +554,16 @@ class ShortcutNode(override val value: Value) extends TrieNode {
 	def shortcutKey: ImmutableBytes = this.value.get(0).get.asBytes
 	def childNode: TrieNode = TrieNode(this.value.get(1).get)
 	override def nodeValue: ImmutableBytes = this.value.get(1).get.asBytes
+
+	override def equals(o: Any): Boolean = {
+		try {
+			val another = o.asInstanceOf[ShortcutNode]
+			(this.shortcutKey == another.shortcutKey) && (this.childNode == another.childNode)
+		} catch {
+			case any: Throwable => false
+		}
+	}
+
 }
 
 class RegularNode(override val value: Value) extends TrieNode {
@@ -566,6 +576,20 @@ class RegularNode(override val value: Value) extends TrieNode {
 	def child(idx: Int): TrieNode = {
 		TrieNode(this.value.get(idx).get)
 	}
+	override def equals(o: Any): Boolean = {
+		try {
+			val another = o.asInstanceOf[RegularNode]
+			for (i <- 0 until TrieNode.RegularSize) {
+				if (this.child(i) != another.child(i)) {
+					return false
+				}
+			}
+			true
+		} catch {
+			case any: Throwable => false
+		}
+	}
+
 }
 
 class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
@@ -575,5 +599,12 @@ class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
 	override val isRegularNode: Boolean = false
 	override def value = Value.fromObject(hash)
 	override def nodeValue: ImmutableBytes = throw new UnsupportedOperationException
+	override def equals(o: Any): Boolean = {
+		try {
+			this.hash == o.asInstanceOf[DigestNode].hash
+		} catch {
+			case any: Throwable => false
+		}
+	}
 }
 
