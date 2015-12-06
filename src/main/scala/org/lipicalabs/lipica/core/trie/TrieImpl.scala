@@ -211,10 +211,10 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				}
 			case currentNode: RegularNode =>
 				//もともと17要素の通常ノードである。
-				val newNode = copyNode(currentNode)
+				val newNode = copyRegularNode(currentNode)
 				//普通にノードを更新して、保存する。
-				newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), valueNode).value
-				putToCache(TrieNode(newNode.toSeq.map(TrieNode(_))))
+				newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), valueNode)
+				putToCache(TrieNode(newNode.toSeq))
 			case _ =>
 				throw new RuntimeException
 		}
@@ -258,9 +258,9 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				}
 			case currentNode: RegularNode =>
 				//もともと17要素の通常ノードである。
-				val items = copyNode(currentNode)
+				val items = copyRegularNode(currentNode)
 				//再帰的に削除する。
-				val newChild = delete(TrieNode(items(key(0))), key.copyOfRange(1, key.length)).value
+				val newChild = delete(items(key(0)), key.copyOfRange(1, key.length))
 				//新たな子供をつなぎ直す。これが削除操作の本体である。
 				items(key(0)) = newChild
 
@@ -270,20 +270,20 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						//値以外は、すべてのキーが空白である。
 						//すなわち、このノードには子はいない。
 						//したがって、「終端記号 -> 値」のショートカットノードを生成する。
-						TrieNode(packNibbles(ImmutableBytes.fromOneByte(TERMINATOR)), TrieNode(items(idx)))
+						TrieNode(packNibbles(ImmutableBytes.fromOneByte(TERMINATOR)), items(idx))
 					} else if (0 <= idx) {
 						//１ノードだけ子供がいて、このノードには値がない。
 						//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
-							retrieveNode(TrieNode(items(idx))) match {
+							retrieveNode(items(idx)) match {
 							case child: ShortcutNode =>
 								val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.shortcutKey)
 								TrieNode(packNibbles(concat), child.childNode)
 							case _ =>
-								TrieNode(packNibbles(ImmutableBytes.fromOneByte(idx.toByte)), TrieNode(items(idx)))
+								TrieNode(packNibbles(ImmutableBytes.fromOneByte(idx.toByte)), items(idx))
 						}
 					} else {
 						//２ノード以上子供がいるか、子どもと値がある。
-						TrieNode(items.toSeq.map(TrieNode(_)))
+						TrieNode(items.toSeq)
 					}
 				putToCache(newNode)
 			case _ =>
@@ -300,11 +300,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 * (1) もしくは (2) の場合には、0 - 15 もしくは 16（TERMINATOR）の値を返し、
 	 * (3) の場合には負の値を返します。
 	 */
-	private def analyzeRegularNode(node: Array[Value]): Int = {
+	private def analyzeRegularNode(node: Array[TrieNode]): Int = {
 		var idx = -1
 		(0 until TrieNode.RegularSize).foreach {
 			i => {
-				if (node(i) != Value.empty) {
+				if (node(i) != TrieNode.empty) {
 					if (idx == -1) {
 						idx = i
 					} else {
@@ -348,8 +348,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * １７要素ノードの要素を、可変の配列に変換する。
 	 */
-	private def copyNode(node: RegularNode): Array[Value] = {
-		(0 until TrieNode.RegularSize).map(i => Option(node.child(i).value).getOrElse(Value.empty)).toArray
+	private def copyRegularNode(node: RegularNode): Array[TrieNode] = {
+		(0 until TrieNode.RegularSize).map(i => Option(node.child(i)).getOrElse(TrieNode.empty)).toArray
 	}
 
 	override def sync(): Unit = {
