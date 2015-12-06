@@ -87,13 +87,14 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 		retrieveNode(aNode) match {
 			case currentNode: ShortcutNode =>
+				//２要素のショートカットノード。
 				//このノードのキーを長ったらしい表現に戻す。
-				val k = unpackToNibbles(currentNode.shortcutKey)
+				val nodeKey = unpackToNibbles(currentNode.shortcutKey)
 				//値を読み取る。
-				if ((k.length <= key.length) && key.copyOfRange(0, k.length) == k) {
+				if ((nodeKey.length <= key.length) && key.copyOfRange(0, nodeKey.length) == nodeKey) {
 					//このノードのキーが、指定されたキーの接頭辞である。
 					//子孫を再帰的に探索する。
-					get(currentNode.childNode, key.copyOfRange(k.length, key.length))
+					get(currentNode.childNode, key.copyOfRange(nodeKey.length, key.length))
 				} else {
 					//このノードは、指定されたキーの接頭辞ではない。
 					//つまり、要求されたキーに対応する値は存在しない。
@@ -102,8 +103,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			case currentNode: RegularNode =>
 				//このノードは、17要素の通常ノードである。
 				//子孫をたどり、キーを１ニブル消費して探索を継続する。
-				val child = currentNode.child(key(0)).value
-				get(TrieNode(child), key.copyOfRange(1, key.length))
+				val child = currentNode.child(key(0))
+				get(child, key.copyOfRange(1, key.length))
 			case _ =>
 				ImmutableBytes.empty
 		}
@@ -176,13 +177,12 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		node match {
 			case currentNode: ShortcutNode =>
 				//２要素のショートカットノードである。
-				val packedKey = currentNode.shortcutKey
 				//キーを長ったらしい表現に戻す。
-				val k = unpackToNibbles(packedKey)
-				//値を取得する。
-				val matchingLength = ByteUtils.matchingLength(key, k)
+				val nodeKey = unpackToNibbles(currentNode.shortcutKey)
+				//キーの共通部分の長さをカウントする。
+				val matchingLength = ByteUtils.matchingLength(key, nodeKey)
 				val createdNode =
-					if (matchingLength == k.length) {
+					if (matchingLength == nodeKey.length) {
 						//既存ノードのキー全体が、新たなキーの接頭辞になっている。
 						val remainingKeyPart = key.copyOfRange(matchingLength, key.length)
 						//子孫を作る。
@@ -191,12 +191,12 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						//既存ノードのキーの途中で分岐がある。
 						//2要素のショートカットノードを、17要素の通常ノードに変換する。
 						//従来の要素。
-						val oldNode = insert(TrieNode.empty, k.copyOfRange(matchingLength + 1, k.length), currentNode.childNode).value
+						val oldNode = insert(TrieNode.empty, nodeKey.copyOfRange(matchingLength + 1, nodeKey.length), currentNode.childNode).value
 						//追加された要素。
 						val newNode = insert(TrieNode.empty, key.copyOfRange(matchingLength + 1, key.length), valueNode).value
 						//異なる最初のニブルに対応するノードを記録して、分岐させる。
 						val scaledSlice = emptyValueSlice(LIST_SIZE)
-						scaledSlice(k(matchingLength)) = oldNode
+						scaledSlice(nodeKey(matchingLength)) = oldNode
 						scaledSlice(key(matchingLength)) = newNode
 						putToCache(TrieNode(Value.fromObject(scaledSlice.toSeq)))
 					}
@@ -233,20 +233,20 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				//２要素のショートカットノードである。
 				//長ったらしい表現に戻す。
 				val packedKey = currentNode.shortcutKey
-				val k = unpackToNibbles(packedKey)
+				val nodeKey = unpackToNibbles(packedKey)
 
-				if (k == key) {
+				if (nodeKey == key) {
 					//ぴたり一致。 これが削除対象である。
 					TrieNode.empty
-				} else if (k == key.copyOfRange(0, k.length)) {
+				} else if (nodeKey == key.copyOfRange(0, nodeKey.length)) {
 					//このノードのキーが、削除すべきキーの接頭辞である。
 					//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
-					val deleteResult = delete(currentNode.childNode, key.copyOfRange(k.length, key.length))
+					val deleteResult = delete(currentNode.childNode, key.copyOfRange(nodeKey.length, key.length))
 					val newNode = retrieveNode(deleteResult) match {
 							case newChild: ShortcutNode =>
 								//削除で発生する跳躍をつなぐ。
 								//この操作こそが、削除そのものである。
-								val newKey = k ++ unpackToNibbles(newChild.shortcutKey)
+								val newKey = nodeKey ++ unpackToNibbles(newChild.shortcutKey)
 								Seq(packNibbles(newKey), newChild.childNode.value)
 							case _ =>
 								Seq(packedKey, deleteResult.value)
