@@ -218,7 +218,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			//もともと17要素の通常ノードである。
 			val newNode = copyNode(currentNode)
 			//普通にノードを更新して、保存する。
-			newNode(key(0)) = insert(TrieNode(currentNode.child(key(0)).value), key.copyOfRange(1, key.length), value).value
+			newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), value).value
 			putToCache(TrieNode(Value.fromObject(newNode.toSeq)))
 		}
 	}
@@ -244,7 +244,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			} else if (k == key.copyOfRange(0, k.length)) {
 				//このノードのキーが、削除すべきキーの接頭辞である。
 				//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
-				val deleteResult = delete(TrieNode(currentNode.child(1).value), key.copyOfRange(k.length, key.length))
+				val deleteResult = delete(currentNode.child(1), key.copyOfRange(k.length, key.length))
 				val newChild = retrieveNode(deleteResult)
 				val newNode =
 					if (newChild.isShortcutNode) {
