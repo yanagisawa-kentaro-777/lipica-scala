@@ -278,11 +278,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				} else if (0 <= idx) {
 					//１ノードだけ子供がいて、このノードには値がない。
 					//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
-					val child = retrieveNode(TrieNode(items(idx)))
-					if (child.length == PAIR_SIZE) {
-						val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.get(0).get.asBytes)
-						Seq(packNibbles(concat), child.get(1).get)
-					} else if (child.length == LIST_SIZE) {
+					val child = retrieveNode2(TrieNode(items(idx)))
+					if (child.isShortcutNode) {
+						val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.child(0).value.asBytes)
+						Seq(packNibbles(concat), child.child(1).value)
+					} else if (child.isRegularNode) {
 						Seq(packNibbles(ImmutableBytes.fromOneByte(idx.toByte)), items(idx))
 					}
 				} else {
