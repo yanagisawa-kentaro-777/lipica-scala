@@ -155,7 +155,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 
 	private def insertOrDelete(node: TrieNode, key: ImmutableBytes, value: ImmutableBytes): TrieNode = {
 		if (value.nonEmpty) {
-			insert(node, key, Value.fromObject(value))
+			insert(node, key, ValueNode(value))
 		} else {
 			delete(node, key)
 		}
@@ -164,17 +164,17 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * キーに対応する値を登録します。
 	 */
-	private def insert(aNode: TrieNode, key: ImmutableBytes, value: Value): TrieNode = {
+	private def insert(aNode: TrieNode, key: ImmutableBytes, valueNode: TrieNode): TrieNode = {
 		if (key.isEmpty) {
 			//終端記号すらない空バイト列ということは、
 			//再帰的な呼び出しによってキーが消費しつくされたということ。
 			//これ以上は処理する必要がない。
-			return TrieNode(value)
+			return valueNode
 		}
 		val node = retrieveNode(aNode)
 		if (node.isEmpty) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
-			val newNode = Seq(packNibbles(key), value)
+			val newNode = Seq(packNibbles(key), valueNode.value)
 			return putToCache(TrieNode(Value.fromObject(newNode)))
 		}
 		node match {
@@ -190,14 +190,14 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						//既存ノードのキー全体が、新たなキーの接頭辞になっている。
 						val remainingKeyPart = key.copyOfRange(matchingLength, key.length)
 						//子孫を作る。
-						insert(currentNode.childNode, remainingKeyPart, value)
+						insert(currentNode.childNode, remainingKeyPart, valueNode)
 					} else {
 						//既存ノードのキーの途中で分岐がある。
 						//2要素のショートカットノードを、17要素の通常ノードに変換する。
 						//従来の要素。
-						val oldNode = insert(TrieNode.empty, k.copyOfRange(matchingLength + 1, k.length), currentNode.childNode.value).value
+						val oldNode = insert(TrieNode.empty, k.copyOfRange(matchingLength + 1, k.length), currentNode.childNode).value
 						//追加された要素。
-						val newNode = insert(TrieNode.empty, key.copyOfRange(matchingLength + 1, key.length), value).value
+						val newNode = insert(TrieNode.empty, key.copyOfRange(matchingLength + 1, key.length), valueNode).value
 						//異なる最初のニブルに対応するノードを記録して、分岐させる。
 						val scaledSlice = emptyValueSlice(LIST_SIZE)
 						scaledSlice(k(matchingLength)) = oldNode
@@ -217,7 +217,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				//もともと17要素の通常ノードである。
 				val newNode = copyNode(currentNode)
 				//普通にノードを更新して、保存する。
-				newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), value).value
+				newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), valueNode).value
 				putToCache(TrieNode(Value.fromObject(newNode.toSeq)))
 			case _ =>
 				throw new RuntimeException
@@ -563,7 +563,6 @@ class ShortcutNode(override val value: Value) extends TrieNode {
 			case any: Throwable => false
 		}
 	}
-
 }
 
 class RegularNode(override val value: Value) extends TrieNode {
@@ -589,7 +588,21 @@ class RegularNode(override val value: Value) extends TrieNode {
 			case any: Throwable => false
 		}
 	}
+}
 
+class ValueNode(override val nodeValue: ImmutableBytes) extends TrieNode {
+	override def isDigestNode: Boolean = false
+
+	override def isRegularNode: Boolean = false
+	override def isShortcutNode: Boolean = false
+	override def isEmpty: Boolean = false
+
+	override def value: Value = Value.fromObject(this.nodeValue)
+	override def hash: ImmutableBytes = TrieImpl.computeHash(Left(this.nodeValue))
+}
+
+object ValueNode {
+	def apply(v: ImmutableBytes): ValueNode = new ValueNode(v)
 }
 
 class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
