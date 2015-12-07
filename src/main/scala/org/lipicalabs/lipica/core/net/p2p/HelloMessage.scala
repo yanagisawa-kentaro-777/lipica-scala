@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
  * 2015/12/04 21:13
  * YANAGISAWA, Kentaro
  */
-class HelloMessage(val p2pVersion: Byte, val clientId: String, val capabilities: Seq[Capability], val listenPort: Int, val peerId: String) extends P2PParsedMessage {
+class HelloMessage(val p2pVersion: Byte, val clientId: String, val capabilities: Seq[Capability], val listenPort: Int, val peerId: String) extends P2PMessage {
 
 	override def toEncodedBytes = {
 		val encodedP2PVersion = RBACCodec.Encoder.encode(this.p2pVersion)

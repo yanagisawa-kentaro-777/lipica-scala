@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/05 13:00
  * YANAGISAWA, Kentaro
  */
-class GetPeersMessage extends P2PParsedMessage {
+class GetPeersMessage extends P2PMessage {
 	import GetPeersMessage._
 
 	override def toEncodedBytes = FixedPayload

@@ -8,10 +8,6 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/04 20:50
  * YANAGISAWA, Kentaro
  */
-abstract class P2PParsedMessage extends ParsedMessage {
-	override def command = P2PMessageCode.fromByte(this.code)
-}
-
-abstract class P2PEncodedMessage(_bytes: ImmutableBytes) extends EncodedMessage(_bytes) {
+abstract class P2PMessage extends ParsedMessage {
 	override def command = P2PMessageCode.fromByte(this.code)
 }

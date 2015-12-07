@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
  * 2015/12/05 13:14
  * YANAGISAWA, Kentaro
  */
-class PeersMessage(val peers: Set[Peer]) extends P2PParsedMessage {
+class PeersMessage(val peers: Set[Peer]) extends P2PMessage {
 
 	override def toEncodedBytes = {
 		val seqOfBytes = this.peers.toSeq.map(_.toEncodedBytes)

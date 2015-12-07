@@ -9,15 +9,15 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/05 12:45
  * YANAGISAWA, Kentaro
  */
-class PingMessage extends P2PParsedMessage {
+class PingMessage extends P2PMessage {
 	import PingMessage._
 
 	override def toEncodedBytes = Payload
-	override def answerMessage: Option[Class[_ <: P2PParsedMessage]] = Option(PingMessage.answerMessage)
+	override def answerMessage: Option[Class[_ <: P2PMessage]] = Option(PingMessage.answerMessage)
 	override def code = Ping.asByte
 }
 
 object PingMessage {
 	private val Payload = ImmutableBytes.parseHexString("C0")
-	private val answerMessage: Class[_ <: P2PParsedMessage] = ImmutableMessages.PongMessage.getClass
+	private val answerMessage: Class[_ <: P2PMessage] = ImmutableMessages.PongMessage.getClass
 }

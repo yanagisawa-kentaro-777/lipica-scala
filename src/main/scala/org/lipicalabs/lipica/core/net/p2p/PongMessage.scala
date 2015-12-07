@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/05 12:53
  * YANAGISAWA, Kentaro
  */
-class PongMessage extends P2PParsedMessage {
+class PongMessage extends P2PMessage {
 	import PongMessage._
 
 	override def toEncodedBytes = Payload

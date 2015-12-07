@@ -1,5 +1,6 @@
+完全互換にする。
 
-P2PHandlerを実装する。
+eth.message -> P2PHandlerを実装する。
 net.server 以下を実装し、net.submit.TransactionTaskを実装する。
 
 logging、refactor、comment。（不具合追跡用）
