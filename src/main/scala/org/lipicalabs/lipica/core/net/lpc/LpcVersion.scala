@@ -14,5 +14,5 @@ object LpcVersion {
 }
 
 case object V0 extends LpcVersion {
-	override val code: Int = 0
+	override val code: Int = 61//TODO
 }

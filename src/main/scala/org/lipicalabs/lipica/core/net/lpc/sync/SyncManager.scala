@@ -6,5 +6,5 @@ package org.lipicalabs.lipica.core.net.lpc.sync
  * YANAGISAWA, Kentaro
  */
 class SyncManager {
-	//
+	//TODO
 }

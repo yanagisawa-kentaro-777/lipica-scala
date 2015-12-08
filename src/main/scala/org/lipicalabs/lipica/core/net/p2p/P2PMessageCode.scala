@@ -20,10 +20,9 @@ sealed trait P2PMessageCode extends Command {
  */
 object P2PMessageCode {
 
-	private val map = new mutable.HashMap[Int, P2PMessageCode]
-
 	abstract class AbstractP2PMessageCode(override val command: Int) extends P2PMessageCode
 
+	private val map = new mutable.HashMap[Int, P2PMessageCode]
 	private def register(code: P2PMessageCode): Unit = this.map.put(code.command, code)
 
 	/**

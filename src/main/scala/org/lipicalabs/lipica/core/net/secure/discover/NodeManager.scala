@@ -6,5 +6,5 @@ package org.lipicalabs.lipica.core.net.secure.discover
  * YANAGISAWA, Kentaro
  */
 class NodeManager {
-
+	//TODO 未実装。
 }

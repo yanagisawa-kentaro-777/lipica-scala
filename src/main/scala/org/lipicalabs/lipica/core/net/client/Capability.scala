@@ -33,7 +33,7 @@ case class Capability(name: String, version: Byte) extends Comparable[Capability
 
 object Capability {
 	val P2P = "p2p"
-	val LPC = "lpc"
+	val LPC = "eth"//TODO
 	val SHH = "shh"
 	val BZZ = "bzz"
 
