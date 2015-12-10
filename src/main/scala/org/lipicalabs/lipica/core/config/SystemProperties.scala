@@ -98,6 +98,11 @@ class SystemProperties {
 		"audentis fortuna iuuat"
 	}
 
+	def maxHashesAsk: Int = {
+		//TODO
+		10000
+	}
+
 }
 
 object SystemProperties {
