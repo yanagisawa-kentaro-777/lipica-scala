@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 
 import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
+import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStatistics, SyncStateName}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**

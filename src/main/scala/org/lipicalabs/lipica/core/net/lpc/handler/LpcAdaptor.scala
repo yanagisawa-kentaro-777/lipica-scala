@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 
 import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.net.lpc.V0
-import org.lipicalabs.lipica.core.net.lpc.sync.SyncStatistics
+import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStateName, SyncStatistics}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -34,7 +34,7 @@ class LpcAdaptor extends Lpc {
 
 	override def hasStatusSucceeded = false
 
-	override def changeState(newState: Any) = ()
+	override def changeState(newState: SyncStateName) = ()
 
 	override def onSyncDone() = ()
 

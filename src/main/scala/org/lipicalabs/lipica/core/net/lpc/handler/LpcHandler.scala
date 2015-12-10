@@ -101,7 +101,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	}
 
 
-	override def changeState(newState: Any) = ???
+	override def changeState(newState: SyncStateName) = ???
 
 	override def onSyncDone() = ???
 
