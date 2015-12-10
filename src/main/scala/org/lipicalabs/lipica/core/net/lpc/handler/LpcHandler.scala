@@ -6,8 +6,8 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
-import org.lipicalabs.lipica.core.net.lpc.message.LpcMessage
-import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStatistics, Idle, SyncStateName, SyncQueue}
+import org.lipicalabs.lipica.core.net.lpc.message.{TransactionsMessage, LpcMessage}
+import org.lipicalabs.lipica.core.net.lpc.sync._
 import org.lipicalabs.lipica.core.net.server.Channel
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
@@ -38,56 +38,84 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	protected var syncState: SyncStateName = Idle
 	protected var syncDone: Boolean = false
+
+
 	protected var processTransactions: Boolean = true
+	override def enableTransactions() = this.processTransactions = true
+	override def disableTransactions() = this.processTransactions = false
 
 	protected var bestHash: ImmutableBytes = null
-	protected var _lastHashToAsk: ImmutableBytes = null
-	protected val _maxHashesAsk = SystemProperties.CONFIG.maxHashesAsk
+	override def bestKnownHash = this.bestHash
 
-	protected val sendHashes: mutable.Buffer[ImmutableBytes] = JavaConversions.asScalaBuffer(java.util.Collections.synchronizedList(new java.util.ArrayList[ImmutableBytes]))
+	protected var _lastHashToAsk: ImmutableBytes = null
+	override def lastHashToAsk = this._lastHashToAsk
+	override def lastHashToAsk_=(v: ImmutableBytes) = this._lastHashToAsk = v
+
+	protected var _maxHashesAsk = SystemProperties.CONFIG.maxHashesAsk
+	override def maxHashesAsk = this._maxHashesAsk
+	override def maxHashesAsk_=(v: Int) = this._maxHashesAsk = v
+
+	protected val sentHashes: mutable.Buffer[ImmutableBytes] = JavaConversions.asScalaBuffer(java.util.Collections.synchronizedList(new java.util.ArrayList[ImmutableBytes]))
 	protected val syncStats: SyncStatistics = new SyncStatistics
 
 
 	//TODO 未実装。
 	override def channelRead0(channelHandlerContext: ChannelHandlerContext, i: LpcMessage) = ???
 
-	override def hasStatusPassed = ???
+	override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+		loggerNet.warn("<LpcHandler> Exception caught.", cause)
+		onShutdown()
+		ctx.close()
+	}
 
-	override def isHashRetrievingDone = ???
+	override def handlerRemoved(ctx: ChannelHandlerContext): Unit = {
+		loggerNet.debug("<LpcHandler> Handler removed.")
+		onShutdown()
+	}
 
-	override def bestKnownHash = ???
+	override def isHashRetrievingDone = this.syncState == DoneHashRetrieving
 
-	override def hasBlocksLack = ???
+	override def isHashRetrieving = this.syncState == HashRetrieving
+
+	override def hasBlocksLack = this.syncState == BlocksLack
+
+	override def hasStatusPassed = this.lpcState != LpcState.Init
+
+	override def hasStatusSucceeded = this.lpcState == LpcState.Succeeded
+
+	override def onShutdown() = {
+		changeState(Idle)
+		returnHashes()
+	}
 
 	override def isIdle = ???
 
-	override def enableTransactions() = ???
+	protected def sendMessage(message: LpcMessage): Unit = {
+		this.messageQueue.sendMessage(message)
+		this.channel.nodeStatistics.lpcOutbound.add
+	}
 
-	override def sendTransaction(tx: TransactionLike) = ???
+	override def sendTransaction(tx: TransactionLike) = {
+		val message = new TransactionsMessage(Seq(tx))
+		sendMessage(message)
+	}
 
-	override def isHashRetrieving = ???
-
-	override def maxHashesAsk = ???
-
-	override def hasStatusSucceeded = ???
 
 	override def changeState(newState: Any) = ???
 
 	override def onSyncDone() = ???
 
-	override def disableTransactions() = ???
-
-	override def onShutdown() = ???
-
-	override def maxHashesAsk_=(v: Int) = ???
-
-	override def lastHashToAsk_=(v: ImmutableBytes) = ???
-
-	override def lastHashToAsk = ???
 
 	override def logSycStats() = ???
 
-	override def getSyncStats = ???
+	override def getSyncStats = this.syncStats
+
+	protected def returnHashes(): Unit = {
+		this.sentHashes.synchronized {
+			this.syncQueue.returnHashes(this.sentHashes.toIterable)
+		}
+		this.sentHashes.clear()
+	}
 
 }
 
