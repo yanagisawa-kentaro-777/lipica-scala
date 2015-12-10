@@ -157,7 +157,7 @@ class P2PHandler(private val messageQueue: MessageQueue) extends SimpleChannelIn
 
 object P2PHandler {
 	private val logger = LoggerFactory.getLogger("net")
-	val Version = 4
+	val Version: Byte = 4
 
 	private val pingTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory {
 		override def newThread(r: Runnable) = new Thread(r, "P2PPingTimer")

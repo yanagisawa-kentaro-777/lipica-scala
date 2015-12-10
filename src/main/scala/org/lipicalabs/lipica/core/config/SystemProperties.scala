@@ -83,6 +83,21 @@ class SystemProperties {
 
 	def txOutdatedThreshold: Int = 3
 
+	def listenPort: Int = {
+		//TODO
+		21000
+	}
+
+	def projectVersion: String = {
+		//TODO
+		"0.5.0.0"
+	}
+
+	def helloPhrase: String = {
+		//TODO
+		"audentis fortuna iuuat"
+	}
+
 }
 
 object SystemProperties {
