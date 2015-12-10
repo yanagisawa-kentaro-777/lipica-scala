@@ -10,7 +10,7 @@ sealed trait LpcVersion {
 }
 
 object LpcVersion {
-	val SupportedVersions: Seq[Int] = Seq(0)
+	val SupportedVersions: Seq[Int] = Seq(V0.code)
 }
 
 case object V0 extends LpcVersion {

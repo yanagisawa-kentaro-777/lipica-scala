@@ -1,5 +1,7 @@
 完全互換にする。
 
+lpc.handlerを実装する。
+lpc.syncを実装する。
 P2PHandlerを実装する。
 net.server 以下を実装し、net.submit.TransactionTaskを実装する。
 
