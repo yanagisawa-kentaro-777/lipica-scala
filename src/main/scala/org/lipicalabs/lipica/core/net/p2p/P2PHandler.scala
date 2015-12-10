@@ -7,6 +7,7 @@ import org.lipicalabs.lipica.core.base.{Block, TransactionLike}
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.lpc.message.{NewBlockMessage, TransactionsMessage}
 import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode._
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
@@ -31,6 +32,7 @@ class P2PHandler(private val messageQueue: MessageQueue) extends SimpleChannelIn
 
 	private var lastPeersSent: Set[PeerInfo] = null
 
+	//TODO auto wiring
 	private var _worldManager: WorldManager = ???
 	def worldManager: WorldManager = this._worldManager
 	def worldManager_=(v: WorldManager): Unit = this._worldManager = v
@@ -126,11 +128,13 @@ class P2PHandler(private val messageQueue: MessageQueue) extends SimpleChannelIn
 	}
 
 	def sendTransaction(tx: TransactionLike): Unit = {
-		//TODO 未実装
+		val message = new TransactionsMessage(Seq(tx))
+		this.messageQueue.sendMessage(message)
 	}
 
 	def sendNewBlock(block: Block): Unit = {
-		//TODO 未実装
+		val message = new NewBlockMessage(block, block.difficulty)
+		this.messageQueue.sendMessage(message)
 	}
 
 	def sendDisconnect(): Unit =  this.messageQueue.disconnect()
