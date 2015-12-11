@@ -7,4 +7,9 @@ package org.lipicalabs.lipica.core.net.lpc.sync
  */
 class SyncStatistics {
 	//TODO 未実装。
+
+	def reset(): Unit = ???
+
+	def addBlocks(v: Long): Unit = ???
+	def addHashes(v: Long): Unit = ???
 }

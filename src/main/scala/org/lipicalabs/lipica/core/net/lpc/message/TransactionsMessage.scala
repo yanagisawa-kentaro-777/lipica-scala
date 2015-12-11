@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
  * 2015/12/09 21:07
  * YANAGISAWA, Kentaro
  */
-class TransactionsMessage(private val transactions: Seq[TransactionLike]) extends LpcMessage {
+class TransactionsMessage(val transactions: Seq[TransactionLike]) extends LpcMessage {
 
 	override def toEncodedBytes = {
 		val seq = this.transactions.map(each => each.toEncodedBytes)

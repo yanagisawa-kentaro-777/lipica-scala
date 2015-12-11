@@ -103,6 +103,11 @@ class SystemProperties {
 		10000
 	}
 
+	def networkId: Int = {
+		//TODO
+		1
+	}
+
 }
 
 object SystemProperties {

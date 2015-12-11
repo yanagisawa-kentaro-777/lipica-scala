@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.manager
 
+import org.lipicalabs.lipica.core.base.Wallet
 import org.lipicalabs.lipica.core.db.Repository
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
@@ -16,5 +17,7 @@ trait WorldManager {
 	def listener: LipicaListener
 
 	def peerDiscovery: PeerDiscovery
+
+	def wallet: Wallet
 
 }

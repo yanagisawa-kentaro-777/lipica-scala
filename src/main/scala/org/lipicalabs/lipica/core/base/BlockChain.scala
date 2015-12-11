@@ -88,3 +88,7 @@ trait BlockChain {
 	def close(): Unit
 
 }
+
+object BlockChain {
+	val GenesisHash: ImmutableBytes = Genesis.getInstance.hash
+}

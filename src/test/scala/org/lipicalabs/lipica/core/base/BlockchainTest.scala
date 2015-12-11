@@ -9,7 +9,9 @@ import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.db.{RepositoryImpl, BlockInfo, IndexedBlockStore}
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
+import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.Message
+import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.{DifficultyRule, ParentNumberRule, ParentBlockHeaderValidator}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactoryImpl
@@ -32,6 +34,7 @@ class BlockchainTest extends Specification {
 		"be right" in {
 			val blockStore = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
 			val listener = new LipicaListener {
+				override def onLpcStatusUpdated(node: Node, status: StatusMessage) = ()
 				override def onBlock(block: Block, receipts: Iterable[TransactionReceipt]) = ()
 				override def onTransactionExecuted(summary: TransactionExecutionSummary) = ()
 				override def trace(s: String) = ()
