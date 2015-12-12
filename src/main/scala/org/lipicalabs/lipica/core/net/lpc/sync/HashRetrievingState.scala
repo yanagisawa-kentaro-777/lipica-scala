@@ -38,10 +38,10 @@ class HashRetrievingState extends AbstractSyncState(HashRetrieving) {
 				logger.trace("<HashRetrievingState> Hash retrieving is in progress.")
 			}
 			 if (syncManager.getGapBlock ne null) {
-				 master = syncManager.pool.getByNodeId(syncManager.getGapBlock.nodeId)
+				 master = syncManager.pool.getByNodeId(syncManager.getGapBlock.nodeId).orNull
 			 }
 			 if (master eq null) {
-				 master = syncManager.pool.getBest
+				 master = syncManager.pool.getBest.orNull
 			 }
 			 if (master eq null) {
 				 return
