@@ -17,6 +17,10 @@ class Channel {
 	def node: Node = ???
 	def nodeStatistics: NodeStatistics = ???
 
+	def isIdle: Boolean = ???
+	def isHashRetrieving: Boolean = ???
+	def isHashRetrievingDone: Boolean = ???
+
 	def totalDifficulty: BigInt = this.nodeStatistics.lpcTotalDifficulty
 
 }

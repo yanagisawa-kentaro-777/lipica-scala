@@ -21,6 +21,9 @@ class SyncQueue {
 
 	def pollHashes: Iterable[ImmutableBytes] = ???
 
+	def isHashesEmpty: Boolean = ???
+	def isBlocksEmpty: Boolean = ???
+
 	def logHashQueueSize(): Unit = ???
 
 }
