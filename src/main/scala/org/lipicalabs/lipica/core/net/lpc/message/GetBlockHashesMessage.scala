@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.net.lpc.message
 
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
+import org.lipicalabs.lipica.core.net.message.ParsedMessage
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 
 /**
@@ -18,9 +19,14 @@ class GetBlockHashesMessage(val bestHash: ImmutableBytes, val maxBlocks: Int) ex
 
 	override def code = LpcMessageCode.GetBlockHashes.asByte
 
+	override def answerMessage: Option[Class[_ <: ParsedMessage]] = Option(GetBlockHashesMessage.answerMessage)
+
 }
 
 object GetBlockHashesMessage {
+
+	private val answerMessage = new BlockHashesMessage(Seq.empty).getClass
+
 	def decode(encodedBytes: ImmutableBytes): GetBlockHashesMessage = {
 		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
 		new GetBlockHashesMessage(items.head.bytes, items(1).asInt)

@@ -127,6 +127,14 @@ trait Block {
 
 	def summaryString(short: Boolean): String
 
+	override def equals(o: Any): Boolean = {
+		try {
+			this.hash == o.asInstanceOf[Block].hash
+		} catch {
+			case e: Throwable => false
+		}
+	}
+
 }
 
 class PlainBlock private[base](override val blockHeader: BlockHeader, override val transactions: Seq[TransactionLike], override val uncles: Seq[BlockHeader]) extends Block {

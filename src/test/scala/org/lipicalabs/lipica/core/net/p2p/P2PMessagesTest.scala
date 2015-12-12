@@ -63,6 +63,16 @@ class P2PMessagesTest extends Specification {
 		}
 	}
 
+	"test DisconnectMessage (1.5)" should {
+		"be right" in {
+			val message = DisconnectMessage.decode(ImmutableBytes.parseHexString("C100"))
+			val encoded = message.toEncodedBytes
+			val decoded: DisconnectMessage = decodeMessage(P2PMessageCode.Disconnect.asByte, encoded)
+
+			decoded.reason mustEqual ReasonCode.Requested
+		}
+	}
+
 	"test DisconnectMessage (2)" should {
 		"be right" in {
 			val message = DisconnectMessage(ReasonCode.LocalIdentity)
