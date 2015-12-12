@@ -8,11 +8,12 @@ import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
  * 2015/12/08 20:34
  * YANAGISAWA, Kentaro
  */
-class StatusMessage(
-	val protocolVersion: Byte, val networkId: Int,
-	val totalDifficulty: ImmutableBytes,
-	val bestHash: ImmutableBytes,
-	val genesisHash: ImmutableBytes) extends LpcMessage {
+case class StatusMessage(
+	protocolVersion: Byte,
+	networkId: Int,
+	totalDifficulty: ImmutableBytes,
+	bestHash: ImmutableBytes,
+	genesisHash: ImmutableBytes) extends LpcMessage {
 
 	override def toEncodedBytes = {
 		val encodedProcotolVersion = RBACCodec.Encoder.encode(this.protocolVersion)

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.lpc.handler
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import org.lipicalabs.lipica.core.base.{Block, BlockchainImpl, BlockChain, TransactionLike}
+import org.lipicalabs.lipica.core.base.{Block, BlockChain, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
@@ -165,7 +165,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		val newtworkdId = SystemProperties.CONFIG.networkId
 		val totalDifficulty = this.blockchain.totalDifficulty
 		val bestHash = this.blockchain.bestBlockHash
-		val message = new StatusMessage(protocolVersion, newtworkdId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, BlockChain.GenesisHash)
+		val message = StatusMessage(protocolVersion, newtworkdId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, BlockChain.GenesisHash)
 		sendMessage(message)
 	}
 
@@ -182,7 +182,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	}
 
 	override def sendTransaction(tx: TransactionLike) = {
-		val message = new TransactionsMessage(Seq(tx))
+		val message = TransactionsMessage(Seq(tx))
 		sendMessage(message)
 	}
 
@@ -205,7 +205,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	protected def processGetBlockHashes(message: GetBlockHashesMessage): Unit = {
 		val hashes = this.blockchain.getSeqOfHashesStartingFrom(message.bestHash, message.maxBlocks max SystemProperties.CONFIG.maxHashesAsk)
-		sendMessage(new BlockHashesMessage(hashes))
+		sendMessage(BlockHashesMessage(hashes))
 	}
 
 	protected def processBlockHashes(hashes: Seq[ImmutableBytes]): Unit
@@ -249,13 +249,13 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		}
 
 		val shuffled = scala.util.Random.shuffle(hashes.toSeq)
-		sendMessage(new GetBlocksMessage(shuffled))
+		sendMessage(GetBlocksMessage(shuffled))
 		true
 	}
 
 	protected def processGetBlocks(message: GetBlocksMessage): Unit = {
 		val blocks = message.blockHashes.flatMap(each => this.blockchain.getBlockByHash(each))
-		sendMessage(new BlocksMessage(blocks))
+		sendMessage(BlocksMessage(blocks))
 	}
 
 
@@ -291,7 +291,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	}
 
 	def sendNewBlock(block: Block): Unit = {
-		sendMessage(new NewBlockMessage(block, block.difficulty))
+		sendMessage(NewBlockMessage(block, block.difficulty))
 	}
 
 	protected def processNewBlock(message: NewBlockMessage): Unit = {

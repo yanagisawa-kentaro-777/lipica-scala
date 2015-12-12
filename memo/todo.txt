@@ -18,6 +18,7 @@ StorageDictionary関連は、よく意味がわかっていないので後回し
 VM関連のデバッグ用出力（ProgramTrace等）。
 RepositoryImplのデバッグ用出力。
 TransactionExecutorのデバッグ用出力。
+LpcHandlerのデバッグ用出力。
 
 nullを排除する。
 ImmutableBytes#toByteArray を排除する。

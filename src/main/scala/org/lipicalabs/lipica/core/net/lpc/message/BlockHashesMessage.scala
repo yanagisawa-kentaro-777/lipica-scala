@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
  * 2015/12/09 20:36
  * YANAGISAWA, Kentaro
  */
-class BlockHashesMessage(val blockHashes: Seq[ImmutableBytes]) extends LpcMessage {
+case class BlockHashesMessage(blockHashes: Seq[ImmutableBytes]) extends LpcMessage {
 
 	override def toEncodedBytes = {
 		val seq = this.blockHashes.map(each => RBACCodec.Encoder.encode(each))

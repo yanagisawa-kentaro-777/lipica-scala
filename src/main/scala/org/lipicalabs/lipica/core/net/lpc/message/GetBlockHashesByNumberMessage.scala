@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
  * 2015/12/09 20:46
  * YANAGISAWA, Kentaro
  */
-class GetBlockHashesByNumberMessage(private val blockNumber: Long, private val maxBlocks: Int) extends LpcMessage {
+case class GetBlockHashesByNumberMessage(blockNumber: Long, maxBlocks: Int) extends LpcMessage {
 
 	override def toEncodedBytes = {
 		val encodedBlockNumber = RBACCodec.Encoder.encode(BigInt(this.blockNumber))
