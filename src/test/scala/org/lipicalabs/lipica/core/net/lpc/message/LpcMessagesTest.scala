@@ -115,21 +115,18 @@ class LpcMessagesTest extends Specification {
 		}
 	}
 
-//	"test TransactionsMessage" should {
-//		"be right" in {
-//			val hex = "f86e12f86b04648609184e72a00094cd2a3d9f938e13cd947ec05abc7fe734df8dd826" + "881bc16d674ec80000801ba05c89ebf2b77eeab88251e553f6f9d53badc1d800" + "bbac02d830801c2aa94a4c9fa00b7907532b1f29c79942b75fff98822293bf5f" + "daa3653a8d9f424c6a3265f06c"
-//			val decoded: TransactionsMessage = decodeMessage(LpcMessageCode.Transactions.asByte, ImmutableBytes.parseHexString(hex))
-//
-//			decoded.code mustEqual LpcMessageCode.Transactions.asByte
-//			decoded.transactions.size mustEqual 1
-//			decoded.transactions.head.hash.toHexString mustEqual "12fede795a80286ce4a100ce658143dc0b3e13db7696f90442b46f21981e88dc"
-//
-//			//decoded.toEncodedBytes.toHexString mustEqual hex
-//			val encoded2 = decoded.toEncodedBytes
-//			val decoded2: TransactionsMessage = decodeMessage(LpcMessageCode.Transactions.asByte, encoded2)
-//			decoded2.transactions.size mustEqual 1
-//		}
-//	}
+	"test TransactionsMessage" should {
+		"be right" in {
+			val hex = "f86df86b04648609184e72a00094cd2a3d9f938e13cd947ec05abc7fe734df8dd826881bc16d674ec80000801ba05c89ebf2b77eeab88251e553f6f9d53badc1d800bbac02d830801c2aa94a4c9fa00b7907532b1f29c79942b75fff98822293bf5fdaa3653a8d9f424c6a3265f06c"
+			val decoded: TransactionsMessage = decodeMessage(LpcMessageCode.Transactions.asByte, ImmutableBytes.parseHexString(hex))
+
+			decoded.code mustEqual LpcMessageCode.Transactions.asByte
+			decoded.transactions.size mustEqual 1
+			decoded.transactions.head.hash.toHexString mustEqual "12fede795a80286ce4a100ce658143dc0b3e13db7696f90442b46f21981e88dc"
+
+			decoded.toEncodedBytes.toHexString mustEqual hex
+		}
+	}
 
 
 	 private def decodeMessage[T](byte: Byte, bytes: ImmutableBytes): T = {

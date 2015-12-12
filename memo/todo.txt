@@ -1,7 +1,5 @@
 完全互換にする。
 
-TransactionsMessageの仕様？
-
 SyncQueue および SyncManager を実装する。
 P2PHandlerを実装する。
 net.transport を実装する。
