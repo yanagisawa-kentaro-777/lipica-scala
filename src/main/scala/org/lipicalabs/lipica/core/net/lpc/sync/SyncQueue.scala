@@ -14,6 +14,8 @@ class SyncQueue {
 	def returnHashes(hashes: Iterable[ImmutableBytes]): Unit = ???
 	def hashStoreSize: Int = ???
 
+	def addHashesLast(hashes: Seq[ImmutableBytes]): Unit = ???
+
 	def addBlocks(blocks: Seq[Block], nodeId: ImmutableBytes): Unit = ???
 	def addNewBlock(block: Block, nodeId: ImmutableBytes): Unit = ???
 
