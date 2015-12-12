@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.net.lpc.sync
 
 import org.lipicalabs.lipica.core.base.BlockWrapper
 import org.lipicalabs.lipica.core.net.server.Channel
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,5 +27,11 @@ class SyncManager {
 	def getGapBlock: BlockWrapper = ???
 
 	def startMaster(master: Channel): Unit = ???
+
+	def tryGapRecovery(blockWrapper: BlockWrapper): Unit = ???
+
+	def reportInvalidBlock(nodeId: ImmutableBytes): Unit = ???
+
+	def notifyNewBlockImported(blockWrapper: BlockWrapper): Unit = ???
 
 }

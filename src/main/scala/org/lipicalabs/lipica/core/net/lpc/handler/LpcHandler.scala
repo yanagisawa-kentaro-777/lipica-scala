@@ -375,7 +375,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	protected def returnHashes(): Unit = {
 		this.sentHashes.synchronized {
-			this.syncQueue.returnHashes(this.sentHashes.toIterable)
+			this.syncQueue.returnHashes(this.sentHashes.toSeq)
 		}
 		this.sentHashes.clear()
 	}

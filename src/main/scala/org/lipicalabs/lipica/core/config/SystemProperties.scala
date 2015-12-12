@@ -103,6 +103,11 @@ class SystemProperties {
 		10000
 	}
 
+	def maxBlocksAsk: Int = {
+		//TODO
+		100
+	}
+
 	def networkId: Int = {
 		//TODO
 		1
