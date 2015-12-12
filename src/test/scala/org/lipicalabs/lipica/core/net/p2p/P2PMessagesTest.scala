@@ -91,7 +91,7 @@ class P2PMessagesTest extends Specification {
 
 			decoded.code mustEqual message.code
 			decoded.peers.size mustEqual message.peers.size
-			decoded.peers == message.peers
+			(decoded.peers == message.peers) mustEqual true
 		}
 	}
 
