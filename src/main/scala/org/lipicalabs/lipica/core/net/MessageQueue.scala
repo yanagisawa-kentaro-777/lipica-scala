@@ -52,7 +52,7 @@ class MessageQueue {
 		this.ctx.close()
 	}
 
-	def disconnect(reason: ReasonCode): Unit = disconnect(new DisconnectMessage(reason))
+	def disconnect(reason: ReasonCode): Unit = disconnect(DisconnectMessage(reason))
 
 	def disconnect(): Unit = disconnect(ImmutableMessages.DisconnectMessage)
 

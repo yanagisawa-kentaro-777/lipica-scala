@@ -88,7 +88,7 @@ class P2PHandler(private val messageQueue: MessageQueue) extends SimpleChannelIn
 	}
 
 	private def disconnect(reasonCode: ReasonCode): Unit = {
-		this.messageQueue.sendMessage(new DisconnectMessage(reasonCode))
+		this.messageQueue.sendMessage(DisconnectMessage(reasonCode))
 		this.channel.nodeStatistics.nodeDisconnectedLocal(reasonCode)
 	}
 
@@ -118,7 +118,7 @@ class P2PHandler(private val messageQueue: MessageQueue) extends SimpleChannelIn
 			return
 		}
 		val peerSet = peers.map(each => new Peer(each.address, each.port, each.peerId, Seq.empty)).toSet
-		val message = new PeersMessage(peerSet)
+		val message = PeersMessage(peerSet)
 		this.lastPeersSent = peers
 		this.messageQueue.sendMessage(message)
 	}

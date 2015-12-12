@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
  * 2015/12/04 20:37
  * YANAGISAWA, Kentaro
  */
-class Peer(val address: InetAddress, val port: Int, val peerId: String, val capabilities: Seq[Capability]) {
+case class Peer(address: InetAddress, port: Int, peerId: String, capabilities: Seq[Capability]) {
 
 	def toEncodedBytes: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address.getAddress)

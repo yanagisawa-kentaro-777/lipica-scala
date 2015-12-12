@@ -67,8 +67,9 @@ object ReasonCode {
 	case object Unknown extends AbstractReasonCode(0xFF)
 	register(Unknown)
 
-	private val intToTypeMap: scala.collection.immutable.Map[Int, ReasonCode] = this.map.toMap
+	val all = this.map.toMap
+	private val intToTypeMap: scala.collection.immutable.Map[Int, ReasonCode] = all
 
-	def fromInt(reason: Int): ReasonCode = this.intToTypeMap.get(reason).getOrElse(Unknown)
+	def fromInt(reason: Int): ReasonCode = this.intToTypeMap.getOrElse(reason, Unknown)
 
 }

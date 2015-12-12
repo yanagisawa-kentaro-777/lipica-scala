@@ -67,7 +67,7 @@ object P2PMessageCode {
 
 	case object Unknown extends AbstractP2PMessageCode(0xFF)
 
-	private val all = this.map.toMap
+	val all = this.map.toMap
 
 	def fromByte(b: Byte): P2PMessageCode = this.all.getOrElse(b & 0xFF, Unknown)
 

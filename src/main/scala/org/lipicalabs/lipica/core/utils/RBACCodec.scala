@@ -374,7 +374,7 @@ object RBACCodec {
 				Right(DecodedBytes(pos + 1, ImmutableBytes.fromOneByte(data(pos))))
 			} else if (prefix <= OFFSET_LONG_ITEM) {//この判定条件は、バグではない。
 			//長さがprefixに含まれている。
-			val len = prefix - OFFSET_SHORT_ITEM
+				val len = prefix - OFFSET_SHORT_ITEM
 				Right(DecodedBytes(pos + 1 + len, data.copyOfRange(pos + 1, pos + 1 + len)))
 			} else if (prefix < OFFSET_SHORT_LIST) {
 				//長さが２重にエンコードされている。
@@ -383,7 +383,7 @@ object RBACCodec {
 				Right(DecodedBytes(pos + 1 + lenlen + len, data.copyOfRange(pos + 1 + lenlen, pos + 1 + lenlen + len)))
 			} else if (prefix <= OFFSET_LONG_LIST) {//この判定条件は、バグではない。
 			//単純なリスト。
-			val len = prefix - OFFSET_SHORT_LIST
+				val len = prefix - OFFSET_SHORT_LIST
 				decodeSeq(data, pos + 1, len)
 			} else if (prefix < 0xFF) {
 				//長さが２重にエンコードされている。

@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
  * 2015/12/05 12:38
  * YANAGISAWA, Kentaro
  */
-class DisconnectMessage(val reason: ReasonCode) extends P2PMessage {
+case class DisconnectMessage(reason: ReasonCode) extends P2PMessage {
 	override def toEncodedBytes = {
 		val encodedReason = RBACCodec.Encoder.encode(this.reason.asByte)
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedReason))
@@ -19,8 +19,14 @@ class DisconnectMessage(val reason: ReasonCode) extends P2PMessage {
 
 object DisconnectMessage {
 	def decode(encodedBytes: ImmutableBytes): DisconnectMessage = {
-		val reasonAsByte = RBACCodec.Decoder.decode(encodedBytes).right.get.items.head.bytes.head
+		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
+		val reasonAsByte =
+			if (items.head.bytes.isEmpty) {
+				0.toByte
+			} else {
+				items.head.bytes.head
+			}
 		val reason = ReasonCode.fromInt(reasonAsByte & 0xFF)
-		new DisconnectMessage(reason)
+		DisconnectMessage(reason)
 	}
 }

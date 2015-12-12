@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/05 12:45
  * YANAGISAWA, Kentaro
  */
-class PingMessage extends P2PMessage {
+case class PingMessage() extends P2PMessage {
 	import PingMessage._
 
 	override def toEncodedBytes = Payload

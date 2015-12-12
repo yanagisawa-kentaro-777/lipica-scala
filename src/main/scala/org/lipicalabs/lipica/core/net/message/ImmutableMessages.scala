@@ -23,7 +23,7 @@ object ImmutableMessages {
 	def createHelloMessage(peerId: String, listenPort: Int): HelloMessage = {
 		val announcement = buildHelloAnnouncement
 		val p2pVersion = P2PHandler.Version
-		new HelloMessage(p2pVersion, announcement, Capability.all, listenPort, peerId)
+		HelloMessage(p2pVersion, announcement, Capability.all, listenPort, peerId)
 	}
 
 	private def buildHelloAnnouncement: String = {
