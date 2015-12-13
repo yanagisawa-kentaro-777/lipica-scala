@@ -13,5 +13,5 @@ class LipicaChannelInitializer(val remoteId: String) extends ChannelInitializer[
 	override def initChannel(c: NioSocketChannel) = ???
 
 	def peerDiscoveryMode: Boolean = ???
-	def peerDiscoveryMode_=(v: Boolean): Unit = ???\
+	def peerDiscoveryMode_=(v: Boolean): Unit = ???
 }

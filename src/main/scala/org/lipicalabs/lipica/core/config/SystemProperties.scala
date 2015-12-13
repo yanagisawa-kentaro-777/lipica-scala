@@ -130,9 +130,9 @@ class SystemProperties {
 		8
 	}
 
-	def peerConnectionTimeoutMillis: Long = {
+	def peerConnectionTimeoutMillis: Int = {
 		//TODO
-		10000L
+		10000
 	}
 
 }
