@@ -41,7 +41,7 @@ class BlockchainTest extends Specification {
 				override def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]) = ()
 				override def onVMTraceCreated(txHash: String, trace: String) = ()
 				override def onSendMessage(message: Message) = ()
-				override def onSyncDone(): Unit
+				override def onSyncDone(): Unit = ()
 			}
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)
