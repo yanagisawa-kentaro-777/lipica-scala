@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.net.lpc.V0
 import org.lipicalabs.lipica.core.net.lpc.message.{BlockHashesMessage, GetBlockHashesByNumberMessage}
-import org.lipicalabs.lipica.core.net.lpc.sync.DoneHashRetrieving
+import org.lipicalabs.lipica.core.net.lpc.sync.SyncStateName.DoneHashRetrieving
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

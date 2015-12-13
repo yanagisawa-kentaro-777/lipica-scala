@@ -44,7 +44,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	private var blocksLackHits: Int = 0
 
-	protected var syncState: SyncStateName = Idle
+	protected var syncState: SyncStateName = SyncStateName.Idle
 	protected var syncDone: Boolean = false
 
 
@@ -214,18 +214,18 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		if (loggerSync.isTraceEnabled) {
 			loggerSync.trace("<LpcHandler> Peer %s: processing block hashes. Size=%,d".format(this.channel.peerIdShort, message.blockHashes.size))
 		}
-		if (this.syncState != HashRetrieving) {
+		if (this.syncState != SyncStateName.HashRetrieving) {
 			return
 		}
 		val receivedHashes = message.blockHashes
 		if (receivedHashes.isEmpty && this.syncDone) {
-			changeState(DoneHashRetrieving)
+			changeState(SyncStateName.DoneHashRetrieving)
 		} else {
 			this.syncStats.addHashes(receivedHashes.size)
 			processBlockHashes(receivedHashes)
 		}
 		if (loggerSync.isInfoEnabled)
-			if (this.syncState == DoneHashRetrieving) {
+			if (this.syncState == SyncStateName.DoneHashRetrieving) {
 				loggerSync.info("<LpcHandler> Peer %s: hashes sync completed %,d hashes in queue.".format(this.channel.peerIdShort, this.syncQueue.hashStoreSize))
 			} else {
 				this.syncQueue.logHashQueueSize()
@@ -238,7 +238,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			if (loggerSync.isInfoEnabled) {
 				loggerSync.info("<LpcHandler> Peer %s: no more hashes in the queue. Idle.".format(this.channel.peerIdShort))
 			}
-			changeState(Idle)
+			changeState(SyncStateName.Idle)
 			return false
 		}
 		this.sentHashes.clear()
@@ -279,9 +279,9 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			this.syncQueue.addBlocks(message.blocks, this.channel.nodeId)
 			this.syncQueue.logHashQueueSize()
 		} else {
-			changeState(BlocksLack)
+			changeState(SyncStateName.BlocksLack)
 		}
-		if (this.syncState == BlockRetrieving) {
+		if (this.syncState == SyncStateName.BlockRetrieving) {
 			sendGetBlocks
 		}
 	}
@@ -322,18 +322,18 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			loggerSync.trace("<LpcHandler> Peer %s: changing state from %s to %s".format(this.channel.peerIdShort, this.syncState, aNewState))
 		}
 		var newState = aNewState
-		if (newState == HashRetrieving) {
+		if (newState == SyncStateName.HashRetrieving) {
 			this.syncStats.reset()
 			startHashRetrieving()
 		}
-		if (newState == BlockRetrieving) {
+		if (newState == SyncStateName.BlockRetrieving) {
 			this.syncStats.reset()
 			val sent = sendGetBlocks
 			if (!sent) {
-				newState = Idle
+				newState = SyncStateName.Idle
 			}
 		}
-		if (newState == BlocksLack) {
+		if (newState == SyncStateName.BlocksLack) {
 			if (this.syncDone) {
 				return
 			}
@@ -345,22 +345,22 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		this.syncState = newState
 	}
 
-	override def isHashRetrievingDone = this.syncState == DoneHashRetrieving
+	override def isHashRetrievingDone = this.syncState == SyncStateName.DoneHashRetrieving
 
-	override def isHashRetrieving = this.syncState == HashRetrieving
+	override def isHashRetrieving = this.syncState == SyncStateName.HashRetrieving
 
-	override def hasBlocksLack = this.syncState == BlocksLack
+	override def hasBlocksLack = this.syncState == SyncStateName.BlocksLack
 
 	override def hasStatusPassed = this.lpcState != LpcState.Init
 
 	override def hasStatusSucceeded = this.lpcState == LpcState.Succeeded
 
 	override def onShutdown() = {
-		changeState(Idle)
+		changeState(SyncStateName.Idle)
 		returnHashes()
 	}
 
-	override def isIdle = this.syncState == Idle
+	override def isIdle = this.syncState == SyncStateName.Idle
 
 	override def onSyncDone() = {
 		this.syncDone = true

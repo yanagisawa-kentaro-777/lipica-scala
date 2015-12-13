@@ -51,7 +51,7 @@ class SyncManager {
 					return
 				}
 				logger.info("<SyncManager> SyncManager: ON.")
-				state = syncStates.get(Idle).get
+				state = syncStates.get(SyncStateName.Idle).get
 
 				updateDifficulties()
 				changeState(initialState())
@@ -94,7 +94,7 @@ class SyncManager {
 			}
 			return
 		}
-		if (this.state.is(HashRetrieving) && !isIn20PercentRange(highestKnownDiffuculty, peerTotalDifficulty)) {
+		if (this.state.is(SyncStateName.HashRetrieving) && !isIn20PercentRange(highestKnownDiffuculty, peerTotalDifficulty)) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<SyncManager> Peer %s: Chain is better than the known best: (%,d < %,d). Rotating master peer.".format(peer.peerIdShort, this.highestKnownDiffuculty, peerTotalDifficulty))
 			}
@@ -108,7 +108,7 @@ class SyncManager {
 
 	def onDisconnect(peer: Channel): Unit = {
 		if (peer.isHashRetrieving || peer.isHashRetrievingDone) {
-			changeState(BlockRetrieving)
+			changeState(SyncStateName.BlockRetrieving)
 		}
 		this.pool.onDisconnect(peer)
 	}
@@ -123,7 +123,7 @@ class SyncManager {
 		this.gapBlock = blockWrapper
 		val gap = gapSize(blockWrapper)
 		if (LargeGapSize <= gap) {
-			changeState(HashRetrieving)
+			changeState(SyncStateName.HashRetrieving)
 		} else {
 			logger.info("<Syncmanager> Forcing parent downloading for %,d".format(blockWrapper.blockNumber))
 			this.queue.addHash(blockWrapper.parentHash)
@@ -166,11 +166,11 @@ class SyncManager {
 	}
 
 	private def isGapRecoveryAllowed(block: BlockWrapper): Boolean = {
-		if (this.state.is(HashRetrieving)) {
+		if (this.state.is(SyncStateName.HashRetrieving)) {
 			//まだそんな段階ではない。
 			return false
 		}
-		if ((block == this.gapBlock) && !this.state.is(Idle)) {
+		if ((block == this.gapBlock) && !this.state.is(SyncStateName.Idle)) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<SyncManager> Gap recovery is already in progress for %,d".format(this.gapBlock.blockNumber))
 			}
@@ -184,7 +184,7 @@ class SyncManager {
 		if (!block.isNewBlock) {
 			GapRecoveryTimeout < block.timeSinceFailed
 		} else {
-			this.state.is(Idle)
+			this.state.is(SyncStateName.Idle)
 		}
 	}
 
@@ -209,14 +209,14 @@ class SyncManager {
 	}
 
 	def startMaster(master: Channel): Unit = {
-		this.pool.changeState(Idle)
+		this.pool.changeState(SyncStateName.Idle)
 		if (this.gapBlock ne null) {
 			master.lastHashToAsk = this.gapBlock.parentHash
 		} else {
 			master.lastHashToAsk = master.bestKnownHash
 			this.queue.clearHashes()
 		}
-		master.changeSyncState(HashRetrieving)
+		master.changeSyncState(SyncStateName.HashRetrieving)
 		logger.info("<SyncManager> Peer %s: %s initiated. LastHashToAsk=%s, AskLimit=%,d".format(master.peerIdShort, this.state, master.lastHashToAsk, master.maxHashesAsk))
 	}
 
@@ -241,9 +241,9 @@ class SyncManager {
 	private def initialState(): SyncStateName = {
 		if (this.queue.hasSolidBlocks) {
 			logger.info("<SyncManager> It seems that BlockRetrieving was interrupted. Resuming.")
-			BlockRetrieving
+			SyncStateName.BlockRetrieving
 		} else {
-			HashRetrieving
+			SyncStateName.HashRetrieving
 		}
 	}
 
@@ -340,9 +340,9 @@ object SyncManager {
 
 	private def buildSyncStates(syncManager: SyncManager): Map[SyncStateName, SyncState] = {
 		val result: Map[SyncStateName, SyncState] = Map(
-			Idle -> new IdleState,
-			HashRetrieving -> new HashRetrievingState,
-			BlockRetrieving -> new BlockRetrievingState
+			SyncStateName.Idle -> new IdleState,
+			SyncStateName.HashRetrieving -> new HashRetrievingState,
+			SyncStateName.BlockRetrieving -> new BlockRetrievingState
 		)
 		result.foreach(each => each.asInstanceOf[AbstractSyncState].syncManager = syncManager)
 		result
