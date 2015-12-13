@@ -5,7 +5,7 @@ import java.util.concurrent.{CopyOnWriteArrayList, TimeUnit, Executors, Schedule
 import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.lpc.sync.SyncManager
-import org.lipicalabs.lipica.core.net.secure.discover.NodeManager
+import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
 import org.slf4j.LoggerFactory
 
 /**
@@ -43,6 +43,8 @@ class ChannelManager {
 
 		}
 	}
+
+	def onSyncDone(): Unit = ???
 
 }
 

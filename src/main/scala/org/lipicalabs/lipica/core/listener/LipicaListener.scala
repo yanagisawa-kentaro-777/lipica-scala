@@ -19,4 +19,5 @@ trait LipicaListener {
 	def onBlock(block: Block, receipts: Iterable[TransactionReceipt]): Unit
 	def onSendMessage(message: Message): Unit
 	def onLpcStatusUpdated(node: Node, status: StatusMessage)
+	def onSyncDone(): Unit
 }

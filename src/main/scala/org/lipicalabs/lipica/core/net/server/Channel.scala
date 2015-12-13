@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.server
 
-import org.lipicalabs.lipica.core.net.lpc.sync.SyncStateName
+import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStatistics, SyncStateName}
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.net.transport.discover.NodeStatistics
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -19,13 +19,22 @@ class Channel {
 	def node: Node = ???
 	def nodeStatistics: NodeStatistics = ???
 
+	def bestKnownHash: ImmutableBytes = ???
+	def lastHashToAsk: ImmutableBytes = ???
+	def lastHashToAsk_=(v: ImmutableBytes): Unit = ???
+	def maxHashesAsk: Int = ???
+
 	def isIdle: Boolean = ???
 	def isHashRetrieving: Boolean = ???
 	def isHashRetrievingDone: Boolean = ???
 
+	def hasBlocksLack: Boolean = ???
+
 	def changeSyncState(state: SyncStateName): Unit = ???
 
 	def logSyncStats(): Unit = ???
+
+	def getSyncStats: SyncStatistics = ???
 
 	def totalDifficulty: BigInt = this.nodeStatistics.lpcTotalDifficulty
 

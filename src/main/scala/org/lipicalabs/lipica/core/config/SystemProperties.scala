@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.config
 
+import org.lipicalabs.lipica.core.net.transport.Node
+
 /**
  *
  * @since 2015/10/24
@@ -111,6 +113,21 @@ class SystemProperties {
 	def networkId: Int = {
 		//TODO
 		1
+	}
+
+	def isSyncEnabled: Boolean = {
+		//TODO
+		true
+	}
+
+	def activePeers: Seq[Node] = {
+		//TODO
+		Seq.empty
+	}
+
+	def syncPeersCount: Int = {
+		//TODO
+		8
 	}
 
 }
