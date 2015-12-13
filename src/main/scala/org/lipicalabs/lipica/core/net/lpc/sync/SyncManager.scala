@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.lpc.sync
 
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
-import org.lipicalabs.lipica.core.base.{BlockChain, BlockWrapper}
+import org.lipicalabs.lipica.core.base.{Blockchain, BlockWrapper}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.net.server.{ChannelManager, Channel}
@@ -35,7 +35,7 @@ class SyncManager {
 	private val worker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor
 
 	//TODO auto wiring
-	private val blockchain: BlockChain = ???
+	private val blockchain: Blockchain = ???
 	val queue: SyncQueue = ???
 	private val nodeManager: NodeManager = ???
 	private val lipicaListener: LipicaListener = ???

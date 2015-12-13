@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.lpc.sync
 
 import org.lipicalabs.lipica.core.ImportResult
-import org.lipicalabs.lipica.core.base.{BlockHeader, BlockWrapper, BlockChain, Block}
+import org.lipicalabs.lipica.core.base.{BlockHeader, BlockWrapper, Blockchain, Block}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
@@ -21,7 +21,7 @@ class SyncQueue {
 	private var blockQueue: BlockQueue = null
 
 	//TODO auto wiring
-	private val blockchain: BlockChain = ???
+	private val blockchain: Blockchain = ???
 	//TODO auto wiring
 	private val syncManager: SyncManager = ???
 	//TODO auto wiring

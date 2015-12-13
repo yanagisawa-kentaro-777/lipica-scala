@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/11/01 16:28
  * YANAGISAWA, Kentaro
  */
-trait BlockChain {
+trait Blockchain {
 
 	/**
 	 * このチェーンに対して、渡されたブロックを連結することが可能であれば連結しようとします。
@@ -89,6 +89,6 @@ trait BlockChain {
 
 }
 
-object BlockChain {
+object Blockchain {
 	val GenesisHash: ImmutableBytes = Genesis.getInstance.hash
 }

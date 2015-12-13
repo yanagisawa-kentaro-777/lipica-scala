@@ -37,7 +37,7 @@ class BlockchainImpl(
 	private val adminInfo: AdminInfo,
 	private val listener: LipicaListener,
 	private val parentHeaderValidator: ParentBlockHeaderValidator
-) extends BlockChain {
+) extends Blockchain {
 
 	import BlockchainImpl._
 

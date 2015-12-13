@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.lpc.handler
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import org.lipicalabs.lipica.core.base.{Block, BlockChain, TransactionLike}
+import org.lipicalabs.lipica.core.base.{Block, Blockchain, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
@@ -24,7 +24,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	import LpcHandler._
 	//TODO auto wiring
-	protected val blockchain: BlockChain = ???
+	protected val blockchain: Blockchain = ???
 	protected val syncQueue: SyncQueue = ???
 	protected val worldManager: WorldManager = ???
 
@@ -133,7 +133,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		this.channel.nodeStatistics.lpcHandshake(message)
 		this.worldManager.listener.onLpcStatusUpdated(this.channel.node, message)
 
-		if ((message.genesisHash != BlockChain.GenesisHash) || (message.protocolVersion != this.version.code)) {
+		if ((message.genesisHash != Blockchain.GenesisHash) || (message.protocolVersion != this.version.code)) {
 			loggerNet.info("<LpcHandler> Removing handler for %s due to protocol incompatibility.".format(ctx.channel().remoteAddress()))
 			this.lpcState = LpcState.Failed
 			disconnect(ReasonCode.IncompatibleProtocol)
@@ -165,7 +165,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		val newtworkdId = SystemProperties.CONFIG.networkId
 		val totalDifficulty = this.blockchain.totalDifficulty
 		val bestHash = this.blockchain.bestBlockHash
-		val message = StatusMessage(protocolVersion, newtworkdId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, BlockChain.GenesisHash)
+		val message = StatusMessage(protocolVersion, newtworkdId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, Blockchain.GenesisHash)
 		sendMessage(message)
 	}
 
@@ -265,7 +265,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		}
 		this.syncStats.addBlocks(message.blocks.size)
 
-		removeFromSentHashes(BlockChain.GenesisHash)
+		removeFromSentHashes(Blockchain.GenesisHash)
 		message.blocks.foreach(each => removeFromSentHashes(each.hash))
 		returnHashes()
 

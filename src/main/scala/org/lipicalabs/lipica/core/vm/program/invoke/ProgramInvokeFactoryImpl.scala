@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program.invoke
 
-import org.lipicalabs.lipica.core.base.{BlockChain, Block, TransactionLike}
+import org.lipicalabs.lipica.core.base.{Blockchain, Block, TransactionLike}
 import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -16,8 +16,8 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 
 	import ProgramInvokeFactoryImpl._
 
-	private var _blockChain: BlockChain = null
-	def blockChain_=(v: BlockChain): Unit = {
+	private var _blockChain: Blockchain = null
+	def blockChain_=(v: Blockchain): Unit = {
 		this._blockChain = v
 	}
 
