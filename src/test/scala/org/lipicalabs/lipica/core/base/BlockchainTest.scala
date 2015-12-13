@@ -11,6 +11,7 @@ import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.Message
+import org.lipicalabs.lipica.core.net.p2p.HelloMessage
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.{DifficultyRule, ParentNumberRule, ParentBlockHeaderValidator}
@@ -42,6 +43,7 @@ class BlockchainTest extends Specification {
 				override def onVMTraceCreated(txHash: String, trace: String) = ()
 				override def onSendMessage(message: Message) = ()
 				override def onSyncDone(): Unit = ()
+				override def onHandshakePeer(node: Node, message: HelloMessage) = ()
 			}
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)

@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.net.p2p
 
+import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent._
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
@@ -7,11 +8,15 @@ import org.lipicalabs.lipica.core.base.{Block, TransactionLike}
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.message.{NewBlockMessage, TransactionsMessage}
 import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode._
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.net.server.Channel
+import org.lipicalabs.lipica.core.net.shh.ShhHandler
+import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
+import org.lipicalabs.lipica.core.net.transport.HandshakeHelper
 import org.slf4j.LoggerFactory
 
 /**
@@ -124,7 +129,32 @@ class P2PHandler(private val messageQueue: MessageQueue) extends SimpleChannelIn
 	}
 
 	def setHandshake(message: HelloMessage, ctx: ChannelHandlerContext): Unit = {
-		//TODO 未実装。
+		this.channel.nodeStatistics.clientId = message.clientId
+
+		this._handshakeHelloMessage = message
+		if (message.p2pVersion != Version) {
+			disconnect(ReasonCode.IncompatibleProtocol)
+		} else {
+			val capsInCommon = HandshakeHelper.getSupportedCapabilities(message)
+			this.channel.initMessageCodes(capsInCommon)
+			for (capability <- capsInCommon) {
+				if ((capability.name == Capability.LPC) && LpcVersion.isSupported(capability.version)) {
+					this.channel.activateLpc(ctx, LpcVersion.fromCode(capability.version).get)
+				} else if ((capability.name == Capability.SHH) && (capability.version == ShhHandler.Version)) {
+					channel.activateShh(ctx)
+				} else if ((capability.name == Capability.BZZ) && (capability.version == BzzHandler.Version)) {
+					channel.activateBzz(ctx)
+				}
+			}
+			val address: InetAddress = ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress].getAddress
+			val port = message.listenPort
+			val confirmedPeer = new PeerInfo(address, port, message.peerId)
+			confirmedPeer.online = false
+			confirmedPeer.addCapabilities(message.capabilities)
+
+			this.worldManager.peerDiscovery.addPeer(confirmedPeer)
+			this.worldManager.listener.onHandshakePeer(channel.node, message)
+		}
 	}
 
 	def sendTransaction(tx: TransactionLike): Unit = {

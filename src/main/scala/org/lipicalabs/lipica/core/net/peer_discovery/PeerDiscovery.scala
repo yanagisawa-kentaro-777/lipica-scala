@@ -11,6 +11,7 @@ class PeerDiscovery {
 	//TODO 未実装。
 
 	def addPeers(peers: Iterable[PeerInfo]): Unit = ???
+	def addPeer(peer: PeerInfo): Unit = ???
 
 	def addPeers(peers: Set[Peer]): Unit = ???
 

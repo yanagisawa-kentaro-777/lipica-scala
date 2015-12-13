@@ -15,9 +15,15 @@ import scala.collection.mutable.ArrayBuffer
  */
 class PeerInfo(val address: InetAddress, val port: Int, val peerId: String) {
 
+	private var _online: Boolean = false
+	def online: Boolean = this._online
+	def online_=(v: Boolean): Unit = this._online = v
+
 	private val capabilities: mutable.Buffer[Capability] = new ArrayBuffer[Capability]
+	def addCapabilities(aCapabilities: Iterable[Capability]): Unit = this.capabilities.appendAll(aCapabilities)
 
 	private var handshakeHelloMessage: HelloMessage = null
+
 
 	//TODO 未実装。
 

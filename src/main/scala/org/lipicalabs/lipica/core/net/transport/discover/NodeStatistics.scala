@@ -15,6 +15,9 @@ class NodeStatistics {
 
 	//TODO 未実装。
 
+	def clientId: String = ???
+	def clientId_=(v: String): Unit = ???
+
 	private var _lpcTotalDifficulty: BigInt = UtilConsts.Zero
 	def lpcTotalDifficulty_=(v: BigInt): Unit = this._lpcTotalDifficulty = v
 	def lpcTotalDifficulty: BigInt = this._lpcTotalDifficulty

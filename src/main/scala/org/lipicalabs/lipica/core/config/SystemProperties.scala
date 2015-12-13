@@ -130,6 +130,11 @@ class SystemProperties {
 		8
 	}
 
+	def peerConnectionTimeoutMillis: Long = {
+		//TODO
+		10000L
+	}
+
 }
 
 object SystemProperties {

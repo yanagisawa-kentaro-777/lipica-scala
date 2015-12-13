@@ -1,5 +1,8 @@
 package org.lipicalabs.lipica.core.net.server
 
+import io.netty.channel.ChannelHandlerContext
+import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStatistics, SyncStateName}
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.net.transport.discover.NodeStatistics
@@ -12,6 +15,11 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class Channel {
 	//TODO 未実装。
+
+	def initMessageCodes(capabilities: Iterable[Capability]): Unit = ???
+	def activateLpc(ctx: ChannelHandlerContext, version: LpcVersion): Unit = ???
+	def activateShh(ctx: ChannelHandlerContext): Unit = ???
+	def activateBzz(ctx: ChannelHandlerContext): Unit = ???
 
 	def nodeId: ImmutableBytes = ???
 	def peerId: String = ???

@@ -3,6 +3,8 @@ package org.lipicalabs.lipica.core.net.client
 import java.nio.charset.StandardCharsets
 
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
+import org.lipicalabs.lipica.core.net.shh.ShhHandler
+import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 
@@ -33,13 +35,18 @@ case class Capability(name: String, version: Byte) extends Comparable[Capability
 
 object Capability {
 	val P2P = "p2p"
-	val LPC = "eth"//TODO
-	val SHH = "shh"
-	val BZZ = "bzz"
+	val LPC = "eth"//TODO 互換性のため。
+	val SHH = "shh"//TODO 互換性のため。
+	val BZZ = "bzz"//TODO 互換性のため。
 
 	private val lpcVersions = LpcVersion.SupportedVersions.map(v => Capability(LPC, v.toByte))
 
-	val all = lpcVersions ++ Iterable(Capability(SHH, 0), Capability(BZZ, 0))
+	val all = lpcVersions ++ Iterable(Capability(SHH, ShhHandler.Version), Capability(BZZ, BzzHandler.Version))
+
+	val configuredCapabilities: Seq[Capability] = {
+		//TODO shh、bzzに未対応。
+		lpcVersions
+	}
 
 	def decode(encodedBytes: ImmutableBytes): Capability = {
 		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
