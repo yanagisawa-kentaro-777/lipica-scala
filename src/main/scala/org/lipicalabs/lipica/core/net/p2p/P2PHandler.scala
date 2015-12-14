@@ -24,9 +24,12 @@ import org.slf4j.LoggerFactory
  * 2015/12/07 20:32
  * YANAGISAWA, Kentaro
  */
-class P2PHandler(private val messageQueue: MessageQueue) extends SimpleChannelInboundHandler[P2PMessage] {
+class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelInboundHandler[P2PMessage] {
 
 	import P2PHandler._
+
+	def messageQueue: MessageQueue = this._messageQueue
+	def messageQueue_=(v: MessageQueue): Unit = this._messageQueue = v
 
 	private var _peerDiscoveryMode: Boolean = false
 	def peerDiscoveryMode: Boolean = this._peerDiscoveryMode

@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.net.swarm.bzz
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
+import org.lipicalabs.lipica.core.net.MessageQueue
 
 /**
  * Created by IntelliJ IDEA.
@@ -9,6 +10,10 @@ import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
  */
 class BzzHandler extends SimpleChannelInboundHandler[BzzMessage] {
 
+	private var _messageQueue: MessageQueue = null
+
+	def messageQueue: MessageQueue = this._messageQueue
+	def messageQueue_=(v: MessageQueue): Unit = this._messageQueue = v
 	override def channelRead0(channelHandlerContext: ChannelHandlerContext, i: BzzMessage): Unit = {
 		//TODO 未実装。
 	}

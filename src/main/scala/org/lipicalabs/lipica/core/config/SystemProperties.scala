@@ -135,6 +135,11 @@ class SystemProperties {
 		10000
 	}
 
+	def peerChannelReadTimeoutSeconds: Int = {
+		//TODO
+		10
+	}
+
 }
 
 object SystemProperties {

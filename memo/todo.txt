@@ -9,6 +9,8 @@ net.server 以下を実装し、net.submit.TransactionTaskを実装する。
 logging、refactor、comment。（不具合追跡用）
 yellow paper を読んでわからない所を調べる。
 
+DIにおいて、@Scope("prototype")は、毎回新しいインスタンスを返すことを意味する。
+
 https://github.com/ethereum/tests を活用した自動テストの実行方法を考える。
 
 BlockchainImplの精緻なテスト。

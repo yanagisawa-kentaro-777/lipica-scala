@@ -27,6 +27,8 @@ class NodeStatistics {
 
 	def lpcHandshake(message: StatusMessage): Unit = ???
 
+	def lpcLastInboundStatusMessage: StatusMessage = ???
+
 	def nodeDisconnectedLocal(reason: ReasonCode): Unit = ???
 
 	def nodeDisconnectedRemote(reason: ReasonCode): Unit = ???
