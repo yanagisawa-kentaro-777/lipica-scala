@@ -47,7 +47,7 @@ class WorkerTask extends Runnable {
 				logger.info("<WorkerTask> Exception caught: %s".format(any.getClass.getSimpleName), any)
 				this.peerInfo.online = false
 		} finally {
-			logger.info("<WorkerTask> Peer %s isOnline ? %s".format(this.peerInfo, this.peerInfo.online)
+			logger.info("<WorkerTask> Peer %s isOnline ? %s".format(this.peerInfo, this.peerInfo.online))
 			this.peerInfo.lastCheckTime = System.currentTimeMillis
 		}
 	}

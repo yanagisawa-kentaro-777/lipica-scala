@@ -140,6 +140,16 @@ class SystemProperties {
 		10
 	}
 
+	def peerDiscoveryWorkers: Int = {
+		//TODO
+		8
+	}
+
+	def peerDiscoveryAddresses: Seq[String] = {
+		//TODO
+		Seq("54.94.239.50:30303", "52.16.188.185:30303")
+	}
+
 }
 
 object SystemProperties {

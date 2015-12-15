@@ -6,3 +6,9 @@ https://github.com/ethereum/wiki/blob/master/Ethereum-Development-Tutorial.md
 
 テストケース
 https://github.com/ethereum/tests
+
+SegWit
+http://gavinandresen.ninja/segregated-witness-is-cool
+
+Dapp入門
+https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/

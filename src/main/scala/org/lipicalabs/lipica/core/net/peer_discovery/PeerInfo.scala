@@ -51,6 +51,8 @@ class PeerInfo(val address: InetAddress, val port: Int, val peerId: String) {
 
 	override def equals(o: Any): Boolean = {
 		try {
+			//peerIdは、敢えて同一性の基準に含めない。
+			//同一アドレス＆ポート間で後勝ち。
 			val another = o.asInstanceOf[PeerInfo]
 			(this.address == another.address) && (this.port == another.port)
 		} catch {

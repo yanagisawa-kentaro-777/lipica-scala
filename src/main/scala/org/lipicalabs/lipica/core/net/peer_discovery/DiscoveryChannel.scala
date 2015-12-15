@@ -76,8 +76,8 @@ class DiscoveryChannel {
 						ch.pipeline.addLast(Capability.BZZ, bzzHandler)
 
 						ch.config.setRecvByteBufAllocator(new FixedRecvByteBufAllocator(32368))
-						ch.config.setOption(ChannelOption.SO_RCVBUF, 32368)
-						ch.config.setOption(ChannelOption.SO_BACKLOG, 1024)
+						ch.config.setOption(ChannelOption.SO_RCVBUF, Integer.valueOf(32368))
+						ch.config.setOption(ChannelOption.SO_BACKLOG, Integer.valueOf(1024))
 					}
 				}
 			)
