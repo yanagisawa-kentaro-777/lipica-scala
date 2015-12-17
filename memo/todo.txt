@@ -1,3 +1,4 @@
+最近の変更に追随する。
 
 通信仕様！
 https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
