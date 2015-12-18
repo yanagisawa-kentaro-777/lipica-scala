@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.utils
 
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
+import java.util.Random
 
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
@@ -269,6 +270,12 @@ object ImmutableBytes {
 		} else {
 			new ImmutableBytes(new Array[Byte](length))
 		}
+	}
+
+	def createRandom(random: Random, size: Int): ImmutableBytes = {
+		val bytes = new Array[Byte](size)
+		random.nextBytes(bytes)
+		new ImmutableBytes(bytes)
 	}
 
 }

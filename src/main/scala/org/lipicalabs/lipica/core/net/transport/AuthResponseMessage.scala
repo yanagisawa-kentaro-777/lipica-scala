@@ -23,7 +23,7 @@ class AuthResponseMessage {
 	def isTokenUsed: Boolean = this._isTokenUsed
 	def isTokenUsed_=(v: Boolean): Unit = this._isTokenUsed = v
 
-	def encode: ImmutableBytes = {
+	def encode: Array[Byte] = {
 		val buffer = new Array[Byte](AuthResponseMessage.length)
 		var offset = 0
 		val publicBytes = ephemeralPublicKey.getEncoded(false)
@@ -33,14 +33,14 @@ class AuthResponseMessage {
 		offset += nonce.length
 		buffer(offset) = (if (isTokenUsed) 0x01 else 0x00).toByte
 		offset += 1
-		ImmutableBytes(buffer)
+		buffer
 	}
 
 }
 
 object AuthResponseMessage {
 
-	val length = 34 + 32 + 1
+	val length = 64 + 32 + 1
 
 	def decode(wire: Array[Byte]): AuthResponseMessage = {
 		var offset = 0

@@ -9,7 +9,7 @@ import org.spongycastle.math.ec.ECPoint
  * @since 2015/12/17
  * @author YANAGISAWA, Kentaro
  */
-class AuthInitialMessage {
+class AuthInitiateMessage {
 	private var _signature: ECKey.ECDSASignature = null//65 bytes.
 	def signature: ECKey.ECDSASignature = this._signature
 	def signature_=(v: ECKey.ECDSASignature): Unit = this._signature = v
@@ -30,7 +30,7 @@ class AuthInitialMessage {
 	def isTokenUsed: Boolean = this._isTokenUsed
 	def isTokenUsed_=(v: Boolean): Unit = this._isTokenUsed = v
 
-	def encode: ImmutableBytes = {
+	def encode: Array[Byte] = {
 		val rsigPad = new Array[Byte](32)
 		val rsig = ByteUtils.asUnsignedByteArray(signature.r)
 		System.arraycopy(rsig, 0, rsigPad, rsigPad.length - rsig.length, rsig.length)
@@ -41,7 +41,7 @@ class AuthInitialMessage {
 
 		val sigBytes = rsigPad ++ ssigPad ++ Array[Byte](EncryptionHandshake.recIdFromSignatureV(signature.v))
 
-		val buffer = new Array[Byte](AuthInitialMessage.length)
+		val buffer = new Array[Byte](AuthInitiateMessage.length)
 		var offset = 0
 		System.arraycopy(sigBytes, 0, buffer, offset, sigBytes.length)
 		offset += sigBytes.length
@@ -54,16 +54,16 @@ class AuthInitialMessage {
 		offset += nonce.length
 		buffer(offset) = (if (isTokenUsed) 0x01 else 0x00).toByte
 		offset += 1
-		ImmutableBytes(buffer)
+		buffer
 	}
 
 }
 
-object AuthInitialMessage {
+object AuthInitiateMessage {
 	val length = 65 + 32 + 64 + 32 + 1
 
-	def decode(wire: Array[Byte]): AuthInitialMessage = {
-		val message = new AuthInitialMessage
+	def decode(wire: Array[Byte]): AuthInitiateMessage = {
+		val message = new AuthInitiateMessage
 		var offset = 0
 		val r = new Array[Byte](32)
 		val s = new Array[Byte](32)

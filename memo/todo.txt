@@ -3,7 +3,6 @@
 通信仕様！
 https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 
-Nodeを実装する。 -> NeighboursMessageのテストを実装する。
 FrameCodec、MessageCodecを実装する。
 
 P2PHandlerを実装する。
