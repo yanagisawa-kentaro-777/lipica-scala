@@ -55,7 +55,7 @@ object LpcMessageCode {
 
 	case object Unknown extends AbstractLpcMessageCode(0xFF)
 
-	private val all = this.map.toMap
+	val all = this.map.toMap
 
 	def fromByte(b: Byte): LpcMessageCode = this.all.getOrElse(b & 0xFF, Unknown)
 

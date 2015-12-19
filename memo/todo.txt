@@ -3,9 +3,7 @@
 通信仕様！
 https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 
-Handshakerを実装する。
 MessageCodecを実装する。
-MessageCodesResolver を実装する。
 
 P2PHandlerを実装する。
 net.transport を実装する。
@@ -41,3 +39,4 @@ ImmutableBytes#toByteArray を排除する。
 
 sbtによるleveldbのテストの問題？
 auto wiring の問題。
+net.rlpx.Handshakerはエンドポイント実装である。
