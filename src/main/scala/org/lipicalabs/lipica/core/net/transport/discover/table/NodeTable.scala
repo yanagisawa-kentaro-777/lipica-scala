@@ -12,6 +12,8 @@ import scala.collection.mutable.ArrayBuffer
  */
 class NodeTable(val node: Node, includedHomeNode: Boolean) {
 
+	def this(node: Node) = this(node, includedHomeNode = true)
+
 	import NodeTable._
 
 	private var _buckets: IndexedSeq[NodeBucket] = null

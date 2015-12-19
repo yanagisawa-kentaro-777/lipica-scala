@@ -98,6 +98,7 @@ object NodeEntry {
 				}
 			}
 		}
+		//println(ownerId.toHexString + " & " + targetId.toHexString + " -> " + d)
 		d
 	}
 }
