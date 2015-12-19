@@ -69,4 +69,8 @@ object DigestUtils {
 		digest256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray)
 	}
 
+	def doSum(mac: KeccakDigest, out: Array[Byte]): Unit = {
+		new KeccakDigest(mac).doFinal(out, 0)
+	}
+
 }
