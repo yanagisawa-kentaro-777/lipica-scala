@@ -4,9 +4,9 @@
 https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 
 MessageCodecを実装する。
+net.transport.discover以下を実装する。
 
 P2PHandlerを実装する。
-net.transport を実装する。
 net.server 以下を実装し、net.submit.TransactionTaskを実装する。
 
 logging、refactor、comment。（不具合追跡用）

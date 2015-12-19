@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery
 
-import java.net.{UnknownHostException, InetAddress, InetSocketAddress}
+import java.net.{UnknownHostException, InetAddress}
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent._
 
