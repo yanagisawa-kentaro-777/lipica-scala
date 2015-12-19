@@ -66,7 +66,7 @@ class TransportConnectionTest extends Specification {
 			init()
 
 			val wire = this.iMessage.encode
-			val rebuilt = HandshakeMessage.decode(wire.toByteArray)
+			val rebuilt = HandshakeMessage.decode(wire)
 
 			rebuilt.version mustEqual 123
 			rebuilt.name mustEqual "abcd"
@@ -75,7 +75,6 @@ class TransportConnectionTest extends Specification {
 			rebuilt.capabilities mustEqual this.iMessage.capabilities
 		}
 	}
-
 
 	"Frame" should {
 		"be right" in {
@@ -97,6 +96,23 @@ class TransportConnectionTest extends Specification {
 		}
 	}
 
+	"Handshake" should {
+		"be right" in {
+			init()
 
+			val iConn = new TransportConnection(this.initiator.secrets, this.from, this.toOut)
+			val rConn = new TransportConnection(this.responder.secrets, this.to, this.fromOut)
+
+			iConn.sendProtocolHandshake(this.iMessage)
+			rConn.handleNextMessage()
+
+			val receivedMessage = rConn.getHandshakeMessage
+			receivedMessage.version mustEqual 123
+			receivedMessage.name mustEqual "abcd"
+			receivedMessage.listenPort mustEqual 3333
+			receivedMessage.nodeId mustEqual this.iMessage.nodeId
+			receivedMessage.capabilities mustEqual this.iMessage.capabilities
+		}
+	}
 
 }

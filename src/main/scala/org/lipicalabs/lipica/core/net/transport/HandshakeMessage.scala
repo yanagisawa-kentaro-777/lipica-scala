@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec, ImmutableBytes}
  */
 class HandshakeMessage(val version: Long, val name: String, val capabilities: Seq[Capability], val listenPort: Long, val nodeId: ImmutableBytes) {
 
-	def encode: ImmutableBytes = {
+	def encode: Array[Byte] = {
 		val encodedCapabilities = this.capabilities.map(_.toEncodedBytes)
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(
 			RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(this.version)),
@@ -20,7 +20,7 @@ class HandshakeMessage(val version: Long, val name: String, val capabilities: Se
 			RBACCodec.Encoder.encodeSeqOfByteArrays(encodedCapabilities),
 			RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(this.listenPort)),
 			RBACCodec.Encoder.encode(this.nodeId)
-		))
+		)).toByteArray
 	}
 }
 
