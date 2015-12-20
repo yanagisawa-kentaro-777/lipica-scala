@@ -172,10 +172,6 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 
 	def sendDisconnect(): Unit =  this.messageQueue.disconnect()
 
-	def adaptMessageIds(capabilities: Iterable[Capability]): Unit = {
-		//TODO 未実装。
-	}
-
 	private def startTimers(): Unit = {
 		this.pingTask = pingTimer.scheduleAtFixedRate(
 			new Runnable {
