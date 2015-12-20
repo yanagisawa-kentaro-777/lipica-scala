@@ -48,7 +48,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	protected var syncDone: Boolean = false
 
 
-	protected var _processTransactions: Boolean = true
+	protected var _processTransactions: Boolean = false
 	override def enableTransactions() = this._processTransactions = true
 	override def disableTransactions() = this._processTransactions = false
 

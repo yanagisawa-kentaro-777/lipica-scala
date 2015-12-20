@@ -226,7 +226,7 @@ object PeersPool {
 	private val logger = LoggerFactory.getLogger("sync")
 	private val WorkerTimeoutSeconds = 3L
 	private val DisconnectHitsThreshold = 5
-	private val DefaultBanTimeout = TimeUnit.MINUTES.toMillis(30)
+	private val DefaultBanTimeout = TimeUnit.MINUTES.toMillis(1)
 	private val ConnectionTimeout = TimeUnit.SECONDS.toMillis(30)
 
 }

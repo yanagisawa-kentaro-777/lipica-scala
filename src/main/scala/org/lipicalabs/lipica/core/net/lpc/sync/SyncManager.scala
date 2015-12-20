@@ -289,9 +289,9 @@ class SyncManager {
 		val removed = this.pool.peers.filter(_.hasBlocksLack)
 		for (each <- removed) {
 			logger.info("<SyncManager> Peer %s has no more blocks. Removing.".format(each.peerIdShort))
+			this.pool.ban(each)
 			updateLowerUsefulDifficulty(each.totalDifficulty)
 		}
-		this.pool.removeAll(removed)
 	}
 
 	private def fillUpPeersPool(): Unit = {
