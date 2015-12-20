@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.config
 
+import org.apache.commons.codec.binary.Hex
+import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.transport.Node
 
 /**
@@ -148,6 +150,12 @@ class SystemProperties {
 	def peerDiscoveryAddresses: Seq[String] = {
 		//TODO
 		Seq("54.94.239.50:30303", "52.16.188.185:30303")
+	}
+
+	def myKey: ECKey = {
+		//TODO
+		val hex = "a43d867f16238b897428705cec855b0c5b0ddf3319c1b18f7a00915db83155d9"
+		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
 	}
 
 }

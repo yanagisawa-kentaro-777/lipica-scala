@@ -1,10 +1,13 @@
 package org.lipicalabs.lipica.core.net.server
 
+import java.net.InetSocketAddress
+
 import io.netty.channel.ChannelHandlerContext
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStatistics, SyncStateName}
-import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.net.p2p.HelloMessage
+import org.lipicalabs.lipica.core.net.transport.{FrameCodec, Node}
 import org.lipicalabs.lipica.core.net.transport.discover.NodeStatistics
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
@@ -27,6 +30,13 @@ class Channel {
 	def node: Node = ???
 	def nodeStatistics: NodeStatistics = ???
 
+	def setNode(nodeId: ImmutableBytes): Unit = ???
+
+	def setInetSocketAddress(address: InetSocketAddress): Unit = ???
+
+	def sendHelloMessage(ctx: ChannelHandlerContext, frameCodec: FrameCodec, nodeId: String): Unit = ???
+	def publicTransportHandshakeFinished(ctx: ChannelHandlerContext, helloMessage: HelloMessage): Unit = ???
+
 	def bestKnownHash: ImmutableBytes = ???
 	def lastHashToAsk: ImmutableBytes = ???
 	def lastHashToAsk_=(v: ImmutableBytes): Unit = ???
@@ -35,6 +45,8 @@ class Channel {
 	def isIdle: Boolean = ???
 	def isHashRetrieving: Boolean = ???
 	def isHashRetrievingDone: Boolean = ???
+
+	def isDiscoveryMode: Boolean = ???
 
 	def hasBlocksLack: Boolean = ???
 

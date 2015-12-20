@@ -25,6 +25,12 @@ class NodeStatistics {
 	val lpcInbound = new StatHandler
 	val lpcOutbound = new StatHandler
 
+	val transportAuthMessageSent = new StatHandler
+	val transportOutMessages = new StatHandler
+	val transportInMessages = new StatHandler
+
+	val transportInHello = new StatHandler
+
 	def lpcHandshake(message: StatusMessage): Unit = ???
 
 	def lpcLastInboundStatusMessage: StatusMessage = ???

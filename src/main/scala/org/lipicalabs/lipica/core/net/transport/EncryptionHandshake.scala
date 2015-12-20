@@ -46,6 +46,7 @@ class EncryptionHandshake private() {
 	def secrets: Secrets = this._secrets
 	def secrets_=(v: Secrets): Unit = this._secrets = v
 
+	def createAuthInitiate(key: ECKey): AuthInitiateMessage = createAuthInitiate(null, key)
 
 	def createAuthInitiate(aToken: Array[Byte], key: ECKey): AuthInitiateMessage = {
 		val message = new AuthInitiateMessage

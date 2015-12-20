@@ -42,6 +42,7 @@ class BlockchainTest extends Specification {
 				override def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]) = ()
 				override def onVMTraceCreated(txHash: String, trace: String) = ()
 				override def onSendMessage(message: Message) = ()
+				override def onReceiveMessage(message: Message) = ()
 				override def onSyncDone(): Unit = ()
 				override def onHandshakePeer(node: Node, message: HelloMessage) = ()
 			}

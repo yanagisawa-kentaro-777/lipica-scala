@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.net.shh
 
+import org.lipicalabs.lipica.core.net.message.Command
+
 import scala.collection.mutable
 
 /**
@@ -7,7 +9,7 @@ import scala.collection.mutable
  * 2015/12/19 13:26
  * YANAGISAWA, Kentaro
  */
-sealed trait ShhMessageCode {
+sealed trait ShhMessageCode extends Command {
 	def command: Int
 	def asByte: Byte = this.command.toByte
 }
