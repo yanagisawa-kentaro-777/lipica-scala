@@ -251,9 +251,9 @@ class SyncManager {
 		val listener = new DiscoverListener {
 			override def nodeAppeared(handler: NodeHandler) = {
 				if (logger.isTraceEnabled) {
-					logger.trace("<SyncManager> Peer %s: new best chain peer discovered: %,d vs %,d".format(handler.getNode.hexIdShort, handler.getNodeStatistics.lpcTotalDifficulty, highestKnownDiffuculty))
+					logger.trace("<SyncManager> Peer %s: new best chain peer discovered: %,d vs %,d".format(handler.node.hexIdShort, handler.nodeStatistics.lpcTotalDifficulty, highestKnownDiffuculty))
 				}
-				pool.connect(handler.getNode)
+				pool.connect(handler.node)
 			}
 			override def nodeDisappeared(handler: NodeHandler) = {
 				//
@@ -307,14 +307,14 @@ class SyncManager {
 		if (logger.isTraceEnabled) {
 			logDiscoveredNodes(newNodes)
 		}
-		newNodes.foreach(each => this.pool.connect(each.getNode))
+		newNodes.foreach(each => this.pool.connect(each.node))
 	}
 
 	private def logDiscoveredNodes(nodes: Seq[NodeHandler]): Unit = {
 		if (logger.isTraceEnabled) {
 			val found =
 				if (nodes.nonEmpty) {
-					nodes.map(_.getNode.hexIdShort).mkString(",")
+					nodes.map(_.node.hexIdShort).mkString(",")
 				} else {
 					"empty"
 				}

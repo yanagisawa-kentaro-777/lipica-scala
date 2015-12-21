@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.ReasonCode
+import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.UtilConsts
 
 /**
@@ -11,7 +12,7 @@ import org.lipicalabs.lipica.core.utils.UtilConsts
  * 2015/12/07 20:51
  * YANAGISAWA, Kentaro
  */
-class NodeStatistics {
+class NodeStatistics(val node: Node) {
 
 	//TODO 未実装。
 
@@ -28,6 +29,18 @@ class NodeStatistics {
 	val transportAuthMessageSent = new StatHandler
 	val transportOutMessages = new StatHandler
 	val transportInMessages = new StatHandler
+
+	val discoverInPing = new StatHandler
+	val discoverInPong = new StatHandler
+	val discoverInNeighbours = new StatHandler
+	val discoverInFind = new StatHandler
+
+	val discoverOutPing = new StatHandler
+	val discoverOutPong = new StatHandler
+	val discoverOutNeighbours = new StatHandler
+	val discoverOutFind = new StatHandler
+
+	val discoverMessageLatency: Statter = ???
 
 	val transportInHello = new StatHandler
 
@@ -46,4 +59,8 @@ class StatHandler {
 	def add: Int = this.count.incrementAndGet
 	def get: Int = this.count.get
 	override def toString = this.count.toString
+}
+
+trait Statter {
+	def add(v: Double): Unit
 }
