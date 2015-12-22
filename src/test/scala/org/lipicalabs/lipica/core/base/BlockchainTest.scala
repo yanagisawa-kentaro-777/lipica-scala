@@ -45,6 +45,7 @@ class BlockchainTest extends Specification {
 				override def onReceiveMessage(message: Message) = ()
 				override def onSyncDone(): Unit = ()
 				override def onHandshakePeer(node: Node, message: HelloMessage) = ()
+				override def onNodeDiscovered(n: Node): Unit = ()
 			}
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)

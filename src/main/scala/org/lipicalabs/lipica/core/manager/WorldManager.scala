@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.manager
 import org.lipicalabs.lipica.core.base.Wallet
 import org.lipicalabs.lipica.core.db.Repository
 import org.lipicalabs.lipica.core.listener.LipicaListener
+import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
 
 /**
@@ -11,6 +12,9 @@ import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
  * YANAGISAWA, Kentaro
  */
 trait WorldManager {
+
+	def activePeer: PeerClient
+	def activePeer_=(v: PeerClient): Unit
 
 	def repository: Repository
 

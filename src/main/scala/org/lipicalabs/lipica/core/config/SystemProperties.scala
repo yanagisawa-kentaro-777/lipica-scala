@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.config
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  *
@@ -87,6 +88,11 @@ class SystemProperties {
 
 	def txOutdatedThreshold: Int = 3
 
+	def listenAddress: String = {
+		//TODO
+		"127.0.0.1"
+	}
+
 	def listenPort: Int = {
 		//TODO
 		21000
@@ -142,6 +148,16 @@ class SystemProperties {
 		10
 	}
 
+	def peerDiscoveryEnabled: Boolean = {
+		//TODO
+		true
+	}
+
+	def peerDiscoveryPersist: Boolean = {
+		//TODO
+		true
+	}
+
 	def peerDiscoveryWorkers: Int = {
 		//TODO
 		8
@@ -156,6 +172,23 @@ class SystemProperties {
 		//TODO
 		val hex = "a43d867f16238b897428705cec855b0c5b0ddf3319c1b18f7a00915db83155d9"
 		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
+	}
+
+	def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
+
+	def isPublicHomeNode: Boolean = {
+		//TODO
+		true
+	}
+
+	def peerDiscoveryTouchSeconds: Int = {
+		//TODO
+		600
+	}
+
+	def peerDiscoveryTouchMaxNodes: Int = {
+		//TODO
+		100
 	}
 
 }

@@ -23,4 +23,5 @@ trait LipicaListener {
 	def onLpcStatusUpdated(node: Node, status: StatusMessage)
 	def onSyncDone(): Unit
 	def onHandshakePeer(node: Node, message: HelloMessage): Unit
+	def onNodeDiscovered(n: Node): Unit
 }
