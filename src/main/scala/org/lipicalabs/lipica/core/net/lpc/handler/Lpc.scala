@@ -18,7 +18,7 @@ trait Lpc {
 
 	def onShutdown(): Unit
 
-	def logSycStats(): Unit
+	def logSyncStats(): Unit
 
 	def changeState(newState: SyncStateName): Unit
 

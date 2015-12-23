@@ -18,6 +18,10 @@ class BzzHandler extends SimpleChannelInboundHandler[BzzMessage] {
 		//TODO 未実装。
 	}
 
+	def activate(): Unit = {
+		//TODO
+	}
+
 }
 
 

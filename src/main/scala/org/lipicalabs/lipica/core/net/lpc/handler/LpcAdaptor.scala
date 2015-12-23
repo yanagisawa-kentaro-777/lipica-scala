@@ -50,7 +50,7 @@ class LpcAdaptor extends Lpc {
 
 	override def getSyncStats = this.syncStats
 
-	override def logSycStats() = ()
+	override def logSyncStats() = ()
 
 	override def version = V0
 }

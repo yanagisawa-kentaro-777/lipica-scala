@@ -368,7 +368,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	def getHandshakeStatusMessage: StatusMessage = this.channel.nodeStatistics.lpcLastInboundStatusMessage
 
-	override def logSycStats() = {
+	override def logSyncStats() = {
 		//TODO 未実装。
 	}
 

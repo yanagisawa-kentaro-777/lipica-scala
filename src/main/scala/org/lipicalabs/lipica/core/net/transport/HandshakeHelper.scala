@@ -10,12 +10,12 @@ import org.lipicalabs.lipica.core.net.p2p.HelloMessage
  */
 object HandshakeHelper {
 
-	def getSupportedCapabilities(message: HelloMessage): Iterable[Capability] = {
+	def getSupportedCapabilities(message: HelloMessage): Seq[Capability] = {
 		val configuredCapabilities = Capability.configuredCapabilities
 		val (lpcCapabilities, otherCapabilities) = message.capabilities.filter(each => configuredCapabilities.contains(each)).partition(each => each.name == Capability.LPC)
 		val lpcCapabilityOfMaxVersion =  lpcCapabilities.reduceOption((accum, each) => if (accum.version < each.version) each else accum)
 
-		lpcCapabilityOfMaxVersion ++ otherCapabilities
+		(lpcCapabilityOfMaxVersion ++ otherCapabilities).toSeq
 	}
 
 }
