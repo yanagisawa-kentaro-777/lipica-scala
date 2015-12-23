@@ -5,6 +5,7 @@ import org.lipicalabs.lipica.core.db.Repository
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
+import org.lipicalabs.lipica.core.net.server.ChannelManager
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,6 +22,8 @@ trait WorldManager {
 	def listener: LipicaListener
 
 	def peerDiscovery: PeerDiscovery
+
+	def channelManager: ChannelManager
 
 	def wallet: Wallet
 

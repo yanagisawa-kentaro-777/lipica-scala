@@ -1,13 +1,8 @@
 
-通信仕様！
-https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
-
-net.submit.TransactionTaskを実装する。
+auto wiring、facade、managerを実装する。
 
 logging、refactor、comment。（不具合追跡用）
 yellow paper を読んでわからない所を調べる。
-
-DIにおいて、@Scope("prototype")は、毎回新しいインスタンスを返すことを意味する。
 
 https://github.com/ethereum/tests を活用した自動テストの実行方法を考える。
 
@@ -33,5 +28,4 @@ ImmutableBytes#toByteArray を排除する。
 	Value 内包する型の大部分はパージ可能。
 
 sbtによるleveldbのテストの問題？
-auto wiring の問題。
 net.rlpx.Handshakerはエンドポイント実装である。

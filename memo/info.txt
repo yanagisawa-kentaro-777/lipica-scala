@@ -12,3 +12,6 @@ http://gavinandresen.ninja/segregated-witness-is-cool
 
 Dapp入門
 https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/
+
+通信仕様
+https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol

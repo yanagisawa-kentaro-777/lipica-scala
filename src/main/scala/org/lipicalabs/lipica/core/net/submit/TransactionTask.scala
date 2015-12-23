@@ -17,11 +17,12 @@ class TransactionTask(private val tx: TransactionLike, private val worldManager:
 
 	override def call: TransactionLike = {
 		try {
-			//TODO 未実装。ChannelManager
+			logger.info("<TxTask> Submitting tx: %s".format(this.tx))
+			this.worldManager.channelManager.sendTransaction(this.tx)
 			this.tx
 		} catch {
 			case e: Throwable =>
-				logger.warn("<TransactionTask>", e)
+				logger.warn("<TransactionTask> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				null
 		}
 	}
