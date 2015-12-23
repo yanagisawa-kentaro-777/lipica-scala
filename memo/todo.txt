@@ -1,4 +1,5 @@
 
+minerを実装する。
 auto wiring、facade、managerを実装する。
 設定を整備する。
 
