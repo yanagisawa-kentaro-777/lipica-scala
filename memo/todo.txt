@@ -2,7 +2,7 @@
 通信仕様！
 https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 
-net.server 以下を実装し、net.submit.TransactionTaskを実装する。
+net.submit.TransactionTaskを実装する。
 
 logging、refactor、comment。（不具合追跡用）
 yellow paper を読んでわからない所を調べる。

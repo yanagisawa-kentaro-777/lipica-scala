@@ -22,10 +22,10 @@ class ChannelManager {
 	import scala.collection.JavaConversions._
 
 	//TODO auto wiring
-	private val worldManager: WorldManager = null
-	private val syncManager: SyncManager = null
-	private val nodeManager: NodeManager = null
-	private val lipica: Lipica = null
+	private val worldManager: WorldManager = ???
+	private val syncManager: SyncManager = ???
+	private val nodeManager: NodeManager = ???
+	private val lipica: Lipica = ???
 
 	private val newPeers = new CopyOnWriteArrayList[Channel]()
 	private val activePeers = new CopyOnWriteArrayList[Channel]()
