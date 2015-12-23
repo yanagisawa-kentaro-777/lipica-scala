@@ -1,5 +1,6 @@
 
 auto wiring、facade、managerを実装する。
+設定を整備する。
 
 logging、refactor、comment。（不具合追跡用）
 yellow paper を読んでわからない所を調べる。
