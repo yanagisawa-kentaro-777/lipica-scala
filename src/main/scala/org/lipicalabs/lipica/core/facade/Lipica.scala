@@ -75,11 +75,12 @@ trait Lipica extends Closeable {
 	def getBlockLoader: BlockLoader
 
 	/**
-	 * Calculates a 'reasonable' Gas price based on statistics of the latest transaction's Gas prices
-	 * Normally the price returned should be sufficient to execute a transaction since ~25% of the latest
-	 * transactions were executed at this or lower price.
-	 * If the transaction is wanted to be executed promptly with higher chances the returned price might
-	 * be increased at some ratio (e.g. * 1.2)
+	 * 最近のトランザクションにおけるマナ価格の実績に基いて、
+	 * おおむね妥当だと思われるマナ価格を計算して返します。
+	 *
+	 * 25%程度のトランザクションが、
+	 * この価格かそれ以下で実行されている実績値です。
+	 * より確実に優先的に実行してもらいたい場合には、20%程度割増すると良いでしょう。
 	 */
 	def getManaPrice: Long
 

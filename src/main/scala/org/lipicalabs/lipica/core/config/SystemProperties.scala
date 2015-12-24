@@ -191,6 +191,11 @@ class SystemProperties {
 		100
 	}
 
+	def blocksFile: String = {
+		//TODO
+		""
+	}
+
 }
 
 object SystemProperties {
