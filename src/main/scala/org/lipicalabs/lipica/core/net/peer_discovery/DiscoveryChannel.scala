@@ -61,7 +61,7 @@ class DiscoveryChannel {
 			this.shhHandler.messageQueue = this.messageQueue
 			this.bzzHandler.messageQueue = this.messageQueue
 
-			val codec: MessageCodec = new MessageCodec()//TODO auto wiring
+			val codec = new MessageCodec
 
 			b.handler(
 				new ChannelInitializer[NioSocketChannel] {

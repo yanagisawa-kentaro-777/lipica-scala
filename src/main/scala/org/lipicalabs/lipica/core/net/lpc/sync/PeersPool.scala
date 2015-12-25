@@ -24,8 +24,7 @@ class PeersPool {
 	private val bans: mutable.Map[String, Long] = new mutable.HashMap[String, Long]
 	private val pendingConnections: mutable.Map[String, Long] = new mutable.HashMap[String, Long]
 
-	//TODO auto wiring
-	private val lipica: Lipica = ???
+	private def lipica: Lipica = Lipica.instance
 
 	def init(): Unit = {
 		Executors.newSingleThreadScheduledExecutor.scheduleWithFixedDelay(
