@@ -32,14 +32,15 @@ import org.slf4j.LoggerFactory
 class Channel {
 	import Channel._
 
-	//TODO auto wiring
 	private def worldManager: WorldManager = WorldManager.instance
 
-	private val messageQueue: MessageQueue = ???
-	private val p2pHandler: P2PHandler = ???
-	private val shhHandler: ShhHandler = ???
-	private val bzzHandler: BzzHandler = ???
-	private val messageCodec: MessageCodec = ???
+	private val messageQueue: MessageQueue = new MessageQueue
+	private val messageCodec: MessageCodec = new MessageCodec
+
+	private val p2pHandler: P2PHandler = new P2PHandler(this.messageQueue)
+	private val shhHandler: ShhHandler = new ShhHandler
+	private val bzzHandler: BzzHandler = new BzzHandler
+
 
 	private def nodeManager: NodeManager = worldManager.nodeManager
 

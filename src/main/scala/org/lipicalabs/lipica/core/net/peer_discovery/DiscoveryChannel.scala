@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.client.Capability
-import org.lipicalabs.lipica.core.net.lpc.handler.LpcHandler
+import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc0, LpcHandler}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler}
 import org.lipicalabs.lipica.core.net.server.LipicaChannelInitializer
@@ -31,15 +31,13 @@ class DiscoveryChannel {
 
 	private var _peerDiscoveryMode: Boolean = false
 
-
 	private def worldManager: WorldManager = WorldManager.instance
 
-	//TODO auto wiring
-	private def messageQueue: MessageQueue = ???
-	private def p2pHandler: P2PHandler = ???
-	private def lpcHandler: LpcHandler = ???
-	private def shhHandler: ShhHandler = ???
-	private def bzzHandler: BzzHandler = ???
+	private val messageQueue: MessageQueue = new MessageQueue
+	private val p2pHandler: P2PHandler = new P2PHandler(this.messageQueue)
+	private val lpcHandler: LpcHandler = new Lpc0
+	private val shhHandler: ShhHandler = new ShhHandler
+	private val bzzHandler: BzzHandler = new BzzHandler
 
 	def getHelloHandshake: HelloMessage = this.p2pHandler.handshakeHelloMessage
 	def getStatusHandshake: StatusMessage = this.lpcHandler.getHandshakeStatusMessage

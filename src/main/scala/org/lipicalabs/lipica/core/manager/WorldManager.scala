@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db._
 import org.lipicalabs.lipica.core.listener.{CompositeLipicaListener, LipicaListener}
 import org.lipicalabs.lipica.core.net.client.PeerClient
-import org.lipicalabs.lipica.core.net.lpc.sync.SyncManager
+import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.server.ChannelManager
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
@@ -48,7 +48,12 @@ class WorldManager extends Closeable {
 
 	val nodeManager: NodeManager = ComponentFactory.createNodeManager
 
-	def syncManager: SyncManager = ComponentFactory.createSyncManager
+	val syncManager: SyncManager = ComponentFactory.createSyncManager
+
+	val syncQueue: SyncQueue = ComponentFactory.createSyncQueue
+
+	val peersPool: PeersPool = ComponentFactory.createPeersPool
+
 
 	def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
 

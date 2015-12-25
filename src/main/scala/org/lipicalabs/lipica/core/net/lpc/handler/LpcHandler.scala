@@ -26,9 +26,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	protected def worldManager: WorldManager = WorldManager.instance
 	protected def blockchain: Blockchain = worldManager.blockchain
-	//TODO auto wiring
-	protected val syncQueue: SyncQueue = ???
-
+	protected def syncQueue: SyncQueue = worldManager.syncQueue
 
 	protected var _channel: Channel = null
 	def channel: Channel = this._channel
@@ -163,7 +161,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	}
 
 	protected def sendStatus(): Unit = {
-		val protocolVersion = this.version.code.toByte
+		val protocolVersion = this.version.code
 		val newtworkdId = SystemProperties.CONFIG.networkId
 		val totalDifficulty = this.blockchain.totalDifficulty
 		val bestHash = this.blockchain.bestBlockHash

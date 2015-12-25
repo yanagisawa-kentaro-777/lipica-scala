@@ -38,14 +38,12 @@ class SyncManager {
 
 	private def worldManager: WorldManager = WorldManager.instance
 	private def blockchain: Blockchain = worldManager.blockchain
-	private def nodeManager: NodeManager = ???
+	private def nodeManager: NodeManager = worldManager.nodeManager
 	private def lipicaListener: LipicaListener = worldManager.listener
-	private val channelManager: ChannelManager = worldManager.channelManager
+	private def channelManager: ChannelManager = worldManager.channelManager
 
-
-	//TODO auto wiring
-	val queue: SyncQueue = ???
-	val pool: PeersPool = ???
+	def queue: SyncQueue = worldManager.syncQueue
+	def pool: PeersPool = worldManager.peersPool
 
 
 	def init(): Unit = {

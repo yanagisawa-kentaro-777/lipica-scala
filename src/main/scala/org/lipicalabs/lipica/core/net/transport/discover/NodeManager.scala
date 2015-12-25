@@ -7,7 +7,7 @@ import java.util.concurrent.{TimeUnit, Executors}
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactory
+import org.lipicalabs.lipica.core.db.datasource.mapdb.{MapDBFactoryImpl, MapDBFactory}
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.transport._
 import org.lipicalabs.lipica.core.net.transport.discover.NodeStatistics.Persistent
@@ -28,9 +28,8 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 
 	def worldManager: WorldManager = WorldManager.instance
 
-	//TODO auto wiring
-	val peerConnectionManager: PeerConnectionManager = ???
-	val mapDBFactory: MapDBFactory = ???
+	val peerConnectionManager: PeerConnectionManager = new PeerConnectionManager
+	val mapDBFactory: MapDBFactory = new MapDBFactoryImpl
 
 	private var _messageSender: MessageHandler = null
 	private val nodeHandlerMap: mutable.Map[String, NodeHandler] = new mutable.HashMap[String, NodeHandler]

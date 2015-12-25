@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, HashMapDB, 
 import org.lipicalabs.lipica.core.db._
 import org.lipicalabs.lipica.core.listener.CompositeLipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
-import org.lipicalabs.lipica.core.net.lpc.sync.SyncManager
+import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.server.ChannelManager
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
@@ -72,5 +72,13 @@ object ComponentFactory {
 	def createNodeManager: NodeManager = NodeManager.create
 
 	def createSyncManager: SyncManager = new SyncManager
+
+	def createSyncQueue: SyncQueue = new SyncQueue
+
+	def createPeersPool: PeersPool = {
+		val result = new PeersPool
+		result.init()
+		result
+	}
 
 }

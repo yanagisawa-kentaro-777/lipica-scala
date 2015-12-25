@@ -218,7 +218,6 @@ class PeersPool {
 		map.withFilter(entry => entry._2 <= now).map(entry => entry._1).toSet
 	}
 
-	init()
 }
 
 object PeersPool {
