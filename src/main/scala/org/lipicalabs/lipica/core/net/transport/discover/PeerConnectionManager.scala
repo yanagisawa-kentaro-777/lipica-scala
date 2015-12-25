@@ -19,8 +19,7 @@ import scala.collection.{JavaConversions, mutable}
 class PeerConnectionManager {
 	import PeerConnectionManager._
 
-	//TODO auto wiring
-	private val worldManager: WorldManager = ???
+	private def worldManager: WorldManager = WorldManager.instance
 
 	private val connectedCandidates: mutable.Map[NodeHandler, NodeHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[NodeHandler, NodeHandler])
 

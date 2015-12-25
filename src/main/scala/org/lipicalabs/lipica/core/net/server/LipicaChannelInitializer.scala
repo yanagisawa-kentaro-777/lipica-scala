@@ -14,9 +14,9 @@ class LipicaChannelInitializer(val remoteId: String) extends ChannelInitializer[
 
 	import LipicaChannelInitializer._
 
-	//TODO auto wiring
-	private val channelManager: ChannelManager = ???
-	private val worldManager: WorldManager = ???
+	private def worldManager: WorldManager = WorldManager.instance
+	private def channelManager: ChannelManager = worldManager.channelManager
+
 
 	private var _peerDiscoveryMode: Boolean = false
 	def peerDiscoveryMode: Boolean = this._peerDiscoveryMode

@@ -21,8 +21,7 @@ class Account {
 
 	private val _pendingTransactions = asScalaSet(java.util.Collections.synchronizedSet(new util.HashSet[TransactionLike]))
 
-	//TODO auto wiring.
-	def worldManager: WorldManager = null
+	def worldManager: WorldManager = WorldManager.instance
 
 	def init(aKey: ECKey): Unit = {
 		this._ecKey = aKey

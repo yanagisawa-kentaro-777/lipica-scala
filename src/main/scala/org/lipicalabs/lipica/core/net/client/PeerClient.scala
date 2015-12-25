@@ -20,8 +20,7 @@ import org.slf4j.LoggerFactory
 class PeerClient {
 	import PeerClient._
 
-	//TODO auto wiring
-	private val worldManager: WorldManager = ???
+	private def worldManager: WorldManager = WorldManager.instance
 
 	def connect(host: String, port: Int, remoteId: String): Unit = connect(host, port, remoteId, discoveryMode = false)
 

@@ -17,9 +17,8 @@ import org.lipicalabs.lipica.core.validator.BlockHeaderValidator
  */
 class BlockLoader {
 
-	//TODO auto wiring
-	private val headerValidator: BlockHeaderValidator = ???
-	private val blockchain: Blockchain = ???
+	private def headerValidator: BlockHeaderValidator = WorldManager.instance.blockHeaderValidator
+	private def blockchain: Blockchain = WorldManager.instance.blockchain
 
 	def loadBlocks(): Unit = {
 		val filePath = SystemProperties.CONFIG.blocksFile

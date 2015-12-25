@@ -18,13 +18,13 @@ import scala.collection.mutable.ArrayBuffer
  */
 class ChannelManager {
 
-	import ChannelManager._
 	import scala.collection.JavaConversions._
 
+	private def worldManager: WorldManager = WorldManager.instance
+	private val syncManager: SyncManager = worldManager.syncManager
+	private val nodeManager: NodeManager = worldManager.nodeManager
+
 	//TODO auto wiring
-	private val worldManager: WorldManager = ???
-	private val syncManager: SyncManager = ???
-	private val nodeManager: NodeManager = ???
 	private val lipica: Lipica = ???
 
 	private val newPeers = new CopyOnWriteArrayList[Channel]()

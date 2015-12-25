@@ -60,8 +60,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _isHandshakeDone: Boolean = false
 	def isHandshakeDone: Boolean = this._isHandshakeDone
 
-	//TODO auto wiring
-	private val worldManager: WorldManager = ???
+	private def worldManager: WorldManager = WorldManager.instance
 
 	private var _p2pMessageFactory: MessageFactory = null
 	def setP2PMessageFactory(v: MessageFactory): Unit = this._p2pMessageFactory = v

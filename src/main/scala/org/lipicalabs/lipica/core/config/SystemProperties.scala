@@ -174,6 +174,11 @@ class SystemProperties {
 		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
 	}
 
+	def coinbaseSecret: String = {
+		//TODO
+		"secret"
+	}
+
 	def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
 
 	def isPublicHomeNode: Boolean = {

@@ -23,10 +23,12 @@ import scala.collection.{JavaConversions, mutable}
 abstract class LpcHandler(override val version: LpcVersion) extends SimpleChannelInboundHandler[LpcMessage] with Lpc {
 
 	import LpcHandler._
+
+	protected def worldManager: WorldManager = WorldManager.instance
+	protected def blockchain: Blockchain = worldManager.blockchain
 	//TODO auto wiring
-	protected val blockchain: Blockchain = ???
 	protected val syncQueue: SyncQueue = ???
-	protected val worldManager: WorldManager = ???
+
 
 	protected var _channel: Channel = null
 	def channel: Channel = this._channel

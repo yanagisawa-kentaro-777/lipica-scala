@@ -1,8 +1,7 @@
 package org.lipicalabs.lipica.core.net.peer_discovery
 
 import java.net.InetAddress
-import java.util.concurrent.{TimeUnit, ThreadFactory}
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.TimeUnit
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.nio.NioEventLoopGroup
@@ -32,13 +31,15 @@ class DiscoveryChannel {
 
 	private var _peerDiscoveryMode: Boolean = false
 
+
+	private def worldManager: WorldManager = WorldManager.instance
+
 	//TODO auto wiring
-	private val worldManager: WorldManager = ???
-	private val messageQueue: MessageQueue = ???
-	private val p2pHandler: P2PHandler = ???
-	private val lpcHandler: LpcHandler = ???
-	private val shhHandler: ShhHandler = ???
-	private val bzzHandler: BzzHandler = ???
+	private def messageQueue: MessageQueue = ???
+	private def p2pHandler: P2PHandler = ???
+	private def lpcHandler: LpcHandler = ???
+	private def shhHandler: ShhHandler = ???
+	private def bzzHandler: BzzHandler = ???
 
 	def getHelloHandshake: HelloMessage = this.p2pHandler.handshakeHelloMessage
 	def getStatusHandshake: StatusMessage = this.lpcHandler.getHandshakeStatusMessage

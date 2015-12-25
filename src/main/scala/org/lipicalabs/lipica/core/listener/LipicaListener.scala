@@ -12,7 +12,6 @@ import org.lipicalabs.lipica.core.net.transport.Node
  * YANAGISAWA, Kentaro
  */
 trait LipicaListener {
-	//TODO 未実装。
 	def onTransactionExecuted(summary: TransactionExecutionSummary): Unit
 	def onVMTraceCreated(txHash: String, trace: String): Unit
 	def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]): Unit

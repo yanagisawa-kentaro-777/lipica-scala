@@ -1,59 +1,133 @@
 package org.lipicalabs.lipica.core.manager
 
+import java.io.Closeable
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.atomic.AtomicReference
+
 import org.lipicalabs.lipica.core.base._
-import org.lipicalabs.lipica.core.db.{BlockStore, RepositoryImpl, Repository}
-import org.lipicalabs.lipica.core.listener.LipicaListener
+import org.lipicalabs.lipica.core.config.{SystemProperties, ComponentFactory}
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.db._
+import org.lipicalabs.lipica.core.listener.{CompositeLipicaListener, LipicaListener}
 import org.lipicalabs.lipica.core.net.client.PeerClient
-import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.lpc.sync.SyncManager
-import org.lipicalabs.lipica.core.net.message.Message
-import org.lipicalabs.lipica.core.net.p2p.HelloMessage
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.server.ChannelManager
-import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.slf4j.LoggerFactory
 
 /**
  * Created by IntelliJ IDEA.
  * 2015/11/21 16:08
  * YANAGISAWA, Kentaro
  */
-trait WorldManager {
+class WorldManager extends Closeable {
 
-	def listener: LipicaListener
+	import WorldManager._
 
-	def blockchain: Blockchain
+	val blockStore: BlockStore = ComponentFactory.createBlockStore
 
-	def repository: Repository
+	val repository: Repository = ComponentFactory.createRepository
 
-	def wallet: Wallet
+	val wallet: Wallet = ComponentFactory.createWallet
 
-	def activePeer: PeerClient
+	val adminInfo: AdminInfo = ComponentFactory.createAdminInfo
 
-	def activePeer_=(v: PeerClient): Unit
+	val listener: CompositeLipicaListener = ComponentFactory.createListener
 
-	def peerDiscovery: PeerDiscovery
+	val blockHeaderValidator = ComponentFactory.createBlockHeaderValidator
 
-	def blockStore: BlockStore
+	val parentHeaderValidator = ComponentFactory.createParentHeaderValidator
 
-	def channelManager: ChannelManager
+	val blockchain: Blockchain = new BlockchainImpl(this.blockStore, this.repository, this.wallet, this.adminInfo, this.listener, this.parentHeaderValidator)
 
-	def adminInfo: AdminInfo
+	val peerDiscovery: PeerDiscovery = ComponentFactory.createPeerDiscovery
 
-	def nodeManager: NodeManager
+	val channelManager: ChannelManager = ComponentFactory.createChannelManager
 
-	def syncManager: SyncManager
+	val nodeManager: NodeManager = ComponentFactory.createNodeManager
+
+	def syncManager: SyncManager = ComponentFactory.createSyncManager
+
+	def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
+
+	def startPeerDiscovery(): Unit = {
+		if (!this.peerDiscovery.isStarted) {
+			this.peerDiscovery.start()
+		}
+	}
+
+	def stopPeerDiscovery(): Unit = {
+		if (this.peerDiscovery.isStarted) {
+			this.peerDiscovery.stop()
+		}
+
+	}
 
 
-	def init(): Unit//TODO post construct
+	private val activePeerRef = new AtomicReference[PeerClient](null)
+	def activePeer: PeerClient = this.activePeerRef.get
+	def activePeer_=(v: PeerClient): Unit = this.activePeerRef.set(v)
 
-	def addListener(listener: LipicaListener): Unit
 
-	def startPeerDiscovery(): Unit
+	def init(): Unit = {
+		val coinbaseAddress = DigestUtils.digest256(SystemProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
+		this.wallet.importKey(ImmutableBytes(coinbaseAddress))
 
-	def stopPeerDiscovery(): Unit
+		loadBlockchain()
 
-	def loadBlockchain(): Unit
+		this.syncManager.init()
+	}
 
-	def close(): Unit
+	def loadBlockchain(): Unit = {
+		if (!SystemProperties.CONFIG.databaseReset) {
+			this.blockStore.load()
+		}
+
+		this.blockStore.getBestBlock match {
+			case Some(bestBlock) =>
+				this.blockchain.bestBlock = bestBlock
+				val totalDifficulty = this.blockStore.getTotalDifficulty
+				this.blockchain.totalDifficulty = totalDifficulty
+				logger.info("<WorldManager> Loaded up to block %,d ; TD=%,d ; StateRoot=%s".format(this.blockchain.bestBlock.blockNumber, this.blockchain.totalDifficulty, this.blockchain.bestBlock.stateRoot.toHexString))
+			case None =>
+				logger.info("<WorldManager> DB is empty. Adding the Genesis block.")
+				val genesis = Genesis.getInstance
+				for (entry <- genesis.premine) {
+					this.repository.createAccount(entry._1)
+					this.repository.addBalance(entry._1, entry._2.balance)
+				}
+				this.blockStore.saveBlock(genesis, genesis.cumulativeDifficulty, mainChain = true)
+				this.blockchain.bestBlock = genesis
+				this.blockchain.totalDifficulty = genesis.cumulativeDifficulty
+
+				this.listener.onBlock(genesis, Seq.empty)
+				this.repository.dumpState(genesis, 0, 0, null)
+				logger.info("<WorldManager> Genesis block is loaded.")
+		}
+
+		if (this.blockchain.bestBlock.stateRoot != DigestUtils.EmptyTrieHash) {
+			this.repository.syncToRoot(this.blockchain.bestBlock.stateRoot)
+		}
+	}
+
+	override def close(): Unit = {
+		stopPeerDiscovery()
+		this.repository.close()
+		this.blockchain.close()
+	}
+}
+
+object WorldManager {
+	private val logger = LoggerFactory.getLogger("general")
+
+	val instance: WorldManager = createWorldManager
+
+	private def createWorldManager: WorldManager = {
+		val result = new WorldManager
+		result.init()
+		result
+	}
+
 }

@@ -30,8 +30,7 @@ class Wallet {
 
 	private var high: Long = 0
 
-	//TODO auto wiring
-	private val worldManager: WorldManager = null
+	private def worldManager: WorldManager = WorldManager.instance
 
 	private val listeners = new ArrayBuffer[WalletListener]
 

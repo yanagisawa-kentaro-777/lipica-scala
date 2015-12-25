@@ -26,10 +26,11 @@ import scala.collection.{mutable, JavaConversions}
 class NodeManager(val table: NodeTable, val key: ECKey) {
 	import NodeManager._
 
+	def worldManager: WorldManager = WorldManager.instance
+
 	//TODO auto wiring
 	val peerConnectionManager: PeerConnectionManager = ???
 	val mapDBFactory: MapDBFactory = ???
-	val worldManager: WorldManager = ???
 
 	private var _messageSender: MessageHandler = null
 	private val nodeHandlerMap: mutable.Map[String, NodeHandler] = new mutable.HashMap[String, NodeHandler]

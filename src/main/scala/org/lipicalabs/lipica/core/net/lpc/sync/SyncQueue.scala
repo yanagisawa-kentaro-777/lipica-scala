@@ -5,6 +5,7 @@ import org.lipicalabs.lipica.core.base.{BlockHeader, BlockWrapper, Blockchain, B
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
+import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.BlockHeaderValidator
 import org.slf4j.LoggerFactory
@@ -20,12 +21,10 @@ class SyncQueue {
 	private var hashStore: HashStore = null
 	private var blockQueue: BlockQueue = null
 
-	//TODO auto wiring
-	private val blockchain: Blockchain = ???
-	//TODO auto wiring
-	private val syncManager: SyncManager = ???
-	//TODO auto wiring
-	private val headerValidator: BlockHeaderValidator = ???
+	private def worldManager: WorldManager = WorldManager.instance
+	private def blockchain: Blockchain = worldManager.blockchain
+	private def syncManager: SyncManager = worldManager.syncManager
+	private def headerValidator: BlockHeaderValidator = worldManager.blockHeaderValidator
 
 	def init(): Unit = {
 		logger.info("<SyncQueue> Start loading sync queue.")

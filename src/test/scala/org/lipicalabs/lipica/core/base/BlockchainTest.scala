@@ -7,7 +7,7 @@ import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.ImportResult
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.db.{RepositoryImpl, BlockInfo, IndexedBlockStore}
-import org.lipicalabs.lipica.core.listener.LipicaListener
+import org.lipicalabs.lipica.core.listener.{LipicaListenerAdaptor, LipicaListener}
 import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.Message
@@ -34,19 +34,7 @@ class BlockchainTest extends Specification {
 	"test (1)" should {
 		"be right" in {
 			val blockStore = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
-			val listener = new LipicaListener {
-				override def onLpcStatusUpdated(node: Node, status: StatusMessage) = ()
-				override def onBlock(block: Block, receipts: Iterable[TransactionReceipt]) = ()
-				override def onTransactionExecuted(summary: TransactionExecutionSummary) = ()
-				override def trace(s: String) = ()
-				override def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]) = ()
-				override def onVMTraceCreated(txHash: String, trace: String) = ()
-				override def onSendMessage(message: Message) = ()
-				override def onReceiveMessage(message: Message) = ()
-				override def onSyncDone(): Unit = ()
-				override def onHandshakePeer(node: Node, message: HelloMessage) = ()
-				override def onNodeDiscovered(n: Node): Unit = ()
-			}
+			val listener = new LipicaListenerAdaptor
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)
 

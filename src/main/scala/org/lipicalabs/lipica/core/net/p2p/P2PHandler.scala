@@ -40,10 +40,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 
 	private var lastPeersSent: Set[PeerInfo] = null
 
-	//TODO auto wiring
-	private var _worldManager: WorldManager = ???
-	def worldManager: WorldManager = this._worldManager
-	def worldManager_=(v: WorldManager): Unit = this._worldManager = v
+	private def worldManager: WorldManager = WorldManager.instance
 
 	private var _channel: Channel = null
 	def channel: Channel = this._channel

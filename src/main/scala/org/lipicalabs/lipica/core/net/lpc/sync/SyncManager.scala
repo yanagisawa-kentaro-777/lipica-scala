@@ -5,6 +5,7 @@ import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 import org.lipicalabs.lipica.core.base.{Blockchain, BlockWrapper}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.listener.LipicaListener
+import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.server.{ChannelManager, Channel}
 import org.lipicalabs.lipica.core.net.transport.discover.{NodeStatistics, DiscoverListener, NodeHandler, NodeManager}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
@@ -34,13 +35,18 @@ class SyncManager {
 
 	private val worker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor
 
+
+	private def worldManager: WorldManager = WorldManager.instance
+	private def blockchain: Blockchain = worldManager.blockchain
+	private def nodeManager: NodeManager = ???
+	private def lipicaListener: LipicaListener = worldManager.listener
+	private val channelManager: ChannelManager = worldManager.channelManager
+
+
 	//TODO auto wiring
-	private val blockchain: Blockchain = ???
 	val queue: SyncQueue = ???
-	private val nodeManager: NodeManager = ???
-	private val lipicaListener: LipicaListener = ???
 	val pool: PeersPool = ???
-	private val channelManager: ChannelManager = ???
+
 
 	def init(): Unit = {
 		val task = new Runnable {

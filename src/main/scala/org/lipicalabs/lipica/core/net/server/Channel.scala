@@ -7,6 +7,7 @@ import io.netty.channel.{ChannelPipeline, ChannelHandlerContext}
 import io.netty.handler.timeout.ReadTimeoutHandler
 import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
@@ -32,12 +33,15 @@ class Channel {
 	import Channel._
 
 	//TODO auto wiring
+	private def worldManager: WorldManager = WorldManager.instance
+
 	private val messageQueue: MessageQueue = ???
 	private val p2pHandler: P2PHandler = ???
 	private val shhHandler: ShhHandler = ???
 	private val bzzHandler: BzzHandler = ???
 	private val messageCodec: MessageCodec = ???
-	private val nodeManager: NodeManager = ???
+
+	private def nodeManager: NodeManager = worldManager.nodeManager
 
 	private val lpcHandlerFactory = LpcHandlerFactory
 	private var lpc: Lpc = new LpcAdaptor

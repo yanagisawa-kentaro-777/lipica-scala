@@ -20,8 +20,7 @@ class MessageQueue {
 	private val messageQueue = new ConcurrentLinkedDeque[MessageRoundtrip]
 	private var ctx: ChannelHandlerContext = null
 
-	//TODO auto wiring
-	private val worldManager: WorldManager = ???
+	private def worldManager: WorldManager = WorldManager.instance
 
 	private var hasPing = false
 

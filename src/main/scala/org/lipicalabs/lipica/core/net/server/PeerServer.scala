@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory
 class PeerServer {
 	import PeerServer._
 
-	//TODO auto wiring
-	private val channelManager: ChannelManager = ???
-	private val worldManager: WorldManager = ???
+	private def worldManager: WorldManager = WorldManager.instance
+	private def channelManager: ChannelManager = worldManager.channelManager
+
 	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer("")
 
 	def start(port: Int): Unit = {
