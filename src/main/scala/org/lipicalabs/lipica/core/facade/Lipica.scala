@@ -4,13 +4,16 @@ import java.io.Closeable
 import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicReference
 
-import org.lipicalabs.lipica.core.base.TransactionLike
+import org.lipicalabs.lipica.core.base.{CallTransaction, TransactionLike}
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.{BlockLoader, AdminInfo}
+import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.net.server.ChannelManager
 import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.vm.program.ProgramResult
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,7 +22,7 @@ import org.lipicalabs.lipica.core.net.transport.Node
  */
 trait Lipica extends Closeable {
 
-	def findOnlinePeer(exclude: java.util.Set[PeerInfo]): PeerInfo
+	def findOnlinePeer(exclude: Set[PeerInfo]): Option[PeerInfo]
 
 	/**
 	 * Peerが発見されるまでブロックします。
@@ -27,6 +30,8 @@ trait Lipica extends Closeable {
 	def awaitOnlinePeer: PeerInfo
 
 	def getPeers: Set[PeerInfo]
+
+	def getDefaultPeer: PeerClient
 
 	def startPeerDiscovery(): Unit
 
@@ -43,6 +48,8 @@ trait Lipica extends Closeable {
 	def isConnected: Boolean
 
 	override def close(): Unit
+
+	def callConstantFunction(receiveAddress: String, function: CallTransaction.Function, funcArgs: Any*): Option[ProgramResult]
 
 	/**
 	 * Factory for general transaction
@@ -64,13 +71,13 @@ trait Lipica extends Closeable {
 
 	def init(): Unit
 
-	def getSnapshotTo: RepositoryIF
+	def getSnapshotTo(root: Array[Byte]): RepositoryIF
 
 	def getAdminInfo: AdminInfo
 
 	def getChannelManager: ChannelManager
 
-	def getPendingTransactions: java.util.Set[TransactionLike]
+	def getPendingTransactions: Set[TransactionLike]
 
 	def getBlockLoader: BlockLoader
 
@@ -85,5 +92,22 @@ trait Lipica extends Closeable {
 	def getManaPrice: Long
 
 	def exitOn(number: Long)
+
+}
+
+object Lipica {
+
+	private val instanceRef = new AtomicReference[Lipica](null)
+
+	def instance: Lipica = this.instanceRef.get
+
+	def create: Lipica = {
+		this.synchronized {
+			val result = new LipicaImpl
+			result.init()
+			this.instanceRef.set(result)
+			result
+		}
+	}
 
 }
