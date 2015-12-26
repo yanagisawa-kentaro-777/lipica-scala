@@ -348,7 +348,7 @@ object SyncManager {
 			SyncStateName.HashRetrieving -> new HashRetrievingState,
 			SyncStateName.BlockRetrieving -> new BlockRetrievingState
 		)
-		result.foreach(each => each.asInstanceOf[AbstractSyncState].syncManager = syncManager)
+		result.values.foreach(each => each.asInstanceOf[AbstractSyncState].syncManager = syncManager)
 		result
 	}
 

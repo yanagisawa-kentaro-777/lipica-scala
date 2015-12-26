@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.base
 
-import org.lipicalabs.lipica.core.ImportResult
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**

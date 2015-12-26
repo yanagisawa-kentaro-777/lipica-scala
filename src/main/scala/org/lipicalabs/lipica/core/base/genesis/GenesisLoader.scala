@@ -23,7 +23,7 @@ object GenesisLoader {
 		try {
 			val json = ByteStreams.toByteArray(in)
 			val mapper = new ObjectMapper
-			val javaType = mapper.getTypeFactory.constructType((new GenesisJson).getClass)
+			val javaType = mapper.getTypeFactory.constructType(classOf[GenesisJson])
 			val genesisJson = new ObjectMapper().readValue[GenesisJson](json, javaType)
 			val genesisBlock = createGenesis(genesisJson)
 			genesisBlock.stateRoot = calculateRootHash(genesisBlock.premine)

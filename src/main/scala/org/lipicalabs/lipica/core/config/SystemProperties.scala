@@ -90,12 +90,12 @@ class SystemProperties {
 
 	def listenAddress: String = {
 		//TODO
-		"127.0.0.1"
+		"118.238.252.169"
 	}
 
 	def listenPort: Int = {
 		//TODO
-		21000
+		30303
 	}
 
 	def projectVersion: String = {
@@ -165,7 +165,10 @@ class SystemProperties {
 
 	def peerDiscoveryAddresses: Seq[String] = {
 		//TODO
-		Seq("54.94.239.50:30303", "52.16.188.185:30303")
+		Seq(
+			"54.94.239.50:30303",
+			"52.16.188.185:30303"
+		)
 	}
 
 	def myKey: ECKey = {

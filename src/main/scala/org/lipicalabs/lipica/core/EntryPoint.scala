@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.facade.Lipica
  * 2015/12/26 10:06
  * YANAGISAWA, Kentaro
  */
-class EntryPoint {
+object EntryPoint {
 
 	def main(args: Array[String]): Unit = {
 		val lipica = Lipica.create
