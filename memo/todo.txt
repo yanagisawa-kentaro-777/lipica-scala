@@ -1,19 +1,14 @@
 設定を整備する。
-
+refactorする。（init() や start() の整備。future化。）
 miningの具体的な方法を実装する。（実データを見ながらのほうがいいかもしれない。）
+例外をつぶす。
+external.addressを自動取得できるようにする。
+logging、refactor、comment。（不具合追跡用）
+
 
 勉強する。
 ・discovery後、一度切るのか。
 ・Status後の流れはどうなるか。
-refactorする。（init() や start() の整備。future化。）
-
-例外をつぶす。
-
-external.addressを自動取得できるようにする。
-「TODO 未実装」のうち、重要なものををなくす。
-
-
-logging、refactor、comment。（不具合追跡用）
 yellow paper を読んでわからない所を調べる。
 
 https://github.com/ethereum/tests を活用した自動テストの実行方法を考える。

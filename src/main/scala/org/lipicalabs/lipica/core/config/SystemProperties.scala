@@ -114,7 +114,7 @@ class SystemProperties(val config: Config) {
 
 object SystemProperties {
 
-	private val configRef = new AtomicReference[SystemProperties](null)
+	private val configRef = new AtomicReference[SystemProperties](loadFromFile(Paths.get("./conf/lipica.conf")))
 
 	def loadFromFile(path: Path): SystemProperties = {
 		this.synchronized {
