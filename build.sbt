@@ -39,6 +39,7 @@ def nettyAll = "io.netty" % "netty-all" % "4.0.33.Final"
 def scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.6"
 def scalaXml = "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
 
+def typesafeConfig = "com.typesafe" % "config" % "1.3.0"
 def commonsCli = "commons-cli" % "commons-cli" % "1.3.1"
 
 // テストでしか利用しないライブラリ。
@@ -59,6 +60,8 @@ lazy val root =
 			libraryDependencies ++= Seq(
 				commonsCodec,
 				commonsIo,
+				typesafeConfig,
+				commonsCli,
 				lang3,
 				leveldbIF,
 				leveldbJNI,
