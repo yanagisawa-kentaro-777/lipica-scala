@@ -39,7 +39,7 @@ class SystemProperties {
 
 	def isFrontier: Boolean = {
 		//TODO
-		false
+		true
 	}
 
 	private var _databaseDir: String = "./work/database/"

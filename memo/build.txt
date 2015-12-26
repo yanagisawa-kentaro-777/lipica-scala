@@ -7,3 +7,5 @@ https://github.com/scoverage/sbt-coveralls
 https://coveralls.io/
 
 sbt root/clean root/coverage root/test coveralls
+
+sbt clean pack
