@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.config
 
 import java.nio.file.{Paths, Path}
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import com.typesafe.config.{ConfigFactory, Config}
 import org.apache.commons.codec.binary.Hex
@@ -21,10 +21,8 @@ class SystemProperties(val config: Config) {
 		false
 	}
 
-	def isFrontier: Boolean = {
-		//TODO
-		true
-	}
+	private val isFrontierRef = new AtomicBoolean(true)
+	def isFrontier: Boolean = this.isFrontierRef.get
 
 	def projectVersion: String = {
 		//TODO
@@ -114,16 +112,37 @@ class SystemProperties(val config: Config) {
 
 object SystemProperties {
 
-	private val configRef = new AtomicReference[SystemProperties](loadFromFile(Paths.get("./conf/lipica.conf")))
+	private val configRef = new AtomicReference[SystemProperties](null)
 
 	def loadFromFile(path: Path): SystemProperties = {
 		this.synchronized {
-			val config = ConfigFactory.parseFile(path.toFile)
-			this.configRef.set(new SystemProperties(config))
-			CONFIG
+			val config = ConfigFactory.parseFile(path.toAbsolutePath.toFile)
+			val result = new SystemProperties(config)
+			this.configRef.set(result)
+			result
 		}
 	}
 
-	def CONFIG: SystemProperties = this.configRef.get
+	def CONFIG: SystemProperties = {
+		val result = this.configRef.get
+		if (result eq null) {
+			//ユニットテスト用。
+			//TODO もう少しマシなやり方。
+			val r =
+				try {
+					val config = new SystemProperties(ConfigFactory.load("lipica.conf"))
+					this.configRef.set(config)
+					config
+				} catch {
+					case e: Throwable =>
+						loadFromFile(Paths.get("./conf/lipica.conf"))
+				}
+			r.isFrontierRef.set(false)
+			r
+		} else {
+			//通常ルート。
+			result
+		}
+	}
 
 }
