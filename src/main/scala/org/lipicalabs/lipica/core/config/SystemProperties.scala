@@ -16,29 +16,9 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class SystemProperties(val config: Config) {
 
-	def vmTrace: Boolean = {
-		//TODO
-		true
-	}
-
-	def vmTraceInitStorageLimit: Int = {
-		//TODO
-		1000000
-	}
-
 	def isStorageDictionaryEnabled: Boolean = {
 		//TODO
 		false
-	}
-
-	def dumpBlock: Long = {
-		//TODO
-		-1L
-	}
-
-	def detailsInMemoryStorageLimit: Int = {
-		//TODO
-		1000
 	}
 
 	def isFrontier: Boolean = {
@@ -46,13 +26,31 @@ class SystemProperties(val config: Config) {
 		true
 	}
 
+	def projectVersion: String = {
+		//TODO
+		"0.5.0.0"
+	}
+
+	def activePeers: Seq[Node] = {
+		//TODO
+		Seq.empty
+	}
+
+
+	def vmTrace: Boolean = this.config.getBoolean("vm.structured.trace")
+	def vmTraceInitStorageLimit: Int = this.config.getInt("vm.structured.init.storage.limit")
+	def dumpBlock: Long = this.config.getLong("dump.block")
+	def dumpDir: String = this.config.getString("dump.dir")
+
+	def detailsInMemoryStorageLimit: Int = this.config.getInt("details.inmemory.storage.limit")
+
 	private var _databaseDir: String = this.config.getString("database.dir")
 	def databaseDir_=(v: String): Unit = {
 		this._databaseDir = v
 	}
 	def databaseDir: String = Paths.get(this._databaseDir).toAbsolutePath.toString
 
-	def genesisInfo: String = this.config.getString("genesis")
+	def genesisResourceName: String = this.config.getString("genesis")
 
 	private var _databaseReset: Boolean = this.config.getBoolean("database.reset")
 	def databaseReset_=(v: Boolean): Unit = {
@@ -65,125 +63,57 @@ class SystemProperties(val config: Config) {
 	def blockchainOnly_=(v: Boolean): Unit = this._blockchainOnly = v
 	def blockchainOnly: Boolean = this._blockchainOnly
 
-
 	private var _recordBlocks = this.config.getBoolean("record.blocks")
 	def recordBlocks_=(v: Boolean): Unit = this._recordBlocks = v
 	def recordBlocks: Boolean = this._recordBlocks
 
-	def dumpDir: String = {
-		//TODO
-		"dump"
-	}
 
-	def cacheFlushMemory: Double = 0d
-	def cacheFlushBlocks: Int = 0
+	def cacheFlushMemory: Double = this.config.getDouble("cache.flush.memory")
+	def cacheFlushBlocks: Int = this.config.getInt("cache.flush.blocks")
 
-	def txOutdatedThreshold: Int = 3
+	def txOutdatedThreshold: Int = this.config.getInt("transaction.outdated.threshold")
 
-	def externalAddress: String = this.config.getString("node.external.address")
-
-	def bindAddress: String = this.config.getString("node.bind.address")
-
-	def bindPort: Int = this.config.getInt("node.bind.port")
-
-	def projectVersion: String = {
-		//TODO
-		"0.5.0.0"
-	}
-
-	def helloPhrase: String = this.config.getString("hello.phrase")
-
-	def maxHashesAsk: Int = {
-		//TODO
-		10000
-	}
-
-	def maxBlocksAsk: Int = {
-		//TODO
-		100
-	}
-
-	def networkId: Int = {
-		//TODO
-		1
-	}
-
-	def isSyncEnabled: Boolean = {
-		//TODO
-		true
-	}
-
-	def activePeers: Seq[Node] = {
-		//TODO
-		Seq.empty
-	}
-
-	def syncPeersCount: Int = {
-		//TODO
-		8
-	}
-
-	def peerConnectionTimeoutMillis: Int = {
-		//TODO
-		10000
-	}
-
-	def peerChannelReadTimeoutSeconds: Int = {
-		//TODO
-		10
-	}
-
-	def peerDiscoveryEnabled: Boolean = {
-		//TODO
-		true
-	}
-
-	def peerDiscoveryPersist: Boolean = {
-		//TODO
-		true
-	}
-
-	def peerDiscoveryWorkers: Int = {
-		//TODO
-		8
-	}
-
-	def peerDiscoveryAddresses: Seq[String] = {
-		import scala.collection.JavaConversions._
-		this.config.getStringList("peer.discovery.seed.nodes")
-	}
-
+	def networkId: Int = this.config.getInt("node.network.id")
 	def myKey: ECKey = {
 		val hex = this.config.getString("node.private.key")
 		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
 	}
-
-	def coinbaseSecret: String = {
-		//TODO
-		"secret"
-	}
-
 	def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
+	def externalAddress: String = this.config.getString("node.external.address")
+	def bindAddress: String = this.config.getString("node.bind.address")
+	def bindPort: Int = this.config.getInt("node.bind.port")
 
-	def isPublicHomeNode: Boolean = {
-		//TODO
-		true
+	def coinbaseSecret: String = this.config.getString("coinbase.secret")
+
+	def helloPhrase: String = this.config.getString("hello.phrase")
+
+	def isSyncEnabled: Boolean = this.config.getBoolean("sync.enabled")
+	def maxHashesAsk: Int = this.config.getInt("sync.max.hashes.ask")
+	def maxBlocksAsk: Int = this.config.getInt("sync.max.blocks.ask")
+	def syncPeersCount: Int = this.config.getInt("sync.peer.count")
+
+	//TODO 不統一＆名称。
+	def peerConnectionTimeoutMillis: Int = this.config.getInt("node.connection.timeout.seconds") * 1000
+	def peerChannelReadTimeoutSeconds: Int = this.config.getInt("node.channel.read.timeout.seconds")
+
+
+	def isPublicHomeNode: Boolean = this.config.getBoolean("peer.discovery.public.home.node")
+
+
+
+
+	def peerDiscoveryEnabled: Boolean = this.config.getBoolean("peer.discovery.enabled")
+	def peerDiscoveryPersist: Boolean = this.config.getBoolean("peer.discovery.persist")
+	def peerDiscoveryWorkers: Int = this.config.getInt("peer.discovery.workers")
+	def peerDiscoveryAddresses: Seq[String] = {//TODO 名称。
+		import scala.collection.JavaConversions._
+		this.config.getStringList("peer.discovery.seed.nodes")
 	}
 
-	def peerDiscoveryTouchSeconds: Int = {
-		//TODO
-		600
-	}
+	def peerDiscoveryTouchSeconds: Int = this.config.getInt("peer.discovery.touch.period")
+	def peerDiscoveryTouchMaxNodes: Int = this.config.getInt("peer.discovery.touch.max.nodes")
 
-	def peerDiscoveryTouchMaxNodes: Int = {
-		//TODO
-		100
-	}
-
-	def blocksFile: String = {
-		//TODO
-		""
-	}
+	def blocksFile: String = this.config.getString("blocks.file")
 
 }
 

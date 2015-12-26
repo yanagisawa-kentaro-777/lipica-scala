@@ -15,7 +15,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts, JsonUtils}
 object GenesisLoader {
 
 	def loadGenesisBlock: Genesis = {
-		loadGenesisBlock(SystemProperties.CONFIG.genesisInfo)
+		loadGenesisBlock(SystemProperties.CONFIG.genesisResourceName)
 	}
 
 	def loadGenesisBlock(genesisFileName: String): Genesis = {

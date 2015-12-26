@@ -37,9 +37,9 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	val homeNode = this.table.node
 	private var bootNodes: Seq[Node] = Seq.empty
 
-	private var _inboundOnlyFromKnownNodes: Boolean = true
+	private val inboundOnlyFromKnownNodes: Boolean = true
 
-	private var _discoveryEnabled = SystemProperties.CONFIG.peerDiscoveryEnabled
+	private val discoveryEnabled = SystemProperties.CONFIG.peerDiscoveryEnabled
 
 	private val listeners: mutable.Map[DiscoverListener, ListenerHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[DiscoverListener, ListenerHandler])
 
@@ -148,7 +148,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	def hasNodeHandler(n: Node): Boolean = this.nodeHandlerMap.contains(getKey(n))
 
 	def getNodeStatistics(n: Node): NodeStatistics = {
-		if (this._discoveryEnabled) {
+		if (this.discoveryEnabled) {
 			getNodeHandler(n).nodeStatistics
 		} else {
 			DummyStat
@@ -161,7 +161,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 		val m = event.message
 		val sender = event.address
 		val n = new Node(m.nodeId, sender.getHostName, sender.getPort)
-		if (this._inboundOnlyFromKnownNodes && !hasNodeHandler(n)) {
+		if (this.inboundOnlyFromKnownNodes && !hasNodeHandler(n)) {
 			logger.debug("<NodeManager> Inbound packet from unknown peer. Rejected.")
 			return
 		}
@@ -175,7 +175,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	}
 
 	def sendOutbound(event: DiscoveryEvent): Unit = {
-		if (this._discoveryEnabled) {
+		if (this.discoveryEnabled) {
 			this._messageSender.accept(event)
 		}
 	}
