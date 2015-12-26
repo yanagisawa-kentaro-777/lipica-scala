@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core
+package org.lipicalabs.lipica.core.base
 
 /**
  * Created by IntelliJ IDEA.

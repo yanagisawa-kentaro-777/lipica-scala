@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.net.lpc.sync
 
-import org.lipicalabs.lipica.core.ImportResult
-import org.lipicalabs.lipica.core.base.{BlockHeader, BlockWrapper, Blockchain, Block}
+import org.lipicalabs.lipica.core.base._
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}

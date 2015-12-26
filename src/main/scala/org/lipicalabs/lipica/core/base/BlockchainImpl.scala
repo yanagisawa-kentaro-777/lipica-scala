@@ -2,7 +2,6 @@ package org.lipicalabs.lipica.core.base
 
 import java.io.{Closeable, BufferedWriter, FileWriter}
 
-import org.lipicalabs.lipica.core.ImportResult
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
