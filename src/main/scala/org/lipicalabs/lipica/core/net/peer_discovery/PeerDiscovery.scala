@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery
 
-import java.net.{UnknownHostException, InetAddress}
+import java.net.{URI, UnknownHostException, InetAddress}
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent._
 
@@ -88,13 +88,9 @@ class PeerDiscovery {
 			each => {
 				try {
 					val trimmed = each.trim
-					val idx = trimmed.lastIndexOf(':')
-					val addressPart = trimmed.substring(0, idx).trim
-					val portPart = trimmed.substring(idx + 1, trimmed.length)
-					val address = InetAddress.getByName(addressPart)
-					val port = portPart.toInt
+					val uri = URI.create(trimmed)
 
-					Option(new PeerInfo(address, port, ""))
+					Option(new PeerInfo(InetAddress.getByName(uri.getHost), uri.getPort, uri.getUserInfo))
 				} catch {
 					case e: UnknownHostException =>
 						logger.warn("<PeerDiscovery> Unknown host.", e)

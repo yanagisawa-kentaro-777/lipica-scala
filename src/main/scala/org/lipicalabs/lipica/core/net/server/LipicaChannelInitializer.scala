@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.net.server
 
+import java.util.concurrent.atomic.AtomicReference
+
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.manager.WorldManager
@@ -22,6 +24,11 @@ class LipicaChannelInitializer(val remoteId: String) extends ChannelInitializer[
 	def peerDiscoveryMode: Boolean = this._peerDiscoveryMode
 	def peerDiscoveryMode_=(v: Boolean): Unit = this._peerDiscoveryMode = v
 
+	private val initializedCallbackRef = new AtomicReference[(Channel) => _](null)
+	def setInitializedCallback(f: (Channel) => _): Unit = {
+		this.initializedCallbackRef.set(f)
+	}
+
 	override def initChannel(ch: NioSocketChannel): Unit = {
 		try {
 			logger.info("<ChannelInitializer> Opening connection: %s".format(ch))
@@ -41,6 +48,11 @@ class LipicaChannelInitializer(val remoteId: String) extends ChannelInitializer[
 					}
 				}
 			})
+
+			val f = this.initializedCallbackRef.get
+			if (f ne null) {
+				f(channel)
+			}
 		} catch {
 			case e: Exception =>
 				logger.warn("<ChannelInitializer> Exception caught: %s".format(e.getClass.getSimpleName), e)

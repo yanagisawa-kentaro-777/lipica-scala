@@ -78,7 +78,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 
 	class InitiateHandler extends ChannelInboundHandlerAdapter {
 		override def channelActive(ctx: ChannelHandlerContext): Unit = {
-			channel.inetSocketAddress = (ctx.channel.remoteAddress.asInstanceOf[InetSocketAddress])
+			channel.inetSocketAddress = ctx.channel.remoteAddress.asInstanceOf[InetSocketAddress]
 			if (remoteId.length == 64) {
 				channel.setNode(remoteId)
 				initiate(ctx)

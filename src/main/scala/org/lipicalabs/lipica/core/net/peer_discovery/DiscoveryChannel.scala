@@ -1,17 +1,14 @@
 package org.lipicalabs.lipica.core.net.peer_discovery
 
 import java.net.InetAddress
-import java.util.concurrent.TimeUnit
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
-import io.netty.handler.timeout.ReadTimeoutHandler
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.net.MessageQueue
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.{server, MessageQueue}
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc0, LpcHandler}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler}
@@ -42,7 +39,7 @@ class DiscoveryChannel {
 	def getHelloHandshake: HelloMessage = this.p2pHandler.handshakeHelloMessage
 	def getStatusHandshake: StatusMessage = this.lpcHandler.getHandshakeStatusMessage
 
-	def connect(host: InetAddress, port: Int): Unit = {
+	def connect(host: InetAddress, port: Int, remoteId: String): Unit = {
 		val workerGroup: EventLoopGroup = new NioEventLoopGroup
 		this.worldManager.listener.trace("<DiscoveryChannel> Connecting to [%s]:%d".format(host, port))
 		try {
@@ -63,23 +60,31 @@ class DiscoveryChannel {
 
 			val codec = new MessageCodec
 
-			b.handler(
-				new ChannelInitializer[NioSocketChannel] {
-					override def initChannel(ch: NioSocketChannel): Unit = {
-						ch.pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(SystemProperties.CONFIG.peerChannelReadTimeoutSeconds, TimeUnit.SECONDS))
-						ch.pipeline.addLast("initiator", codec.initiator)
-						ch.pipeline.addLast("messageCodec", codec)
-						ch.pipeline.addLast(Capability.P2P, p2pHandler)
-						ch.pipeline.addLast(Capability.LPC, lpcHandler)
-						ch.pipeline.addLast(Capability.SHH, shhHandler)
-						ch.pipeline.addLast(Capability.BZZ, bzzHandler)
+			val initializer = new LipicaChannelInitializer(remoteId)
+			initializer.peerDiscoveryMode = true
+			initializer.setInitializedCallback((channel: server.Channel) => {
+				this.p2pHandler.channel = channel
+				this.lpcHandler.channel = channel
+			})
+			b.handler(initializer)
 
-						ch.config.setRecvByteBufAllocator(new FixedRecvByteBufAllocator(32368))
-						ch.config.setOption(ChannelOption.SO_RCVBUF, Integer.valueOf(32368))
-						ch.config.setOption(ChannelOption.SO_BACKLOG, Integer.valueOf(1024))
-					}
-				}
-			)
+//			b.handler(
+//				new ChannelInitializer[NioSocketChannel] {
+//					override def initChannel(ch: NioSocketChannel): Unit = {
+//						ch.pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(SystemProperties.CONFIG.peerChannelReadTimeoutSeconds, TimeUnit.SECONDS))
+//						ch.pipeline.addLast("initiator", codec.initiator)
+//						ch.pipeline.addLast("messageCodec", codec)
+//						ch.pipeline.addLast(Capability.P2P, p2pHandler)
+//						ch.pipeline.addLast(Capability.LPC, lpcHandler)
+//						ch.pipeline.addLast(Capability.SHH, shhHandler)
+//						ch.pipeline.addLast(Capability.BZZ, bzzHandler)
+//
+//						ch.config.setRecvByteBufAllocator(new FixedRecvByteBufAllocator(32368))
+//						ch.config.setOption(ChannelOption.SO_RCVBUF, Integer.valueOf(32368))
+//						ch.config.setOption(ChannelOption.SO_BACKLOG, Integer.valueOf(1024))
+//					}
+//				}
+//			)
 			//クライアントとして接続する。
 			val future = b.connect().sync()
 			logger.debug("<DiscoveryChannel> Connection is established to [%s]:%d.".format(host, port))

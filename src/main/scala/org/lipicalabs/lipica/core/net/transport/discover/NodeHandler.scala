@@ -151,7 +151,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 
 	def sendPing(): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("<NodeHandler> <=== [PING} %s".format(this))
+			logger.debug("<NodeHandler> <=== [PING] %s".format(this))
 		}
 		val ping = PingMessage.create(this.nodeManager.table.node.host, this.nodeManager.table.node.port, this.nodeManager.key)
 		this._waitForPongRef.set(true)
@@ -173,7 +173,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 
 	def sendPong(mdc: ImmutableBytes): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("<NodeHandler> <=== [PONG} %s".format(this))
+			logger.debug("<NodeHandler> <=== [PONG] %s".format(this))
 		}
 		val pong = PongMessage.create(mdc, this.node.host, this.node.port, this.nodeManager.key)
 		sendMessage(pong)
@@ -182,7 +182,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 
 	def sendNeighbours(seq: Seq[Node]): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("<NodeHandler> <=== [NEIGHBOURS} %s".format(this))
+			logger.debug("<NodeHandler> <=== [NEIGHBOURS] %s".format(this))
 		}
 		val neighbours = NeighborsMessage.create(seq, this.nodeManager.key)
 		sendMessage(neighbours)
@@ -191,7 +191,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 
 	def sendFindNode(target: ImmutableBytes): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("<NodeHandler> <=== [FIND_NODE} %s".format(this))
+			logger.debug("<NodeHandler> <=== [FIND_NODE] %s".format(this))
 		}
 		val findNode = FindNodeMessage.create(target, this.nodeManager.key)
 		sendMessage(findNode)

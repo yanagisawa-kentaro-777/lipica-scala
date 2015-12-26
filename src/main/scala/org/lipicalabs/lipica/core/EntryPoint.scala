@@ -11,7 +11,8 @@ object EntryPoint {
 
 	def main(args: Array[String]): Unit = {
 		val lipica = Lipica.create
-		lipica.getBlockLoader.loadBlocks()
+		//lipica.getBlockLoader.loadBlocks()
+		lipica.startPeerDiscovery()
 	}
 
 }
