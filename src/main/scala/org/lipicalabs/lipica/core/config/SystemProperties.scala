@@ -1,5 +1,9 @@
 package org.lipicalabs.lipica.core.config
 
+import java.nio.file.{Paths, Path}
+import java.util.concurrent.atomic.AtomicReference
+
+import com.typesafe.config.{ConfigFactory, Config}
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.transport.Node
@@ -10,7 +14,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-class SystemProperties {
+class SystemProperties(val config: Config) {
 
 	def vmTrace: Boolean = {
 		//TODO
@@ -42,39 +46,27 @@ class SystemProperties {
 		true
 	}
 
-	private var _databaseDir: String = "./work/database/"
+	private var _databaseDir: String = this.config.getString("database.dir")
 	def databaseDir_=(v: String): Unit = {
 		this._databaseDir = v
 	}
-	def databaseDir: String = {
-		//TODO
-		new java.io.File(this._databaseDir).getAbsolutePath
-	}
+	def databaseDir: String = Paths.get(this._databaseDir).toAbsolutePath.toString
 
-	def genesisInfo: String = {
-		//TODO
-		"genesis1.json"
-	}
+	def genesisInfo: String = this.config.getString("genesis")
 
-	private var _databaseReset: Boolean = false
+	private var _databaseReset: Boolean = this.config.getBoolean("database.reset")
 	def databaseReset_=(v: Boolean): Unit = {
 		this._databaseReset = v
 	}
-	def databaseReset: Boolean = {
-		//TODO
-		this._databaseReset
-	}
+	def databaseReset: Boolean = this._databaseReset
 
 	//ブロック内のコード実行を行わない場合、blockchainOnlyとする。
-	private var _blockchainOnly = false
+	private var _blockchainOnly = this.config.getBoolean("blockchain.only")
 	def blockchainOnly_=(v: Boolean): Unit = this._blockchainOnly = v
-	def blockchainOnly: Boolean = {
-		//TODO
-		this._blockchainOnly
-	}
+	def blockchainOnly: Boolean = this._blockchainOnly
 
-	//TODO
-	private var _recordBlocks = false
+
+	private var _recordBlocks = this.config.getBoolean("record.blocks")
 	def recordBlocks_=(v: Boolean): Unit = this._recordBlocks = v
 	def recordBlocks: Boolean = this._recordBlocks
 
@@ -88,25 +80,18 @@ class SystemProperties {
 
 	def txOutdatedThreshold: Int = 3
 
-	def listenAddress: String = {
-		//TODO
-		"118.238.252.169"
-	}
+	def externalAddress: String = this.config.getString("node.external.address")
 
-	def listenPort: Int = {
-		//TODO
-		30303
-	}
+	def bindAddress: String = this.config.getString("node.bind.address")
+
+	def bindPort: Int = this.config.getInt("node.bind.port")
 
 	def projectVersion: String = {
 		//TODO
 		"0.5.0.0"
 	}
 
-	def helloPhrase: String = {
-		//TODO
-		"audentis fortuna iuuat"
-	}
+	def helloPhrase: String = this.config.getString("hello.phrase")
 
 	def maxHashesAsk: Int = {
 		//TODO
@@ -164,17 +149,12 @@ class SystemProperties {
 	}
 
 	def peerDiscoveryAddresses: Seq[String] = {
-		//TODO
-		Seq(
-			"enode://de471bccee3d042261d52e9bff31458daecc406142b401d4cd848f677479f73104b9fdeb090af9583d3391b7f10cb2ba9e26865dd5fca4fcdc0fb1e3b723c786@54.94.239.50:30303",
-			"enode://a979fb575495b8d6db44f750317d0f4622bf4c2aa3365d6af7c284339968eef29b69ad0dce72a4d8db5ebb4968de0e3bec910127f134779fbcb0cb6d3331163c@52.16.188.185:30303",
-			"enode://1118980bf48b0a3640bdba04e0fe78b1add18e1cd99bf22d53daac1fd9972ad650df52176e7c7d89d1114cfef2bc23a2959aa54998a46afcf7d91809f0855082@52.74.57.123:30303"
-		)
+		import scala.collection.JavaConversions._
+		this.config.getStringList("peer.discovery.seed.nodes")
 	}
 
 	def myKey: ECKey = {
-		//TODO
-		val hex = "a43d867f16238b897428705cec855b0c5b0ddf3319c1b18f7a00915db83155d9"
+		val hex = this.config.getString("node.private.key")
 		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
 	}
 
@@ -205,10 +185,20 @@ class SystemProperties {
 		""
 	}
 
-	def bindAddress: String = "0.0.0.0"
-
 }
 
 object SystemProperties {
-	val CONFIG = new SystemProperties
+
+	private val configRef = new AtomicReference[SystemProperties](null)
+
+	def loadFromFile(path: Path): SystemProperties = {
+		this.synchronized {
+			val config = ConfigFactory.parseFile(path.toFile)
+			this.configRef.set(new SystemProperties(config))
+			CONFIG
+		}
+	}
+
+	def CONFIG: SystemProperties = this.configRef.get
+
 }

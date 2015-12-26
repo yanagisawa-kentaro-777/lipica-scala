@@ -101,6 +101,7 @@ object Lipica {
 
 	def instance: Lipica = this.instanceRef.get
 
+
 	def create: Lipica = {
 		this.synchronized {
 			val result = new LipicaImpl

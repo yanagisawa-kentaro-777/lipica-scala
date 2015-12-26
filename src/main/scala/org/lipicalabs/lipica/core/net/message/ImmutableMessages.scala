@@ -18,7 +18,7 @@ object ImmutableMessages {
 	val DisconnectMessage: DisconnectMessage = new DisconnectMessage(ReasonCode.Requested)
 
 	def createHelloMessage(peerId: String): HelloMessage = {
-		createHelloMessage(peerId, SystemProperties.CONFIG.listenPort)
+		createHelloMessage(peerId, SystemProperties.CONFIG.bindPort)
 	}
 
 	def createHelloMessage(peerId: String, listenPort: Int): HelloMessage = {

@@ -38,7 +38,7 @@ class LipicaImpl extends Lipica {
 	private val manaPriceTracker = new ManaPriceTracker
 
 	override def init(): Unit = {
-		val bindPort = SystemProperties.CONFIG.listenPort
+		val bindPort = SystemProperties.CONFIG.bindPort
 		if (0 < bindPort) {
 			Executors.newSingleThreadExecutor.submit(new Runnable {
 				override def run(): Unit = {

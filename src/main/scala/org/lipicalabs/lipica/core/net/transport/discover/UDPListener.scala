@@ -15,7 +15,7 @@ import org.lipicalabs.lipica.core.manager.WorldManager
 class UDPListener {
 
 	private val address: String = SystemProperties.CONFIG.bindAddress
-	private val port: Int = SystemProperties.CONFIG.listenPort
+	private val port: Int = SystemProperties.CONFIG.bindPort
 
 	def init(): Unit = {
 		if (SystemProperties.CONFIG.peerDiscoveryEnabled) {

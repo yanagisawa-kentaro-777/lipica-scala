@@ -267,7 +267,7 @@ object NodeManager {
 
 	def create: NodeManager = {
 		val key = SystemProperties.CONFIG.myKey
-		val homeNode = new Node(SystemProperties.CONFIG.nodeId, SystemProperties.CONFIG.listenAddress, SystemProperties.CONFIG.listenPort)
+		val homeNode = new Node(SystemProperties.CONFIG.nodeId, SystemProperties.CONFIG.externalAddress, SystemProperties.CONFIG.bindPort)
 		val table = new NodeTable(homeNode, SystemProperties.CONFIG.isPublicHomeNode)
 		new NodeManager(table, key)
 	}

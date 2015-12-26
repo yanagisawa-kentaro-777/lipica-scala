@@ -1,5 +1,8 @@
 package org.lipicalabs.lipica.core
 
+import java.nio.file.Paths
+
+import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.Lipica
 
 /**
@@ -10,6 +13,9 @@ import org.lipicalabs.lipica.core.facade.Lipica
 object EntryPoint {
 
 	def main(args: Array[String]): Unit = {
+		val configFilePath = args(0).trim
+		SystemProperties.loadFromFile(Paths.get(configFilePath))
+
 		val lipica = Lipica.create
 		//lipica.getBlockLoader.loadBlocks()
 		lipica.startPeerDiscovery()
