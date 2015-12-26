@@ -9,6 +9,7 @@ refactorする。（init() や start() の整備。future化。）
 
 例外をつぶす。
 
+external.addressを自動取得できるようにする。
 「TODO 未実装」のうち、重要なものををなくす。
 
 

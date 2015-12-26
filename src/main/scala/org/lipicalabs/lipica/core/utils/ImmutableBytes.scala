@@ -14,7 +14,7 @@ import org.spongycastle.util.Arrays
  * @since 2015/10/31
  * @author YANAGISAWA, Kentaro
  */
-class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[ImmutableBytes] {
+class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[ImmutableBytes] with Serializable {
 
 	/** このバイト配列の長さを返します。 */
 	val length: Int = this.bytes.length
