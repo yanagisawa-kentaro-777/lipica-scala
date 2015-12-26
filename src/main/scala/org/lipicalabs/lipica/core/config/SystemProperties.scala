@@ -205,6 +205,8 @@ class SystemProperties {
 		""
 	}
 
+	def bindAddress: String = "0.0.0.0"
+
 }
 
 object SystemProperties {

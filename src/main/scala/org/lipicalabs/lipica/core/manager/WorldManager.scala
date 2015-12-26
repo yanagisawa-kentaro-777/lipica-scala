@@ -13,7 +13,7 @@ import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.server.ChannelManager
-import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
+import org.lipicalabs.lipica.core.net.transport.discover.{UDPListener, NodeManager}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
@@ -81,6 +81,9 @@ class WorldManager extends Closeable {
 		this.wallet.importKey(ImmutableBytes(coinbaseAddress))
 
 		loadBlockchain()
+
+		val udp = new UDPListener
+		udp.init()
 
 		this.syncManager.init()
 	}
