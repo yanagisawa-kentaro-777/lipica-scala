@@ -9,6 +9,7 @@ import org.lipicalabs.lipica.core.base.{BlockHeader, Block, Blockchain}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.BlockHeaderValidator
+import org.slf4j.LoggerFactory
 
 /**
  *
@@ -17,12 +18,15 @@ import org.lipicalabs.lipica.core.validator.BlockHeaderValidator
  */
 class BlockLoader {
 
+	private val logger = LoggerFactory.getLogger("general")
+
 	private def headerValidator: BlockHeaderValidator = WorldManager.instance.blockHeaderValidator
 	private def blockchain: Blockchain = WorldManager.instance.blockchain
 
 	def loadBlocks(): Unit = {
 		val filePath = SystemProperties.CONFIG.blocksFile
-		if (filePath.isEmpty) {
+		val file = new java.io.File(filePath)
+		if (filePath.isEmpty || !file.exists) {
 			return
 		}
 		try {
@@ -40,8 +44,9 @@ class BlockLoader {
 					}
 				}
 			}
-		} finally {
-
+		} catch {
+			case e: Throwable =>
+				logger.warn("<BlockLoader> Exception caught: %s".format(e.getClass.getSimpleName), e)
 		}
 	}
 

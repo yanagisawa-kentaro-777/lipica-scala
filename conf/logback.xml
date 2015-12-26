@@ -58,28 +58,46 @@
 	<logger name="blockchain" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
-	<logger name="execute" level="DEBUG" additivity="false">
+	<logger name="blockqueue" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="db" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
-	<logger name="repository" level="TRACE" additivity="false">
-		<appender-ref ref="NODE_TRACE"/>
-	</logger>
-	<logger name="VM" level="DEBUG" additivity="false">
+	<logger name="discover" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="dump" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
+	<logger name="execute" level="DEBUG" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
 	<logger name="mana" level="DEBUG" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
+	<logger name="net" level="DEBUG" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
+	<logger name="peerdiscovery" level="DEBUG" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
+	<logger name="repository" level="TRACE" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
+	<logger name="state" level="DEBUG" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
+	<logger name="sync" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="wallet" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
-	<logger name="blockqueue" level="DEBUG" additivity="false">
+	<logger name="wire" level="DEBUG" additivity="false">
+		<appender-ref ref="NODE_TRACE"/>
+	</logger>
+	<logger name="VM" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 
