@@ -22,7 +22,7 @@ class P2PMessagesTest extends Specification {
 
 	"test HelloMessage" should {
 		"be right" in {
-			val message = HelloMessage(1, "client", Seq(Capability("a", 2)), 1000, "peer")
+			val message = HelloMessage(1, "client", Seq(Capability("a", 2)), 1000, ImmutableBytes.create(64))
 			val encoded = message.toEncodedBytes
 			val decoded: HelloMessage = decodeMessage(P2PMessageCode.Hello.asByte, encoded)
 
@@ -33,7 +33,7 @@ class P2PMessagesTest extends Specification {
 			decoded.capabilities.head.name mustEqual "a"
 			decoded.capabilities.head.version mustEqual 2
 			decoded.listenPort mustEqual 1000
-			decoded.peerId mustEqual "peer"
+			decoded.peerId mustEqual ImmutableBytes.create(64)
 		}
 	}
 

@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.net.message
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.p2p._
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,7 +24,7 @@ object ImmutableMessages {
 	def createHelloMessage(peerId: String, listenPort: Int): HelloMessage = {
 		val announcement = buildHelloAnnouncement
 		val p2pVersion = P2PHandler.Version
-		HelloMessage(p2pVersion, announcement, Capability.all, listenPort, peerId)
+		HelloMessage(p2pVersion, announcement, Capability.all, listenPort, ImmutableBytes.parseHexString(peerId))
 	}
 
 	private def buildHelloAnnouncement: String = {
