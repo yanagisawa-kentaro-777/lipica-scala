@@ -42,7 +42,7 @@ class PeerDiscovery {
 		val monitorThread = new Thread(this.monitor)
 		monitorThread.start()
 
-		val peerDataSeq = parsePeerDiscoveryAddresses(SystemProperties.CONFIG.peerDiscoveryAddresses)
+		val peerDataSeq = parsePeerDiscoveryAddresses(SystemProperties.CONFIG.seedNodes)
 		addPeers(peerDataSeq)
 
 		this.peers.foreach(each => startWorker(each))
