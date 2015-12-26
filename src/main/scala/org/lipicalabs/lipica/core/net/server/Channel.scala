@@ -68,7 +68,7 @@ class Channel {
 	def isDiscoveryMode: Boolean = this._discoveryMode
 
 	def init(pipeline: ChannelPipeline, remoteId: String, aDiscoveryMode: Boolean): Unit = {
-		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(SystemProperties.CONFIG.peerChannelReadTimeoutSeconds, TimeUnit.SECONDS))
+		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(SystemProperties.CONFIG.readTimeoutMillis, TimeUnit.MILLISECONDS))
 		pipeline.addLast("initiator", messageCodec.initiator)
 		pipeline.addLast("messageCodec", messageCodec)
 

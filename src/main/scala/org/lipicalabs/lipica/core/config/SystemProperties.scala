@@ -92,15 +92,10 @@ class SystemProperties(val config: Config) {
 	def maxBlocksAsk: Int = this.config.getInt("sync.max.blocks.ask")
 	def syncPeersCount: Int = this.config.getInt("sync.peer.count")
 
-	//TODO 不統一＆名称。
-	def peerConnectionTimeoutMillis: Int = this.config.getInt("node.connection.timeout.seconds") * 1000
-	def peerChannelReadTimeoutSeconds: Int = this.config.getInt("node.channel.read.timeout.seconds")
-
+	def connectionTimeoutMillis: Int = this.config.getInt("node.connect.timeout.seconds") * 1000
+	def readTimeoutMillis: Int = this.config.getInt("node.read.timeout.seconds") * 1000
 
 	def isPublicHomeNode: Boolean = this.config.getBoolean("peer.discovery.public.home.node")
-
-
-
 
 	def peerDiscoveryEnabled: Boolean = this.config.getBoolean("peer.discovery.enabled")
 	def peerDiscoveryPersist: Boolean = this.config.getBoolean("peer.discovery.persist")

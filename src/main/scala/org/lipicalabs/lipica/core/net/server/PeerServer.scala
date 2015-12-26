@@ -34,7 +34,7 @@ class PeerServer {
 
 			b.option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.valueOf(true))
 			b.option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT)
-			b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf(SystemProperties.CONFIG.peerConnectionTimeoutMillis))
+			b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf(SystemProperties.CONFIG.connectionTimeoutMillis))
 
 			b.handler(new LoggingHandler)
 			b.childHandler(this.channelInitializer)
