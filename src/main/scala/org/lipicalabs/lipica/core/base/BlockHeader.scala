@@ -23,8 +23,8 @@ class BlockHeader {
 
 	/**
 	 * uncle list の256ビットダイジェスト値。
+	 * this.encodeUncles.digest256 と等しいはずである。
 	 */
-	//TODO どうやって算出？
 	private var _unclesHash: ImmutableBytes = DigestUtils.EmptySeqHash
 	def unclesHash: ImmutableBytes = this._unclesHash
 	def unclesHash_=(v: ImmutableBytes): Unit = this._unclesHash = v
@@ -87,8 +87,13 @@ class BlockHeader {
 
 	/**
 	 * １ブロックあたりのマナ消費上限を表すスカラー値。
+	 *
+	 * この制限は、トランザクションの実行者が指定する mana limit と混同されてはならない。
+	 * この値は bitcoin のブロックサイズのようなもので、
+	 * ブロックの巨大化にともなう合意効率の低下を避けるためのパラメータである。
+	 * minerはこの値を、一定の条件下で変動させることができる。
+	 * 40 & 41 の式を参照。
 	 */
-	//TODO どうやって算出？
 	private var _manaLimit: ImmutableBytes = ImmutableBytes.empty
 	def manaLimit: ImmutableBytes = this._manaLimit
 	def manaLimit_=(v: ImmutableBytes): Unit = this._manaLimit = v

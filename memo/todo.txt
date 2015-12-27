@@ -1,9 +1,11 @@
+とにかく yellow paper を熟読すること。
+
+Validation のルールが、BlockchainImpl と Rule に散在しているのは良くない。
 
 ethashを学ぶと、mixhashがわかる。
 
 miningの具体的な方法を実装する。
 ・実データを見ながらのほうがいいかもしれない。
-・ブロックの仕様をよく読む。
 
 refactorする。（init() や start() の整備。future化。）
 

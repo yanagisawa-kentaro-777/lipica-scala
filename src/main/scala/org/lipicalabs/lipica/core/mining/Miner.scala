@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.lipicalabs.lipica.core.base.{BlockHeader, Block}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.validator.ProofOfWorkRule
 import org.slf4j.LoggerFactory
 
 
@@ -43,8 +44,9 @@ class Miner {
 	def mine(newBlock: Block, difficulty: ImmutableBytes): Boolean = {
 		this.stopRef.set(false)
 
-		val target = BlockHeader.getProofOfWorkBoundary(difficulty)
+		val target = ProofOfWorkRule.getProofOfWorkBoundary(difficulty)
 
+		//yellow paper の 式40および41を参照。
 		val newManaLimit = 125000L max (newBlock.manaLimit.toPositiveBigInt.longValue * (1024 - 1) + (newBlock.manaUsed * 6 / 5)) / 1024
 		newBlock.blockHeader.manaLimit = ImmutableBytes.asSignedByteArray(BigInt(newManaLimit))
 		val hash = DigestUtils.digest256(newBlock.encodeWithoutNonce.toByteArray)
