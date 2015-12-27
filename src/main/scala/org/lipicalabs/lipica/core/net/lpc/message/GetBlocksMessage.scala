@@ -19,6 +19,8 @@ case class GetBlocksMessage(blockHashes: Seq[ImmutableBytes]) extends LpcMessage
 	override def code = LpcMessageCode.GetBlocks.asByte
 
 	override def answerMessage: Option[Class[_ <: ParsedMessage]] = Option(GetBlocksMessage.answerMessage)
+
+	override def toString: String = "GetBlocksMessage(req=%,d)".format(this.blockHashes.size)
 }
 
 object GetBlocksMessage {

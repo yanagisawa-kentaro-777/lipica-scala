@@ -7,7 +7,6 @@ import com.google.common.io.ByteStreams
 import io.netty.buffer.ByteBuf
 import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
 import io.netty.handler.codec.ByteToMessageCodec
-import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.{ECIESCoder, ECKey}
 import org.lipicalabs.lipica.core.manager.WorldManager
@@ -117,7 +116,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 
 		val encoded = message.toEncodedBytes
 		if (loggerWire.isDebugEnabled) {
-			loggerWire.debug("<MessageCodec> Encoded: %s [%s]".format(message.command, encoded))
+			loggerWire.debug("<MessageCodec> Encoded: %s [%,d bytes]".format(message.command, encoded.length))
 		}
 		val code  = getCode(message.command)
 		val frame = new Frame(code, encoded.toByteArray)

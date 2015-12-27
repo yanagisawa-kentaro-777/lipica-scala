@@ -141,7 +141,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	override def flushNoReconnect(): Unit = {
 		withLock {
 			() => {
-				gLogger.info("<RepositoryImpl> Flushing to disk.")
+				logger.info("<RepositoryImpl> Flushing to disk.")
 				this.dds.flush()
 				this.worldState.sync()
 			}
@@ -151,7 +151,7 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	override def flush(): Unit = {
 		withLock {
 			() => {
-				gLogger.info("<RepositoryImpl> Flushing to disk.")
+				logger.info("<RepositoryImpl> Flushing to disk.")
 				this.dds.flush()
 				this.worldState.sync()
 
@@ -357,5 +357,4 @@ object RepositoryImpl {
 	private val DETAILS_DB: String = "details"
 	private val STATE_DB: String = "state"
 	private val logger: Logger = LoggerFactory.getLogger("repository")
-	private val gLogger: Logger = LoggerFactory.getLogger("general")
 }

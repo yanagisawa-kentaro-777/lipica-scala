@@ -82,7 +82,7 @@
 	<logger name="peerdiscovery" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
-	<logger name="repository" level="TRACE" additivity="false">
+	<logger name="repository" level="INFO" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="state" level="DEBUG" additivity="false">
