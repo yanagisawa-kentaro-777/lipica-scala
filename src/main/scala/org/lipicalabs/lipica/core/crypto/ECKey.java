@@ -315,7 +315,7 @@ public class ECKey implements Serializable {
      * @return  -
      */
     public byte[] getPubKey() {
-        return pub.getEncoded(true);
+        return pub.getEncoded();
     }
 
     /**

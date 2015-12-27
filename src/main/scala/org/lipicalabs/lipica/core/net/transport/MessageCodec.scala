@@ -203,7 +203,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 					this._frameCodec = new FrameCodec(secrets)
 
 					val remotePublicKey = this._handshake.remotePublicKey
-					val compressed = remotePublicKey.getEncoded(true)
+					val compressed = remotePublicKey.getEncoded()
 
 					val remoteIdBytes = new Array[Byte](compressed.length - 1)
 					System.arraycopy(compressed, 1, remoteIdBytes, 0, remoteIdBytes.length)
