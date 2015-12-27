@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.lpc.sync
 
-import org.lipicalabs.lipica.core.net.server.Channel
+import org.lipicalabs.lipica.core.net.channel.Channel
 import org.slf4j.LoggerFactory
 
 sealed trait SyncStateName

@@ -9,7 +9,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.net.server.LipicaChannelInitializer
+import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.slf4j.LoggerFactory
 
 /**

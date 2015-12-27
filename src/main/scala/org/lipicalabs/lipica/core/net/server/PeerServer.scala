@@ -7,6 +7,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.logging.LoggingHandler
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.slf4j.LoggerFactory
 
 /**

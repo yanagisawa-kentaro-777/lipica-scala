@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.listener.CompositeLipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
-import org.lipicalabs.lipica.core.net.server.ChannelManager
+import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
 import org.lipicalabs.lipica.core.validator._
 import org.mapdb.{Serializer, DBMaker}

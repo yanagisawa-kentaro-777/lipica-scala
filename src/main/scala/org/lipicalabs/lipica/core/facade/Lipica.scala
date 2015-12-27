@@ -11,7 +11,7 @@ import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.{BlockLoader, AdminInfo}
 import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
-import org.lipicalabs.lipica.core.net.server.ChannelManager
+import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 

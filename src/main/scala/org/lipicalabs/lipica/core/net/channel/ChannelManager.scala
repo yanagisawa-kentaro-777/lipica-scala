@@ -1,6 +1,6 @@
-package org.lipicalabs.lipica.core.net.server
+package org.lipicalabs.lipica.core.net.channel
 
-import java.util.concurrent.{CopyOnWriteArrayList, TimeUnit, Executors, ScheduledExecutorService}
+import java.util.concurrent.{CopyOnWriteArrayList, Executors, ScheduledExecutorService, TimeUnit}
 
 import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.manager.WorldManager

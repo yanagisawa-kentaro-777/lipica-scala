@@ -11,7 +11,8 @@ import org.lipicalabs.lipica.core.listener.{LipicaListenerAdaptor, ManaPriceTrac
 import org.lipicalabs.lipica.core.manager.{BlockLoader, AdminInfo, WorldManager}
 import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
-import org.lipicalabs.lipica.core.net.server.{PeerServer, ChannelManager}
+import org.lipicalabs.lipica.core.net.channel.ChannelManager
+import org.lipicalabs.lipica.core.net.server.PeerServer
 import org.lipicalabs.lipica.core.net.submit.{TransactionExecutor, TransactionTask}
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes

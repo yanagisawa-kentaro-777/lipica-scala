@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.server
+package org.lipicalabs.lipica.core.net.channel
 
 import java.util.concurrent.atomic.AtomicReference
 

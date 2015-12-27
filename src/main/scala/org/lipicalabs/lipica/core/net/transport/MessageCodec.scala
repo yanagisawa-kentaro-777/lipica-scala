@@ -15,7 +15,7 @@ import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.net.message.{Command, MessageFactory, Message}
 import org.lipicalabs.lipica.core.net.p2p.{P2PMessageFactory, DisconnectMessage, HelloMessage, P2PMessageCode}
-import org.lipicalabs.lipica.core.net.server.Channel
+import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.shh.ShhMessageCode
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzMessageCode
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame

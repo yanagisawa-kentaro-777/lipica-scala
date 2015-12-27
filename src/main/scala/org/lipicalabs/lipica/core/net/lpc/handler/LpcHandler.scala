@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.net.lpc.{LpcMessageCode, LpcVersion}
 import org.lipicalabs.lipica.core.net.lpc.message._
 import org.lipicalabs.lipica.core.net.lpc.sync._
 import org.lipicalabs.lipica.core.net.message.ReasonCode
-import org.lipicalabs.lipica.core.net.server.Channel
+import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

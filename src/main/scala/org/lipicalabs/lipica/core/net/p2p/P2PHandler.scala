@@ -13,7 +13,7 @@ import org.lipicalabs.lipica.core.net.lpc.message.{NewBlockMessage, Transactions
 import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode._
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
-import org.lipicalabs.lipica.core.net.server.Channel
+import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.net.transport.HandshakeHelper

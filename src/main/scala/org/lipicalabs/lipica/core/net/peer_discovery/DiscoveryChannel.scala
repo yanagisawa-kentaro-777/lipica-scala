@@ -8,11 +8,12 @@ import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.net.{server, MessageQueue}
+import org.lipicalabs.lipica.core.net.MessageQueue
+import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc0, LpcHandler}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler}
-import org.lipicalabs.lipica.core.net.server.LipicaChannelInitializer
+import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.net.transport.MessageCodec
@@ -62,7 +63,7 @@ class DiscoveryChannel {
 
 			val initializer = new LipicaChannelInitializer(remoteId)
 			initializer.peerDiscoveryMode = true
-			initializer.setInitializedCallback((channel: server.Channel) => {
+			initializer.setInitializedCallback((channel: Channel) => {
 				this.p2pHandler.channel = channel
 				this.lpcHandler.channel = channel
 			})

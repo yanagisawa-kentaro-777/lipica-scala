@@ -1,9 +1,9 @@
-package org.lipicalabs.lipica.core.net.server
+package org.lipicalabs.lipica.core.net.channel
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
 
-import io.netty.channel.{ChannelPipeline, ChannelHandlerContext}
+import io.netty.channel.{ChannelHandlerContext, ChannelPipeline}
 import io.netty.handler.timeout.ReadTimeoutHandler
 import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.config.SystemProperties
@@ -13,14 +13,14 @@ import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc, LpcAdaptor, LpcHandlerFactory}
 import org.lipicalabs.lipica.core.net.lpc.message.LpcMessageFactory
-import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStatistics, SyncStateName}
-import org.lipicalabs.lipica.core.net.message.{MessageFactory, ImmutableMessages}
-import org.lipicalabs.lipica.core.net.p2p.{P2PMessageFactory, P2PHandler, HelloMessage}
-import org.lipicalabs.lipica.core.net.shh.{ShhMessageFactory, ShhHandler}
-import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzMessageFactory, BzzHandler}
+import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStateName, SyncStatistics}
+import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, MessageFactory}
+import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler, P2PMessageFactory}
+import org.lipicalabs.lipica.core.net.shh.{ShhHandler, ShhMessageFactory}
+import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzHandler, BzzMessageFactory}
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
-import org.lipicalabs.lipica.core.net.transport.{MessageCodec, FrameCodec, Node}
 import org.lipicalabs.lipica.core.net.transport.discover.{NodeManager, NodeStatistics}
+import org.lipicalabs.lipica.core.net.transport.{FrameCodec, MessageCodec, Node}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
