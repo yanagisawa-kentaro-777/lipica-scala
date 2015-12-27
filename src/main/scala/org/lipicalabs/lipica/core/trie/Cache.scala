@@ -66,7 +66,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 					}
 				val node = new CachedNode(Value.fromEncodedBytes(data), _dirty = false)
 				if (logger.isTraceEnabled) {
-					logger.trace("<Cache> Read: %s -> %s -> %s".format(key, data.toHexString, node.nodeValue.asObj))
+					logger.trace("<Cache> Read: %s -> %s -> %s".format(key, data.toHexString, node.nodeValue.value))
 				}
 				this.nodes.put(key, node)
 				node
@@ -97,7 +97,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 				totalBytes += (nodeKey.length + value.length)
 
 				if (logger.isTraceEnabled) {
-					logger.trace("<Cache> Committing: %s -> %s -> %s".format(nodeKey, value.toHexString, node.nodeValue.asObj))
+					logger.trace("<Cache> Committing: %s -> %s -> %s".format(nodeKey, value.toHexString, node.nodeValue.value))
 				}
 				nodeKey -> value
 			}
