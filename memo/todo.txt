@@ -7,6 +7,10 @@ refactorする。（init() や start() の整備。future化。）
 
 logging、refactor、comment。（不具合追跡用）
 
+自分どうしで通信し、トランザクションを実行する。
+Web API Serverを入れる。
+git flowを入れる。
+
 ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 
 

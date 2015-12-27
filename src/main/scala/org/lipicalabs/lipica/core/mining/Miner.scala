@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.mining
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.lipicalabs.lipica.core.base.Block
+import org.lipicalabs.lipica.core.base.{BlockHeader, Block}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
@@ -43,8 +43,7 @@ class Miner {
 	def mine(newBlock: Block, difficulty: ImmutableBytes): Boolean = {
 		this.stopRef.set(false)
 
-		val max = BigInt(2) pow 255
-		val target = ImmutableBytes.asUnsignedByteArray(max / difficulty.toPositiveBigInt)
+		val target = BlockHeader.getProofOfWorkBoundary(difficulty)
 
 		val newManaLimit = 125000L max (newBlock.manaLimit.toPositiveBigInt.longValue * (1024 - 1) + (newBlock.manaUsed * 6 / 5)) / 1024
 		newBlock.blockHeader.manaLimit = ImmutableBytes.asSignedByteArray(BigInt(newManaLimit))
@@ -62,10 +61,10 @@ class Miner {
 			val concat = hash ++ testNonce
 			val result = ImmutableBytes(DigestUtils.digest256(concat))
 
-			if (result.compareTo(target) < 0) {
+			if (result.compareTo(target) <= 0) {
 				logger.info("<Miner> Mined! %s < %s (nonce=%s)".format(result, target, ImmutableBytes(testNonce)))
 				//println("<Miner> Mined! %s < %s (nonce=%s)".format(result, target, ImmutableBytes(testNonce)))
-				newBlock.nonce = result
+				newBlock.nonce = ImmutableBytes(testNonce)
 				return true
 			}
 		}

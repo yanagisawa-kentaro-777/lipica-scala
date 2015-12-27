@@ -16,12 +16,16 @@ import org.spongycastle.util.BigIntegers
  */
 class BlockHeader {
 
-	/** 親ブロックのSHA3ダイジェスト値。 */
+	/**
+	 * 親ブロックの256ビットダイジェスト値。
+	 */
 	private var _parentHash: ImmutableBytes = ImmutableBytes.empty
 	def parentHash: ImmutableBytes = this._parentHash
 	def parentHash_=(v: ImmutableBytes): Unit = this._parentHash = v
 
-	/** uncle list のSHA3ダイジェスト値。 */
+	/**
+	 * uncle list の256ビットダイジェスト値。
+	 */
 	private var _unclesHash: ImmutableBytes = DigestUtils.EmptySeqHash
 	def unclesHash: ImmutableBytes = this._unclesHash
 	def unclesHash_=(v: ImmutableBytes): Unit = this._unclesHash = v
@@ -36,7 +40,7 @@ class BlockHeader {
 
 	/**
 	 * すべてのトランザクションが実行された後の、
-	 * 状態trieのSHA3ルートハッシュ値。
+	 * 状態trieのルートハッシュ値。
 	 */
 	private var _stateRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
 	def stateRoot: ImmutableBytes = this._stateRoot
@@ -49,10 +53,9 @@ class BlockHeader {
 	def txTrieRoot: ImmutableBytes = this._txTrieRoot
 	def txTrieRoot_=(v: ImmutableBytes): Unit = this._txTrieRoot = v
 
-	/* The SHA3 256-bit hash of the root node of the trie structure
- * populated with each transaction recipe in the transaction recipes
- * list portion, the trie is populate by [key, val] --> [rlp(index), rlp(tx_recipe)]
- * of the block */
+	/**
+	 * Transaction Receipt を格納した trie のルートハッシュ値。
+	 */
 	private var _receiptTrieRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
 	def receiptTrieRoot: ImmutableBytes = this._receiptTrieRoot
 	def receiptTrieRoot_=(v: ImmutableBytes): Unit = this._receiptTrieRoot = v
@@ -63,6 +66,7 @@ class BlockHeader {
 
 	/**
 	 * このブロックのdifficultyを表現するスカラー値。
+	 * calculateDifficulty によって、前のブロックおよびタイムスタンプから計算される。
 	 */
 	private var _difficulty: ImmutableBytes = ImmutableBytes.empty
 	def difficulty: ImmutableBytes = this._difficulty
@@ -84,6 +88,7 @@ class BlockHeader {
 	/**
 	 * １ブロックあたりのマナ消費上限を表すスカラー値。
 	 */
+	//TODO どうやって算出？
 	private var _manaLimit: ImmutableBytes = ImmutableBytes.empty
 	def manaLimit: ImmutableBytes = this._manaLimit
 	def manaLimit_=(v: ImmutableBytes): Unit = this._manaLimit = v
@@ -139,7 +144,7 @@ class BlockHeader {
 	}
 
 	def getProofOfWorkBoundary: ImmutableBytes = {
-		ImmutableBytes(BigIntegers.asUnsignedByteArray(32, BigInteger.ONE.shiftLeft(256).divide(difficultyAsBigInt.bigInteger)))
+		BlockHeader.getProofOfWorkBoundary(this.difficulty)
 	}
 
 	def calculateProofOfWorkValue: ImmutableBytes = {
@@ -226,5 +231,12 @@ object BlockHeader {
 		result.nonce = decodedResult.items(14).bytes
 
 		result
+	}
+
+	/**
+	 * 渡された difficulty に基づいて、許容されるブロックヘッダダイジェスト値の上限値を返します。
+	 */
+	def getProofOfWorkBoundary(difficulty: ImmutableBytes): ImmutableBytes = {
+		ImmutableBytes(BigIntegers.asUnsignedByteArray(32, BigInteger.ONE.shiftLeft(256).divide(difficulty.toPositiveBigInt.bigInteger)))
 	}
 }
