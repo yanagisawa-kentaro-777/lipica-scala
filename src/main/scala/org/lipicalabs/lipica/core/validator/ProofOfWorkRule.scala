@@ -1,6 +1,10 @@
 package org.lipicalabs.lipica.core.validator
 
+import java.math.BigInteger
+
 import org.lipicalabs.lipica.core.base.BlockHeader
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.spongycastle.util.BigIntegers
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,4 +22,13 @@ class ProofOfWorkRule extends BlockHeaderRule {
 		(proof compareTo boundary) <= 0
 	}
 
+}
+
+object ProofOfWorkRule {
+	/**
+	 * 渡された difficulty に基づいて、許容されるブロックヘッダダイジェスト値の上限値を返します。
+	 */
+	def getProofOfWorkBoundary(difficulty: ImmutableBytes): ImmutableBytes = {
+		ImmutableBytes(BigIntegers.asUnsignedByteArray(32, BigInteger.ONE.shiftLeft(256).divide(difficulty.toPositiveBigInt.bigInteger)))
+	}
 }

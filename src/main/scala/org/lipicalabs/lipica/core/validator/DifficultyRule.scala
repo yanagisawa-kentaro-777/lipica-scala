@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.validator
 
 import org.lipicalabs.lipica.core.base.BlockHeader
+import org.lipicalabs.lipica.core.utils.UtilConsts._
 
 /**
  *
@@ -21,3 +22,29 @@ class DifficultyRule extends DependentBlockHeaderRule {
 		}
 	}
 }
+
+object DifficultyRule {
+
+	/**
+	 * difficulty 遷移の中心アルゴリズム！
+	 */
+	def calculateDifficulty(parent: BlockHeader, newBlockNumber: Long, newTimeStamp: Long): BigInt = {
+		val parentDifficulty = parent.difficultyAsBigInt
+		val quotient = parentDifficulty / DifficultyBoundDivisor
+
+		val fromParent = if ((parent.timestamp + DurationLimit) <= newTimeStamp) {
+			parentDifficulty - quotient
+		} else {
+			parentDifficulty + quotient
+		}
+
+		val periodCount = (newBlockNumber / ExpDifficultyPeriod).toInt
+		val difficulty = MinimumDifficulty max fromParent
+		if (1 < periodCount) {
+			MinimumDifficulty max (difficulty + (One << (periodCount - 2)))
+		} else {
+			difficulty
+		}
+	}
+}
+

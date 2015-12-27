@@ -253,7 +253,10 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 object Block {
 	private[base] val logger = LoggerFactory.getLogger("block")
 
-	private def calculateTxTrie(txs: Seq[TransactionLike]): ImmutableBytes = {
+	/**
+	 * トランザクションのルートを計算する根本アルゴリズム！
+	 */
+	def calculateTxTrieRoot(txs: Seq[TransactionLike]): ImmutableBytes = {
 		val trie = new TrieImpl(null)
 		if (txs.isEmpty) {
 			return DigestUtils.EmptyTrieHash
@@ -285,7 +288,7 @@ object Block {
 		val transactions = items(1).items.map(_.items).map(Transaction.decode)
 		val uncles = items(2).items.map(BlockHeader.decode)
 
-		val calculatedTxTrieRoot = calculateTxTrie(transactions)
+		val calculatedTxTrieRoot = calculateTxTrieRoot(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
 			logger.warn("<Block> Transaction root unmatch! Given: %s != Calculated: %s".format(blockHeader.txTrieRoot, calculatedTxTrieRoot))
 			blockHeader.txTrieRoot = calculatedTxTrieRoot

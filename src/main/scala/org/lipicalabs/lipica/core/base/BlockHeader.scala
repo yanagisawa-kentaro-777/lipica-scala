@@ -1,11 +1,9 @@
 package org.lipicalabs.lipica.core.base
 
-import java.math.BigInteger
-
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.{RBACCodec, UtilConsts, ImmutableBytes}
-import org.spongycastle.util.BigIntegers
+import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
+import org.lipicalabs.lipica.core.validator.{ProofOfWorkRule, DifficultyRule}
 
 /**
  * ブロックの主要な情報を保持するクラスです。
@@ -26,6 +24,7 @@ class BlockHeader {
 	/**
 	 * uncle list の256ビットダイジェスト値。
 	 */
+	//TODO どうやって算出？
 	private var _unclesHash: ImmutableBytes = DigestUtils.EmptySeqHash
 	def unclesHash: ImmutableBytes = this._unclesHash
 	def unclesHash_=(v: ImmutableBytes): Unit = this._unclesHash = v
@@ -55,6 +54,7 @@ class BlockHeader {
 
 	/**
 	 * Transaction Receipt を格納した trie のルートハッシュ値。
+	 * おそらく、Block.calculateTxTrieRoot と同様の方法によって算出可能。
 	 */
 	private var _receiptTrieRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
 	def receiptTrieRoot: ImmutableBytes = this._receiptTrieRoot
@@ -100,6 +100,9 @@ class BlockHeader {
 	def manaUsed: Long = this._manaUsed
 	def manaUsed_=(v: Long): Unit = this._manaUsed = v
 
+	/**
+	 * ethash において意味を持つ mix-hash。
+	 */
 	private var _mixHash: ImmutableBytes = DigestUtils.EmptyDataHash
 	def mixHash: ImmutableBytes = this._mixHash
 	def mixHash_=(v: ImmutableBytes): Unit = this._mixHash = v
@@ -143,10 +146,14 @@ class BlockHeader {
 		}
 	}
 
-	def getProofOfWorkBoundary: ImmutableBytes = {
-		BlockHeader.getProofOfWorkBoundary(this.difficulty)
-	}
+	/**
+	 * このブロックの difficulty に対応する、許容されるダイジェスト値の上限値を返します。
+	 */
+	def getProofOfWorkBoundary: ImmutableBytes = ProofOfWorkRule.getProofOfWorkBoundary(this.difficulty)
 
+	/**
+	 * Powの中心アルゴリズム！
+	 */
 	def calculateProofOfWorkValue: ImmutableBytes = {
 		//リトルエンディアンに変換する。
 		val revertedNonce = this.nonce.reverse
@@ -158,25 +165,11 @@ class BlockHeader {
 		concat.digest256
 	}
 
+	/**
+	 * difficulty 遷移の中心アルゴリズム！
+	 */
 	def calculateDifficulty(parent: BlockHeader): BigInt = {
-		import UtilConsts._
-
-		val parentDifficulty = parent.difficultyAsBigInt
-		val quotient = parentDifficulty / DifficultyBoundDivisor
-
-		val fromParent = if ((parent.timestamp + DurationLimit) <= this.timestamp) {
-			parentDifficulty - quotient
-		} else {
-			parentDifficulty + quotient
-		}
-
-		val periodCount = (this.blockNumber / ExpDifficultyPeriod).toInt
-		val difficulty = MinimumDifficulty max fromParent
-		if (1 < periodCount) {
-			MinimumDifficulty max (difficulty + (One << (periodCount - 2)))
-		} else {
-			difficulty
-		}
+		DifficultyRule.calculateDifficulty(parent = parent, newBlockNumber = this.blockNumber, newTimeStamp = this.timestamp)
 	}
 
 	def encodeUncles(uncles: Seq[BlockHeader]): ImmutableBytes = {
@@ -233,10 +226,4 @@ object BlockHeader {
 		result
 	}
 
-	/**
-	 * 渡された difficulty に基づいて、許容されるブロックヘッダダイジェスト値の上限値を返します。
-	 */
-	def getProofOfWorkBoundary(difficulty: ImmutableBytes): ImmutableBytes = {
-		ImmutableBytes(BigIntegers.asUnsignedByteArray(32, BigInteger.ONE.shiftLeft(256).divide(difficulty.toPositiveBigInt.bigInteger)))
-	}
 }

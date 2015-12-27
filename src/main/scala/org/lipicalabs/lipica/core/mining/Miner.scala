@@ -58,13 +58,14 @@ class Miner {
 			if (testNonce(31) == 0) {
 				Thread.sleep(10L)
 			}
-			val concat = hash ++ testNonce
-			val result = ImmutableBytes(DigestUtils.digest256(concat))
 
-			if (result.compareTo(target) <= 0) {
-				logger.info("<Miner> Mined! %s < %s (nonce=%s)".format(result, target, ImmutableBytes(testNonce)))
+			val wrappedTestNonce = ImmutableBytes(testNonce)
+			newBlock.nonce = wrappedTestNonce
+			val powValue = newBlock.blockHeader.calculateProofOfWorkValue
+
+			if (powValue.compareTo(target) <= 0) {
+				logger.info("<Miner> Mined! %s < %s (nonce=%s)".format(powValue, target, ImmutableBytes(testNonce)))
 				//println("<Miner> Mined! %s < %s (nonce=%s)".format(result, target, ImmutableBytes(testNonce)))
-				newBlock.nonce = ImmutableBytes(testNonce)
 				return true
 			}
 		}
