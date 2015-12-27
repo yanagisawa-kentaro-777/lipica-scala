@@ -1,6 +1,7 @@
 
 UDPListener等の全体像。
 過剰ログを抑止する。
+コンパイル警告の対象を廃絶する。
 
 refactorする。（init() や start() の整備。future化。）
 miningの具体的な方法を実装する。（実データを見ながらのほうがいいかもしれない。）
@@ -38,4 +39,3 @@ ImmutableBytes#toByteArray を排除する。
 	Value 内包する型の大部分はパージ可能。
 
 sbtによるleveldbのテストの問題？
-net.rlpx.Handshakerはエンドポイント実装である。

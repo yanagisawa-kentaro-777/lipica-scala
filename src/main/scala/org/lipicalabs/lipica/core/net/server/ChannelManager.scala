@@ -3,15 +3,17 @@ package org.lipicalabs.lipica.core.net.server
 import java.util.concurrent.{CopyOnWriteArrayList, TimeUnit, Executors, ScheduledExecutorService}
 
 import org.lipicalabs.lipica.core.base.TransactionLike
-import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.lpc.sync.SyncManager
-import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * 新たに確立されたチャネルについて、
+ * 同期処理機構への回送等を行う装置です。
+ * １ノードに１個。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/02 20:50
  * YANAGISAWA, Kentaro
@@ -22,9 +24,6 @@ class ChannelManager {
 
 	private def worldManager: WorldManager = WorldManager.instance
 	private def syncManager: SyncManager = worldManager.syncManager
-	private def nodeManager: NodeManager = worldManager.nodeManager
-
-	private def lipica: Lipica = Lipica.instance
 
 	private val newPeers = new CopyOnWriteArrayList[Channel]()
 	private val activePeers = new CopyOnWriteArrayList[Channel]()

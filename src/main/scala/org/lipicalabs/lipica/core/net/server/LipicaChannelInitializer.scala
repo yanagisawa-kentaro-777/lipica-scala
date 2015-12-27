@@ -8,6 +8,9 @@ import org.lipicalabs.lipica.core.manager.WorldManager
 import org.slf4j.LoggerFactory
 
 /**
+ * Nettyの伝送路と、このシステムのチャネルとを結びつけて
+ * ChannelManagerに登録するための装置です。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/13 15:47
  * YANAGISAWA, Kentaro
@@ -49,9 +52,8 @@ class LipicaChannelInitializer(val remoteId: String) extends ChannelInitializer[
 				}
 			})
 
-			val f = this.initializedCallbackRef.get
-			if (f ne null) {
-				f(channel)
+			Option(this.initializedCallbackRef.get).foreach {
+				proc => proc.apply(channel)
 			}
 		} catch {
 			case e: Exception =>

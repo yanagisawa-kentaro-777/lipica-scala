@@ -18,7 +18,6 @@ class PeerServer {
 	import PeerServer._
 
 	private def worldManager: WorldManager = WorldManager.instance
-	private def channelManager: ChannelManager = worldManager.channelManager
 
 	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer("")
 

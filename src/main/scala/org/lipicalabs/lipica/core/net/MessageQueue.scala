@@ -10,6 +10,8 @@ import org.lipicalabs.lipica.core.net.p2p.{DisconnectMessage, PingMessage}
 import org.slf4j.LoggerFactory
 
 /**
+ * １個のピアとの間のメッセージ送受信キューを表すクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/05 15:25
  * YANAGISAWA, Kentaro

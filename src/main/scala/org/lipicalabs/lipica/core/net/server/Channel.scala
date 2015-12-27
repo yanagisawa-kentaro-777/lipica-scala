@@ -25,6 +25,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
+ * １個のピアとの間の伝送路を表すクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/02 20:55
  * YANAGISAWA, Kentaro
