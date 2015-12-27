@@ -18,6 +18,8 @@ case class BlocksMessage(blocks: Seq[Block]) extends LpcMessage {
 
 	override def code = LpcMessageCode.Blocks.asByte
 
+	override def toString: String = "BlocksMessage(%,d blocks)".format(this.blocks.size)
+
 }
 
 object BlocksMessage {

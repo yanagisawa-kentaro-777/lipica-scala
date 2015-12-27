@@ -19,6 +19,8 @@ case class NewBlockMessage(block: Block, difficulty: ImmutableBytes) extends Lpc
 
 	override def code = LpcMessageCode.NewBlock.asByte
 
+	override def toString: String = "NewBlockMessage(difficulty=%d)".format(this.difficulty.toPositiveBigInt)
+
 }
 
 object NewBlockMessage {

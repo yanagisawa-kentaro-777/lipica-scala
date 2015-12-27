@@ -1,5 +1,5 @@
 
-過剰ログを抑止する。
+RepositoryImplとRepositoryTrackにややログ出力が多いか。
 
 refactorする。（init() や start() の整備。future化。）
 miningの具体的な方法を実装する。（実データを見ながらのほうがいいかもしれない。）

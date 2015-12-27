@@ -18,6 +18,7 @@ case class TransactionsMessage(transactions: Seq[TransactionLike]) extends LpcMe
 
 	override def code = LpcMessageCode.Transactions.asByte
 
+	override def toString: String = "TransactionsMessage(%,d txs)".format(this.transactions.size)
 }
 
 object TransactionsMessage {

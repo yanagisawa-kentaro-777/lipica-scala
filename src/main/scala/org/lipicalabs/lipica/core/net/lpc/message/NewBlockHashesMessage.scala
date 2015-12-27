@@ -16,6 +16,8 @@ case class NewBlockHashesMessage(blockHashes: Seq[ImmutableBytes]) extends LpcMe
 	}
 
 	override def code = LpcMessageCode.NewBlockHashes.asByte
+
+	override def toString: String = "NewBlockHashesMessage(%,d hashes)".format(this.blockHashes.size)
 }
 
 object NewBlockHashesMessage {

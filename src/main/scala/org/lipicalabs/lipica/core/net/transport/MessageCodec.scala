@@ -251,7 +251,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 			case Some(frame) =>
 				val payload = ByteStreams.toByteArray(frame.payload)
 				if (loggerWire.isDebugEnabled) {
-					loggerWire.debug("<MessageCodec> Received: %s [%s]".format(frame.frameType, Hex.encodeHexString(payload)))
+					loggerWire.debug("<MessageCodec> Received: %s [%,d bytes]".format(frame.frameType, payload.length))
 				}
 				val messageOption = createMessage(frame.frameType.toByte, ImmutableBytes(payload))
 				messageOption.foreach {
