@@ -8,9 +8,13 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import com.typesafe.config.{ConfigFactory, Config}
 import org.apache.commons.codec.binary.Hex
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.slf4j.LoggerFactory
 
 /**
  * このシステムの設定を表すインターフェイスです。
@@ -165,7 +169,30 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
 	}
 	override def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
-	override def externalAddress: String = this.config.getString("node.external.address")
+
+	private val externalAddressRef: AtomicReference[String] = new AtomicReference[String](null)
+	override def externalAddress: String = {
+		val result = this.externalAddressRef.get
+		if (!isNullOrEmpty(result)) {
+			result
+		} else {
+			this.synchronized {
+				//優先候補：直接設定。
+				var candidate = this.config.getString("node.external.address")
+				if (isNullOrEmpty(candidate)) {
+					//次善候補：外部サービスに訊いてみる。
+					candidate = httpGet(CheckAddressUri).getOrElse {
+						//最終候補：bindアドレス。
+						bindAddress
+					}
+				}
+				this.externalAddressRef.set(candidate)
+				candidate
+			}
+		}
+	}
+
+
 	override def bindAddress: String = this.config.getString("node.bind.address")
 	override def bindPort: Int = this.config.getInt("node.bind.port")
 
@@ -294,6 +321,9 @@ object DummySystemProperties extends SystemPropertiesLike {
 }
 
 object SystemProperties {
+	private val logger = LoggerFactory.getLogger("general")
+
+	private val CheckAddressUri: String = "http://checkip.amazonaws.com"
 
 	private val configRef = new AtomicReference[SystemPropertiesLike](null)
 
@@ -318,14 +348,44 @@ object SystemProperties {
 		}
 	}
 
-	def isNullOrEmpty(s: String): Boolean = (s eq null) || s.trim.isEmpty
+	private def isNullOrEmpty(s: String): Boolean = {
+		if (s eq null) {
+			return true
+		}
+		val trimmed = s.trim
+		trimmed.isEmpty || (trimmed.toLowerCase == "null")
+	}
 
-	def withSystemResource[T](resourceName: String)(proc: (InputStream) => T): T = {
+	private def withSystemResource[T](resourceName: String)(proc: (InputStream) => T): T = {
 		val in = ClassLoader.getSystemResourceAsStream(resourceName)
 		try {
 			proc(in)
 		} finally {
 			in.close()
+		}
+	}
+
+	private def httpGet(uri: String): Option[String] = {
+		val httpClient = HttpClients.createDefault
+		try {
+			val httpGet = new HttpGet(uri)
+			val resp = httpClient.execute(httpGet)
+			try {
+				val statusCode = resp.getStatusLine.getStatusCode
+				if ((200 <= statusCode) && (statusCode < 300)) {
+					Option(EntityUtils.toString(resp.getEntity).trim)
+				} else {
+					None
+				}
+			} finally {
+				resp.close()
+			}
+		} catch {
+			case e: Throwable =>
+				logger.warn("<SystemProperties> Failed to detect ip address by %s".format(uri))
+				None
+		} finally {
+			httpClient.close()
 		}
 	}
 

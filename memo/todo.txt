@@ -1,7 +1,7 @@
 
-external.addressを自動取得できるようにする。
 UDPListener等の全体像。
 過剰ログを抑止する。
+
 refactorする。（init() や start() の整備。future化。）
 miningの具体的な方法を実装する。（実データを見ながらのほうがいいかもしれない。）
 例外をつぶす。
