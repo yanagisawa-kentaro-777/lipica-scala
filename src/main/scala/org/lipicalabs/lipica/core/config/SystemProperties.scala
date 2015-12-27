@@ -177,15 +177,18 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 			result
 		} else {
 			this.synchronized {
-				//優先候補：直接設定。
-				var candidate = this.config.getString("node.external.address")
-				if (isNullOrEmpty(candidate)) {
-					//次善候補：外部サービスに訊いてみる。
-					candidate = httpGet(CheckAddressUri).getOrElse {
-						//最終候補：bindアドレス。
-						bindAddress
+				val key = "node.external.address"
+				val candidate =
+					if (this.config.hasPath(key)) {
+						//優先候補：直接設定。
+						this.config.getString(key)
+					} else {
+						//次善候補：外部サービスに訊いてみる。
+						httpGet(CheckAddressUri).getOrElse {
+							//最終候補：bindアドレス。
+							bindAddress
+						}
 					}
-				}
 				this.externalAddressRef.set(candidate)
 				logger.info("<SystemProperties> External address of this node is set to: %s".format(candidate))
 				candidate

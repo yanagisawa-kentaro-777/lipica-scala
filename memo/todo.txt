@@ -1,12 +1,12 @@
 
 過剰ログを抑止する。
-コンパイル警告の対象を廃絶する。
 
 refactorする。（init() や start() の整備。future化。）
 miningの具体的な方法を実装する。（実データを見ながらのほうがいいかもしれない。）
 例外をつぶす。
 
 logging、refactor、comment。（不具合追跡用）
+ECKeyを実装し直す。
 
 
 勉強する。
@@ -34,7 +34,6 @@ ImmutableBytes#toByteArray を排除する。
 楕円曲線暗号について調べる。
 
 一通りの実装が終わったら：
-	ECKey の deprecated問題は解消可能。
 	Value 内包する型の大部分はパージ可能。
 
 sbtによるleveldbのテストの問題？
