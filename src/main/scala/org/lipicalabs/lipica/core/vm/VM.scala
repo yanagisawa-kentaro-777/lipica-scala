@@ -23,11 +23,11 @@ class VM {
 
 	def play(program: Program): Unit = {
 		try {
-			if (SystemProperties.CONFIG.isStorageDictionaryEnabled) {
+			//if (SystemProperties.CONFIG.isStorageDictionaryEnabled) {
 				//TODO storageDictHandler
 				//storageDictHandler = new StorageDictionaryHandler(program.getOwnerAddress)
 				//storageDictHandler.vmStartPlayNotify
-			}
+			//}
 			if (program.byTestingSuite) return
 			while (!program.isStopped) {
 				this.step(program)

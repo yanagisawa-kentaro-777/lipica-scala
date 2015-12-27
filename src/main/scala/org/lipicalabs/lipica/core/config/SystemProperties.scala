@@ -1,6 +1,9 @@
 package org.lipicalabs.lipica.core.config
 
+import java.io.InputStream
+import java.net.URI
 import java.nio.file.{Paths, Path}
+import java.util.Properties
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import com.typesafe.config.{ConfigFactory, Config}
@@ -9,14 +12,16 @@ import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
+/**
+ * このシステムの設定を表すインターフェイスです。
+ */
 trait SystemPropertiesLike {
-	def isStorageDictionaryEnabled: Boolean
+
 	def isFrontier: Boolean
 
-	def projectVersion: String
+	def moduleVersion: String
 
 	def activePeers: Seq[Node]
-
 
 	def vmTrace: Boolean
 	def vmTraceInitStorageLimit: Int
@@ -36,7 +41,6 @@ trait SystemPropertiesLike {
 	def blockchainOnly: Boolean
 
 	def recordBlocks: Boolean
-
 
 	def cacheFlushMemory: Double
 	def cacheFlushBlocks: Int
@@ -77,113 +81,130 @@ trait SystemPropertiesLike {
 }
 
 /**
+ * Configオブジェクトに基いて設定値を供給する実装です。
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
 class SystemProperties(val config: Config) extends SystemPropertiesLike {
 
-	def isStorageDictionaryEnabled: Boolean = {
-		//TODO
-		false
-	}
+	import SystemProperties._
 
 	private val isFrontierRef = new AtomicBoolean(true)
-	def isFrontier: Boolean = this.isFrontierRef.get
+	override def isFrontier: Boolean = this.isFrontierRef.get
 
-	def projectVersion: String = {
-		//TODO
-		"0.5.0.0"
+	override def moduleVersion: String = {
+		val properties = new Properties()
+		withSystemResource[Unit]("version.properties") {
+			in => properties.load(in)
+		}
+		val version = properties.getProperty("version")
+		val modifier = properties.getProperty("modifier")
+
+		if (SystemProperties.isNullOrEmpty(modifier)) {
+			version
+		} else {
+			version + "-" + modifier
+		}
 	}
 
-	def activePeers: Seq[Node] = {
-		//TODO
-		Seq.empty
+	override def activePeers: Seq[Node] = {
+		import scala.collection.JavaConversions._
+		val key = "active.peers"
+		if (this.config.hasPath(key)) {
+			this.config.getStringList(key).map {
+				each => {
+					val uri = new URI(each)
+					new Node(ImmutableBytes.parseHexString(uri.getUserInfo), uri.getHost, uri.getPort)
+				}
+			}
+		} else {
+			Seq.empty
+		}
 	}
 
+	override def vmTrace: Boolean = this.config.getBoolean("vm.structured.trace")
+	override def vmTraceInitStorageLimit: Int = this.config.getInt("vm.structured.init.storage.limit")
 
-	def vmTrace: Boolean = this.config.getBoolean("vm.structured.trace")
-	def vmTraceInitStorageLimit: Int = this.config.getInt("vm.structured.init.storage.limit")
-	def dumpBlock: Long = this.config.getLong("dump.block")
-	def dumpDir: String = this.config.getString("dump.dir")
+	override def dumpBlock: Long = this.config.getLong("dump.block")
+	override def dumpDir: String = this.config.getString("dump.dir")
 
-	def detailsInMemoryStorageLimit: Int = this.config.getInt("details.inmemory.storage.limit")
+	override def detailsInMemoryStorageLimit: Int = this.config.getInt("details.inmemory.storage.limit")
 
-	private var _databaseDir: String = this.config.getString("database.dir")
-	def databaseDir_=(v: String): Unit = {
-		this._databaseDir = v
+	private val databaseDirRef: AtomicReference[String] = new AtomicReference(this.config.getString("database.dir"))
+	override def databaseDir_=(v: String): Unit = {
+		this.databaseDirRef.set(v)
 	}
-	def databaseDir: String = Paths.get(this._databaseDir).toAbsolutePath.toString
+	override def databaseDir: String = Paths.get(this.databaseDirRef.get).toAbsolutePath.toString
 
-	def genesisResourceName: String = this.config.getString("genesis")
+	override def genesisResourceName: String = this.config.getString("genesis")
 
-	private var _databaseReset: Boolean = this.config.getBoolean("database.reset")
-	def databaseReset_=(v: Boolean): Unit = {
-		this._databaseReset = v
+	private val databaseResetRef: AtomicBoolean = new AtomicBoolean(this.config.getBoolean("database.reset"))
+	override def databaseReset_=(v: Boolean): Unit = {
+		this.databaseResetRef.set(v)
 	}
-	def databaseReset: Boolean = this._databaseReset
+	override def databaseReset: Boolean = this.databaseResetRef.get
 
 	//ブロック内のコード実行を行わない場合、blockchainOnlyとする。
-	private var _blockchainOnly = this.config.getBoolean("blockchain.only")
-	def blockchainOnly_=(v: Boolean): Unit = this._blockchainOnly = v
-	def blockchainOnly: Boolean = this._blockchainOnly
+	private val blockchainOnlyRef: AtomicBoolean = new AtomicBoolean(this.config.getBoolean("blockchain.only"))
+	def blockchainOnly_=(v: Boolean): Unit = this.blockchainOnlyRef.set(v)
+	override def blockchainOnly: Boolean = this.blockchainOnlyRef.get
 
 	private var _recordBlocks = this.config.getBoolean("record.blocks")
 	def recordBlocks_=(v: Boolean): Unit = this._recordBlocks = v
-	def recordBlocks: Boolean = this._recordBlocks
+	override def recordBlocks: Boolean = this._recordBlocks
 
+	override def cacheFlushMemory: Double = this.config.getDouble("cache.flush.memory")
+	override def cacheFlushBlocks: Int = this.config.getInt("cache.flush.blocks")
 
-	def cacheFlushMemory: Double = this.config.getDouble("cache.flush.memory")
-	def cacheFlushBlocks: Int = this.config.getInt("cache.flush.blocks")
+	override def txOutdatedThreshold: Int = this.config.getInt("transaction.outdated.threshold")
 
-	def txOutdatedThreshold: Int = this.config.getInt("transaction.outdated.threshold")
-
-	def networkId: Int = this.config.getInt("node.network.id")
-	def myKey: ECKey = {
+	override def networkId: Int = this.config.getInt("node.network.id")
+	override def myKey: ECKey = {
 		val hex = this.config.getString("node.private.key")
 		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
 	}
-	def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
-	def externalAddress: String = this.config.getString("node.external.address")
-	def bindAddress: String = this.config.getString("node.bind.address")
-	def bindPort: Int = this.config.getInt("node.bind.port")
+	override def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
+	override def externalAddress: String = this.config.getString("node.external.address")
+	override def bindAddress: String = this.config.getString("node.bind.address")
+	override def bindPort: Int = this.config.getInt("node.bind.port")
 
-	def coinbaseSecret: String = this.config.getString("coinbase.secret")
+	override def coinbaseSecret: String = this.config.getString("coinbase.secret")
 
-	def helloPhrase: String = this.config.getString("hello.phrase")
+	override def helloPhrase: String = this.config.getString("hello.phrase")
 
-	def isSyncEnabled: Boolean = this.config.getBoolean("sync.enabled")
-	def maxHashesAsk: Int = this.config.getInt("sync.max.hashes.ask")
-	def maxBlocksAsk: Int = this.config.getInt("sync.max.blocks.ask")
-	def syncPeersCount: Int = this.config.getInt("sync.peer.count")
+	override def isSyncEnabled: Boolean = this.config.getBoolean("sync.enabled")
+	override def maxHashesAsk: Int = this.config.getInt("sync.max.hashes.ask")
+	override def maxBlocksAsk: Int = this.config.getInt("sync.max.blocks.ask")
+	override def syncPeersCount: Int = this.config.getInt("sync.peer.count")
 
-	def connectionTimeoutMillis: Int = this.config.getInt("node.connect.timeout.seconds") * 1000
-	def readTimeoutMillis: Int = this.config.getInt("node.read.timeout.seconds") * 1000
+	override def connectionTimeoutMillis: Int = this.config.getInt("node.connect.timeout.seconds") * 1000
+	override def readTimeoutMillis: Int = this.config.getInt("node.read.timeout.seconds") * 1000
 
-	def isPublicHomeNode: Boolean = this.config.getBoolean("peer.discovery.public.home.node")
+	override def isPublicHomeNode: Boolean = this.config.getBoolean("peer.discovery.public.home.node")
 
-	def peerDiscoveryEnabled: Boolean = this.config.getBoolean("peer.discovery.enabled")
-	def peerDiscoveryPersist: Boolean = this.config.getBoolean("peer.discovery.persist")
-	def peerDiscoveryWorkers: Int = this.config.getInt("peer.discovery.workers")
-	def seedNodes: Seq[String] = {
+	override def peerDiscoveryEnabled: Boolean = this.config.getBoolean("peer.discovery.enabled")
+	override def peerDiscoveryPersist: Boolean = this.config.getBoolean("peer.discovery.persist")
+	override def peerDiscoveryWorkers: Int = this.config.getInt("peer.discovery.workers")
+	override def seedNodes: Seq[String] = {
 		import scala.collection.JavaConversions._
 		this.config.getStringList("peer.discovery.seed.nodes")
 	}
 
-	def peerDiscoveryTouchSeconds: Int = this.config.getInt("peer.discovery.touch.period")
-	def peerDiscoveryTouchMaxNodes: Int = this.config.getInt("peer.discovery.touch.max.nodes")
-
-	def blocksFile: String = this.config.getString("blocks.file")
+	override def peerDiscoveryTouchSeconds: Int = this.config.getInt("peer.discovery.touch.period")
+	override def peerDiscoveryTouchMaxNodes: Int = this.config.getInt("peer.discovery.touch.max.nodes")
+	override def blocksFile: String = this.config.getString("blocks.file")
 
 }
 
-class DummySystemProperties extends SystemPropertiesLike {
+/**
+ * ユニットテスト用のダミー設定クラスです。
+ */
+object DummySystemProperties extends SystemPropertiesLike {
 
-	override def isStorageDictionaryEnabled: Boolean = false
+	override def dumpDir: String = "./work/dump"
 
-	override def dumpDir: String = "dump"
-
-	override def projectVersion: String = "0.5"
+	override def moduleVersion: String = "0.5.0"
 
 	override def peerDiscoveryWorkers: Int = 8
 
@@ -195,11 +216,13 @@ class DummySystemProperties extends SystemPropertiesLike {
 
 	override def vmTrace: Boolean = false
 
-	private var _databaseDir: String = "./worl/database/"
-	def databaseDir_=(v: String): Unit = {
+	private var _databaseDir: String = "./work/database/"
+
+	override def databaseDir_=(v: String): Unit = {
 		this._databaseDir = v
 	}
-	def databaseDir: String = Paths.get(this._databaseDir).toAbsolutePath.toString
+
+	override def databaseDir: String = Paths.get(this._databaseDir).toAbsolutePath.toString
 
 	override def activePeers: Seq[Node] = Seq.empty
 
@@ -254,10 +277,12 @@ class DummySystemProperties extends SystemPropertiesLike {
 	override def blockchainOnly: Boolean = false
 
 	private var _databaseReset: Boolean = false
-	def databaseReset_=(v: Boolean): Unit = {
+
+	override def databaseReset_=(v: Boolean): Unit = {
 		this._databaseReset = v
 	}
-	def databaseReset: Boolean = this._databaseReset
+
+	override def databaseReset: Boolean = this._databaseReset
 
 	override def maxBlocksAsk: Int = 10000
 
@@ -285,13 +310,22 @@ object SystemProperties {
 		val result = this.configRef.get
 		if (result eq null) {
 			//ユニットテスト用。
-			//TODO もう少しマシなやり方。
-			val r = new DummySystemProperties
-			this.configRef.set(r)
-			r
+			//TODO もう少しマシなやり方は？
+			DummySystemProperties
 		} else {
 			//通常ルート。
 			result
+		}
+	}
+
+	def isNullOrEmpty(s: String): Boolean = (s eq null) || s.trim.isEmpty
+
+	def withSystemResource[T](resourceName: String)(proc: (InputStream) => T): T = {
+		val in = ClassLoader.getSystemResourceAsStream(resourceName)
+		try {
+			proc(in)
+		} finally {
+			in.close()
 		}
 	}
 

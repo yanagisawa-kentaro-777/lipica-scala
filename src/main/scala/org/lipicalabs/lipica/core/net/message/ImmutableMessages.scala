@@ -28,7 +28,7 @@ object ImmutableMessages {
 	}
 
 	private def buildHelloAnnouncement: String = {
-		val version = SystemProperties.CONFIG.projectVersion
+		val version = SystemProperties.CONFIG.moduleVersion
 		val osName = System.getProperty("os.name").trim
 		val system =
 			if (osName.contains(" ")) {
@@ -38,8 +38,8 @@ object ImmutableMessages {
 			} else {
 				osName
 			}
-		val phrase = SystemProperties.CONFIG.helloPhrase
-		String.format("Lipica/v%s/%s/%s/Scala".format(version, phrase, system))
+		val helloPhrase = SystemProperties.CONFIG.helloPhrase
+		String.format("Lipica/%s/%s/%s/Scala".format(version, helloPhrase, system))
 	}
 
 }
