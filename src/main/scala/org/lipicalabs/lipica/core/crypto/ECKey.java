@@ -243,10 +243,11 @@ public class ECKey implements Serializable {
      * @return  -
      */
     public ECKey decompress() {
-        if (!pub.isCompressed())
+        if (isCompressed()) {
+            return new ECKey(this.priv, CURVE.getCurve().decodePoint(this.pub.getEncoded(false)));
+        } else {
             return this;
-        else
-            return new ECKey(priv, decompressPoint(pub));
+        }
     }
 
     /**
@@ -314,7 +315,7 @@ public class ECKey implements Serializable {
      * @return  -
      */
     public byte[] getPubKey() {
-        return pub.getEncoded();
+        return pub.getEncoded(true);
     }
 
     /**
@@ -348,7 +349,7 @@ public class ECKey implements Serializable {
      * @return  -
      */
     public boolean isCompressed() {
-        return pub.isCompressed();
+        return this.pub.isCompressed();
     }
 
     public String toString() {
@@ -668,14 +669,14 @@ public class ECKey implements Serializable {
         return ECKey.verify(sigHash, signature, getPubKey());
     }
 
-    /**
-     * Returns true if this pubkey is canonical, i.e. the correct length taking into account compression.
-     *
-     * @return -
-     */
-    public boolean isPubKeyCanonical() {
-        return isPubKeyCanonical(pub.getEncoded());
-    }
+//    /**
+//     * Returns true if this pubkey is canonical, i.e. the correct length taking into account compression.
+//     *
+//     * @return -
+//     */
+//    public boolean isPubKeyCanonical() {
+//        return isPubKeyCanonical(pub.getEncoded());
+//    }
 
 
     /**
