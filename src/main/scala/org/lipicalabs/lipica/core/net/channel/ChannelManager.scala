@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * 新たに確立されたチャネルについて、
  * 同期処理機構への回送等を行う装置です。
- * １ノードに１個。
+ * 自ノード全体で１個のインスタンスです。
  *
  * Created by IntelliJ IDEA.
  * 2015/12/02 20:50

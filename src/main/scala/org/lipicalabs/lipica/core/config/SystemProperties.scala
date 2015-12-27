@@ -187,6 +187,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 					}
 				}
 				this.externalAddressRef.set(candidate)
+				logger.info("<SystemProperties> External address of this node is set to: %s".format(candidate))
 				candidate
 			}
 		}

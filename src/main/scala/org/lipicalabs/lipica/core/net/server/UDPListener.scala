@@ -1,4 +1,6 @@
-package org.lipicalabs.lipica.core.net.transport.discover
+package org.lipicalabs.lipica.core.net.server
+
+import java.util.concurrent.Executors
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelInitializer
@@ -6,32 +8,49 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioDatagramChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.net.transport.discover.{DiscoveryExecutor, MessageHandler, PacketDecoder}
+import org.slf4j.LoggerFactory
 
 /**
+ * UDPデータグラムの送受信機構です。
+ * Peer Discovery における相互確認は、UDPによって行われます。
+ * 自ノード全体で１個のインスタンスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/26 12:36
  * YANAGISAWA, Kentaro
  */
 class UDPListener {
 
+	import UDPListener._
+
 	private val address: String = SystemProperties.CONFIG.bindAddress
 	private val port: Int = SystemProperties.CONFIG.bindPort
 
-	def init(): Unit = {
+	private val executor = Executors.newSingleThreadExecutor
+
+	def start(): Boolean = {
 		if (SystemProperties.CONFIG.peerDiscoveryEnabled) {
-			new Thread("UDPListener") {
+			val task = new Runnable {
 				override def run(): Unit = {
 					try {
-						UDPListener.this.start()
+						UDPListener.this.bind()
 					} catch {
-						case e: Exception => e.printStackTrace() //TODO
+						case e: Exception =>
+							logger.warn("<UDPListener> Exception (%s) caught in binding [%s]:%d".format(e.getClass.getSimpleName, address, port), e)
 					}
 				}
-			}.start()
+			}
+			this.executor.execute(task)
+			//TODO bind完了をFutureで待てるようにする。
+			true
+		} else {
+			logger.info("<UDPListener> Peer discovery is not enabled. Not binding.")
+			false
 		}
 	}
 
-	def start(): Unit = {
+	private def bind(): Unit = {
 		val group = new NioEventLoopGroup(1)
 		try {
 			val nodeManager = WorldManager.instance.nodeManager
@@ -45,16 +64,22 @@ class UDPListener {
 				}
 			})
 			val channel = b.bind(this.address, this.port).sync().channel()
+			logger.info("<UDPListener> Bound on address [%s]:%d".format(this.address, this.port))
+
 			val discoverExecutor = new DiscoveryExecutor(nodeManager)
 			discoverExecutor.discover()
 
+			//このチャネルが切断されるまで待つ。
 			channel.closeFuture().sync()
+			logger.info("<UDPListener> Stopped binding on [%s]:%d".format(this.address, this.port))
 			Thread.sleep(5000L)
-		} catch {
-			case e: Exception => e.printStackTrace()//TODO
 		} finally {
 			group.shutdownGracefully()
 		}
 	}
 
+}
+
+object UDPListener {
+	private val logger = LoggerFactory.getLogger("net")
 }
