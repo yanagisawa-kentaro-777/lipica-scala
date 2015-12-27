@@ -84,9 +84,11 @@ class WorldManager extends Closeable {
 		this.wallet.importKey(ImmutableBytes(coinbaseAddress))
 
 		loadBlockchain()
-		this.udpListener.start()
 
-		this.syncManager.init()
+		this.activePeer = new PeerClient
+
+		this.udpListener.start()
+		this.syncManager.start()
 	}
 
 	def loadBlockchain(): Unit = {

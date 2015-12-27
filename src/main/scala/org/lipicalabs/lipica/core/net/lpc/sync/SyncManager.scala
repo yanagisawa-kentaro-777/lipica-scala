@@ -46,7 +46,7 @@ class SyncManager {
 	def pool: PeersPool = worldManager.peersPool
 
 
-	def init(): Unit = {
+	def start(): Unit = {
 		val task = new Runnable {
 			override def run(): Unit = {
 				queue.init()
