@@ -41,9 +41,10 @@ object UnclesRule {
 	val UncleNumberLimit = 2
 
 	/**
-	 * Uncleは6代遡って認める。
+	 * Uncleは７代遡って認める。
+	 * （実データに存在する。）
 	 */
-	val UncleGenerationLimit = 6
+	val UncleGenerationLimit = 7
 
 	/**
 	 * Uncleのハッシュ値を計算するための中心アルゴリズム！
