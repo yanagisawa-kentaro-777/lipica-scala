@@ -9,9 +9,8 @@ git flowを入れる。
 gracefulな終了を実現する。
 
 
-
 Kademliaのソートを学ぶ。
-seed = 1451268255658L で 5000件時にエラー。
+KademliaTest test(3)、seed = 1451268255658L で 5000件時にエラー。
 
 とにかく yellow paper を熟読すること。
 
