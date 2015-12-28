@@ -276,7 +276,8 @@ object Block {
 		val calculatedTxTrieRoot = TxTrieRootCalculator.calculateTxTrieRoot(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
 			//TODO 正しくはエラーとすべきである。
-			logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  Given: %s != Calculated: %s".format(blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot))
+			val txs = transactions.map(_.toEncodedBytes).mkString(",")
+			logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  Given: %s != Calculated: %s Txs=[%s]".format(blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, txs))
 			blockHeader.txTrieRoot = calculatedTxTrieRoot
 		} else if (transactions.nonEmpty) {
 			if (logger.isDebugEnabled) {
