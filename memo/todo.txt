@@ -1,3 +1,13 @@
+test PongMessage should
+[info] ! be right
+[error]    ClassCastException: : org.lipicalabs.lipica.core.net.transport.TransportMessage cannot be cast to org.lipicalabs.lipica.core.net.transport.PongMessage  (TransportMessagesTest.scala:48)
+[error] org.lipicalabs.lipica.core.net.transport.TransportMessagesTest$$anonfun$2$$anonfun$apply$16.apply(TransportMessagesTest.scala:48)
+[error] org.lipicalabs.lipica.core.net.transport.TransportMessagesTest$$anonfun$2$$anonfun$apply$16.apply(TransportMessagesTest.scala:41)
+
+Kademliaのソートを学ぶ。
+seed = 1451268255658L で 5000件時にエラー。
+
+
 とにかく yellow paper を熟読すること。
 
 Validation のルールが、BlockchainImpl と Rule に散在しているのは良くない。

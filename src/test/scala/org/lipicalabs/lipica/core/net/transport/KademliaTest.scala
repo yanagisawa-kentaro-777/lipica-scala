@@ -20,7 +20,8 @@ class KademliaTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			val table = getTestNodeTable(0)
+			val r = getRandom
+			val table = getTestNodeTable(r, 0)
 			val homeNode = table.nodes
 
 			Option(homeNode).isDefined mustEqual true
@@ -30,8 +31,9 @@ class KademliaTest extends Specification {
 
 	"test (2)" should {
 		"be right" in {
-			val table = getTestNodeTable(0)
-			val n = getNode
+			val r = getRandom
+			val table = getTestNodeTable(r, 0)
+			val n = getNode(r)
 			table.addNode(n)
 
 			table.contains(n) mustEqual true
@@ -44,10 +46,11 @@ class KademliaTest extends Specification {
 
 	"test (3)" should {
 		"be right" in {
-			val table = getTestNodeTable(5000)
+			val r = getRandom
+			val table = getTestNodeTable(r, 5000)
 
 			val closest1 = table.getClosestNodes(table.node.id)
-			val closest2 = table.getClosestNodes(getNodeId)
+			val closest2 = table.getClosestNodes(getNodeId(r))
 
 			(closest1 == closest2) mustEqual false
 		}
@@ -55,38 +58,45 @@ class KademliaTest extends Specification {
 
 	"test (4)" should {
 		"be right" in {
-			val table = getTestNodeTable(0)
+			val r = getRandom
+			val table = getTestNodeTable(r, 0)
 			val homeNode = table.node
 
 			table.getBucketCount mustEqual 1
 
 			for (i <- 1 until KademliaOptions.BucketSize) {
-				table.addNode(getNode(homeNode.id.toByteArray, i))
+				table.addNode(getNode(r, homeNode.id.toByteArray, i))
 			}
 
 			1 <= table.getBucketCount mustEqual true
 		}
 	}
 
-	private def getNodeId: ImmutableBytes = {
-		val random = new Random
+	private def getRandom: Random = {
+		//val seed = 1451268255658L
+		val seed = System.currentTimeMillis
+		println("RNGSeed=%,d".format(seed))
+		new Random(seed)
+	}
+
+	private def getNodeId(random: Random): ImmutableBytes = {
 		ImmutableBytes.createRandom(random, 64)
 	}
 
-	private def getNode: Node = {
-		new Node(getNodeId, "127.0.0.1", 30303)
+	private def getNode(random: Random): Node = {
+		new Node(getNodeId(random), "127.0.0.1", 30303)
 	}
 
-	def getNode(id: Array[Byte], i: Int): Node = {
+	def getNode(random: Random, id: Array[Byte], i: Int): Node = {
 		id(0) = (id(0) + i).toByte
-		val n = getNode
+		val n = getNode(random)
 		n.id = ImmutableBytes(id)
 		n
 	}
 
-	def getTestNodeTable(nodesCount: Int): NodeTable = {
-		val result = new NodeTable(getNode)
-		(0 until nodesCount).foreach(_ => result.addNode(getNode))
+	def getTestNodeTable(random: Random, nodesCount: Int): NodeTable = {
+		val result = new NodeTable(getNode(random))
+		(0 until nodesCount).foreach(_ => result.addNode(getNode(random)))
 		result
 	}
 

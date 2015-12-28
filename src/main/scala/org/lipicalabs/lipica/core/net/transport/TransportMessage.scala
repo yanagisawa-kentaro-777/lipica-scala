@@ -135,7 +135,7 @@ object TransportMessage {
 			case 2 => new PongMessage
 			case 3 => new FindNodeMessage
 			case 4 => new NeighborsMessage
-			case _ => new TransportMessage
+			case _ => throw new IllegalArgumentException("Unknown message type: %d".format(messageType))
 		}
 	}
 
