@@ -18,7 +18,7 @@ object RestApiServer {
 
 	def startup(bindAddress: InetSocketAddress): Unit = {
 		val httpServer = new Server(bindAddress)
-		val handler = createServletContextHandler("/api/")
+		val handler = createServletContextHandler("/api")
 		httpServer.setHandler(handler)
 		httpServer.start()
 		this.serverRef.set(httpServer)

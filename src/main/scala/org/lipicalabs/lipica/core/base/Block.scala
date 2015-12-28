@@ -275,8 +275,13 @@ object Block {
 
 		val calculatedTxTrieRoot = TxTrieRootCalculator.calculateTxTrieRoot(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
-			logger.warn("<Block> Transaction root unmatch! Given: %s != Calculated: %s".format(blockHeader.txTrieRoot, calculatedTxTrieRoot))
+			//TODO 正しくはエラーとすべきである。
+			logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  Given: %s != Calculated: %s".format(blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot))
 			blockHeader.txTrieRoot = calculatedTxTrieRoot
+		} else if (transactions.nonEmpty) {
+			if (logger.isDebugEnabled) {
+				logger.debug("<Block> Tx root matched at Block %,d. TxSize=%,d ; TxTrieRoot=%s".format(blockHeader.blockNumber, transactions.size, calculatedTxTrieRoot))
+			}
 		}
 		new PlainBlock(blockHeader, transactions, uncles)
 	}
