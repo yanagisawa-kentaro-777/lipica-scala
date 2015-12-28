@@ -1,7 +1,13 @@
 
-トランザクション開始までの流れは？
+NewBlockとは何か？
+もらうブロックはどうやって決まる？　場合によってはもう少し頻繁に flush した方がよいかも。
+
 Web API Serverを入れる。
 git flowを入れる。
+
+
+gracefulな終了を実現する。
+
 
 
 Kademliaのソートを学ぶ。

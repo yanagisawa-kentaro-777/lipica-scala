@@ -52,6 +52,7 @@ class ChannelManager {
 	private def process(peer: Channel): Unit = {
 		if (peer.hasLpcStatusSucceeded) {
 			if (this.syncManager.isSyncDone) {
+				//状態同期は完了しているので、トランザクションを処理することができる。
 				peer.onSyncDone()
 			}
 			this.syncManager.addPeer(peer)

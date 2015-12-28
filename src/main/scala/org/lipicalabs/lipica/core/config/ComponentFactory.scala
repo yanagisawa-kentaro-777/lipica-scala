@@ -31,7 +31,8 @@ object ComponentFactory {
 		val indexDB = DBMaker.fileDB(blocksIndexFile).closeOnJvmShutdown().make()
 		val coreMap = indexDB.hashMapCreate("index").keySerializer(Serializer.LONG).valueSerializer(BlockInfoSerializer).counterEnable.makeOrGet
 		val indexMap: mutable.Map[Long, Seq[BlockInfo]] = JavaConversions.mapAsScalaMap(coreMap.asInstanceOf[java.util.Map[Long, Seq[BlockInfo]]])
-		val blocksDB = new LevelDbDataSource("blocks")
+		//println("MapSize=%,d & %,d".format(coreMap.size(), indexMap.size))
+		val blocksDB = createKeyValueDataSource("blocks_db")
 		blocksDB.init()
 
 		val cache = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
@@ -39,8 +40,8 @@ object ComponentFactory {
 	}
 
 	def createRepository: Repository = {
-		val detailsDS = new LevelDbDataSource("contract_details")
-		val stateDS = new LevelDbDataSource("state")
+		val detailsDS = createKeyValueDataSource("")
+		val stateDS = createKeyValueDataSource("")
 		new RepositoryImpl(detailsDS, stateDS)
 	}
 

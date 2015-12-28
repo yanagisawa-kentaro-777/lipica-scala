@@ -12,15 +12,42 @@ import org.lipicalabs.lipica.core.net.transport.Node
  * YANAGISAWA, Kentaro
  */
 trait LipicaListener {
+
+	/**
+	 * ピアを発見した際に実行されます。
+	 *
+	 * @param node 発見されたピア。
+	 */
+	def onNodeDiscovered(node: Node): Unit
+
+	/**
+	 * 他のピア（P2Pネットワーク）との状態同期が完了した際に実行されます。
+	 *
+	 * 具体的には、最近生成されたばかりのブロックを受信した時点において
+	 * このメソッドがコールされます。
+	 */
+	def onSyncDone(): Unit
+
+	/**
+	 * ブロックチェーンの先端にブロックが連結された際に実行されます。
+	 * @param block 連結されたブロック。
+	 * @param receipts ブロックに含まれるトランザクションが実行された後の状態。
+	 */
+	def onBlock(block: Block, receipts: Iterable[TransactionReceipt]): Unit
+
 	def onTransactionExecuted(summary: TransactionExecutionSummary): Unit
 	def onVMTraceCreated(txHash: String, trace: String): Unit
 	def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]): Unit
-	def trace(s: String): Unit
-	def onBlock(block: Block, receipts: Iterable[TransactionReceipt]): Unit
+
 	def onSendMessage(message: Message): Unit
 	def onReceiveMessage(message: Message): Unit
 	def onLpcStatusUpdated(node: Node, status: StatusMessage)
-	def onSyncDone(): Unit
+
 	def onHandshakePeer(node: Node, message: HelloMessage): Unit
-	def onNodeDiscovered(n: Node): Unit
+
+	/**
+	 * 一般的な情報を文字列として通知するために実行されます。
+	 * @param message 通知メッセージ。
+	 */
+	def trace(message: String): Unit
 }

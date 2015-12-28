@@ -123,8 +123,14 @@ class WorldManager extends Closeable {
 		}
 	}
 
+	def flush(): Unit = {
+		this.repository.flush()
+		this.blockStore.flush()
+	}
+
 	override def close(): Unit = {
 		stopPeerDiscovery()
+		flush()
 		this.repository.close()
 		this.blockchain.close()
 	}
