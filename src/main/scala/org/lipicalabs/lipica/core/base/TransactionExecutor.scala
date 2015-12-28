@@ -176,6 +176,7 @@ class TransactionExecutor(
 			}
 		} catch {
 			case e: Throwable =>
+				logger.warn("<TxExecutor> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				this.cacheTrack.rollback()
 				this.endMana = 0
 		}
@@ -204,8 +205,9 @@ class TransactionExecutor(
 		val summary = summaryBuilder.build
 
 		//払い戻す。
-		this.track.addBalance(this.tx.senderAddress, summary.calculateLeftOver + summary.calculateRefund)
-		logger.info("<TxExecutor> Paying totla refund to sender: %s, refund val: %s".format(this.tx.senderAddress, summary.calculateRefund))
+		val payback = summary.calculateLeftOver + summary.calculateRefund
+		this.track.addBalance(this.tx.senderAddress, payback)
+		logger.info("<TxExecutor> Paying total refund to sender: %s, refund val: %,d. (EndMana=%,d)".format(this.tx.senderAddress, payback, this.endMana))
 		//採掘報酬。
 		this.track.addBalance(this.coinbase, summary.calculateFee)
 		logger.info("<TxExecutor> Paying fee to miner: %s, fee: %s".format(this.coinbase, summary.calculateFee))

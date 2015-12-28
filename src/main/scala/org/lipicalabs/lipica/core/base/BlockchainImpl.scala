@@ -3,12 +3,10 @@ package org.lipicalabs.lipica.core.base
 import java.io.{Closeable, BufferedWriter, FileWriter}
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
-import org.lipicalabs.lipica.core.trie.TrieImpl
-import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.lipicalabs.lipica.core.validator._
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
@@ -281,12 +279,16 @@ class BlockchainImpl(
 		val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
 			logger.warn("<Blockchain> Block's given receipt hash doesn't match: %s != %s. Block is %s".format(block.receiptsRoot, calculatedReceiptsHash, block.encode))
-			return
+			//TODO receipt root digestの仕様。
+			//return
 		}
 		val calculatedLogBloomHash = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
 		if (block.logsBloom != calculatedLogBloomHash) {
 			logger.warn("<Blockchain> Block's given log bloom filter doesn't match: %s != %s. Block is %s".format(block.logsBloom, calculatedLogBloomHash, block.encode))
-			return
+			//TODO bloom filterの仕様。
+			//return
+		} else {
+			logger.info("<Blockchain> 20151228debug Block's given log bloom filter matched. Block is %s".format(block.logsBloom))
 		}
 		track.commit()
 
