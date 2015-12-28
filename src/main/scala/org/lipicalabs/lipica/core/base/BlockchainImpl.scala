@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.trie.TrieImpl
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes, UtilConsts}
-import org.lipicalabs.lipica.core.validator.{UnclesRule, TxTrieRootCalculator, ParentBlockHeaderValidator}
+import org.lipicalabs.lipica.core.validator._
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
 
@@ -278,14 +278,14 @@ class BlockchainImpl(
 			logger.trace("<Blockchain> Current coinbase balance: %,d".format(this.repository.getBalance(block.coinbase).getOrElse(UtilConsts.Zero)))
 		}
 
-		val calculatedReceiptsHash = calculateReceiptsTrie(receipts)
+		val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
-			logger.warn("<Blockchain> Block's given receipt hash doesn't match: %s != %s".format(block.receiptsRoot, calculatedReceiptsHash))
+			logger.warn("<Blockchain> Block's given receipt hash doesn't match: %s != %s. Block is %s".format(block.receiptsRoot, calculatedReceiptsHash, block.encode))
 			return
 		}
-		val calculatedLogBloomHash = calculateLogBloom(receipts)
+		val calculatedLogBloomHash = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
 		if (block.logsBloom != calculatedLogBloomHash) {
-			logger.warn("<Blockchain> Block's given log bloom filter doesn't match: %s != %s".format(block.logsBloom, calculatedLogBloomHash))
+			logger.warn("<Blockchain> Block's given log bloom filter doesn't match: %s != %s. Block is %s".format(block.logsBloom, calculatedLogBloomHash, block.encode))
 			return
 		}
 		track.commit()
@@ -405,28 +405,6 @@ class BlockchainImpl(
 	private def needsFlushingByMemory(rate: Double): Boolean = {
 		val runtime = Runtime.getRuntime
 		runtime.freeMemory() < (runtime.totalMemory() * (1 - rate))
-	}
-
-	private def calculateReceiptsTrie(receipts: Seq[TransactionReceipt]): ImmutableBytes = {
-		val trie = new TrieImpl(null)
-		if (receipts.isEmpty) {
-			DigestUtils.EmptyTrieHash
-		} else {
-			for (i <- receipts.indices) {
-				val key = RBACCodec.Encoder.encode(i)
-				val value = receipts(i).encode
-				trie.update(key, value)
-			}
-			trie.rootHash
-		}
-	}
-
-	private def calculateLogBloom(receipts: Seq[TransactionReceipt]): ImmutableBytes = {
-		var result = Bloom()
-		for (receipt <- receipts) {
-			result = result | receipt.bloomFilter
-		}
-		result.immutableBytes
 	}
 
 	def getParentOf(header: BlockHeader): Option[Block] = this.blockStore.getBlockByHash(header.parentHash)

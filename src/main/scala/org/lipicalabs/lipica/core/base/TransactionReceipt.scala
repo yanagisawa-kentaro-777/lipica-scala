@@ -80,7 +80,7 @@ object TransactionReceipt {
 		val bloom = items(2).bytes
 		val logs = items(3).items.map(each => LogInfo.decode(each.items))
 
-		val result = new TransactionReceipt(Bloom.create(bloom), logs.toBuffer)
+		val result = new TransactionReceipt(Bloom(bloom.toByteArray), logs.toBuffer)
 		result.postTxState = postTxState
 		result.cumulativeMana = cumulativeMana
 		result

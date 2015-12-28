@@ -16,10 +16,10 @@ object TxTrieRootCalculator {
 	 * トランザクションのルートを計算する根本アルゴリズム！
 	 */
 	def calculateTxTrieRoot(txs: Seq[TransactionLike]): ImmutableBytes = {
-		val trie = new TrieImpl(null)
 		if (txs.isEmpty) {
 			return DigestUtils.EmptyTrieHash
 		}
+		val trie = new TrieImpl(null)
 		txs.indices.foreach {
 			i => trie.update(RBACCodec.Encoder.encode(i), txs(i).toEncodedBytes)
 		}

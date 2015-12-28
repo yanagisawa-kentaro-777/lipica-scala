@@ -17,10 +17,18 @@ class Bloom private(private val data: Array[Byte]) {
 		java.util.Arrays.copyOf(this.data, this.data.length)
 	}
 
+	private def get(array: Array[Byte], idx: Int): Byte = {
+		if (idx < array.length) {
+			array(idx)
+		} else {
+			0
+		}
+	}
+
 	def `|`(another: Bloom): Bloom = {
-		val newData = copyData
-		this.data.indices.foreach { i =>
-			newData(i) = (this.data(i) | another.data(i)).toByte
+		val newData = new Array[Byte](this.data.length max another.data.length)
+		newData.indices.foreach { i =>
+			newData(i) = (get(this.data, i) | get(another.data, i)).toByte
 		}
 		new Bloom(newData)
 	}
@@ -44,14 +52,24 @@ object Bloom {
 	}
 
 	def create(toBloom: ImmutableBytes): Bloom = {
-		val mov1 = (((toBloom(0) & ENSURE_BYTE) & _3LOW_BITS) << _8STEPS) + (toBloom(1) & ENSURE_BYTE)
-		val mov2 = (((toBloom(2) & ENSURE_BYTE) & _3LOW_BITS) << _8STEPS) + (toBloom(3) & ENSURE_BYTE)
-		val mov3 = (((toBloom(4) & ENSURE_BYTE) & _3LOW_BITS) << _8STEPS) + (toBloom(5) & ENSURE_BYTE)
+		/*
+
+	for i := 0; i < 6; i += 2 {
+		t := big.NewInt(1)
+		b := (uint(b[i+1]) + (uint(b[i]) << 8)) & 2047
+		r.Or(r, t.Lsh(t, b))
+	}
+		 */
+		val mov1 = (((toBloom(0) & 0xff) << 8) + (toBloom(1) & 0xff)) & 2047
+		val mov2 = (((toBloom(2) & 0xff) << 8) + (toBloom(3) & 0xff)) & 2047
+		val mov3 = (((toBloom(4) & 0xff) << 8) + (toBloom(5) & 0xff)) & 2047
 
 		val data = new Array[Byte](256)
 		ByteUtils.setBit(data, mov1, positive = true)
 		ByteUtils.setBit(data, mov2, positive = true)
 		ByteUtils.setBit(data, mov3, positive = true)
+
+		//println("%d %d %d".format(mov1, mov2, mov3))
 
 		Bloom.apply(data)
 	}
