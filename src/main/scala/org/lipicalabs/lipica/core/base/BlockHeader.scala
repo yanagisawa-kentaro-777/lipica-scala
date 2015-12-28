@@ -177,11 +177,6 @@ class BlockHeader {
 		DifficultyRule.calculateDifficulty(parent = parent, newBlockNumber = this.blockNumber, newTimeStamp = this.timestamp)
 	}
 
-	def encodeUncles(uncles: Seq[BlockHeader]): ImmutableBytes = {
-		val seqOfEncodedBytes = uncles.map(_.encode)
-		RBACCodec.Encoder.encodeSeqOfByteArrays(seqOfEncodedBytes)
-	}
-
 	def toStringWithSuffix(suffix: String): String = {
 		val builder = (new StringBuilder).
 			append("parentHash=").append(this.parentHash.toHexString).append(suffix).
@@ -229,6 +224,11 @@ object BlockHeader {
 		result.nonce = decodedResult.items(14).bytes
 
 		result
+	}
+
+	def encodeUncles(uncles: Seq[BlockHeader]): ImmutableBytes = {
+		val seqOfEncodedBytes = uncles.map(_.encode)
+		RBACCodec.Encoder.encodeSeqOfByteArrays(seqOfEncodedBytes)
 	}
 
 }

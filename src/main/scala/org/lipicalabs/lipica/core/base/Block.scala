@@ -1,9 +1,8 @@
 package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.trie.TrieImpl
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
+import org.lipicalabs.lipica.core.validator.TxTrieRootCalculator
 import org.slf4j.LoggerFactory
 
 /**
@@ -253,20 +252,6 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 object Block {
 	private[base] val logger = LoggerFactory.getLogger("block")
 
-	/**
-	 * トランザクションのルートを計算する根本アルゴリズム！
-	 */
-	def calculateTxTrieRoot(txs: Seq[TransactionLike]): ImmutableBytes = {
-		val trie = new TrieImpl(null)
-		if (txs.isEmpty) {
-			return DigestUtils.EmptyTrieHash
-		}
-		txs.indices.foreach {
-			i => trie.update(RBACCodec.Encoder.encode(i), txs(i).toEncodedBytes)
-		}
-		trie.rootHash
-	}
-
 	val BlockReward =
 		if (SystemProperties.CONFIG.isFrontier) {
 			BigInt("5000000000000000000")
@@ -288,7 +273,7 @@ object Block {
 		val transactions = items(1).items.map(_.items).map(Transaction.decode)
 		val uncles = items(2).items.map(BlockHeader.decode)
 
-		val calculatedTxTrieRoot = calculateTxTrieRoot(transactions)
+		val calculatedTxTrieRoot = TxTrieRootCalculator.calculateTxTrieRoot(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
 			logger.warn("<Block> Transaction root unmatch! Given: %s != Calculated: %s".format(blockHeader.txTrieRoot, calculatedTxTrieRoot))
 			blockHeader.txTrieRoot = calculatedTxTrieRoot

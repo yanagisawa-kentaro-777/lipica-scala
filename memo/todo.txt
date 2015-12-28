@@ -1,4 +1,4 @@
-Validation のルールが、BlockchainImpl と Rule に散在しているのは良くない。
+
 トランザクション開始までの流れは？
 Web API Serverを入れる。
 git flowを入れる。

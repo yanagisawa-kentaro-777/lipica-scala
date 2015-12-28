@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.trie.TrieImpl
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes, UtilConsts}
-import org.lipicalabs.lipica.core.validator.ParentBlockHeaderValidator
+import org.lipicalabs.lipica.core.validator.{UnclesRule, TxTrieRootCalculator, ParentBlockHeaderValidator}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
 
@@ -429,19 +429,6 @@ class BlockchainImpl(
 		result.immutableBytes
 	}
 
-	private def calculateTxTrie(transactions: Seq[TransactionLike]): ImmutableBytes = {
-		val trie = new TrieImpl(null)
-		if (transactions.isEmpty) {
-			return DigestUtils.EmptyTrieHash
-		}
-		for (i <- transactions.indices) {
-			val key = RBACCodec.Encoder.encode(i)
-			val value = transactions(i).toEncodedBytes
-			trie.update(key, value)
-		}
-		trie.rootHash
-	}
-
 	def getParentOf(header: BlockHeader): Option[Block] = this.blockStore.getBlockByHash(header.parentHash)
 
 	private def isValid(block: Block): Boolean = {
@@ -459,32 +446,29 @@ class BlockchainImpl(
 			logger.info("<Blockchain> [Invalid] BAD BLOCK HEADER.")
 			return false
 		}
-		if (block.txTrieRoot != calculateTxTrie(block.transactions)) {
-			logger.info("<Blockchain> [Invalid] BAD TX HASH: %s != %s".format(block.txTrieRoot, calculateTxTrie(block.transactions)))
+		if (block.txTrieRoot != TxTrieRootCalculator.calculateTxTrieRoot(block.transactions)) {
+			logger.info("<Blockchain> [Invalid] BAD TX HASH: %s != %s".format(block.txTrieRoot, TxTrieRootCalculator.calculateTxTrieRoot(block.transactions)))
 			return false
 		}
-		val UncleListLimit = 2//TODO
-		if (UncleListLimit < block.uncles.size) {
-			logger.info("<Blockchain> [Invalid] TOO MANY UNCLES: %d < %d".format(UncleListLimit, block.uncles.size))
+		//Uncleに関する規則を遵守しているか。
+		val unclesRule = new UnclesRule
+		if (!unclesRule.validate(block)) {
+			unclesRule.errors.foreach {
+				each => logger.info("<Blockchain> [Invalid] %s".format(each))
+			}
 			return false
 		}
-
-		if (block.blockHeader.unclesHash != ImmutableBytes(DigestUtils.digest256(block.blockHeader.encodeUncles(block.uncles).toByteArray))) {
-			logger.info("<Blockchain> [Invalid] BAD UNCLE HASH: %s != %s".format(block.blockHeader.unclesHash, ImmutableBytes(DigestUtils.digest256(block.blockHeader.encodeUncles(block.uncles).toByteArray))))
-			return false
-		}
-
-		val UncleGenerationLimit = 7//TODO
+		//Uncleのヘッダ自身および世代数の検査をする。
 		for (uncle <- block.uncles) {
 			if (!isValid(uncle)) {
 				logger.info("<Blockchain> [Invalid] BAD UNCLE HEADER.")
 				return false
 			}
-			if (getParentOf(uncle).get.blockNumber < (block.blockNumber - UncleGenerationLimit)) {
+			if (getParentOf(uncle).get.blockNumber < (block.blockNumber - UnclesRule.UncleGenerationLimit)) {
 				if (logger.isDebugEnabled) {
 					val commonAncestor = getParentOf(uncle).get.blockNumber
 					val diff = block.blockNumber - commonAncestor
-					logger.info("<Blockchain> [Invalid] UNCLE TOO OLD: %d (limit) < %d (actual)".format(UncleGenerationLimit, diff))
+					logger.info("<Blockchain> [Invalid] UNCLE TOO OLD: %d (limit) < %d (actual)".format(UnclesRule.UncleGenerationLimit, diff))
 				}
 				return false
 			}
