@@ -36,8 +36,14 @@ def nettyAll = "io.netty" % "netty-all" % "4.0.33.Final"
 
 def httpClient = "org.apache.httpcomponents" % "httpclient" % "4.5.1"
 
+def scalatra = "org.scalatra" %% "scalatra" % "2.4.0"
+def jettyWebApp = "org.eclipse.jetty" % "jetty-webapp" % "9.3.6.v20151106"
+
+
 def typesafeConfig = "com.typesafe" % "config" % "1.3.0"
 def commonsCli = "commons-cli" % "commons-cli" % "1.3.1"
+
+
 
 // テストでしか利用しないライブラリ。
 def specs2 = "org.specs2" %% "specs2" % "2.4.2" % "test"
@@ -73,6 +79,8 @@ lazy val root =
 				spongyCastle,
 				jacksonCore,
 				jacksonMapper,
+				scalatra,
+				jettyWebApp,
 				specs2
 			),
 			packSettings,

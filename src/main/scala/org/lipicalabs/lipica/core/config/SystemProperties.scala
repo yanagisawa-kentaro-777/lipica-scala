@@ -82,6 +82,10 @@ trait SystemPropertiesLike {
 
 	def blocksFile: String
 
+	def restApiEnabled: Boolean
+	def restApiBindAddress: String
+	def restApiBindPort: Int
+
 }
 
 /**
@@ -226,6 +230,10 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 	override def peerDiscoveryTouchMaxNodes: Int = this.config.getInt("peer.discovery.touch.max.nodes")
 	override def blocksFile: String = this.config.getString("blocks.file")
 
+	override def restApiEnabled: Boolean = this.config.getBoolean("api.rest.enabled")
+	override def restApiBindAddress: String = this.config.getString("api.rest.bind.address")
+	override def restApiBindPort: Int = this.config.getInt("api.rest.bind.port")
+
 }
 
 /**
@@ -322,6 +330,10 @@ object DummySystemProperties extends SystemPropertiesLike {
 	override def genesisResourceName: String = "genesis1.json"
 
 	override def helloPhrase: String = "hello"
+
+	override def restApiEnabled: Boolean = false
+	override def restApiBindAddress: String = ""
+	override def restApiBindPort: Int = 0
 }
 
 object SystemProperties {

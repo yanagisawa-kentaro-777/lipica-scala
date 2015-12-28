@@ -2,19 +2,8 @@
 NewBlockとは何か？
 もらうブロックはどうやって決まる？　場合によってはもう少し頻繁に flush した方がよいかも。
 
-Web API Serverを入れる。
-git flowを入れる。
-
-
-gracefulな終了を実現する。
-
-
 Kademliaのソートを学ぶ。
 KademliaTest test(3)、seed = 1451268255658L で 5000件時にエラー。
-
-とにかく yellow paper を熟読すること。
-
-ethashを学ぶと、mixhashがわかる。
 
 miningの具体的な方法を実装する。
 ・実データを見ながらのほうがいいかもしれない。
@@ -22,6 +11,16 @@ miningの具体的な方法を実装する。
 refactorする。（init() や start() の整備。future化。）
 
 logging、refactor、comment。（不具合追跡用）
+
+
+とにかく yellow paper を熟読すること。
+
+ethashを学ぶと、mixhashがわかる。
+
+git flowを入れる。
+
+gracefulな終了を実現する。
+
 
 自分どうしで通信し、トランザクションを実行する。
 
