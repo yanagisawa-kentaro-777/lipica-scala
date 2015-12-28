@@ -17,6 +17,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * 自ノードが管理するブロックチェーンの実装クラスです。
+ *
  * validationのアルゴリズム。
  * ・直前のブロックとして参照されたものが存在するか。そして有効か。
  * ・当該ブロックのタイムスタンプが、直前のブロックのタイムスタンプよりも大きく、そして15分未満であるか。
@@ -118,6 +120,9 @@ class BlockchainImpl(
 
 	/**
 	 * 渡されたブロックを、このチェーンに連結しようと試みます。
+	 *
+	 * ピアとのsync時に、ピアからネットワーク越しに受領したブロックを連結する場合。
+	 * ローカルに保存していたブロック情報を連結する場合。
 	 */
 	override def tryToConnect(block: Block): ImportResult = {
 		logger.info("<Blockchain> Trying to connect %s. Repos state=%s".format(block.summaryString(short = true), this.repository.rootHash))
@@ -155,7 +160,7 @@ class BlockchainImpl(
 				logger.info("<Blockchain> Unknown block: %s".format(block.summaryString(short = true)))
 				ImportResult.NoParent
 			}
-		logger.info("<Blockchain> Tried to connect %s. Repos state=%s".format(block.summaryString(short = false), this.repository.rootHash))
+		logger.info("<Blockchain> Tried to connect %s. Result=%s. Repos state=%s".format(block.summaryString(short = false), result, this.repository.rootHash))
 		result
 	}
 
@@ -250,7 +255,7 @@ class BlockchainImpl(
 			val message = "<Blockchain> Exiting after BlockNumber: %,d".format(this.bestBlock.blockNumber)
 			logger.info(message)
 			System.out.println(message)
-			System.exit(-1)
+			System.exit(-1)//TODO いささか無作法に過ぎるが。
 		}
 
 		//ブロック自体の破損検査を行う。
@@ -263,12 +268,14 @@ class BlockchainImpl(
 			return
 		}
 
-		logger.info("<Blockchain> Before processing %s. Current repos root: %s".format(block.summaryString(short = true), this.repository.rootHash.toShortString))
+		if (logger.isTraceEnabled) {
+			logger.trace("<Blockchain> Before processing %s. Current repos root: %s".format(block.summaryString(short = true), this.repository.rootHash.toShortString))
+		}
 		this.track = this.repository.startTracking
 		//ブロック内のコードを実行する。
 		val receipts = processBlock(block)
-		if (logger.isDebugEnabled) {
-			logger.info("<Blockchain> Current coinbase balance: %,d".format(this.repository.getBalance(block.coinbase).getOrElse(UtilConsts.Zero)))
+		if (logger.isTraceEnabled) {
+			logger.trace("<Blockchain> Current coinbase balance: %,d".format(this.repository.getBalance(block.coinbase).getOrElse(UtilConsts.Zero)))
 		}
 
 		val calculatedReceiptsHash = calculateReceiptsTrie(receipts)
@@ -285,7 +292,9 @@ class BlockchainImpl(
 
 		//ブロックを保存する。
 		storeBlock(block, receipts)
-		logger.info("<Blockchain> %s is stored. Total difficulty is %,d".format(block.summaryString(short = true), this.totalDifficulty))
+		if (logger.isDebugEnabled) {
+			logger.debug("<Blockchain> %s is stored. Total difficulty is %,d".format(block.summaryString(short = true), this.totalDifficulty))
+		}
 
 		if (needsFlushing(block)) {
 			logger.info("<Blockchain> Flushing data.")
@@ -301,7 +310,9 @@ class BlockchainImpl(
 		this.listener.trace("Block chain size: [%,d]".format(this.size))
 		this.listener.onBlock(block, receipts)
 
-		logger.info("<Blockchain> The block is successfully appended: %s. Chain size is now %,d.".format(block.summaryString(short = true), this.size))
+		if (logger.isDebugEnabled) {
+			logger.debug("<Blockchain> The block is successfully appended: %s. Chain size is now %,d.".format(block.summaryString(short = true), this.size))
+		}
 	}
 
 	private def processBlock(block: Block): Seq[TransactionReceipt] = {
@@ -309,16 +320,23 @@ class BlockchainImpl(
 			this.wallet.addTransactions(block.transactions)
 			val result = applyBlock(block)
 			this.wallet.processBlock(block)
-			logger.info("<Blockchain> %s is processed. TxReceipts: %,d".format(block.summaryString(short = true), result.size))
+			if (logger.isDebugEnabled) {
+				logger.debug("<Blockchain> %s is processed. TxReceipts: %,d".format(block.summaryString(short = true), result.size))
+			}
 			result
 		} else {
-			logger.info("<Blockchain> Skipping block processing: %s (Genesis? %s, BlockchainOnly? %s).".format(
-				block.summaryString(short = true), block.isGenesis, SystemProperties.CONFIG.blockchainOnly)
-			)
+			if (logger.isDebugEnabled) {
+				logger.info("<Blockchain> Skipping block processing: %s (Genesis? %s, BlockchainOnly? %s).".format(
+					block.summaryString(short = true), block.isGenesis, SystemProperties.CONFIG.blockchainOnly)
+				)
+			}
 			Seq.empty
 		}
 	}
 
+	/**
+	 * ブロックに含まれるトランザクションを自ノードで実行し、状態を反映させます。
+	 */
 	private def applyBlock(block: Block): Seq[TransactionReceipt] = {
 		logger.info("<Blockchain> Applying block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
 		val startTime = System.nanoTime
@@ -355,6 +373,7 @@ class BlockchainImpl(
 		val endTime = System.nanoTime
 
 		this.adminInfo.addBlockExecNanos(endTime - startTime)
+		logger.info("<Blockchain> Applied block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
 		receipts.toSeq
 	}
 

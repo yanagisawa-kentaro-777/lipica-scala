@@ -1,16 +1,13 @@
-test PongMessage should
-[info] ! be right
-[error]    ClassCastException: : org.lipicalabs.lipica.core.net.transport.TransportMessage cannot be cast to org.lipicalabs.lipica.core.net.transport.PongMessage  (TransportMessagesTest.scala:48)
-[error] org.lipicalabs.lipica.core.net.transport.TransportMessagesTest$$anonfun$2$$anonfun$apply$16.apply(TransportMessagesTest.scala:48)
-[error] org.lipicalabs.lipica.core.net.transport.TransportMessagesTest$$anonfun$2$$anonfun$apply$16.apply(TransportMessagesTest.scala:41)
+Validation のルールが、BlockchainImpl と Rule に散在しているのは良くない。
+トランザクション開始までの流れは？
+Web API Serverを入れる。
+git flowを入れる。
+
 
 Kademliaのソートを学ぶ。
 seed = 1451268255658L で 5000件時にエラー。
 
-
 とにかく yellow paper を熟読すること。
-
-Validation のルールが、BlockchainImpl と Rule に散在しているのは良くない。
 
 ethashを学ぶと、mixhashがわかる。
 
@@ -22,8 +19,6 @@ refactorする。（init() や start() の整備。future化。）
 logging、refactor、comment。（不具合追跡用）
 
 自分どうしで通信し、トランザクションを実行する。
-Web API Serverを入れる。
-git flowを入れる。
 
 ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 
