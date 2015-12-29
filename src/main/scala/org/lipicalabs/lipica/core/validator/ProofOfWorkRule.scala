@@ -19,7 +19,13 @@ class ProofOfWorkRule extends BlockHeaderRule {
 		val proof = header.calculateProofOfWorkValue
 		val boundary = header.getProofOfWorkBoundary
 
-		(proof compareTo boundary) <= 0
+		if ((proof compareTo boundary) <= 0) {
+			true
+		} else {
+			println("Bad PoW. %s < %s".format(boundary, proof))//TODO 20151229 DEBUG
+			this.errors.append("Bad PoW. %s < %s".format(boundary, proof))
+			false
+		}
 	}
 
 }

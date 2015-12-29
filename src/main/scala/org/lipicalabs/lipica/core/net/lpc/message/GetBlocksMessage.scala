@@ -5,6 +5,8 @@ import org.lipicalabs.lipica.core.net.message.ParsedMessage
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 
 /**
+ * ダイジェスト値に対応したブロックを要求するメッセージです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/09 21:00
  * YANAGISAWA, Kentaro

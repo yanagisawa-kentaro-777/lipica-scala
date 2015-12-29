@@ -185,9 +185,9 @@ class BlockHeader {
 			append("stateRoot=").append(this.stateRoot.toHexString).append(suffix).
 			append("txTrieHash=").append(this.txTrieRoot.toHexString).append(suffix).
 			append("receiptsTrieHash=").append(this.receiptTrieRoot.toHexString).append(suffix).
-			append("difficulty=").append(this.difficulty.toHexString).append(suffix).
-			append("blockNumber=").append(this.blockNumber.toHexString).append(suffix).
-			append("manaLimit=").append(this.manaLimit).append(suffix).
+			append("difficulty=").append(this.difficulty.toPositiveBigInt).append(suffix).
+			append("blockNumber=").append(this.blockNumber).append(suffix).
+			append("manaLimit=").append(this.manaLimit.toPositiveBigInt).append(suffix).
 			append("manaUsed=").append(this.manaUsed).append(suffix).
 			append("timestamp=").append(this.timestamp).append(suffix).
 			append("extraData=").append(this.extraData.toHexString).append(suffix).

@@ -21,6 +21,7 @@ class Lpc0 extends LpcHandler(V0) {
 	
 
 	override protected def processBlockHashes(received: Seq[ImmutableBytes]): Unit = {
+		//println("<Lpc0> BlockHashes received: Size=%,d".format(received.size))//20151229 DEBUG
 		if (received.isEmpty) {
 			return
 		}
@@ -31,11 +32,12 @@ class Lpc0 extends LpcHandler(V0) {
 		this.syncQueue.addHashesLast(received)
 
 		received.find(_ == this.lastHashToAsk).foreach {
-			each => {
+			found => {
 				changeState(DoneHashRetrieving)
 				if (logger.isTraceEnabled) {
 					logger.trace("<Lpc0> Peer %s: got terminal hash: %s".format(this.channel.peerIdShort, this.lastHashToAsk))
 				}
+				println("<Lpc0> Found terminal hash.")//TODO 20151229 DEBUG
 				return
 			}
 		}
@@ -47,6 +49,7 @@ class Lpc0 extends LpcHandler(V0) {
 		if (logger.isTraceEnabled) {
 			logger.trace("<Lpc0> Peer %s: send GetBlockHashesByNumber: BlockNumber=%,d, MashHashesAsk=%,d".format(this.channel.peerIdShort, blockNumber, maxHashesAsk))
 		}
+		//println("<Lpc0> Requesting hashes by number %,d (%,d hashes)".format(blockNumber, maxHashesAsk))//20151229 DEBUG
 		sendMessage(GetBlockHashesByNumberMessage(blockNumber, maxHashesAsk))
 		this.lastAskedNumber = blockNumber
 	}
@@ -92,6 +95,7 @@ class Lpc0 extends LpcHandler(V0) {
 					}
 				}.getOrElse(1L max (this.lastAskedNumber - ForkCoverBatchSize))
 			} else {
+				//いまGenesisしか持っていない。
 				this.commonAncestorFound = true
 				1L
 			}

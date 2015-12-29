@@ -135,15 +135,15 @@ trait TransactionLike {
 	}
 
 	override final def toString: String = {
-		"Tx [Hash=%s, Nonce=%s, ManaPrice=%s, ManaLimit=%s, Sender=%s, Receiver=%s, Value=%,d (%s), Data=%s, Signature=%s]".format(
-			this.hash, this.nonce, this.manaPrice, this.manaLimit,
-			this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.value, this.data, this.signatureOption.map(sig => "V(%d) R(%d) S(%d)".format(sig.v, sig.r, sig.s)).getOrElse("")
+		"Tx [Hash=%s; Nonce=%,d; ManaPrice=%,d; ManaLimit=%,d; Sender=%s; Receiver=%s; Value=%,d; Data=%s; Signature=%s]".format(
+			this.hash, this.nonce.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.manaLimit.toPositiveBigInt,
+			this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.data, this.signatureOption.map(sig => "V(%d) R(%d) S(%d)".format(sig.v, sig.r, sig.s)).getOrElse("")
 		)
 	}
 
 	def summaryString: String = {
-		"Tx [Hash=%s, Nonce=%s, Sender=%s, Receiver=%s, Value=%s, Data=%s]".format(
-			this.hash.toShortString, this.nonce, this.senderAddress, this.receiverAddress, this.value, this.data
+		"Tx [Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%,d; Data=%s]".format(
+			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.data
 		)
 	}
 

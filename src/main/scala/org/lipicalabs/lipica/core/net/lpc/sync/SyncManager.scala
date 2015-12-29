@@ -129,7 +129,7 @@ class SyncManager {
 		if (LargeGapSize <= gap) {
 			changeState(SyncStateName.HashRetrieving)
 		} else {
-			logger.info("<Syncmanager> Forcing parent downloading for %,d".format(blockWrapper.blockNumber))
+			logger.info("<SyncManager> Forcing parent downloading for %,d".format(blockWrapper.blockNumber))
 			this.queue.addHash(blockWrapper.parentHash)
 		}
 	}
@@ -154,7 +154,8 @@ class SyncManager {
 		this.pool.getByNodeId(nodeId).foreach {
 			peer => {
 				logger.info("<SyncManager> Peer %s: Invalid block received. Ban it.".format(peer.peerIdShort))
-				this.pool.ban(peer)
+				//TODO 20151229 DEBUG
+				//this.pool.ban(peer)
 			}
 		}
 	}

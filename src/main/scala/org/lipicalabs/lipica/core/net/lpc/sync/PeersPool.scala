@@ -120,6 +120,7 @@ class PeersPool {
 
 
 	def ban(peer: Channel): Unit = {
+		println("BAN!")//TODO 20151229 DEBUG
 		peer.changeSyncState(SyncStateName.Idle)
 		this.activePeers.synchronized {
 			if (this.activePeers.contains(peer.nodeId)) {
