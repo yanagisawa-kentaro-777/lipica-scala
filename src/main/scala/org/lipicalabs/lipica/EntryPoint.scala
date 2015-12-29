@@ -30,7 +30,7 @@ object EntryPoint {
 //			}
 //		})
 
-		lipica.startPeerDiscovery()
+		//lipica.startPeerDiscovery()
 
 		val config = SystemProperties.CONFIG
 		if (config.restApiEnabled) {
