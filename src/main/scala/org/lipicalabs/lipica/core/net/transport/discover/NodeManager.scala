@@ -159,6 +159,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 		val m = event.message
 		val sender = event.address
 		val n = new Node(m.nodeId, sender.getHostName, sender.getPort)
+
 		if (this.inboundOnlyFromKnownNodes && !hasNodeHandler(n)) {
 			logger.debug("<NodeManager> Inbound packet from unknown peer. Rejected.")
 			return

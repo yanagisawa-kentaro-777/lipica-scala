@@ -33,24 +33,27 @@ class TransportMessage {
 	private var _data: ImmutableBytes = null
 	def data: ImmutableBytes = this._data
 
-	def key: Either[Exception, ECKey] = {
-		val r = this.signature.copyOfRange(0, 32)
-		val s = this.signature.copyOfRange(32, 64)
-		val v: Byte = this.signature(64) match {
-			case 0 => 27
-			case 1 => 28
-			case b => b
-		}
-		val generatedSignature = ECKey.ECDSASignature.fromComponents(r.toByteArray, s.toByteArray, v)
-		val messageHash = DigestUtils.digest256(util.Arrays.copyOfRange(this._wire, 97, this._wire.length - 97))
-
+	def key: Either[Throwable, ECKey] = {
 		try {
+			val r = this.signature.copyOfRange(0, 32)
+			val s = this.signature.copyOfRange(32, 64)
+			val v: Byte = this.signature(64) match {
+				case 0 => 27
+				case 1 => 28
+				case b => b
+			}
+			val generatedSignature = ECKey.ECDSASignature.fromComponents(r.toByteArray, s.toByteArray, v)
+			val messageHash = DigestUtils.digest256(util.Arrays.copyOfRange(this._wire, 97, this._wire.length - 97))
+
 			//署名から公開鍵を生成して返す。
 			Right(ECKey.signatureToKey(messageHash, generatedSignature.toBase64))
 		} catch {
 			case e: SignatureException =>
 				logger.warn("<TransportMessage> Signature exception.", e)
 				Left(e)
+			case any: Throwable =>
+				logger.warn("<TransportMessage> Exception caught: %s".format(any.getClass.getSimpleName), any)
+				Left(any)
 		}
 	}
 

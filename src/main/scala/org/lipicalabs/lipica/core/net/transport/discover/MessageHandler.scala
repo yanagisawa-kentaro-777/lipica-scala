@@ -21,7 +21,6 @@ class MessageHandler(private val channel: NioDatagramChannel, private val nodeMa
 	}
 
 	override def channelRead0(ctx: ChannelHandlerContext, event: DiscoveryEvent): Unit = {
-		println("message handler")//TODO
 		this.nodeManager.handleInbound(event)
 	}
 

@@ -15,11 +15,10 @@ import org.lipicalabs.lipica.core.net.transport.TransportMessage
 class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 
 	override def decode(ctx: ChannelHandlerContext, packet: DatagramPacket, out: util.List[AnyRef]): Unit = {
-		println("packet decoder")//TODO
 		val buf = packet.content
 		val encoded = new Array[Byte](buf.readableBytes)
 		buf.readBytes(encoded)
-		val message = TransportMessage.decode(encoded)
+		val message: TransportMessage = TransportMessage.decode(encoded)
 		val event = new DiscoveryEvent(message, packet.sender)
 		out.add(event)
 	}
