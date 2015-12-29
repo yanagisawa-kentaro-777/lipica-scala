@@ -11,8 +11,7 @@ class ManaValueRule extends BlockHeaderRule {
 	override def validate(header: BlockHeader): Boolean = {
 		errors.clear()
 		if (header.manaLimit.toPositiveBigInt < BigInt(header.manaUsed)) {
-			println("ManaUsed %,d < %,d".format(header.manaLimit.toPositiveBigInt, header.manaUsed))//TODO 20151229 DEBUG
-			errors.append("ManaUsed %,d < %,d".format(header.manaLimit.toPositiveBigInt, header.manaUsed))
+			errors.append("[Block %,d] ManaUsed %,d < %,d".format(header.blockNumber, header.manaLimit.toPositiveBigInt, header.manaUsed))
 			false
 		} else {
 			true

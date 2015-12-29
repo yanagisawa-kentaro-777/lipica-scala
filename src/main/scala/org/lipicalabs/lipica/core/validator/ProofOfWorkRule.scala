@@ -22,8 +22,7 @@ class ProofOfWorkRule extends BlockHeaderRule {
 		if ((proof compareTo boundary) <= 0) {
 			true
 		} else {
-			println("Bad PoW. %s < %s".format(boundary, proof))//TODO 20151229 DEBUG
-			this.errors.append("Bad PoW. %s < %s".format(boundary, proof))
+			this.errors.append("[Block %,d] Bad PoW. %s < %s".format(header.blockNumber, boundary, proof))
 			false
 		}
 	}

@@ -35,7 +35,9 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	private val nodeHandlerMap: mutable.Map[String, NodeHandler] = new mutable.HashMap[String, NodeHandler]
 
 	val homeNode = this.table.node
-	private var bootNodes: Seq[Node] = Seq.empty
+	private var _seedNodes: Seq[Node] = Seq.empty
+	def seedNodes: Seq[Node] = this._seedNodes
+	def seedNodes_=(v: Seq[Node]): Unit = this._seedNodes = v
 
 	private val inboundOnlyFromKnownNodes: Boolean = true
 
@@ -46,10 +48,6 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	private var _db: DB = null
 	private var _nodeStatsDB: HTreeMap[Node, NodeStatistics.Persistent] = null
 	private var _isInitDone = false
-
-	def setBootNodes(aBootNodes: Seq[Node]): Unit = {
-		this.bootNodes = aBootNodes
-	}
 
 	def channelActivated(): Unit = {
 		if (this._isInitDone) {
@@ -71,7 +69,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 				}
 			}, DbCommitRate, DbCommitRate, TimeUnit.MILLISECONDS)
 		}
-		for (node <- this.bootNodes) {
+		for (node <- this.seedNodes) {
 			getNodeHandler(node)
 		}
 		for (node <- SystemProperties.CONFIG.activePeers) {

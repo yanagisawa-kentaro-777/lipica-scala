@@ -77,11 +77,14 @@ class SyncQueue {
 		blocks.find(each => !isValid(each.blockHeader)).foreach {
 			found => {
 				if (logger.isDebugEnabled) {
-					logger.debug("<SyncQueue> Invalid block: %s".format(found.encode))
+					logger.debug("<SyncQueue> Invalid block: %s".format(found.toString))
 				}
 				syncManager.reportInvalidBlock(nodeId)
 				return
 			}
+		}
+		if (logger.isDebugEnabled) {
+			logger.debug("<SyncQueue> Adding %,d blocks from [%,d  %s]".format(blocks.size, blocks.head.blockNumber, blocks.head.hash))
 		}
 		val wrappers = blocks.map(each => BlockWrapper(each, nodeId))
 		this.blockQueue.addAll(wrappers)

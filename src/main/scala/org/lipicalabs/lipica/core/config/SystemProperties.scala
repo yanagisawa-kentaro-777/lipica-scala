@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.config
 
 import java.io.InputStream
-import java.net.URI
+import java.net.{Socket, URI}
 import java.nio.file.{Paths, Path}
 import java.util.Properties
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
@@ -200,8 +200,34 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 		}
 	}
 
-
-	override def bindAddress: String = this.config.getString("node.bind.address")
+	private val bindAddressRef: AtomicReference[String] = new AtomicReference[String](null)
+	override def bindAddress: String = {
+		val result = this.bindAddressRef.get
+		if (!isNullOrEmpty(result)) {
+			result
+		} else {
+			this.synchronized {
+				val key = "node.bind.address"
+				val candidate =
+					if (this.config.hasPath(key)) {
+						//優先候補：直接設定。
+						this.config.getString(key)
+					} else {
+						//次善候補：外部サービスに訊いてみる。
+						val socket = new Socket("www.google.com", 80)
+						val a = socket.getLocalAddress.getHostAddress
+						if (!isNullOrEmpty(a)) {
+							a
+						} else {
+							"0.0.0.0"
+						}
+					}
+				this.bindAddressRef.set(candidate)
+				logger.info("<SystemProperties> Bind address of this node is set to: %s".format(candidate))
+				candidate
+			}
+		}
+	}
 	override def bindPort: Int = this.config.getInt("node.bind.port")
 
 	override def coinbaseSecret: String = this.config.getString("coinbase.secret")

@@ -59,7 +59,7 @@ class DiscoveryChannel {
 			this.shhHandler.messageQueue = this.messageQueue
 			this.bzzHandler.messageQueue = this.messageQueue
 
-			val codec = new MessageCodec
+			//val codec = new MessageCodec
 
 			val initializer = new LipicaChannelInitializer(remoteId)
 			initializer.peerDiscoveryMode = true

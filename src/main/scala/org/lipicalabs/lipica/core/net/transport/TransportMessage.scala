@@ -78,6 +78,9 @@ object TransportMessage {
 	private val logger = LoggerFactory.getLogger("net")
 
 	def encode[T <: TransportMessage](messageType: Array[Byte], data: ImmutableBytes, privateKey: ECKey): T = {
+		if (logger.isDebugEnabled) {
+			logger.debug("<TransportMessage> Encoding: %d".format(messageType.head))
+		}
 		//ダイジェスト値を計算する。
 		val payload = new Array[Byte](messageType.length + data.length)
 		payload(0) = messageType(0)
@@ -112,6 +115,11 @@ object TransportMessage {
 		val mdc = util.Arrays.copyOfRange(wire, 0, 32)
 		val signature = util.Arrays.copyOfRange(wire, 32, 32 + 65)
 		val messageType = Array[Byte](wire(97))
+
+		if (logger.isDebugEnabled) {
+			logger.debug("<TransportMessage> Decoding: %d".format(messageType.head))
+		}
+
 		val data = util.Arrays.copyOfRange(wire, 98, wire.length)
 
 		val mdcCheck = DigestUtils.digest256(util.Arrays.copyOfRange(wire, 32, wire.length))

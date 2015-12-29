@@ -29,7 +29,9 @@ class DiscoverTask(val nodeManager: NodeManager) extends Runnable {
 				logger.info("<DiscoverTask> %,d nodes found.".format(this.nodeManager.table.getNodeCount))
 				return
 			}
+			//val total = this.nodeManager.table.getNodeCount
 			val closest = this.nodeManager.table.getClosestNodes(nodeId)
+
 			val tried: mutable.Buffer[Node] = new ArrayBuffer[Node]
 
 			val brk = new Breaks

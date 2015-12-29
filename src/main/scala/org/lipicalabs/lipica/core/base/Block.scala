@@ -202,7 +202,7 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 
 	override def toString: String = {
 		val result = new StringBuilder
-		result.append(this.encode.toHexString).append("\n")
+		result.append("Encoded=[").append(this.encode.toHexString).append("]\n")
 		result.append("BlockData[ ")
 		result.append("hash=").append(this.hash.toHexString).append("\n")
 		result.append(this.blockHeader.toString)

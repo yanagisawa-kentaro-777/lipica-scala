@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.config
 
+import java.net.URI
+
 import org.lipicalabs.lipica.core.base.Wallet
 import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, HashMapDB, LevelDbDataSource}
 import org.lipicalabs.lipica.core.db._
@@ -9,7 +11,9 @@ import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManage
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.server.UDPListener
+import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator._
 import org.mapdb.{Serializer, DBMaker}
 
@@ -71,7 +75,11 @@ object ComponentFactory {
 
 	def createPeerDiscovery: PeerDiscovery = new PeerDiscovery
 
-	def createNodeManager: NodeManager = NodeManager.create
+	def createNodeManager: NodeManager = {
+		val result = NodeManager.create
+		result.seedNodes = SystemProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => new Node(ImmutableBytes.parseHexString(uri.getUserInfo), uri.getHost, uri.getPort))
+		result
+	}
 
 	def createSyncManager: SyncManager = new SyncManager
 

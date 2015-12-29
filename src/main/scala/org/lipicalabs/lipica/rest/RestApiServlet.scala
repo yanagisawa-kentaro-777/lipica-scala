@@ -18,7 +18,7 @@ class RestApiServlet extends ScalatraServlet {
 		val response = "NodeId=%s\nBestBlock=[%,d %s]\nKnownPeers=%,d".format(
 			SystemProperties.CONFIG.nodeId,
 			bestBlock.blockNumber, bestBlock.hash.toShortString,
-			worldManager.peerDiscovery.peers.size
+			worldManager.peersPool.activeCount
 		)
 		status = 200
 		Ok(response)

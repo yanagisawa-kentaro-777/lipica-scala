@@ -238,7 +238,6 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			if (loggerSync.isInfoEnabled) {
 				loggerSync.info("<LpcHandler> Peer %s: no more hashes in the queue. Idle.".format(this.channel.peerIdShort))
 			}
-			println("<Lpc0> Hashes empty!")//TODO 20151229 DEBUG
 			changeState(SyncStateName.Idle)
 			return false
 		}
@@ -246,10 +245,8 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		hashes.foreach(each => this.sentHashes.append(each))
 
 		if (loggerSync.isTraceEnabled) {
-			loggerSync.trace("<LpcHandler> Peer %s: sending GetBlocks count=%,d".format(this.channel.peerIdShort, this.sentHashes.size))
+			loggerSync.trace("<LpcHandler> Peer %s: Requesting blocks. Count=%,d".format(this.channel.peerIdShort, this.sentHashes.size))
 		}
-
-		println("<Lpc0> Requesting blocks (Size=%,d).".format(hashes.size))//TODO 20151229 DEBUG
 		val shuffled = scala.util.Random.shuffle(hashes.toSeq)
 		sendMessage(GetBlocksMessage(shuffled))
 		true
@@ -262,8 +259,6 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 
 	protected def processBlocks(message: BlocksMessage): Unit = {
-		//println("<Lpc0> Received blocks (Size=%,d).".format(message.blocks.size))//20151229 DEBUG
-
 		if (loggerSync.isTraceEnabled) {
 			loggerSync.trace("<LpcHandler> Peer %s: blocks. Size=%,d".format(this.channel.peerIdShort, message.blocks.size))
 		}
@@ -281,10 +276,10 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 				}
 			}
 			this.syncQueue.addBlocks(message.blocks, this.channel.nodeId)
-			println("<Lpc0> %,d blocks from %,d added. SyncQueueSize = %,d. State: %s".format(message.blocks.size, message.blocks.head.blockNumber, this.syncQueue.size, this.syncState))//TODO 20151229 DEBUG
+			loggerSync.info("<LpcHandler> %,d blocks from [%,d] added to sync queue. (QueueSize=%,d). State: %s".format(message.blocks.size, message.blocks.head.blockNumber, this.syncQueue.size, this.syncState))
 			this.syncQueue.logHashQueueSize()
 		} else {
-			println("<Lpc0> Block LACK!!! SyncQueueSize = %,d.".format(this.syncQueue.size))//TODO 20151229 DEBUG
+			loggerSync.info("<LpcHandler> Block LACK!!! SyncQueueSize = %,d.".format(this.syncQueue.size))
 			changeState(SyncStateName.BlocksLack)
 		}
 		if (this.syncState == SyncStateName.BlockRetrieving) {
@@ -324,9 +319,8 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		if (this.syncState == aNewState) {
 			return
 		}
-		println("<Lpc0> Changing State from %s -> %s.".format(this.syncState, aNewState))//TODO 20151229 DEBUG
-		if (loggerSync.isTraceEnabled) {
-			loggerSync.trace("<LpcHandler> Peer %s: changing state from %s to %s".format(this.channel.peerIdShort, this.syncState, aNewState))
+		if (loggerSync.isDebugEnabled) {
+			loggerSync.debug("<LpcHandler> Peer %s: changing state from %s to %s".format(this.channel.peerIdShort, this.syncState, aNewState))
 		}
 		var newState = aNewState
 		if (newState == SyncStateName.HashRetrieving) {

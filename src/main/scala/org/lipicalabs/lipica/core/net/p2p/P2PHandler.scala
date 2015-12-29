@@ -81,7 +81,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 				this.messageQueue.receiveMessage(message)
 				processPeers(ctx, message.asInstanceOf[PeersMessage])
 
-				if (this.peerDiscoveryMode || !handshakeHelloMessage.capabilities.contains(Capability.LPC)) {
+				if (this.peerDiscoveryMode || !handshakeHelloMessage.capabilities.map(_.name).contains(Capability.LPC)) {
 					disconnect(ReasonCode.Requested)
 					killTimers()
 					ctx.close().sync()
@@ -172,7 +172,9 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 	private def startTimers(): Unit = {
 		this.pingTask = pingTimer.scheduleAtFixedRate(
 			new Runnable {
-				override def run() = messageQueue.sendMessage(ImmutableMessages.PingMessage)
+				override def run(): Unit = {
+					messageQueue.sendMessage(ImmutableMessages.PingMessage)
+				}
 			},
 			2, 5, TimeUnit.SECONDS
 		)

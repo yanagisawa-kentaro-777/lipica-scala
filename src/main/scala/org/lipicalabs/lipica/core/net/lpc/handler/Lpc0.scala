@@ -21,7 +21,9 @@ class Lpc0 extends LpcHandler(V0) {
 	
 
 	override protected def processBlockHashes(received: Seq[ImmutableBytes]): Unit = {
-		//println("<Lpc0> BlockHashes received: Size=%,d".format(received.size))//20151229 DEBUG
+		if (logger.isTraceEnabled) {
+			logger.trace("<Lpc0> BlockHashes received: Size=%,d".format(received.size))
+		}
 		if (received.isEmpty) {
 			return
 		}
@@ -37,7 +39,6 @@ class Lpc0 extends LpcHandler(V0) {
 				if (logger.isTraceEnabled) {
 					logger.trace("<Lpc0> Peer %s: got terminal hash: %s".format(this.channel.peerIdShort, this.lastHashToAsk))
 				}
-				println("<Lpc0> Found terminal hash.")//TODO 20151229 DEBUG
 				return
 			}
 		}
@@ -49,7 +50,6 @@ class Lpc0 extends LpcHandler(V0) {
 		if (logger.isTraceEnabled) {
 			logger.trace("<Lpc0> Peer %s: send GetBlockHashesByNumber: BlockNumber=%,d, MashHashesAsk=%,d".format(this.channel.peerIdShort, blockNumber, maxHashesAsk))
 		}
-		//println("<Lpc0> Requesting hashes by number %,d (%,d hashes)".format(blockNumber, maxHashesAsk))//20151229 DEBUG
 		sendMessage(GetBlockHashesByNumberMessage(blockNumber, maxHashesAsk))
 		this.lastAskedNumber = blockNumber
 	}

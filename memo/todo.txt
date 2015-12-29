@@ -1,10 +1,11 @@
-46,217以下、しばしば TxTrieRootに齟齬あり。TransactionRoot unmatch @ Block はまずい。要修正。
-以下の検算をする。
-    2015-12-28 11:32:02.114 WARN  <Block> Tx root unmatch at Block 46,217! TxSize=1  Given: ce660ce4ced8c10a3b882771cb3309394be45dc129ccfa4b6a643a8c50d06751 != Calculated: 8996156e83a9e759229a21cd54c0e3d6c365d92ac68dec32c470d863df766d84 Txs=[f86480850f363b608c82520894c8ebccc5f5689fa8659d83713341e5ad1934944800801ba0618c4bc78adf969c14fd0e0f33a82fcce7d0b3aebde2ab4ffd9c63afb53dd04ca02012a4675e9c5eab65e5f71ffb4749305fb1201fe6ff0bc0413aee0145a96000] [LpcClientWorker-0] Block.scala:280
+本当におかしなブロックを渡されているらしい。
+接続対象のノードが３個より増えない。
+FindNodeを送信できておらず、それゆえにNeighboursを受信できていない。
+なんでUDPを受信できなくなった？
+
 
 
 BlockchainImpl の連結失敗時のエラー処理が甘い。
-要求対象のブロックが噛み合わないことがある？（46,192で止まった。）
 
 NewBlockとは何か？
 もらうブロックはどうやって決まる？　場合によってはもう少し頻繁に flush した方がよいかも。

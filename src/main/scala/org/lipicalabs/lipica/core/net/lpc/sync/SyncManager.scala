@@ -154,8 +154,7 @@ class SyncManager {
 		this.pool.getByNodeId(nodeId).foreach {
 			peer => {
 				logger.info("<SyncManager> Peer %s: Invalid block received. Ban it.".format(peer.peerIdShort))
-				//TODO 20151229 DEBUG
-				//this.pool.ban(peer)
+				this.pool.ban(peer)
 			}
 		}
 	}
@@ -311,6 +310,9 @@ class SyncManager {
 		}
 		if (logger.isTraceEnabled) {
 			logDiscoveredNodes(newNodes)
+		}
+		if (logger.isDebugEnabled) {
+			logger.debug("<SyncManager> Filling up nodes: Lacked=%,d ; Found=%,d".format(lackSize, newNodes.size))
 		}
 		newNodes.foreach(each => this.pool.connect(each.node))
 	}
