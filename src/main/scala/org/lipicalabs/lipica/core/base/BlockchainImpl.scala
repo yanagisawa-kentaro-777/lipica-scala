@@ -278,15 +278,15 @@ class BlockchainImpl(
 
 		val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
-			logger.warn("<Blockchain> Block's given receipt hash doesn't match: %s != %s. Block is %s".format(block.receiptsRoot, calculatedReceiptsHash, block.encode))
-			return
+			//TODO 厳密化が必要。
+			logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
+			//return
 		}
 		val calculatedLogBloomHash = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
 		if (block.logsBloom != calculatedLogBloomHash) {
-			logger.warn("<Blockchain> Block's given log bloom filter doesn't match: %s != %s. Block is %s".format(block.logsBloom, calculatedLogBloomHash, block.encode))
-			return
-		} else {
-			logger.info("<Blockchain> 20151228debug Block's given log bloom filter matched. Block is %s".format(block.logsBloom))
+			//TODO 厳密化が必要。
+			logger.warn("<Blockchain> LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
+			//return
 		}
 		track.commit()
 

@@ -355,7 +355,7 @@ object RBACCodec {
 
 		case class DecodedSeq(override val pos: Int, override val items: Seq[DecodedResult]) extends DecodedResult {
 			override val isSeq = true
-			override val bytes = ImmutableBytes.empty
+			override val bytes = RBACCodec.Encoder.encodeSeqOfByteArrays(items.map(_.bytes))
 		}
 
 		def decode(data: Array[Byte]): Either[Exception, DecodedResult] = {
