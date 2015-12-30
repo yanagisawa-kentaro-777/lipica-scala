@@ -23,6 +23,7 @@ class ProofOfWorkRule extends BlockHeaderRule {
 			true
 		} else {
 			this.errors.append("[Block %,d] Bad PoW. %s < %s".format(header.blockNumber, boundary, proof))
+			//println("[Block %,d] Bad PoW. %s < %s".format(header.blockNumber, boundary, proof))
 			false
 		}
 	}

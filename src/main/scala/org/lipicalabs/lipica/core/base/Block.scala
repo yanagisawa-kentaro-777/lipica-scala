@@ -275,10 +275,11 @@ object Block {
 
 		val calculatedTxTrieRoot = TxTrieRootCalculator.calculateTxTrieRoot(transactions)
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
-			//TODO 正しくはエラーとすべきである。
 			val txs = transactions.map(_.toEncodedBytes).mkString(",")
 			logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  Given: %s != Calculated: %s Txs=[%s]".format(blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, txs))
-			blockHeader.txTrieRoot = calculatedTxTrieRoot
+			//TODO RBACの仕様上、ゼロを合法的に表す方法が２通りあるため、扱いに悩みがある。
+			//println("<Block> Tx root unmatch at Block %,d! TxSize=%,d  Given: %s != Calculated: %s Txs=[%s]".format(blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, txs))
+			//blockHeader.txTrieRoot = calculatedTxTrieRoot
 		} else if (transactions.nonEmpty) {
 			if (logger.isDebugEnabled) {
 				logger.debug("<Block> Tx root matched at Block %,d. TxSize=%,d ; TxTrieRoot=%s".format(blockHeader.blockNumber, transactions.size, calculatedTxTrieRoot))

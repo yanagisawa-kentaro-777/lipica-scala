@@ -329,7 +329,7 @@ class DecodingTest extends Specification {
 				len => {
 					val bytes = generateByteArray(len)
 					val rebuilt = encodeAndRebuildByteArray(bytes)
-					val matches = bytes sameElements rebuilt.toByteArray
+					val matches = (bytes sameElements rebuilt.toByteArray) || ((bytes.length == 1) && (bytes(0) == 0) && rebuilt.isEmpty)
 					if (!matches) {
 						println("[%,d] %s != %s".format(len, Hex.encodeHexString(bytes), rebuilt.toHexString))
 					}

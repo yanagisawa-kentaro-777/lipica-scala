@@ -191,7 +191,12 @@ object RBACCodec {
 				case _ =>
 					val bytes = toBytes(value)
 					if ((bytes.length == 1) && ((bytes(0) & 0xff) < OFFSET_SHORT_ITEM)) {
-						bytes
+						if (bytes(0) == 0) {
+							//見苦しいが、特別扱いする。
+							ImmutableBytes.fromOneByte(OFFSET_SHORT_ITEM.asInstanceOf[Byte])
+						} else {
+							bytes
+						}
 					} else {
 						val firstByte = encodeLength(bytes.length, OFFSET_SHORT_ITEM)
 						firstByte ++ bytes
