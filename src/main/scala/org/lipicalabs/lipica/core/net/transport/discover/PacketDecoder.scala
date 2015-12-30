@@ -19,6 +19,9 @@ class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 		val encoded = new Array[Byte](buf.readableBytes)
 		buf.readBytes(encoded)
 		val message: TransportMessage = TransportMessage.decode(encoded)
+
+		//println("Received: %s %s from %s".format(message.messageType, ImmutableBytes(encoded), packet.sender))
+
 		val event = new DiscoveryEvent(message, packet.sender)
 		out.add(event)
 	}

@@ -1,6 +1,8 @@
 
 アウトラインログを作る。
 
+Neighboursの正しい仕様は？？
+
 Active Peerについて考えなおす。
 
 BlockchainImpl の連結失敗時のエラー処理が甘い。

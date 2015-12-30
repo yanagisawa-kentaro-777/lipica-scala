@@ -70,7 +70,13 @@ object Node {
 
 	def decode(decodedResult: DecodedResult): Node = {
 		val items = decodedResult.items
-		val host = items.head.asString
+		val host =
+			if (items.head.bytes.length == 4) {
+				val bytes = items.head.bytes
+				"%s.%s.%s.%s".format(bytes(0) & 0xFF, bytes(1) & 0xFF, bytes(2) & 0xFF, bytes(3) & 0xFF)
+			} else {
+				items.head.asString
+			}
 		val port = items(1).asInt
 		val id = items.last.bytes
 		new Node(id, host, port)

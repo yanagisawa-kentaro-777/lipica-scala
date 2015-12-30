@@ -26,6 +26,7 @@ class MessageHandler(private val channel: NioDatagramChannel, private val nodeMa
 
 	def accept(event: DiscoveryEvent): Unit = {
 		val address = event.address
+		//println("Sending: %s to %s".format(event.message.messageType, address))
 		sendPacket(event.message.packet, address)
 	}
 
