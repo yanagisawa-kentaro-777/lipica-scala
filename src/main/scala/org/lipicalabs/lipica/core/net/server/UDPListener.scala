@@ -52,29 +52,32 @@ class UDPListener {
 
 	private def bind(): Unit = {
 		val group = new NioEventLoopGroup(1)
-		try {
-			val nodeManager = WorldManager.instance.nodeManager
-			val b = new Bootstrap
-			b.group(group).channel(classOf[NioDatagramChannel]).handler(new ChannelInitializer[NioDatagramChannel] {
-				override def initChannel(ch: NioDatagramChannel): Unit = {
-					ch.pipeline.addLast(new PacketDecoder)
-					val messageHandler = new MessageHandler(ch, nodeManager)
-					nodeManager.setMessageSender(messageHandler)
-					ch.pipeline.addLast(messageHandler)
-				}
-			})
-			val channel = b.bind(this.address, this.port).sync().channel()
-			logger.info("<UDPListener> Bound on address [%s]:%d".format(this.address, this.port))
+		val nodeManager = WorldManager.instance.nodeManager
+		while (true) {
+			try {
+				val b = new Bootstrap
+				b.group(group).channel(classOf[NioDatagramChannel]).handler(new ChannelInitializer[NioDatagramChannel] {
+					override def initChannel(ch: NioDatagramChannel): Unit = {
+						ch.pipeline.addLast(new PacketDecoder)
+						val messageHandler = new MessageHandler(ch, nodeManager)
+						nodeManager.setMessageSender(messageHandler)
+						ch.pipeline.addLast(messageHandler)
+					}
+				})
+				val channel = b.bind(this.address, this.port).sync().channel()
+				logger.info("<UDPListener> Bound on address [%s]:%d".format(this.address, this.port))
 
-			val discoverExecutor = new DiscoveryExecutor(nodeManager)
-			discoverExecutor.discover()
+				val discoverExecutor = new DiscoveryExecutor(nodeManager)
+				discoverExecutor.discover()
 
-			//このチャネルが切断されるまで待つ。
-			channel.closeFuture().sync()
-			logger.info("<UDPListener> Stopped binding on [%s]:%d".format(this.address, this.port))
-			Thread.sleep(5000L)
-		} finally {
-			group.shutdownGracefully()
+				//このチャネルが切断されるまで待つ。
+				channel.closeFuture().sync()
+
+				logger.info("<UDPListener> Stopped binding on [%s]:%d".format(this.address, this.port))
+				Thread.sleep(5000L)
+			} finally {
+				group.shutdownGracefully()
+			}
 		}
 	}
 

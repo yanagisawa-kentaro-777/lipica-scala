@@ -16,13 +16,10 @@ class DistanceComparator(private val targetId: ImmutableBytes) extends Comparato
 		 val d2 = NodeEntry.distance(this.targetId, o2.node.id)
 
 		 if (d2 < d1) {
-			 println(o2.node.id + " < " + o1.node.id)//TODO
 			 1
 		 } else if (d1 < d2) {
-			 println(o1.node.id + " < " + o2.node.id) //TODO
 			 -1
 		 } else {
-			 println(o1.node.id + " == " + o2.node.id) //TODO
 			 0
 		 }
 	 }

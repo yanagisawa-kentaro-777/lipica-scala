@@ -43,7 +43,7 @@ class TransportMessage {
 				case b => b
 			}
 			val generatedSignature = ECKey.ECDSASignature.fromComponents(r.toByteArray, s.toByteArray, v)
-			val messageHash = DigestUtils.digest256(util.Arrays.copyOfRange(this._wire, 97, this._wire.length - 97))
+			val messageHash = DigestUtils.digest256(util.Arrays.copyOfRange(this._wire, 97, this._wire.length))
 
 			//署名から公開鍵を生成して返す。
 			Right(ECKey.signatureToKey(messageHash, generatedSignature.toBase64))
@@ -92,7 +92,7 @@ object TransportMessage {
 
 		//署名を生成する。
 		val signature = privateKey.sign(forSig)
-		signature.v = 27
+		signature.v = (signature.v - 27).toByte
 		val signatureBytes = BigIntegers.asUnsignedByteArray(signature.r) ++ BigIntegers.asUnsignedByteArray(signature.s) ++ Array[Byte](signature.v)
 
 		//MDCを計算する。
