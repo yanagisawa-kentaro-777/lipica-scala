@@ -82,7 +82,7 @@ class TransactionExecutor(
 			val txManaLimit = this.tx.manaLimit.toPositiveBigInt
 			val txManaCost = txManaPrice * txManaLimit
 			this.track.addBalance(tx.senderAddress, -txManaCost)
-			logger.info("<TxExecutor> Paying: TxManaCost: %s, ManaPrice: %s, ManaLimit: %s".format(txManaCost, txManaPrice, txManaLimit))
+			logger.info("<TxExecutor> Withdraw in advance: TxManaCost: %,d, ManaPrice: %,d, ManaLimit: %,d".format(txManaCost, txManaPrice, txManaLimit))
 		}
 		if (this.tx.isContractCreation) {
 			create()
@@ -207,7 +207,9 @@ class TransactionExecutor(
 		//払い戻す。
 		val payback = summary.calculateLeftOver + summary.calculateRefund
 		this.track.addBalance(this.tx.senderAddress, payback)
-		logger.info("<TxExecutor> Paying total refund to sender: %s, refund val: %,d. (EndMana=%,d)".format(this.tx.senderAddress, payback, this.endMana))
+		logger.info("<TxExecutor> Paying total refund to sender: %s. RefundVal=%,d. (ManaLeftOver=%,d. ManaRefund=%,d. EndMana=%,d)".format(
+			this.tx.senderAddress, payback, summary.manaLeftOver, summary.manaRefund, this.endMana)
+		)
 		//採掘報酬。
 		this.track.addBalance(this.coinbase, summary.calculateFee)
 		logger.info("<TxExecutor> Paying fee to miner: %s, fee: %s".format(this.coinbase, summary.calculateFee))

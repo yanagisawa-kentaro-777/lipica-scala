@@ -142,8 +142,8 @@ trait TransactionLike {
 	}
 
 	def summaryString: String = {
-		"Tx [Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%,d; Data=%s]".format(
-			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.data
+		"Tx [Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%,d; ManaLimit=%,d; ManaPrice=%,d; Data=%s]".format(
+			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.manaLimit.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.data
 		)
 	}
 

@@ -320,8 +320,16 @@ class BlockchainImpl(
 			this.wallet.addTransactions(block.transactions)
 			val result = applyBlock(block)
 			this.wallet.processBlock(block)
-			if (logger.isDebugEnabled) {
-				logger.debug("<Blockchain> %s is processed. TxReceipts: %,d".format(block.summaryString(short = true), result.size))
+
+			logger.info("<Blockchain> Block[%,d] processed. Summary: [%s]. TxSize=%,d; Chain=[TD=%,d; StateRoot=%s]".format(
+				block.blockNumber, block.summaryString(short = true), result.size, this.totalDifficulty, this.repository.rootHash)
+			)
+			for (i <- result.indices) {
+				val receipt = result(i)
+				val tx = receipt.transaction
+				logger.info("<Blockchain> Block[%,d] processed. Tx[%,d]=%s; AccumManaUsed=%,d".format(
+					block.blockNumber, i, tx.summaryString, receipt.cumulativeMana.toPositiveBigInt
+				))
 			}
 			result
 		} else {
@@ -337,7 +345,7 @@ class BlockchainImpl(
 	/**
 	 * ブロックに含まれるトランザクションを自ノードで実行し、状態を反映させます。
 	 */
-	private def applyBlock(block: Block): Seq[TransactionReceipt] = {
+	private def applyBlock(block: Block): IndexedSeq[TransactionReceipt] = {
 		logger.info("<Blockchain> Applying block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
 		val startTime = System.nanoTime
 
@@ -374,7 +382,7 @@ class BlockchainImpl(
 
 		this.adminInfo.addBlockExecNanos(endTime - startTime)
 		logger.info("<Blockchain> Applied block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
-		receipts.toSeq
+		receipts.toIndexedSeq
 	}
 
 	private def addReward(block: Block): Unit = {
@@ -478,7 +486,9 @@ class BlockchainImpl(
 
 	override def updateTotalDifficulty(block: Block) = {
 		this._totalDifficulty += block.difficultyAsBigInt
-		logger.info("<Blockchain> Total difficulty is updated to %,d".format(this._totalDifficulty))
+		if (logger.isDebugEnabled) {
+			logger.debug("<Blockchain> Total difficulty is updated to %,d".format(this._totalDifficulty))
+		}
 	}
 
 	override def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {

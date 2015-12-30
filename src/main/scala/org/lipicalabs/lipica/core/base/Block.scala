@@ -224,12 +224,8 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 	}
 
 	override def summaryString(short: Boolean): String = {
-		val template = "Block[BlockNumber=%d, Hash=%s, ParentHash=%s]"
-		if (short) {
-			template.format(this.blockNumber, this.hash.toShortString, this.parentHash.toShortString)
-		} else {
-			template.format(this.blockNumber, this.hash.toHexString, this.parentHash.toHexString)
-		}
+		val template = "Block[BlockNumber=%,d; Hash=%s; ParentHash=%s; Coinbase=%s; Difficulty=%,d]"
+		template.format(this.blockNumber, this.hash.toShortString, this.parentHash.toShortString, this.coinbase, this.difficultyAsBigInt)
 	}
 
 	def toFlatString: String = {
@@ -284,8 +280,8 @@ object Block {
 			//println("<Block> Tx root unmatch at Block %,d! TxSize=%,d  Given: %s != Calculated: %s Txs=[%s]".format(blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, txs))
 			//blockHeader.txTrieRoot = calculatedTxTrieRoot
 		} else if (transactions.nonEmpty) {
-			if (logger.isDebugEnabled) {
-				logger.debug("<Block> Tx root matched at Block %,d. TxSize=%,d ; TxTrieRoot=%s".format(blockHeader.blockNumber, transactions.size, calculatedTxTrieRoot))
+			if (logger.isTraceEnabled) {
+				logger.trace("<Block> Tx root matched at Block %,d. TxSize=%,d ; TxTrieRoot=%s".format(blockHeader.blockNumber, transactions.size, calculatedTxTrieRoot))
 			}
 		}
 		new PlainBlock(blockHeader, transactions, uncles)
