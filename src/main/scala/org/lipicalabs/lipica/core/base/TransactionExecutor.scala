@@ -212,7 +212,7 @@ class TransactionExecutor(
 		)
 		//採掘報酬。
 		this.track.addBalance(this.coinbase, summary.calculateFee)
-		logger.info("<TxExecutor> Paying fee to miner: %s, fee: %s".format(this.coinbase, summary.calculateFee))
+		logger.info("<TxExecutor> Paying fee to miner: %s, fee: %,d".format(this.coinbase, summary.calculateFee))
 
 		Option(this.result).foreach {
 			r => {

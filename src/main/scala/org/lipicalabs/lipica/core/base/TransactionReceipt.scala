@@ -1,6 +1,8 @@
 package org.lipicalabs.lipica.core.base
 
-import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
+import java.util.concurrent.atomic.AtomicReference
+
+import org.lipicalabs.lipica.core.utils.{UtilConsts, RBACCodec, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.LogInfo
 
 import scala.collection.mutable
@@ -24,6 +26,10 @@ class TransactionReceipt private(private var _bloomFilter: Bloom, logs: Seq[LogI
 	private var _postTxState: ImmutableBytes = ImmutableBytes.empty
 	def postTxState: ImmutableBytes = this._postTxState
 	def postTxState_=(v: ImmutableBytes): Unit = this._postTxState = v
+
+	private val manaUsedForTxRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
+	def manaUsedForTx: BigInt = this.manaUsedForTxRef.get()
+	def manaUsedForTx_=(v: BigInt): Unit = this.manaUsedForTxRef.set(v)
 
 	private var _cumulativeMana: ImmutableBytes = ImmutableBytes.empty
 	def cumulativeMana: ImmutableBytes = this._cumulativeMana

@@ -135,14 +135,14 @@ trait TransactionLike {
 	}
 
 	override final def toString: String = {
-		"Tx [Hash=%s; Nonce=%,d; ManaPrice=%,d; ManaLimit=%,d; Sender=%s; Receiver=%s; Value=%,d; Data=%s; Signature=%s]".format(
+		"Tx[Hash=%s; Nonce=%,d; ManaPrice=%,d; ManaLimit=%,d; Sender=%s; Receiver=%s; Value=%,d; Data=%s; Signature=%s]".format(
 			this.hash, this.nonce.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.manaLimit.toPositiveBigInt,
 			this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.data, this.signatureOption.map(sig => "V(%d) R(%d) S(%d)".format(sig.v, sig.r, sig.s)).getOrElse("")
 		)
 	}
 
 	def summaryString: String = {
-		"Tx [Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%,d; ManaLimit=%,d; ManaPrice=%,d; Data=%s]".format(
+		"Tx[Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%,d; ManaLimit=%,d; ManaPrice=%,d; Data=%s]".format(
 			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.manaLimit.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.data
 		)
 	}

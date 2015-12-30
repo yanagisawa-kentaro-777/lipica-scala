@@ -292,8 +292,8 @@ class BlockchainImpl(
 
 		//ブロックを保存する。
 		storeBlock(block, receipts)
-		if (logger.isDebugEnabled) {
-			logger.debug("<Blockchain> %s is stored. Total difficulty is %,d".format(block.summaryString(short = true), this.totalDifficulty))
+		if (logger.isTraceEnabled) {
+			logger.trace("<Blockchain> %s is stored. Total difficulty is %,d".format(block.summaryString(short = true), this.totalDifficulty))
 		}
 
 		if (needsFlushing(block)) {
@@ -327,8 +327,8 @@ class BlockchainImpl(
 			for (i <- result.indices) {
 				val receipt = result(i)
 				val tx = receipt.transaction
-				logger.info("<Blockchain> Block[%,d] processed. Tx[%,d]=%s; AccumManaUsed=%,d".format(
-					block.blockNumber, i, tx.summaryString, receipt.cumulativeMana.toPositiveBigInt
+				logger.info("<Blockchain> Block[%,d] processed. Tx[%,d]=%s; ManaUsed=%,d; AccumManaUsed=%,d".format(
+					block.blockNumber, i, tx.summaryString, receipt.manaUsedForTx, receipt.cumulativeMana.toPositiveBigInt
 				))
 			}
 			result
@@ -346,31 +346,36 @@ class BlockchainImpl(
 	 * ブロックに含まれるトランザクションを自ノードで実行し、状態を反映させます。
 	 */
 	private def applyBlock(block: Block): IndexedSeq[TransactionReceipt] = {
-		logger.info("<Blockchain> Applying block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
+		if (logger.isTraceEnabled) {
+			logger.trace("<Blockchain> Applying block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
+		}
+
 		val startTime = System.nanoTime
 
 		val receipts = new ArrayBuffer[TransactionReceipt]
-		var totalManaUsed = 0L
+		var cumulativeManaUsed = 0L
 		for (tx <- block.transactions) {
 			if (logger.isDebugEnabled) {
 				logger.debug("<Blockchain> Executing %s".format(tx.summaryString))
 			}
 
-			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this._programInvokeFactory, block, this.listener, totalManaUsed)
+			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this._programInvokeFactory, block, this.listener, cumulativeManaUsed)
 			executor.init()
 			executor.execute()
 			executor.go()
 			executor.finalization()
-			totalManaUsed = executor.manaUsed
+			val manaUsedForTx = executor.manaUsed
+			cumulativeManaUsed += manaUsedForTx
 
-			if (logger.isDebugEnabled) {
-				logger.debug("<Blockchain> Mana used for %s is %,d".format(tx.summaryString, totalManaUsed))
+			if (logger.isTraceEnabled) {
+				logger.trace("<Blockchain> ManaUsed=%,d for %s".format(manaUsedForTx, tx.summaryString))
 			}
 
 			this.track.commit()
-			val usedManaBytes = ImmutableBytes.asUnsignedByteArray(BigInt(totalManaUsed))
-			val receipt = TransactionReceipt(this.repository.rootHash, usedManaBytes, Bloom(), executor.logs)
+			val accumUsedManaBytes = ImmutableBytes.asUnsignedByteArray(BigInt(cumulativeManaUsed))
+			val receipt = TransactionReceipt(this.repository.rootHash, accumUsedManaBytes, Bloom(), executor.logs)
 			receipt.transaction = tx
+			receipt.manaUsedForTx = manaUsedForTx
 
 			receipts.append(receipt)
 		}
@@ -381,7 +386,9 @@ class BlockchainImpl(
 		val endTime = System.nanoTime
 
 		this.adminInfo.addBlockExecNanos(endTime - startTime)
-		logger.info("<Blockchain> Applied block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
+		if (logger.isTraceEnabled) {
+			logger.trace("<Blockchain> Applied block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
+		}
 		receipts.toIndexedSeq
 	}
 
@@ -418,8 +425,8 @@ class BlockchainImpl(
 	def getParentOf(header: BlockHeader): Option[Block] = this.blockStore.getBlockByHash(header.parentHash)
 
 	private def isValid(block: Block): Boolean = {
-		if (logger.isDebugEnabled) {
-			logger.debug("<Blockchain> Validating %s".format(block.summaryString(short = true)))
+		if (logger.isTraceEnabled) {
+			logger.trace("<Blockchain> Validating %s".format(block.summaryString(short = true)))
 		}
 
 		if (block.isGenesis) {
