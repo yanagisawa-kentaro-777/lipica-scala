@@ -16,6 +16,7 @@ import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.server.UDPListener
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
 import org.slf4j.LoggerFactory
 
 /**
@@ -57,6 +58,8 @@ class WorldManager extends Closeable {
 
 	val udpListener: UDPListener = ComponentFactory.createUDPListener
 
+	val programInvokeFactory: ProgramInvokeFactory = ComponentFactory.createProgramInvokeFactory
+
 
 	def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
 
@@ -80,6 +83,9 @@ class WorldManager extends Closeable {
 
 
 	def init(): Unit = {
+		this.blockchain.asInstanceOf[BlockchainImpl].programInvokeFactory = this.programInvokeFactory
+		this.programInvokeFactory.asInstanceOf[ProgramInvokeFactoryImpl].blockchain = this.blockchain
+
 		val coinbaseAddress = DigestUtils.digest256(SystemProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
 		this.wallet.importKey(ImmutableBytes(coinbaseAddress))
 

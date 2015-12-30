@@ -16,13 +16,14 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 
 	import ProgramInvokeFactoryImpl._
 
-	private var _blockChain: Blockchain = null
-	def blockChain_=(v: Blockchain): Unit = {
-		this._blockChain = v
+	private var _blockchain: Blockchain = null
+	def blockchain: Blockchain = this._blockchain
+	def blockchain_=(v: Blockchain): Unit = {
+		this._blockchain = v
 	}
 
 	override def createProgramInvoke(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore) = {
-		val lastBlock = this._blockChain.bestBlock
+		val lastBlock = this._blockchain.bestBlock
 
 		//受信者もしくはコントラクトのアドレス。
 		val address = if (tx.isContractCreation) tx.contractAddress.get else tx.receiverAddress

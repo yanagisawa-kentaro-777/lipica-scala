@@ -15,6 +15,7 @@ import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator._
+import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
 import org.mapdb.{Serializer, DBMaker}
 
 import scala.collection.{JavaConversions, mutable}
@@ -92,5 +93,7 @@ object ComponentFactory {
 	}
 
 	def createUDPListener: UDPListener = new UDPListener
+
+	def createProgramInvokeFactory: ProgramInvokeFactory = new ProgramInvokeFactoryImpl
 
 }
