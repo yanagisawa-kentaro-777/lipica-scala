@@ -133,6 +133,9 @@ class TransactionExecutor(
 			case None =>
 				this.track.getCode(targetAddress) match {
 					case Some(code) =>
+						if (logger.isDebugEnabled) {
+							logger.debug("<TxExecutor> Contract invocation: [%s]=[%,d bytes]".format(targetAddress, code.length))
+						}
 						val invoke = this.programInvokeFactory.createProgramInvoke(this.tx, this.currentBlock, this.cacheTrack, this.blockStore)
 						this.vm = new VM
 						this.program = new Program(code, invoke, this.tx)
@@ -161,10 +164,16 @@ class TransactionExecutor(
 			if (this.tx.isContractCreation) {
 				val returnDataManaValue = result.hReturn.length * ManaCost.CreateData
 				if (returnDataManaValue <= this.endMana) {
+					if (logger.isDebugEnabled) {
+						logger.debug("<TxExecutor> Contract creation: [%s]=[%,d Bytes]".format(this.tx.contractAddress, result.hReturn.length))
+					}
 					this.endMana -= returnDataManaValue
 					this.cacheTrack.saveCode(this.tx.contractAddress.get, result.hReturn)
 				} else {
 					//足りない。
+					if (logger.isDebugEnabled) {
+						logger.debug("<TxExecutor> Contract creation: Mana NOT enough: %,d < %,d".format(this.endMana, returnDataManaValue))
+					}
 					result.hReturn = ImmutableBytes.empty
 				}
 			}
