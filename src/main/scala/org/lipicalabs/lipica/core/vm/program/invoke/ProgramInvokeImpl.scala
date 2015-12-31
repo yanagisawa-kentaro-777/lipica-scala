@@ -73,7 +73,7 @@ class ProgramInvokeImpl private(
 				DataWord.NUM_BYTES
 			}
 		val data = new Array[Byte](DataWord.NUM_BYTES)
-		System.arraycopy(this.messageData, index, data, 0, size)
+		this.messageData.copyTo(index, data, 0, size)
 		DataWord(data)
 	}
 
@@ -98,7 +98,7 @@ class ProgramInvokeImpl private(
 			} else {
 				len
 			}
-		System.arraycopy(this.messageData, offset, result, 0, length)
+		this.messageData.copyTo(offset, result, 0, length)
 		ImmutableBytes(result)
 	}
 

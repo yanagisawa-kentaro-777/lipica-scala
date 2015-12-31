@@ -15,7 +15,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 
 	private var storage = new mutable.HashMap[DataWord, DataWord]
 
-	private var _code = ImmutableBytes.empty
+	private var _code = Option(this.originalContract).map(_.code).getOrElse(ImmutableBytes.empty)
 	override def code = this._code
 	override def code_=(v: ImmutableBytes) = this._code = v
 

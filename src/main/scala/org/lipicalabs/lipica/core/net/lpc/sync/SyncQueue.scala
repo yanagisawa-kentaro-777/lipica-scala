@@ -46,6 +46,9 @@ class SyncQueue {
 				val blockWrapper = this.blockQueue.take
 				logger.info("<SyncQueue> BlockQueue size=%,d".format(this.blockQueue.size))
 				val importResult = this.blockchain.tryToConnect(blockWrapper.block)
+				if ((blockWrapper.blockNumber % 100) == 0) {
+					println("Bloc[%,d] %s".format(blockWrapper.blockNumber, importResult))//TODO
+				}
 
 				if (importResult == ImportResult.NoParent) {
 					logger.info("<SyncQueue> No parent on the chain for BlockNumber %,d & BlockHash %s".format(blockWrapper.blockNumber, blockWrapper.block.shortHash))
