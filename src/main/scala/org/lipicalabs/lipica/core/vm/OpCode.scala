@@ -7,6 +7,8 @@ import scala.collection.mutable
 
 /**
  * Lipica VM の命令が属するティア。
+ * このlevel値が、１コードあたり
+ * 消費されるマナの量に等しい（もしくは比例する）。
  *
  * @since 2015/10/17
  * @author YANAGISAWA, Kentaro
@@ -37,7 +39,7 @@ object Tier {
 	}
 	set.add(LowTier)
 	object MidTier extends Tier {
-		override val level = 6
+		override val level = 8
 	}
 	set.add(MidTier)
 	object HighTier extends Tier {
