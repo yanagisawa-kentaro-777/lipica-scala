@@ -215,8 +215,10 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				//普通にノードを更新して、保存する。
 				newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), valueNode)
 				putToCache(TrieNode(newNode.toSeq))
-			case _ =>
-				throw new RuntimeException
+			case other =>
+				val s = if (other eq null) "null" else other.getClass.getSimpleName
+				logger.warn("<Trie> Trie error: Node is %s".format(s))
+				valueNode
 		}
 	}
 
@@ -286,8 +288,10 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 						TrieNode(items.toSeq)
 					}
 				putToCache(newNode)
-			case _ =>
-				throw new RuntimeException
+			case other =>
+				val s = if (other eq null) "null" else other.getClass.getSimpleName
+				logger.warn("<Trie> Trie error: Node is %s".format(s))
+				TrieNode.empty
 		}
 	}
 
