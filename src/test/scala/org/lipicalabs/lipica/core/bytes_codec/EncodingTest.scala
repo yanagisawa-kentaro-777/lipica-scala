@@ -118,7 +118,7 @@ class EncodingTest extends Specification {
 	"encoding small byte array" should {
 		"run right" in {
 			RBACCodec.Encoder.encode(Array.empty[Byte]) sameElements Array(0x80.asInstanceOf[Byte]) mustEqual true
-			RBACCodec.Encoder.encode(Array(0x00.asInstanceOf[Byte])) sameElements Array(0x80.asInstanceOf[Byte]) mustEqual true
+			RBACCodec.Encoder.encode(Array(0x00.asInstanceOf[Byte])) sameElements Array(0x00.asInstanceOf[Byte]) mustEqual true
 			RBACCodec.Encoder.encode(Array(0x01.asInstanceOf[Byte])) sameElements Array(0x01.asInstanceOf[Byte]) mustEqual true
 		}
 	}

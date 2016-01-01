@@ -161,7 +161,12 @@ trait TransactionLike {
 		val manaPrice = RBACCodec.Encoder.encode(this.manaPrice)
 		val manaLimit = RBACCodec.Encoder.encode(this.manaLimit)
 		val receiveAddress = RBACCodec.Encoder.encode(this.receiverAddress)
-		val value = RBACCodec.Encoder.encode(this.value)
+		val encodedValue =
+			if (this.value == ImmutableBytes.zero) {
+				RBACCodec.Encoder.encode(null)
+			} else {
+				RBACCodec.Encoder.encode(this.value)
+			}
 		val data = RBACCodec.Encoder.encode(this.data)
 
 		if (withSignature) {
@@ -178,9 +183,9 @@ trait TransactionLike {
 						val s = RBACCodec.Encoder.encode(Array.emptyByteArray)
 						(v, r, s)
 				}
-			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data, v, r, s))
+			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, encodedValue, data, v, r, s))
 		} else {
-			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, value, data))
+			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, encodedValue, data))
 		}
 	}
 
