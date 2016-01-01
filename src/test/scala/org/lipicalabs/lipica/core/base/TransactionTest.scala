@@ -132,7 +132,7 @@ class TransactionTest extends Specification {
 			tx.data.isEmpty mustEqual true
 			tx.manaLimit.toHexString mustEqual "5208"
 			tx.manaPrice.toHexString mustEqual "01"
-			tx.nonce.toHexString mustEqual "00"
+			tx.nonce.toHexString mustEqual ""
 			tx.receiverAddress.toHexString mustEqual "000000000000000000000000000b9331677e6ebf"
 			tx.value.toHexString mustEqual "0a"
 			Hex.encodeHexString(Array(tx.signatureOption.get.v)) mustEqual "1c"
@@ -149,7 +149,7 @@ class TransactionTest extends Specification {
 			tx.data.toHexString mustEqual "0358ac39584bc98a7c979f984b03"
 			tx.manaLimit.toHexString mustEqual "59d8"
 			tx.manaPrice.toHexString mustEqual "01"
-			tx.nonce.toHexString mustEqual "00"
+			tx.nonce.toHexString mustEqual ""
 			tx.receiverAddress.toHexString mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
 			tx.value.toHexString mustEqual "0a"
 			Hex.encodeHexString(Array(tx.signatureOption.get.v)) mustEqual "1b"
@@ -166,7 +166,7 @@ class TransactionTest extends Specification {
 			tx.data.toHexString mustEqual "0000000000000000000000000001000000000000000000000000000000"//TODO doubt
 			tx.manaLimit.toHexString mustEqual "61a8"
 			tx.manaPrice.toHexString mustEqual "01"
-			tx.nonce.toHexString mustEqual "00"
+			tx.nonce.toHexString mustEqual ""
 			tx.receiverAddress.toHexString mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
 			tx.value.toHexString mustEqual "0a"
 			Hex.encodeHexString(Array(tx.signatureOption.get.v)) mustEqual "1b"
@@ -183,7 +183,7 @@ class TransactionTest extends Specification {
 			tx.data.toHexString mustEqual "0010000000000000000000000000000000000000000000000000000000"//TODO doubt
 			tx.manaLimit.toHexString mustEqual "61a8"
 			tx.manaPrice.toHexString mustEqual "01"
-			tx.nonce.toHexString mustEqual "00"
+			tx.nonce.toHexString mustEqual ""
 			tx.receiverAddress.toHexString mustEqual "095e7baea6a6c7c4c2dfeb977efac326af552d87"
 			tx.value.toHexString mustEqual "0a"
 			Hex.encodeHexString(Array(tx.signatureOption.get.v)) mustEqual "1b"

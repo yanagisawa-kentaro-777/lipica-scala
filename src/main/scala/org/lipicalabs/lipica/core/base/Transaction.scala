@@ -103,9 +103,7 @@ trait TransactionLike {
 	/**
 	 * このトランザクションが、コントラクト作成用トランザクションであるか否かを返します。
 	 */
-	def isContractCreation: Boolean = {
-		this.receiverAddress.isEmpty || (this.receiverAddress == ImmutableBytes.zero)
-	}
+	def isContractCreation: Boolean = this.receiverAddress.isEmpty
 
 	/**
 	 * このトランザクションがコントラクト作成用のものだった場合に、
@@ -152,21 +150,11 @@ trait TransactionLike {
 	protected[base] def encodeRaw: ImmutableBytes = encode(withSignature = false)
 
 	private def encode(withSignature: Boolean): ImmutableBytes = {
-		val nonce =
-			if ((this.nonce eq null) || (this.nonce == ImmutableBytes.zero)) {
-				RBACCodec.Encoder.encode(null)
-			} else {
-				RBACCodec.Encoder.encode(this.nonce)
-			}
+		val nonce = RBACCodec.Encoder.encode(this.nonce)
 		val manaPrice = RBACCodec.Encoder.encode(this.manaPrice)
 		val manaLimit = RBACCodec.Encoder.encode(this.manaLimit)
 		val receiveAddress = RBACCodec.Encoder.encode(this.receiverAddress)
-		val encodedValue =
-			if (this.value == ImmutableBytes.zero) {
-				RBACCodec.Encoder.encode(null)
-			} else {
-				RBACCodec.Encoder.encode(this.value)
-			}
+		val encodedValue = RBACCodec.Encoder.encode(this.value)
 		val data = RBACCodec.Encoder.encode(this.data)
 
 		if (withSignature) {
@@ -306,11 +294,11 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 			//val transaction = RBACCodec.Decoder.decode(this.encodedBytes).right.get.items
 			//val transaction = decodedTxList.items.head.items
 
-			val nonce = launderEmptyToZero(items.head.bytes)
-			val manaPrice = launderEmptyToZero(items(1).bytes)
+			val nonce = items.head.bytes
+			val manaPrice = items(1).bytes
 			val manaLimit = items(2).bytes
 			val receiveAddress = items(3).bytes
-			val value = launderEmptyToZero(items(4).bytes)
+			val value = items(4).bytes
 			val data = items(5).bytes
 			val sixthElem = items(6).bytes
 			this.parsed =
@@ -379,13 +367,13 @@ object Transaction {
 	}
 
 	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes): TransactionLike = {
-		new UnsignedTransaction(launderEmptyToZero(nonce), launderEmptyToZero(value), receiveAddress, launderEmptyToZero(manaPrice), manaLimit, data)
+		new UnsignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data)
 	}
 
 	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
 		val signature: ECKey.ECDSASignature = new ECKey.ECDSASignature(r.toSignedBigInteger, s.toSignedBigInteger)
 		signature.v = v
-		new SignedTransaction(launderEmptyToZero(nonce), launderEmptyToZero(value), receiveAddress, launderEmptyToZero(manaPrice), manaLimit, data, signature)
+		new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 	}
 
 	def create(to: String, amount: BigInt, nonce: BigInt, manaPrice: BigInt, manaLimit: BigInt): TransactionLike = {
@@ -396,12 +384,12 @@ object Transaction {
 		create(to, amount, nonce, DEFAULT_MANA_PRICE, DEFAULT_BALANCE_MANA)
 	}
 
-	def launderEmptyToZero(bytes: ImmutableBytes): ImmutableBytes = {
-		if ((bytes eq null) || bytes.isEmpty) {
-			ImmutableBytes.zero
-		} else {
-			bytes
-		}
-	}
+//	def launderNullToEmpty(bytes: ImmutableBytes): ImmutableBytes = {
+//		if (bytes eq null) {
+//			ImmutableBytes.empty
+//		} else {
+//			bytes
+//		}
+//	}
 
 }

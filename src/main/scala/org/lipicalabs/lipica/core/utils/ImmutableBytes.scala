@@ -209,8 +209,6 @@ object ImmutableBytes {
 
 	val empty = new ImmutableBytes(Array.emptyByteArray)
 
-	val zero = new ImmutableBytes(Array[Byte](0))
-
 	def expand(original: Array[Byte], from: Int, until: Int, newLength: Int): ImmutableBytes = {
 		if (newLength <= 0) {
 			empty

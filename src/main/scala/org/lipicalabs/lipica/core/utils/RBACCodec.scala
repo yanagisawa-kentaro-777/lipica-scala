@@ -194,13 +194,6 @@ object RBACCodec {
 						ImmutableBytes.fromOneByte(OFFSET_SHORT_ITEM.asInstanceOf[Byte])
 					} else if ((bytes.length == 1) && ((bytes(0) & 0xff) < OFFSET_SHORT_ITEM)) {
 						bytes
-//						if (bytes(0) == 0) {
-//							//見苦しいが、特別扱いする。
-//							//IMPORTANT：「0」を表す合法的なエンコード方法が２通りあるというのは、非常に嫌な仕様だ。
-//							ImmutableBytes.fromOneByte(OFFSET_SHORT_ITEM.asInstanceOf[Byte])
-//						} else {
-//							bytes
-//						}
 					} else {
 						val prefix = encodeLength(bytes.length, OFFSET_SHORT_ITEM)
 						prefix ++ bytes
