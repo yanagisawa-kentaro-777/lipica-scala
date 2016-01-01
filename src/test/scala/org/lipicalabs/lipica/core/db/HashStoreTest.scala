@@ -52,6 +52,7 @@ class HashStoreTest extends Specification {
 			this.hashStore.clear()
 			this.hashStore.close()
 			this.hashes.clear()
+			Thread.sleep(100L)
 			FileUtils.forceDelete(new java.io.File(this.testDBName))
 		} catch {
 			case e: Exception =>

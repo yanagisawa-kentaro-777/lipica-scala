@@ -307,8 +307,8 @@ class RepositoryTest extends Specification {
 
 				track.commit()
 
-				track.getCode(cow).get.isEmpty mustEqual true
-				track.getCode(horse).get.isEmpty mustEqual true
+				track.getCode(cow).get mustEqual cowCode
+				track.getCode(horse).get mustEqual horseCode
 				repository.getCode(cow).get mustEqual cowCode
 				repository.getCode(horse).get mustEqual horseCode
 			} finally {
