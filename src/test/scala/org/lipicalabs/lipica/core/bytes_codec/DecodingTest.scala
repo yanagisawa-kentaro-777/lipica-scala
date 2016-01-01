@@ -346,7 +346,9 @@ class DecodingTest extends Specification {
 
 	def encodeAndRebuildSeq(seq: Seq[Array[Byte]]): Seq[ImmutableBytes] = {
 		val encoded = RBACCodec.Encoder.encode(seq)
-		RBACCodec.Decoder.decode(encoded).right.get.result.asInstanceOf[Seq[ImmutableBytes]]
+		val decoded = RBACCodec.Decoder.decode(encoded).right.get
+		decoded.bytes mustEqual encoded
+		decoded.result.asInstanceOf[Seq[ImmutableBytes]]
 	}
 
 	"various seq" should {
@@ -368,6 +370,7 @@ class DecodingTest extends Specification {
 			val result = RBACCodec.Decoder.decode(data).right.get
 			result.isSeq mustEqual true
 			result.items.size mustEqual 17
+			result.bytes mustEqual ImmutableBytes(data)
 		}
 	}
 

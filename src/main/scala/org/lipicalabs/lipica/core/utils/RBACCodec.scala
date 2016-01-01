@@ -353,9 +353,8 @@ object RBACCodec {
 			override val items = List.empty
 		}
 
-		case class DecodedSeq(override val pos: Int, override val items: Seq[DecodedResult]) extends DecodedResult {
+		case class DecodedSeq(override val pos: Int, override val items: Seq[DecodedResult], override val bytes: ImmutableBytes) extends DecodedResult {
 			override val isSeq = true
-			override val bytes = RBACCodec.Encoder.encodeSeqOfByteArrays(items.map(_.bytes))
 		}
 
 		def decode(data: Array[Byte]): Either[Exception, DecodedResult] = {
@@ -389,30 +388,30 @@ object RBACCodec {
 			} else if (prefix <= OFFSET_LONG_LIST) {//この判定条件は、バグではない。
 			//単純なリスト。
 				val len = prefix - OFFSET_SHORT_LIST
-				decodeSeq(data, pos + 1, len)
+				decodeSeq(data, pos + 1, len, ImmutableBytes.fromOneByte(data(pos)))
 			} else if (prefix < 0xFF) {
 				//長さが２重にエンコードされている。
 				val lenlen = prefix - OFFSET_LONG_LIST
 				val len = intFromBytes(data.copyOfRange(pos + 1, pos + 1 + lenlen))
-				decodeSeq(data, pos + lenlen + 1, len)
+				decodeSeq(data, pos + lenlen + 1, len, data.copyOfRange(pos, pos + lenlen + 1))
 			} else {
 				Left(new IllegalArgumentException("Illegal prefix: %d".format(prefix)))
 			}
 		}
 
-		private def decodeSeq(data: ImmutableBytes, pos: Int, len: Int): Either[Exception, DecodedSeq] = {
-			decodeListItemsRecursively(data, pos, len, 0, new ArrayBuffer[DecodedResult])
+		private def decodeSeq(data: ImmutableBytes, pos: Int, len: Int, initialBytes: ImmutableBytes): Either[Exception, DecodedSeq] = {
+			decodeListItemsRecursively(data, pos, len, 0, new ArrayBuffer[DecodedResult], initialBytes)
 		}
 
 		@tailrec
-		private def decodeListItemsRecursively(data: ImmutableBytes, pos: Int, len: Int, consumed: Int, items: ArrayBuffer[DecodedResult]): Either[Exception, DecodedSeq] = {
+		private def decodeListItemsRecursively(data: ImmutableBytes, pos: Int, len: Int, consumed: Int, items: ArrayBuffer[DecodedResult], accumRawBytes: ImmutableBytes): Either[Exception, DecodedSeq] = {
 			if (len <= consumed) {
-				return Right(DecodedSeq(pos, items.toIndexedSeq))
+				return Right(DecodedSeq(pos, items.toIndexedSeq, accumRawBytes))
 			}
 			decode(data, pos) match {
 				case Right(item) =>
 					items.append(item)
-					decodeListItemsRecursively(data, item.pos, len, consumed + (item.pos - pos), items)
+					decodeListItemsRecursively(data, item.pos, len, consumed + (item.pos - pos), items, accumRawBytes ++ data.copyOfRange(pos, item.pos))
 				case Left(e) =>
 					Left(e)
 			}
