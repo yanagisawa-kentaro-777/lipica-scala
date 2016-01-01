@@ -270,7 +270,7 @@ object OpCode {
 	/**
 	 * 0x36：現在の環境における入力データの長さを取得する。
 	 */
-	object CallDataSize extends OpCode(0x36, 0, 1, VeryLowTier)
+	object CallDataSize extends OpCode(0x36, 0, 1, BaseTier)
 	set.add(CallDataSize)
 
 	/**
@@ -294,7 +294,7 @@ object OpCode {
 	/**
 	 * 0x3a：１マナの価格を返します。
 	 */
-	object ManaPrice extends OpCode(0x3a, 0, 1, VeryLowTier)
+	object ManaPrice extends OpCode(0x3a, 0, 1, BaseTier)
 	set.add(ManaPrice)
 
 	/**
