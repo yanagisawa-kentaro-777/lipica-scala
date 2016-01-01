@@ -105,7 +105,7 @@ class VM {
 			vmCounter += 1
 		} catch {
 			case e: RuntimeException =>
-				logger.warn("VM halted: [%s]", e.toString)
+				logger.info("[VM] VM halted: [%s]", e.toString)
 				program.spendAllMana()
 				program.resetFutureRefund()
 				program.stop()
