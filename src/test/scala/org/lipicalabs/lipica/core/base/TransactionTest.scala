@@ -201,6 +201,14 @@ class TransactionTest extends Specification {
 		}
 	}
 
+	"test(6)" should {
+		"be right" in {
+			val hex = "f86480850dc04240c38255f0944e567864ec2efad2a2186806b9afeef0caf9a42780001ba0de60d4a5bbef1926bb9c92e2d7e77731f728f2b1b1ed6c855f0194161ab78786a04e2c63234d8bbb822addc1f8a9054774cd8fc829aaaa998edaf2d682ef255832"
+			val tx = Transaction.decode(ImmutableBytes.parseHexString(hex))
+			tx.senderAddress mustEqual ImmutableBytes.parseHexString("4e567864ec2efad2a2186806b9afeef0caf9a427")
+		}
+	}
+
 	"test various data" should {
 		"be right" in {
 			val seed = System.currentTimeMillis
