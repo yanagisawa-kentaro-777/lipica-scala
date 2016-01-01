@@ -678,11 +678,11 @@ object Program {
 	object Exception {
 
 		def stackOverflow(allowedMaxSize: Int, requiredSize: Int): StackTooLargeException = {
-			new StackTooLargeException("AllowedMax=%,d; Required=%,d;", allowedMaxSize, requiredSize)
+			new StackTooLargeException("AllowedMax=%,d; Required=%,d;".format(allowedMaxSize, requiredSize))
 		}
 
 		def tooSmallStack(expectedSize: Int, actualSize: Int): StackTooSmallException = {
-			new StackTooSmallException("Expected stack size=%,d; Actual stack Size=%,d;", expectedSize, actualSize)
+			new StackTooSmallException("Expected stack size=%,d; Actual stack Size=%,d;".format(expectedSize, actualSize))
 		}
 
 		def badJumpDestination(pc: Int): BadJumpDestinationException = {
@@ -690,7 +690,7 @@ object Program {
 		}
 
 		def notEnoughSpendingMana(cause: String, manaValue: Long, program: Program): OutOfManaException = {
-			new OutOfManaException("Not enough mana for '%s' cause spending: invokeMana[%d], mana[%d], usedMana[%d];", cause, program.invoke.getMana.longValue, manaValue, program.result.manaUsed)
+			new OutOfManaException("Not enough mana for '%s' cause spending: invokeMana[%d], mana[%d], usedMana[%d];".format(cause, program.invoke.getMana.longValue, manaValue, program.result.manaUsed))
 		}
 
 		def notEnoughOpMana(op: OpCode, opMana: BigInt, programMana: BigInt): OutOfManaException = {
@@ -716,3 +716,4 @@ object Program {
 trait ProgramOutListener {
 	def output(s: String)
 }
+
