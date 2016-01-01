@@ -266,7 +266,7 @@ object Block {
 
 	def decode(items: Seq[RBACCodec.Decoder.DecodedResult]): Block = {
 		val blockHeader = BlockHeader.decode(items.head)
-		val transactions = items(1).items.map(_.items).map(Transaction.decode)
+		val transactions = items(1).items.map(each => Transaction.decode(each))
 		val uncles = items(2).items.map(BlockHeader.decode)
 
 		val calculatedTxTrieRoot = TxTrieRootCalculator.calculateTxTrieRoot(transactions)
@@ -277,8 +277,9 @@ object Block {
 				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs)
 			)
 			//TODO RBACの仕様上、ゼロを合法的に表す方法が２通りあるため、扱いに悩みがある。
-			//println("<Block> Tx root unmatch at Block %,d! TxSize=%,d  Given: %s != Calculated: %s Txs=[%s]".format(blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, txs))
-			//blockHeader.txTrieRoot = calculatedTxTrieRoot
+//			System.out.println("<Block> Tx root unmatch at Block %,d! TxSize=%,d  GivenHash: %s != CalculatedHash: %s ; GivenTxs=[%s] ; RebuiltTxs=[%s]".format(
+//				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs)
+//			)
 		} else if (transactions.nonEmpty) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<Block> Tx root matched at Block %,d. TxSize=%,d ; TxTrieRoot=%s".format(blockHeader.blockNumber, transactions.size, calculatedTxTrieRoot))

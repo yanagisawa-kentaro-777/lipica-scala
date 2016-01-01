@@ -24,7 +24,7 @@ case class TransactionsMessage(transactions: Seq[TransactionLike]) extends LpcMe
 object TransactionsMessage {
 	def decode(encodedBytes: ImmutableBytes): TransactionsMessage = {
 		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
-		val transactions = items.map(each => Transaction.decode(each.items))
+		val transactions = items.map(each => Transaction.decode(each))
 		new TransactionsMessage(transactions)
 	}
 }

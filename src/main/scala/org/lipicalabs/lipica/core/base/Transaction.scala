@@ -292,7 +292,7 @@ class SignedTransaction(
 	}
 }
 
-class EncodedTransaction(private val items: Seq[DecodedResult]) extends TransactionLike {
+class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val items: Seq[DecodedResult]) extends TransactionLike {
 	import Transaction._
 
 	private var parsed: TransactionLike = null
@@ -324,7 +324,7 @@ class EncodedTransaction(private val items: Seq[DecodedResult]) extends Transact
 	}
 
 	override def toEncodedBytes: ImmutableBytes = {
-		parse.toEncodedBytes
+		Option(this.encodedBytes).getOrElse(parse.toEncodedBytes)
 	}
 
 	private var encodedRaw: ImmutableBytes = null
@@ -335,7 +335,10 @@ class EncodedTransaction(private val items: Seq[DecodedResult]) extends Transact
 		this.encodedRaw
 	}
 
-	override def sign(privateKeyBytes: ImmutableBytes): Unit = parse.sign(privateKeyBytes)
+	override def sign(privateKeyBytes: ImmutableBytes): Unit = {
+		parse.sign(privateKeyBytes)
+		this.encodedBytes = null
+	}
 
 	override def nonce: ImmutableBytes = parse.nonce
 
@@ -362,12 +365,12 @@ object Transaction {
 	private val DEFAULT_MANA_PRICE = BigInt("10000000000000")
 	private val DEFAULT_BALANCE_MANA = BigInt("21000")
 
-	def decode(rawData: ImmutableBytes): TransactionLike = {
-		new EncodedTransaction(RBACCodec.Decoder.decode(rawData).right.get.items)
+	def decode(src: RBACCodec.Decoder.DecodedResult): TransactionLike = {
+		new EncodedTransaction(src.bytes, src.items)
 	}
 
-	def decode(items: Seq[RBACCodec.Decoder.DecodedResult]): TransactionLike = {
-		new EncodedTransaction(items)
+	def decode(rawData: ImmutableBytes): TransactionLike = {
+		decode(RBACCodec.Decoder.decode(rawData).right.get)
 	}
 
 	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes): TransactionLike = {

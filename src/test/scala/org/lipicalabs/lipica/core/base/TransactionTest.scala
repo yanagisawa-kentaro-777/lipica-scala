@@ -192,6 +192,15 @@ class TransactionTest extends Specification {
 		}
 	}
 
+	"test (5)" should {
+		"be right" in {
+			val hex = "f86c05850ccc73ae708255f0944e567864ec2efad2a2186806b9afeef0caf9a427881bc16d674ec80000001ba067a47d007d52a89a3fb66d529b412f5e87e8dadbe0e9e0b3598cfaf0677645aea01f0475559fe2f9a7b9d6d7a7d7bd5b48546c2d9a41f93c8f5f03f020a91c3336"
+			val tx = Transaction.decode(ImmutableBytes.parseHexString(hex))
+
+			tx.toEncodedBytes.toHexString mustEqual hex
+		}
+	}
+
 	"test various data" should {
 		"be right" in {
 			val seed = System.currentTimeMillis
