@@ -772,9 +772,9 @@ class VM {
 				val address = program.stackPop
 				program.suicide(address)
 				if (logger.isInfoEnabled) {
-					hint = "address: " + address.last20Bytes.toHexString
+					hint = "address: " + program.getOwnerAddress.last20Bytes.toHexString
 				}
-				program.step()
+				program.stop()
 			case _ =>
 			//
 		}
