@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import java.nio.charset.StandardCharsets
+import java.net.InetAddress
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec}
@@ -12,9 +12,9 @@ import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec}
  */
 class PingMessage extends TransportMessage {
 
-	private var _host: String = null
-	def host: String = this._host
-	def host_=(v: String): Unit = this._host = v
+	private var _address: InetAddress = null
+	def address: InetAddress = this._address
+	def address_=(v: InetAddress): Unit = this._address = v
 
 	private var _port: Int = 0
 	def port: Int = this._port
@@ -26,29 +26,29 @@ class PingMessage extends TransportMessage {
 	override def parse(data: Array[Byte]): Unit = {
 		val items = RBACCodec.Decoder.decode(data).right.get.items
 		val fromSeq = items(1).items
-		this._host = fromSeq.head.asString
+		this._address = InetAddress.getByAddress(fromSeq.head.bytes.toByteArray)
 		this._port = fromSeq(1).asInt
 		this._expires = items(3).asPositiveLong
 	}
 
 	override def toString: String = {
-		"[PingMessage] host=%s, port=%d, expires in %,d seconds. %s".format(
-			this.host, this.port, this.expires - (System.currentTimeMillis / 1000L), super.toString
+		"[PingMessage] Address=%s, Port=%d, Expires in %,d seconds (%,d). %s".format(
+			this.address, this.port, this.expires - (System.currentTimeMillis / 1000L), this.expires, super.toString
 		)
 	}
 }
 
 object PingMessage {
 
-	def create(host: String, port: Int, privateKey: ECKey): PingMessage = {
+	def create(address: InetAddress, port: Int, privateKey: ECKey): PingMessage = {
 		val expiration = 60 + System.currentTimeMillis / 1000L
 
-		val hostBytes = host.getBytes(StandardCharsets.UTF_8)
-		val encodedHost = RBACCodec.Encoder.encode(hostBytes)
+		val addressBytes = address.getAddress
+		val encodedAddress = RBACCodec.Encoder.encode(addressBytes)
 		val portBytes = ByteUtils.toByteArrayWithNoLeadingZeros(port)
 		val encodedPort = RBACCodec.Encoder.encode(portBytes)
 
-		val encodedHostTo = RBACCodec.Encoder.encode(hostBytes)
+		val encodedHostTo = RBACCodec.Encoder.encode(addressBytes)
 		val encodedPortTo = RBACCodec.Encoder.encode(portBytes)
 
 		val expirationBytes = ByteUtils.toByteArrayWithNoLeadingZeros(expiration)
@@ -56,14 +56,14 @@ object PingMessage {
 
 		val messageType = Array[Byte](1)
 		val encodedVersion = RBACCodec.Encoder.encode(Array[Byte](4))
-		val fromSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedHost, encodedPort, encodedPort))
+		val fromSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedPort, encodedPort))
 		val toSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedHostTo, encodedPortTo, encodedPortTo))
 
 		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedVersion, fromSeq, toSeq, encodedExpiration))
 
 		val result: PingMessage = TransportMessage.encode(messageType, data, privateKey)
 		result._expires = expiration
-		result._host = host
+		result._address = address
 		result._port = port
 		result
 	}

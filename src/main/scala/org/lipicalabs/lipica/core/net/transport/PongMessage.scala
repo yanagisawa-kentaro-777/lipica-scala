@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import java.nio.charset.StandardCharsets
+import java.net.InetAddress
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec, ImmutableBytes}
@@ -37,12 +37,12 @@ class PongMessage extends TransportMessage {
 
 object PongMessage {
 
-	def create(token: ImmutableBytes, host: String, port: Int, privateKey: ECKey): PongMessage = {
+	def create(token: ImmutableBytes, address: InetAddress, port: Int, privateKey: ECKey): PongMessage = {
 		val expiration = 60 + System.currentTimeMillis / 1000L
 
-		val encodedHost = RBACCodec.Encoder.encode(host.getBytes(StandardCharsets.UTF_8))
+		val encodedAddress = RBACCodec.Encoder.encode(address.getAddress)
 		val encodedPort = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(port))
-		val encodedTo = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedHost, encodedPort, encodedPort))
+		val encodedTo = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedPort, encodedPort))
 
 		val encodedToken = RBACCodec.Encoder.encode(token)
 		val encodedExpiration = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(expiration))

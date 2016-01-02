@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.net.transport
 
 import java.math.BigInteger
+import java.net.InetAddress
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.ECKey
@@ -20,16 +21,16 @@ class TransportMessagesTest extends Specification {
 	"test PingMessage" should {
 		"be right" in {
 			val message1 = new PingMessage
-			message1.host = "192.168.100.0"
+			message1.address = InetAddress.getByName("192.168.100.0")
 			message1.port = 32000
 			val key = ECKey.fromPrivate(BigInteger.TEN)
-			val message2 = PingMessage.create(message1.host, message1.port, key)
+			val message2 = PingMessage.create(message1.address, message1.port, key)
 
 			val message3: PingMessage = TransportMessage.decode(message2.packet)
 
-			message1.host mustEqual message2.host
-			message2.host mustEqual message3.host
-			message3.host mustEqual "192.168.100.0"
+			message1.address mustEqual message2.address
+			message2.address mustEqual message3.address
+			message3.address mustEqual InetAddress.getByName("192.168.100.0")
 
 			message1.port mustEqual message2.port
 			message2.port mustEqual message3.port

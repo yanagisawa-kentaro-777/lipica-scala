@@ -153,7 +153,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		if (logger.isDebugEnabled) {
 			logger.debug("<NodeHandler> <=== [PING] %s".format(this))
 		}
-		val ping = PingMessage.create(this.nodeManager.table.node.address.getHostAddress, this.nodeManager.table.node.port, this.nodeManager.key)
+		val ping = PingMessage.create(this.nodeManager.table.node.address, this.nodeManager.table.node.port, this.nodeManager.key)
 		this._waitForPongRef.set(true)
 		this._pingSent = System.currentTimeMillis
 
@@ -175,7 +175,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		if (logger.isDebugEnabled) {
 			logger.debug("<NodeHandler> <=== [PONG] %s".format(this))
 		}
-		val pong = PongMessage.create(mdc, this.node.address.getHostAddress, this.node.port, this.nodeManager.key)
+		val pong = PongMessage.create(mdc, this.node.address, this.node.port, this.nodeManager.key)
 		sendMessage(pong)
 		this.nodeStatistics.discoverOutPong.add
 	}

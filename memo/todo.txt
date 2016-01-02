@@ -1,11 +1,13 @@
 Xssを実環境に反映させる。
 
-PingMessageの仕様も本当かな？
+Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
+PingにToの情報が欠けているだろう。
+expiresの意味も違う。
 
 アウトラインログを作る。（特にマスターのスイッチ）
 REST APIをいい感じにする。
 
-Nodeのモデルは早急に改めるべきである。
+Nodeのモデルは早急に改めるべきである。（全体的に不変であるべき。）
 
 NewBlockとは何か？
 Kademliaのソートを学ぶ。
