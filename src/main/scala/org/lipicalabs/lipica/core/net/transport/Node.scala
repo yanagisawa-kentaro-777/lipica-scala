@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import java.net.URI
-import java.nio.charset.StandardCharsets
+import java.net.{InetAddress, URI}
 
 import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
@@ -25,9 +24,10 @@ class Node(private var _id: ImmutableBytes, private var _host: String, private v
 	def port_=(v: Int): Unit = this._port = v
 
 	def toEncodedBytes: ImmutableBytes = {
-		val encodedHost = RBACCodec.Encoder.encode(this.host.getBytes(StandardCharsets.UTF_8))
-		val encodedTCPPort = RBACCodec.Encoder.encode(this.port)
+		val address = InetAddress.getByName(this.host)
+		val encodedHost = RBACCodec.Encoder.encode(ImmutableBytes(address.getAddress))
 		val encodedUDPPort = RBACCodec.Encoder.encode(this.port)
+		val encodedTCPPort = RBACCodec.Encoder.encode(this.port)
 		val encodedId = RBACCodec.Encoder.encode(this.id)
 
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedHost, encodedUDPPort, encodedTCPPort, encodedId))
@@ -48,20 +48,17 @@ class Node(private var _id: ImmutableBytes, private var _host: String, private v
 
 	override def hashCode: Int = toString.hashCode
 
-	override def toString: String = "Node{host=%s, port=%d, id=%s}".format(this.host, this.port, this.id)
+	override def toString: String = "Node[Host=%s, Port=%d, Id=%s]".format(this.host, this.port, this.id)
 
 }
 
 object Node {
 
-	def apply(enodeURI: URI): Node = {
+	def apply(nodeURI: URI): Node = {
 		try {
-			if (enodeURI.getScheme != "enode") {
-				throw new IllegalArgumentException("enode://PUBKEY@HOST:PORT")
-			}
-			val id = ImmutableBytes.parseHexString(enodeURI.getUserInfo)
-			val host = enodeURI.getHost
-			val port = enodeURI.getPort
+			val id = ImmutableBytes.parseHexString(nodeURI.getUserInfo)
+			val host = nodeURI.getHost
+			val port = nodeURI.getPort
 			new Node(id, host, port)
 		} catch {
 			case e: Throwable => throw e
@@ -70,16 +67,23 @@ object Node {
 
 	def decode(decodedResult: DecodedResult): Node = {
 		val items = decodedResult.items
-		val host =
-			if (items.head.bytes.length == 4) {
-				val bytes = items.head.bytes
-				"%s.%s.%s.%s".format(bytes(0) & 0xFF, bytes(1) & 0xFF, bytes(2) & 0xFF, bytes(3) & 0xFF)
+		val address =
+			if ((items.head.bytes.length == 4) || (items.head.bytes.length == 16)) {
+				InetAddress.getByAddress(items.head.bytes.toByteArray)
 			} else {
-				items.head.asString
+				InetAddress.getByName(items.head.asString)
 			}
-		val port = items(1).asInt
-		val id = items.last.bytes
-		new Node(id, host, port)
+
+		if (3 < items.length) {
+			val udpPort = items(1).asInt
+			val tcpPort = items(2).asInt
+			val id = items(3).bytes
+			new Node(id, address.getHostAddress, udpPort)
+		} else {
+			val port = items(1).asInt
+			val id = items(2).bytes
+			new Node(id, address.getHostAddress, port)
+		}
 	}
 
 }

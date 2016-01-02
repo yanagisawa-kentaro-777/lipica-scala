@@ -15,3 +15,4 @@ https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/
 
 通信仕様
 https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
+https://github.com/ethereum/devp2p/blob/master/rlpx.md

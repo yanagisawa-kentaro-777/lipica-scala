@@ -1,16 +1,20 @@
+Xssを実環境に反映させる。
 
-アウトラインログを作る。
+アウトラインログを作る。（特にマスターのスイッチ）
+REST APIをいい感じにする。
 
-Neighboursの正しい仕様は？？
+Nodeのモデルは早急に改めるべきである。
+
 NewBlockとは何か？
 Kademliaのソートを学ぶ。
 KademliaTest test(3)、seed = 1451268255658L で 5000件時にエラー。
 
 Active Peerについて考えなおす。
 
+ブロック情報の保存と再生を実行する。
+
 refactorする。（init() や start() の整備。future化。）
 logging、refactor、comment。（不具合追跡用）
-RBACCodecに、解析前バイト列保持機能をつけた方が良い。
 
 BlockchainImpl の連結失敗時のエラー処理が甘い。
 

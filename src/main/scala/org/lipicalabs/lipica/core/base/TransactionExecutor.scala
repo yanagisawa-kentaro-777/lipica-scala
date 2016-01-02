@@ -185,7 +185,8 @@ class TransactionExecutor(
 			}
 		} catch {
 			case e: Throwable =>
-				logger.warn("<TxExecutor> Exception caught: %s".format(e.getClass.getSimpleName), e)
+				//マナ不足等でもここに来る。ゆえに、ここに来ることは想定外とは言えない。
+				logger.info("<TxExecutor> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				this.cacheTrack.rollback()
 				this.endMana = 0
 		}
