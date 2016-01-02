@@ -8,6 +8,8 @@ import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.UtilConsts
 
 /**
+ * 自ノードの、外部ノードとの通信に関する統計情報を保持するクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/07 20:51
  * YANAGISAWA, Kentaro

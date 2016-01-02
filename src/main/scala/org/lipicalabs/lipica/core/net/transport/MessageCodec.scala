@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory
 import org.spongycastle.crypto.InvalidCipherTextException
 
 /**
+ * バイト配列と、このプログラムにとって意味を持つメッセージとの相互変換を実行するクラスです。
+ * Nettyのインターフェイスに準拠しています。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/14 20:11
  * YANAGISAWA, Kentaro
@@ -141,6 +144,9 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
 		val output = "<MessageCode> Exception caught: %s".format(cause.getClass.getSimpleName)
 		if (this._channel.isDiscoveryMode) {
+			loggerNet.debug(output, cause)
+		} else if (cause.getClass.getSimpleName.toLowerCase.contains("timeout")) {
+			//タイムアウトは日常的に発生するものであり、大した問題ではない。
 			loggerNet.debug(output, cause)
 		} else {
 			loggerNet.warn(output, cause)

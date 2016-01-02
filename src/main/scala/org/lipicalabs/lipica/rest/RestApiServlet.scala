@@ -15,15 +15,18 @@ class RestApiServlet extends ScalatraServlet {
 	get("/:apiVersion/node/status") {
 		val worldManager = WorldManager.instance
 		val bestBlock = worldManager.blockchain.bestBlock
-		val response = "NodeId=%s\nBestBlock=[%,d %s]\nActive Peers:%d\n\n%s".format(
+
+		val response = "NodeId=%s\nExternalAddress=%s;BindAddress=%s\n\nBestBlock=[%,d %s]\n\nActive Peers:%d\n%s\n\n".format(
 			SystemProperties.CONFIG.nodeId,
+			SystemProperties.CONFIG.externalAddress,
+			SystemProperties.CONFIG.bindAddress,
 			bestBlock.blockNumber, bestBlock.hash.toShortString,
 			worldManager.peersPool.activeCount,
 			worldManager.peersPool.peers.map(each => {
 				val hostAddress = each.node.address.getHostAddress
 				val hostName = each.node.address.getCanonicalHostName
 				if (hostAddress != hostName) {
-					"%s...\t%s(%s)\t%d".format(each.peerIdShort, hostAddress, hostName, each.node.port)
+					"%s...\t%s\t%s\t%d".format(each.peerIdShort, hostAddress, hostName, each.node.port)
 				} else {
 					"%s...\t%s\t%d".format(each.peerIdShort, hostAddress, each.node.port)
 				}

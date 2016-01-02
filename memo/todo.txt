@@ -1,4 +1,6 @@
-Xssを実環境に反映させる。
+WARNは別のログに出した方が良かろう。
+
+パッケージ構造のrefactor。
 
 Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
 PingにToの情報が欠けているだろう。
@@ -7,6 +9,8 @@ expiresの意味も違う。
 アウトラインログを作る。（特にマスターのスイッチ）
 REST APIをいい感じにする。
 
+ブロック情報の保存と再生を実行する。
+
 Nodeのモデルは早急に改めるべきである。（全体的に不変であるべき。）
 
 NewBlockとは何か？
@@ -14,8 +18,6 @@ Kademliaのソートを学ぶ。
 KademliaTest test(3)、seed = 1451268255658L で 5000件時にエラー。
 
 Active Peerについて考えなおす。
-
-ブロック情報の保存と再生を実行する。
 
 refactorする。（init() や start() の整備。future化。）
 logging、refactor、comment。（不具合追跡用）
@@ -26,11 +28,8 @@ BlockchainImpl の連結失敗時のエラー処理が甘い。
 
 CallTransactionの変更に追随する。
 
-
 miningの具体的な方法を実装する。
 ・実データを見ながらのほうがいいかもしれない。
-
-
 
 とにかく yellow paper を熟読すること。
 
@@ -40,16 +39,13 @@ git flowを入れる。
 
 gracefulな終了を実現する。
 
-
 自分どうしで通信し、トランザクションを実行する。
 
 ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 
-
 勉強する。
 ・discovery後、一度切るのか。
 ・Status後の流れはどうなるか。
-yellow paper を読んでわからない所を調べる。
 
 https://github.com/ethereum/tests を活用した自動テストの実行方法を考える。
 
