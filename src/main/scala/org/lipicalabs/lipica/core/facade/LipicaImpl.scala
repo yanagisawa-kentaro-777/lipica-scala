@@ -76,13 +76,13 @@ class LipicaImpl extends Lipica {
 
 	override def stopPeerDiscovery() = this.worldManager.stopPeerDiscovery()
 
-	override def connect(node: Node) = connect(new InetSocketAddress(node.host, node.port), node.id.toHexString)
+	override def connect(node: Node) = connect(new InetSocketAddress(node.address, node.port), node.id.toHexString)
 
 	override def connect(address: InetSocketAddress, remoteId: String): Unit = {
 		val client = new PeerClient
 		Executors.newSingleThreadExecutor.submit(new Runnable {
 			override def run(): Unit = {
-				client.connect(address.getHostName, address.getPort, remoteId)
+				client.connect(address.getAddress, address.getPort, remoteId)
 			}
 		})
 	}

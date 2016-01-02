@@ -59,7 +59,7 @@ class Channel {
 	def peerId: String = Option(this.node).map(_.hexId).getOrElse("null")
 	def peerIdShort: String = Option(this.node).map(_.hexIdShort).getOrElse("null")
 	def setNode(nodeId: ImmutableBytes): Unit = {
-		this._node = new Node(nodeId, this.inetSocketAddress.getHostName, this.inetSocketAddress.getPort)
+		this._node = new Node(nodeId, this.inetSocketAddress.getAddress, this.inetSocketAddress.getPort)
 		this._nodeStatistics = this.nodeManager.getNodeStatistics(this._node)
 	}
 

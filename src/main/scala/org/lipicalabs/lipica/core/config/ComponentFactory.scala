@@ -13,7 +13,6 @@ import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.server.UDPListener
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator._
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
 import org.mapdb.{Serializer, DBMaker}
@@ -78,7 +77,7 @@ object ComponentFactory {
 
 	def createNodeManager: NodeManager = {
 		val result = NodeManager.create
-		result.seedNodes = SystemProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => new Node(ImmutableBytes.parseHexString(uri.getUserInfo), uri.getHost, uri.getPort))
+		result.seedNodes = SystemProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => Node(uri))
 		result
 	}
 

@@ -34,7 +34,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 	changeState(State.Discovered)
 
 
-	def inetSocketAddress: InetSocketAddress = new InetSocketAddress(this.node.host, node.port)
+	def inetSocketAddress: InetSocketAddress = new InetSocketAddress(this.node.address, node.port)
 
 	private def challengeWith(aCandidate: NodeHandler): Unit = {
 		this._replaceCandidate = aCandidate
@@ -153,7 +153,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		if (logger.isDebugEnabled) {
 			logger.debug("<NodeHandler> <=== [PING] %s".format(this))
 		}
-		val ping = PingMessage.create(this.nodeManager.table.node.host, this.nodeManager.table.node.port, this.nodeManager.key)
+		val ping = PingMessage.create(this.nodeManager.table.node.address.getHostAddress, this.nodeManager.table.node.port, this.nodeManager.key)
 		this._waitForPongRef.set(true)
 		this._pingSent = System.currentTimeMillis
 
@@ -175,7 +175,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		if (logger.isDebugEnabled) {
 			logger.debug("<NodeHandler> <=== [PONG] %s".format(this))
 		}
-		val pong = PongMessage.create(mdc, this.node.host, this.node.port, this.nodeManager.key)
+		val pong = PongMessage.create(mdc, this.node.address.getHostAddress, this.node.port, this.nodeManager.key)
 		sendMessage(pong)
 		this.nodeStatistics.discoverOutPong.add
 	}
@@ -203,7 +203,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 	}
 
 	override def toString: String = {
-		"NodeHandler[state=%s, node=[%s]:%d, id=%s]".format(this.state, this.node.host, this.node.port, this.node.id)
+		"NodeHandler[state=%s, node=[%s]:%d, id=%s...]".format(this.state, this.node.address, this.node.port, this.node.hexIdShort)
 	}
 }
 

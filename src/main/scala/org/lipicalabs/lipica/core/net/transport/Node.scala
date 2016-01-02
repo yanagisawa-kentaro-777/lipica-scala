@@ -10,22 +10,21 @@ import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
  * 2015/12/11 19:38
  * YANAGISAWA, Kentaro
  */
-class Node(private var _id: ImmutableBytes, private var _host: String, private var _port: Int) extends Serializable {
+class Node(private var _id: ImmutableBytes, val address: InetAddress, private var _port: Int) extends Serializable {
 
 	def id: ImmutableBytes = this._id
 	def id_=(v: ImmutableBytes): Unit = this._id = v
 	def hexId: String = this.id.toHexString
 	def hexIdShort: String = this.hexId.substring(0, 8)
 
-	def host: String = this._host
-	def host_=(v: String): Unit = this._host = v
+//	def host: String = this._host
+//	def host_=(v: String): Unit = this._host = v
 
 	def port: Int = this._port
 	def port_=(v: Int): Unit = this._port = v
 
 	def toEncodedBytes: ImmutableBytes = {
-		val address = InetAddress.getByName(this.host)
-		val encodedHost = RBACCodec.Encoder.encode(ImmutableBytes(address.getAddress))
+		val encodedHost = RBACCodec.Encoder.encode(ImmutableBytes(this.address.getAddress))
 		val encodedUDPPort = RBACCodec.Encoder.encode(this.port)
 		val encodedTCPPort = RBACCodec.Encoder.encode(this.port)
 		val encodedId = RBACCodec.Encoder.encode(this.id)
@@ -48,7 +47,7 @@ class Node(private var _id: ImmutableBytes, private var _host: String, private v
 
 	override def hashCode: Int = toString.hashCode
 
-	override def toString: String = "Node[Host=%s, Port=%d, Id=%s]".format(this.host, this.port, this.id)
+	override def toString: String = "Node[Id=%s..., Host=%s, Port=%d]".format( this.hexIdShort, this.address, this.port)
 
 }
 
@@ -57,9 +56,9 @@ object Node {
 	def apply(nodeURI: URI): Node = {
 		try {
 			val id = ImmutableBytes.parseHexString(nodeURI.getUserInfo)
-			val host = nodeURI.getHost
+			val address = InetAddress.getByName(nodeURI.getHost)
 			val port = nodeURI.getPort
-			new Node(id, host, port)
+			new Node(id, address, port)
 		} catch {
 			case e: Throwable => throw e
 		}
@@ -78,11 +77,11 @@ object Node {
 			val udpPort = items(1).asInt
 			val tcpPort = items(2).asInt
 			val id = items(3).bytes
-			new Node(id, address.getHostAddress, udpPort)
+			new Node(id, address, udpPort)
 		} else {
 			val port = items(1).asInt
 			val id = items(2).bytes
-			new Node(id, address.getHostAddress, port)
+			new Node(id, address, port)
 		}
 	}
 

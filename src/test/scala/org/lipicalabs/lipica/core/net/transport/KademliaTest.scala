@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
+import java.net.InetAddress
 import java.util.Random
 
 import org.junit.runner.RunWith
@@ -85,7 +86,7 @@ class KademliaTest extends Specification {
 	}
 
 	private def getNode(random: Random): Node = {
-		new Node(getNodeId(random), "127.0.0.1", 30303)
+		new Node(getNodeId(random), InetAddress.getByName("127.0.0.1"), 30303)
 	}
 
 	def getNode(random: Random, id: Array[Byte], i: Int): Node = {

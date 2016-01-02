@@ -121,10 +121,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 		val key = "active.peers"
 		if (this.config.hasPath(key)) {
 			this.config.getStringList(key).map {
-				each => {
-					val uri = new URI(each)
-					new Node(ImmutableBytes.parseHexString(uri.getUserInfo), uri.getHost, uri.getPort)
-				}
+				each => Node(new URI(each))
 			}
 		} else {
 			Seq.empty

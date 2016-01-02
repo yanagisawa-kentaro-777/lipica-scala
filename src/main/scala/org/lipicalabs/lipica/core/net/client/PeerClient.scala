@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.net.client
 
+import java.net.InetAddress
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -22,10 +23,10 @@ class PeerClient {
 
 	private def worldManager: WorldManager = WorldManager.instance
 
-	def connect(host: String, port: Int, remoteId: String): Unit = connect(host, port, remoteId, discoveryMode = false)
+	def connect(address: InetAddress, port: Int, remoteId: String): Unit = connect(address, port, remoteId, discoveryMode = false)
 
-	def connect(host: String, port: Int, remoteId: String, discoveryMode: Boolean): Unit = {
-		this.worldManager.listener.trace("<PeerClient> Connecting to [%s]:%d".format(host, port))
+	def connect(address: InetAddress, port: Int, remoteId: String, discoveryMode: Boolean): Unit = {
+		this.worldManager.listener.trace("<PeerClient> Connecting to [%s]:%d".format(address, port))
 		val channelInitializer = new LipicaChannelInitializer(remoteId)
 		channelInitializer.peerDiscoveryMode = discoveryMode
 
@@ -34,14 +35,14 @@ class PeerClient {
 				option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE).
 				option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT).
 				option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Integer.valueOf(SystemProperties.CONFIG.connectionTimeoutMillis)).
-				remoteAddress(host, port).
+				remoteAddress(address, port).
 				handler(channelInitializer)
 			//クライアントとして接続する。
 			val future = b.connect().sync()
-			logger.debug("<PeerClient> Connection is established to [%s]:%d.".format(host, port))
+			logger.debug("<PeerClient> Connection is established to [%s]:%d.".format(address, port))
 			//接続がクローズされるまで待つ。
 			future.channel().closeFuture().sync()
-			logger.debug("<PeerClient> Connection is closed to [%s]:%d.".format(host, port))
+			logger.debug("<PeerClient> Connection is closed to [%s]:%d.".format(address, port))
 		} catch {
 			case e: Throwable =>
 				if (discoveryMode) {
