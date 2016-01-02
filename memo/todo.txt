@@ -1,10 +1,11 @@
+再起動するとエラー。
+
 WARNは別のログに出した方が良かろう。
 
 パッケージ構造のrefactor。
 
 Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
 PingにToの情報が欠けているだろう。
-expiresの意味も違う。
 
 アウトラインログを作る。（特にマスターのスイッチ）
 REST APIをいい感じにする。

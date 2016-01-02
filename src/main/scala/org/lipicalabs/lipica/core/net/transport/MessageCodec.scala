@@ -145,9 +145,6 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		val output = "<MessageCode> Exception caught: %s".format(cause.getClass.getSimpleName)
 		if (this._channel.isDiscoveryMode) {
 			loggerNet.debug(output, cause)
-		} else if (cause.getClass.getSimpleName.toLowerCase.contains("timeout")) {
-			//タイムアウトは日常的に発生するものであり、大した問題ではない。
-			loggerNet.debug(output, cause)
 		} else {
 			loggerNet.warn(output, cause)
 		}

@@ -13,19 +13,19 @@ class NeighborsMessage extends TransportMessage {
 	private var _nodes: Seq[Node] = null
 	def nodes: Seq[Node] = this._nodes
 
-	private var _expires: Long = 0L
-	def expires: Long = this._expires
+	private var _timestamp: Long = System.currentTimeMillis / 1000L
+	def timestamp: Long = this._timestamp
 
 	override def parse(data: Array[Byte]): Unit = {
 		val items = RBACCodec.Decoder.decode(data).right.get.items
 		val encodedNodes = items.head.items
 		this._nodes = encodedNodes.map(each => Node.decode(each))
-		this._expires = items(1).asPositiveLong
+		this._timestamp = items(1).asPositiveLong
 	}
 
 	override def toString: String = {
-		"[NeighborsMessage] nodes=%,d, expires in %,d seconds. %s".format(
-			this.nodes.size, this.expires - (System.currentTimeMillis / 1000L), super.toString
+		"[NeighborsMessage] nodes=%,d, timestamp=%,d. %s".format(
+			this.nodes.size, this.timestamp, super.toString
 		)
 	}
 
@@ -34,18 +34,18 @@ class NeighborsMessage extends TransportMessage {
 object NeighborsMessage {
 
 	def create(nodes: Seq[Node], privateKey: ECKey): NeighborsMessage = {
-		val expiration = 60 + System.currentTimeMillis / 1000L
+		val timestamp = System.currentTimeMillis / 1000L
 
 		val encodedNodes = nodes.map(_.toEncodedBytes)
 		val encodedNodesSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(encodedNodes)
-		val encodedExpiration = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(expiration))
+		val encodedTimestamp = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(timestamp))
 
 		val messageType = Array[Byte](4)
-		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNodesSeq, encodedExpiration))
+		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNodesSeq, encodedTimestamp))
 
 		val result: NeighborsMessage = TransportMessage.encode(messageType, data, privateKey)
 		result._nodes = nodes
-		result._expires = expiration
+		result._timestamp = timestamp
 		result
 	}
 
