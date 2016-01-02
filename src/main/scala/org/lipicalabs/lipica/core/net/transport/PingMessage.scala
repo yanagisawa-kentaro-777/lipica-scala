@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import java.net.InetAddress
+import java.net.{InetSocketAddress, InetAddress}
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec}
@@ -40,31 +40,29 @@ class PingMessage extends TransportMessage {
 
 object PingMessage {
 
-	def create(address: InetAddress, port: Int, privateKey: ECKey): PingMessage = {
+	def create(srcAddress: InetSocketAddress, destAddress: InetSocketAddress,  privateKey: ECKey): PingMessage = {
 		val timestamp = System.currentTimeMillis / 1000L
 
-		val addressBytes = address.getAddress
-		val encodedAddress = RBACCodec.Encoder.encode(addressBytes)
-		val portBytes = ByteUtils.toByteArrayWithNoLeadingZeros(port)
-		val encodedPort = RBACCodec.Encoder.encode(portBytes)
+		val encodedSrcAddress = RBACCodec.Encoder.encode(srcAddress.getAddress.getAddress)
+		val encodedSrcPort = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(srcAddress.getPort))
 
-		val encodedHostTo = RBACCodec.Encoder.encode(addressBytes)
-		val encodedPortTo = RBACCodec.Encoder.encode(portBytes)
+		val encodedDestAddress = RBACCodec.Encoder.encode(destAddress.getAddress.getAddress)
+		val encodedDestPort = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(destAddress.getPort))
 
 		val timestampBytes = ByteUtils.toByteArrayWithNoLeadingZeros(timestamp)
 		val encodedTimestamp = RBACCodec.Encoder.encode(timestampBytes)
 
 		val messageType = Array[Byte](1)
 		val encodedVersion = RBACCodec.Encoder.encode(Array[Byte](4))
-		val fromSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedPort, encodedPort))
-		val toSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedHostTo, encodedPortTo, encodedPortTo))
+		val fromSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSrcAddress, encodedSrcPort, encodedSrcPort))
+		val toSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedDestAddress, encodedDestPort, encodedDestPort))
 
 		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedVersion, fromSeq, toSeq, encodedTimestamp))
 
 		val result: PingMessage = TransportMessage.encode(messageType, data, privateKey)
 		result._timestamp = timestamp
-		result._address = address
-		result._port = port
+		result._address = srcAddress.getAddress
+		result._port = srcAddress.getPort
 		result
 	}
 

@@ -153,7 +153,9 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		if (logger.isDebugEnabled) {
 			logger.debug("<NodeHandler> <=== [PING] %s".format(this))
 		}
-		val ping = PingMessage.create(this.nodeManager.table.node.address, this.nodeManager.table.node.port, this.nodeManager.key)
+		val srcAddress = new InetSocketAddress(this.nodeManager.table.node.address, this.nodeManager.table.node.port)
+		val destAddress = new InetSocketAddress(this.node.address, this.node.port)
+		val ping = PingMessage.create(srcAddress, destAddress, this.nodeManager.key)
 		this._waitForPongRef.set(true)
 		this._pingSent = System.currentTimeMillis
 
