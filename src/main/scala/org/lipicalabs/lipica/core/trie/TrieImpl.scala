@@ -289,8 +289,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					}
 				putToCache(newNode)
 			case other =>
-				val s = if (other eq null) "null" else other.getClass.getSimpleName
-				logger.warn("<Trie> Trie error: Node is %s".format(s))
+				if (logger.isDebugEnabled) {
+					//存在しないノードの削除？
+					val s = if (other eq null) "null" else other.getClass.getSimpleName
+					logger.debug("<Trie> Trie error: Node is %s".format(s))
+				}
 				TrieNode.empty
 		}
 	}
