@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.MessageToMessageDecoder
 import org.lipicalabs.lipica.core.net.transport.TransportMessage
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Created by IntelliJ IDEA.

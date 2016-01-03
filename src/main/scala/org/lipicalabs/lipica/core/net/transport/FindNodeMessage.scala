@@ -13,18 +13,18 @@ class FindNodeMessage extends TransportMessage {
 	private var _target: ImmutableBytes = null
 	def target: ImmutableBytes = this._target
 
-	private var _timestamp: Long = System.currentTimeMillis / 1000L
-	def timestamp: Long = this._timestamp
+	private var _expiration: Long = (System.currentTimeMillis / 1000L) + 60L
+	def expiration: Long = this._expiration
 
 	override def parse(data: Array[Byte]): Unit = {
 		val items = RBACCodec.Decoder.decode(data).right.get.items
 		this._target = items.head.bytes
-		this._timestamp = items(1).asPositiveLong
+		this._expiration = items(1).asPositiveLong
 	}
 
 	override def toString: String = {
-		"[FindNodeMessage] target=%s; timestamp=%,d. %s".format(
-			this.target, this.timestamp, super.toString
+		"[FindNodeMessage] target=%s; expiration=%,d. %s".format(
+			this.target, this.expiration, super.toString
 		)
 	}
 }
@@ -32,17 +32,17 @@ class FindNodeMessage extends TransportMessage {
 object FindNodeMessage {
 
 	def create(target: ImmutableBytes, privateKey: ECKey): FindNodeMessage = {
-		val timestamp = System.currentTimeMillis / 1000L
+		val expiration = (System.currentTimeMillis / 1000L) + 60L
 
 		val encodedTarget = RBACCodec.Encoder.encode(target)
-		val encodedTimestamp = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(timestamp))
+		val encodedExpiration = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(expiration))
 
 		val messageType = Array[Byte](3)
-		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedTarget, encodedTimestamp))
+		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedTarget, encodedExpiration))
 
 		val result: FindNodeMessage = TransportMessage.encode(messageType, data, privateKey)
 		result._target = target
-		result._timestamp = timestamp
+		result._expiration = expiration
 		result
 	}
 
