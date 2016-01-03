@@ -7,6 +7,8 @@ import org.apache.commons.codec.binary.Hex
 
 import scala.annotation.tailrec
 
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+
 /**
  * オブジェクト、エンコードされたバイト列、ハッシュ値の相互変換を実行し、
  * また一度計算された値を再計算しなくて済むようにキャッシュするための、

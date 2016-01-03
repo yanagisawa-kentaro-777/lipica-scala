@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.net.transport
 
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
  * Created by IntelliJ IDEA.

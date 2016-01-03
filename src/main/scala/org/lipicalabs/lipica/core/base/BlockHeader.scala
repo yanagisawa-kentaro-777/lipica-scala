@@ -1,8 +1,9 @@
 package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.{ProofOfWorkRule, DifficultyRule}
 
 /**

@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.base.{Transaction, TransactionLike}
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec, ByteUtils}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**

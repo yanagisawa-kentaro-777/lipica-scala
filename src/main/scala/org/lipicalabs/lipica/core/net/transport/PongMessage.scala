@@ -3,7 +3,8 @@ package org.lipicalabs.lipica.core.net.transport
 import java.net.InetSocketAddress
 
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec, ImmutableBytes}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.

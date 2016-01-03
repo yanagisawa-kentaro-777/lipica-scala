@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
-import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  *

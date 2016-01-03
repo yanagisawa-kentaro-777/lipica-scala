@@ -4,7 +4,7 @@ import java.io._
 
 import io.netty.buffer.{ByteBufInputStream, ByteBufOutputStream, ByteBuf}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.RBACCodec
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.spongycastle.crypto.digests.KeccakDigest
 import org.spongycastle.crypto.engines.AESFastEngine
 import org.spongycastle.crypto.modes.SICBlockCipher

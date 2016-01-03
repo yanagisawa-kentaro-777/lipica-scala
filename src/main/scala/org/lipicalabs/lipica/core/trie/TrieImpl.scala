@@ -6,6 +6,7 @@ import org.lipicalabs.lipica.core.utils._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.slf4j.LoggerFactory
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -19,7 +20,7 @@ import scala.collection.mutable
 class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) extends Trie {
 
 	import TrieImpl._
-	import CompactEncoder._
+	import org.lipicalabs.lipica.core.bytes_codec.NibbleCodec._
 
 	def this(_db: KeyValueDataSource) = this(_db, DigestUtils.EmptyTrieHash)
 

@@ -19,7 +19,7 @@
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
 ・WARNは別のログに出した方が良かろう。
-・パッケージ構造のrefactor。
+・パッケージ構造のrefactor。（PacketDecoder、MessageHandler、UDPListener etc.）
 ・アウトラインログを作る。（特にマスターのスイッチ）
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）

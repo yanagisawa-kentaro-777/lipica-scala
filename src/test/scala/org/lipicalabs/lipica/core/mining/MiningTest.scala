@@ -2,7 +2,8 @@ package org.lipicalabs.lipica.core.mining
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.base.{Block, BlockHeader}
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.ProofOfWorkRule
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner

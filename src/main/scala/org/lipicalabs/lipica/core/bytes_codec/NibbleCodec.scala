@@ -1,6 +1,8 @@
-package org.lipicalabs.lipica.core.utils
+package org.lipicalabs.lipica.core.bytes_codec
 
 import java.io.ByteArrayOutputStream
+
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 
 /**
@@ -15,7 +17,7 @@ import java.io.ByteArrayOutputStream
  * わからない、という問題が発生してしまいます。
  * これを解決するために、元のバイト列が偶数か奇数かを表すフラグを持つこととします。
  */
-object CompactEncoder {
+object NibbleCodec {
 
 	val TERMINATOR = 16.toByte
 

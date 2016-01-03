@@ -2,7 +2,8 @@ package org.lipicalabs.lipica.core.crypto.digest
 
 import java.security.MessageDigest
 
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.spongycastle.crypto.Digest
 import org.spongycastle.crypto.digests.{KeccakDigest, RIPEMD160Digest}
 

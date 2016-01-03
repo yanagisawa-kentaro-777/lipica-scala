@@ -2,7 +2,8 @@ package org.lipicalabs.lipica.core.base
 
 import java.util.concurrent.atomic.AtomicReference
 
-import org.lipicalabs.lipica.core.utils.{UtilConsts, RBACCodec, ImmutableBytes}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.LogInfo
 
 import scala.collection.mutable

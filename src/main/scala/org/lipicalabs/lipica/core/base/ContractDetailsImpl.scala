@@ -4,7 +4,8 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.datasource.{DataSourcePool, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable

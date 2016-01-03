@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.trie.SecureTrie
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable

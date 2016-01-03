@@ -5,9 +5,9 @@ import java.nio.charset.StandardCharsets
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.utils.RBACCodec.{Decoder, Encoder}
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
-import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.{DecodedSeq, DecodedBytes}
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.{Decoder, Encoder}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.{DecodedSeq, DecodedBytes}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

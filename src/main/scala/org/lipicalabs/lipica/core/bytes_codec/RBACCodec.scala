@@ -1,7 +1,9 @@
-package org.lipicalabs.lipica.core.utils
+package org.lipicalabs.lipica.core.bytes_codec
 
 import java.io.PrintStream
 import java.nio.charset.StandardCharsets
+
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ByteUtils, Value, ImmutableBytes}
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer

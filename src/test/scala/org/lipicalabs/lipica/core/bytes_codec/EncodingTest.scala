@@ -2,8 +2,8 @@ package org.lipicalabs.lipica.core.bytes_codec
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, RBACCodec}
-import org.lipicalabs.lipica.core.utils.RBACCodec.Encoder
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Encoder
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
