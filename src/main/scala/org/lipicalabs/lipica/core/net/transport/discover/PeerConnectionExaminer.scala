@@ -12,12 +12,15 @@ import org.slf4j.LoggerFactory
 import scala.collection.{JavaConversions, mutable}
 
 /**
+ * ピア候補のノードと、正常に通信ができるか否かを検証するためのクラスです。
+ * （自ノード全体で１個のインスタンス。）
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/22 12:21
  * YANAGISAWA, Kentaro
  */
-class PeerConnectionManager {
-	import PeerConnectionManager._
+class PeerConnectionExaminer {
+	import PeerConnectionExaminer._
 
 	private def worldManager: WorldManager = WorldManager.instance
 
@@ -35,15 +38,19 @@ class PeerConnectionManager {
 			try {
 				this.nodeHandler.nodeStatistics.transportConnectionAttempts.add
 				if (logger.isDebugEnabled) {
-					logger.debug("<PeerConnectionManager> Trying node connection " + this.nodeHandler)
+					logger.debug("<PeerConnectionExaminer> Trying node connection " + this.nodeHandler)
 				}
+				//
+				//接続を試行し、切断されるまでブロックする。
 				val node = this.nodeHandler.node
 				worldManager.activePeer.connect(node.address.getAddress, node.address.getPort, node.id.toHexString, discoveryMode = true)
 				if (logger.isDebugEnabled) {
-					logger.debug("<PeerConnectionManager> Terminated node connection " + this.nodeHandler)
+					logger.debug("<PeerConnectionExaminer> Terminated node connection " + this.nodeHandler)
 				}
+				//ここに来たということは、切断された。
 				this.nodeHandler.nodeStatistics.disconnected()
 				if ((this.nodeHandler.nodeStatistics.lpcTotalDifficulty != UtilConsts.Zero) && (0 < ReconnectPeriod) && ((_reconnectPeersCount < ReconnectMaxPeers) || (ReconnectMaxPeers < 0))) {
+					//これは悪くないノードであるから、定期的にタッチを更新する。
 					_reconnectPeersCount += 1
 					reconnectTimer.schedule(new Runnable {
 						override def run() = {
@@ -51,17 +58,25 @@ class PeerConnectionManager {
 							_reconnectPeersCount -= 1
 						}
 					}, ReconnectPeriod, TimeUnit.MILLISECONDS)
+					if (logger.isDebugEnabled) {
+						logger.debug("<PeerConnectionExaminer> Keeping in touch with %s".format(this.nodeHandler))
+					}
+				} else {
+					if (logger.isDebugEnabled) {
+						logger.debug("<PeerConnectionExaminer> Forgetting %s".format(this.nodeHandler))
+					}
 				}
 			} catch {
 				case e: Exception =>
-					logger.warn("<PeerConnectionManager> Exception caught: %s".format(e.getClass.getSimpleName), e)
+					logger.warn("<PeerConnectionExaminer> Exception caught: %s".format(e.getClass.getSimpleName), e)
 			}
 		}
 	}
 
 	def nodeStatusChanged(nodeHandler: NodeHandler): Unit = {
+		//TODO この実装、メモリリークに近い。
 		if (!connectedCandidates.contains(nodeHandler)) {
-			logger.debug("<PeerConnectionManager> Submitting node for transport: " + nodeHandler)
+			logger.debug("<PeerConnectionExaminer> Submitting node for transport: " + nodeHandler)
 		}
 		this.connectedCandidates.put(nodeHandler, nodeHandler)
 		this.peerConnectionPool.execute(new ConnectTask(nodeHandler))
@@ -69,7 +84,7 @@ class PeerConnectionManager {
 
 }
 
-object PeerConnectionManager {
+object PeerConnectionExaminer {
 	private val logger = LoggerFactory.getLogger("discover")
 
 	private val ConnectThreads = SystemProperties.CONFIG.peerDiscoveryWorkers

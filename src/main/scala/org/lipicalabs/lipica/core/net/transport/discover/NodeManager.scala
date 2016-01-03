@@ -28,7 +28,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 
 	def worldManager: WorldManager = WorldManager.instance
 
-	val peerConnectionManager: PeerConnectionManager = new PeerConnectionManager
+	val peerConnectionExaminer: PeerConnectionExaminer = new PeerConnectionExaminer
 	val mapDBFactory: MapDBFactory = new MapDBFactoryImpl
 
 	private var _messageSender: MessageHandler = null
@@ -180,7 +180,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	}
 
 	def stateChanged(nodeHandler: NodeHandler, oldState: NodeHandler.State, newState: NodeHandler.State): Unit = {
-		this.peerConnectionManager.nodeStatusChanged(nodeHandler)
+		this.peerConnectionExaminer.nodeStatusChanged(nodeHandler)
 	}
 
 	def getNodes(minReputation: Int): Seq[NodeHandler] = {
