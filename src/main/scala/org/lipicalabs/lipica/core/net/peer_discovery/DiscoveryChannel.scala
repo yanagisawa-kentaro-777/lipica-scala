@@ -16,7 +16,7 @@ import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler}
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
-import org.lipicalabs.lipica.core.net.transport.MessageCodec
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -40,7 +40,7 @@ class DiscoveryChannel {
 	def getHelloHandshake: HelloMessage = this.p2pHandler.handshakeHelloMessage
 	def getStatusHandshake: StatusMessage = this.lpcHandler.getHandshakeStatusMessage
 
-	def connect(host: InetAddress, port: Int, remoteId: String): Unit = {
+	def connect(host: InetAddress, port: Int, remoteNodeId: ImmutableBytes): Unit = {
 		val workerGroup: EventLoopGroup = new NioEventLoopGroup
 		this.worldManager.listener.trace("<DiscoveryChannel> Connecting to [%s]:%d".format(host, port))
 		try {
@@ -61,7 +61,7 @@ class DiscoveryChannel {
 
 			//val codec = new MessageCodec
 
-			val initializer = new LipicaChannelInitializer(remoteId)
+			val initializer = new LipicaChannelInitializer(remoteNodeId)
 			initializer.peerDiscoveryMode = true
 			initializer.setInitializedCallback((channel: Channel) => {
 				this.p2pHandler.channel = channel

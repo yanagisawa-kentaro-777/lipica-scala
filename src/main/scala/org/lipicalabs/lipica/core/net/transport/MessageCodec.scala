@@ -42,8 +42,8 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _nodeId: ImmutableBytes = null
 	def nodeId: ImmutableBytes = this._nodeId
 
-	private var _remoteId: ImmutableBytes = null
-	def remoteId: ImmutableBytes = this._remoteId
+	private var _remoteNodeId: ImmutableBytes = null
+	def remoteNodeId: ImmutableBytes = this._remoteNodeId
 
 	private var _handshake: EncryptionHandshake = null
 	def handshake: EncryptionHandshake = this._handshake
@@ -81,8 +81,8 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	class InitiateHandler extends ChannelInboundHandlerAdapter {
 		override def channelActive(ctx: ChannelHandlerContext): Unit = {
 			channel.inetSocketAddress = ctx.channel.remoteAddress.asInstanceOf[InetSocketAddress]
-			if (remoteId.length == 64) {
-				channel.setNode(remoteId)
+			if (remoteNodeId.length == 64) {
+				channel.setNode(remoteNodeId)
 				initiate(ctx)
 			} else {
 				_handshake = EncryptionHandshake.createResponder
@@ -95,8 +95,8 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		loggerNet.info("<MessageCodec> Transport activated.")
 
 		this._nodeId = ImmutableBytes(myKey.getNodeId)
-		val remotePublicBytes = new Array[Byte](remoteId.length + 1)
-		remoteId.copyTo(0, remotePublicBytes, 1, remoteId.length)
+		val remotePublicBytes = new Array[Byte](remoteNodeId.length + 1)
+		remoteNodeId.copyTo(0, remotePublicBytes, 1, remoteNodeId.length)
 		remotePublicBytes(0) = 0x04//uncomporessed.
 		val remotePublicKeyPoint = ECKey.fromPublicOnly(remotePublicBytes).getPubKeyPoint
 		this._handshake = EncryptionHandshake.createInitiator(remotePublicKeyPoint)
@@ -209,8 +209,8 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 
 					val remoteIdBytes = new Array[Byte](compressed.length - 1)
 					System.arraycopy(compressed, 1, remoteIdBytes, 0, remoteIdBytes.length)
-					this._remoteId = ImmutableBytes(remoteIdBytes)
-					this._channel.setNode(this._remoteId)
+					this._remoteNodeId = ImmutableBytes(remoteIdBytes)
+					this._channel.setNode(this._remoteNodeId)
 
 					val byteBuffer = ctx.alloc.buffer(responsePacket.length)
 					byteBuffer.writeBytes(responsePacket)
@@ -311,8 +311,8 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		}
 	}
 
-	def setRemoteId(remoteId: String, channel: Channel): Unit = {
-		this._remoteId = ImmutableBytes.parseHexString(remoteId)
+	def setRemoteNodeId(aRemoteNodeId: ImmutableBytes, channel: Channel): Unit = {
+		this._remoteNodeId = aRemoteNodeId
 		this._channel = channel
 	}
 

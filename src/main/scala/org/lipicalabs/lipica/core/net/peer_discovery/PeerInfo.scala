@@ -5,8 +5,8 @@ import java.net.InetAddress
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.HelloMessage
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
-import scala.StringBuilder
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -15,7 +15,7 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/12/07 20:28
  * YANAGISAWA, Kentaro
  */
-class PeerInfo(val address: InetAddress, val port: Int, val peerId: String) {
+class PeerInfo(val address: InetAddress, val port: Int, val nodeId: ImmutableBytes) {
 
 	@transient
 	private var _online: Boolean = false
@@ -61,8 +61,8 @@ class PeerInfo(val address: InetAddress, val port: Int, val peerId: String) {
 	}
 
 	override def toString: String = {
-		"PeerInfo[Address=%s, Port=%d, PeerId=%s, HelloMessage=%s, StatusMessage=%s".format(
-			this.address, this.port, this.peerId, this.handshakeHelloMessage, this.statusMessage
+		"PeerInfo[Address=%s, Port=%d, NodeId=%s, HelloMessage=%s, StatusMessage=%s".format(
+			this.address, this.port, this.nodeId.toShortString, this.handshakeHelloMessage, this.statusMessage
 		)
 	}
 

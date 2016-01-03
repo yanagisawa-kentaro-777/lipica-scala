@@ -69,7 +69,7 @@ class Channel {
 	private var _discoveryMode: Boolean = false
 	def isDiscoveryMode: Boolean = this._discoveryMode
 
-	def init(pipeline: ChannelPipeline, remoteId: String, aDiscoveryMode: Boolean): Unit = {
+	def init(pipeline: ChannelPipeline, remoteNodeId: ImmutableBytes, aDiscoveryMode: Boolean): Unit = {
 		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(SystemProperties.CONFIG.readTimeoutMillis, TimeUnit.MILLISECONDS))
 		pipeline.addLast("initiator", messageCodec.initiator)
 		pipeline.addLast("messageCodec", messageCodec)
@@ -80,7 +80,7 @@ class Channel {
 			//reputationに影響しないように、匿名化する。
 			this.messageCodec.generateTempKey()
 		}
-		this.messageCodec.setRemoteId(remoteId, this)
+		this.messageCodec.setRemoteNodeId(remoteNodeId, this)
 
 		this.p2pHandler.messageQueue = this.messageQueue
 		this.messageCodec.setP2PMessageFactory(new P2PMessageFactory)

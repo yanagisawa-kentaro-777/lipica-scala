@@ -13,6 +13,7 @@ import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 
 /**
@@ -37,7 +38,7 @@ trait Lipica extends Closeable {
 
 	def stopPeerDiscovery(): Unit
 
-	def connect(address: InetSocketAddress, remoteId: String)
+	def connect(address: InetSocketAddress, remoteNodeId: ImmutableBytes)
 
 	def connect(node: Node): Unit
 

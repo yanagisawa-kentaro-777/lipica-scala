@@ -3,11 +3,9 @@ package org.lipicalabs.lipica.core.net.p2p
 import java.net.InetAddress
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.base.Block
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.message.ReasonCode
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.validator.{ExtraDataRule, ManaValueRule, ProofOfWorkRule, BlockHeaderValidator}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -95,7 +93,7 @@ class P2PMessagesTest extends Specification {
 
 	"test PeersMessage" should {
 		"be right" in {
-			val message = PeersMessage(Set(Peer(InetAddress.getByAddress(Array[Byte](192.toByte, 168.toByte, 100.toByte, 101.toByte)), 123, "peerId", Seq(Capability("a", 2)))))
+			val message = PeersMessage(Set(Peer(InetAddress.getByAddress(Array[Byte](192.toByte, 168.toByte, 100.toByte, 101.toByte)), 123, ImmutableBytes.parseHexString("0123456789"), Seq(Capability("a", 2)))))
 			val encoded = message.toEncodedBytes
 			val decoded: PeersMessage = decodeMessage(P2PMessageCode.Peers.asByte, encoded)
 

@@ -6,6 +6,7 @@ import java.util.concurrent._
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.net.p2p.Peer
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 import scala.collection.{mutable, JavaConversions}
@@ -74,7 +75,7 @@ class PeerDiscovery {
 	def addPeers(newPeers: Set[Peer]): Unit = {
 		this._peers.synchronized {
 			for (newPeer <- newPeers) {
-				val peerInfo = new PeerInfo(newPeer.address, newPeer.port, newPeer.peerId)
+				val peerInfo = new PeerInfo(newPeer.address, newPeer.port, newPeer.nodeId)
 				if (this.isStarted && !this._peers.contains(peerInfo)) {
 					startWorker(peerInfo)
 				}
@@ -90,7 +91,7 @@ class PeerDiscovery {
 					val trimmed = each.trim
 					val uri = URI.create(trimmed)
 
-					Option(new PeerInfo(InetAddress.getByName(uri.getHost), uri.getPort, uri.getUserInfo))
+					Option(new PeerInfo(InetAddress.getByName(uri.getHost), uri.getPort, ImmutableBytes.parseHexString(uri.getUserInfo)))
 				} catch {
 					case e: UnknownHostException =>
 						logger.warn("<PeerDiscovery> Unknown host.", e)

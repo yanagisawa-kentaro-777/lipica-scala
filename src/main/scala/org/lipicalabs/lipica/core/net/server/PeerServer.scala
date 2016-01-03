@@ -8,6 +8,7 @@ import io.netty.handler.logging.LoggingHandler
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -20,7 +21,7 @@ class PeerServer {
 
 	private def worldManager: WorldManager = WorldManager.instance
 
-	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer("")
+	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer(ImmutableBytes.empty)
 
 	def start(port: Int): Unit = {
 		val bossGroup = new NioEventLoopGroup(1)

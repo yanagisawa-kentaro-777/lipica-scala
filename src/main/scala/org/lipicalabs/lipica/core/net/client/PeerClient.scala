@@ -11,9 +11,12 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
+ * クライアントとしてTCP接続を確立するクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/13 15:42
  * YANAGISAWA, Kentaro
@@ -23,11 +26,17 @@ class PeerClient {
 
 	private def worldManager: WorldManager = WorldManager.instance
 
-	def connect(address: InetAddress, port: Int, remoteId: String): Unit = connect(address, port, remoteId, discoveryMode = false)
+	/**
+	 *
+	 * @param address 接続先アドレス。
+	 * @param port
+	 * @param nodeId 接続先ノードID。
+	 */
+	def connect(address: InetAddress, port: Int, nodeId: ImmutableBytes): Unit = connect(address, port, nodeId, discoveryMode = false)
 
-	def connect(address: InetAddress, port: Int, remoteId: String, discoveryMode: Boolean): Unit = {
+	def connect(address: InetAddress, port: Int, nodeId: ImmutableBytes, discoveryMode: Boolean): Unit = {
 		this.worldManager.listener.trace("<PeerClient> Connecting to [%s]:%d".format(address, port))
-		val channelInitializer = new LipicaChannelInitializer(remoteId)
+		val channelInitializer = new LipicaChannelInitializer(nodeId)
 		channelInitializer.peerDiscoveryMode = discoveryMode
 
 		try {

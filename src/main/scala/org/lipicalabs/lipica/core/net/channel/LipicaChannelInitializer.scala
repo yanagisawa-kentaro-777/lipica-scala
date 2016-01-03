@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory
  * 2015/12/13 15:47
  * YANAGISAWA, Kentaro
  */
-class LipicaChannelInitializer(val remoteId: String) extends ChannelInitializer[NioSocketChannel] {
+class LipicaChannelInitializer(val nodeId: ImmutableBytes) extends ChannelInitializer[NioSocketChannel] {
 
 	import LipicaChannelInitializer._
 
@@ -36,7 +37,7 @@ class LipicaChannelInitializer(val remoteId: String) extends ChannelInitializer[
 		try {
 			logger.info("<ChannelInitializer> Opening connection: %s".format(ch))
 			val channel = new Channel
-			channel.init(ch.pipeline, this.remoteId, this.peerDiscoveryMode)
+			channel.init(ch.pipeline, this.nodeId, this.peerDiscoveryMode)
 			if (!peerDiscoveryMode) {
 				this.channelManager.add(channel)
 			}

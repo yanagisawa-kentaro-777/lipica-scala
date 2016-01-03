@@ -36,7 +36,7 @@ class WorkerTask extends Runnable {
 	private def processCommand(): Unit = {
 		try {
 			val discoveryChannel = new DiscoveryChannel
-			discoveryChannel.connect(this.peerInfo.address, this.peerInfo.port, this.peerInfo.peerId)
+			discoveryChannel.connect(this.peerInfo.address, this.peerInfo.port, this.peerInfo.nodeId)
 			peerInfo.online = true
 
 			peerInfo.handshakeHelloMessage = discoveryChannel.getHelloHandshake
