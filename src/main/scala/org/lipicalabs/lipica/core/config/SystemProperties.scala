@@ -164,13 +164,30 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 
 	override def txOutdatedThreshold: Int = this.config.getInt("transaction.outdated.threshold")
 
+	/**
+	 * 自ノードが属すべき「ネットワーク」の識別子です。
+	 * 「ネットワーク」とは、テスト用空間、本番用空間等を区別するためのものです。
+	 */
 	override def networkId: Int = this.config.getInt("node.network.id")
+
+	/**
+	 * 自ノードの秘密鍵です。
+	 */
 	override def myKey: ECKey = {
 		val hex = this.config.getString("node.private.key")
 		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
 	}
+
+	/**
+	 * 「ネットワーク」内における自ノードの一意識別子です。
+	 * その内容は、自ノードの秘密鍵に対応する公開鍵です。
+	 */
 	override def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
 
+	/**
+	 * 他ノードに対して宣伝する、自ノードの体外部アドレスです。
+	 * （典型的には、他ノードがインターネット経由で自ノードに接続しようとする際に利用。）
+	 */
 	private val externalAddressRef: AtomicReference[String] = new AtomicReference[String](null)
 	override def externalAddress: String = {
 		val result = this.externalAddressRef.get

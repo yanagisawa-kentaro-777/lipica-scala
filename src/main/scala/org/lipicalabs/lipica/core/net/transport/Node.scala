@@ -6,22 +6,23 @@ import org.lipicalabs.lipica.core.utils.{RBACCodec, ImmutableBytes}
 import org.lipicalabs.lipica.core.utils.RBACCodec.Decoder.DecodedResult
 
 /**
+ * 自ノードもしくは他ノードの重要な情報をモデル化したクラスです。
+ *
+ * @param id ノードの一意識別子。（内容はノードの秘密鍵に対応する公開鍵です。）
+ * @param address ノードのアドレス。
+ * @param port ノードのポート番号。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/11 19:38
  * YANAGISAWA, Kentaro
  */
-class Node(private var _id: ImmutableBytes, val address: InetAddress, private var _port: Int) extends Serializable {
+class Node(val id: ImmutableBytes, val address: InetAddress, val port: Int) extends Serializable {
 
-	def id: ImmutableBytes = this._id
-	def id_=(v: ImmutableBytes): Unit = this._id = v
+//	def id: ImmutableBytes = this._id
+//	def id_=(v: ImmutableBytes): Unit = this._id = v
+
 	def hexId: String = this.id.toHexString
-	def hexIdShort: String = this.hexId.substring(0, 8)
-
-//	def host: String = this._host
-//	def host_=(v: String): Unit = this._host = v
-
-	def port: Int = this._port
-	def port_=(v: Int): Unit = this._port = v
+	def hexIdShort: String = this.id.toShortString
 
 	def toEncodedBytes: ImmutableBytes = {
 		val encodedHost = RBACCodec.Encoder.encode(ImmutableBytes(this.address.getAddress))
@@ -47,7 +48,7 @@ class Node(private var _id: ImmutableBytes, val address: InetAddress, private va
 
 	override def hashCode: Int = toString.hashCode
 
-	override def toString: String = "Node[Id=%s..., Host=%s, Port=%d]".format( this.hexIdShort, this.address, this.port)
+	override def toString: String = "Node[Id=%s, Host=%s, Port=%d]".format( this.hexIdShort, this.address, this.port)
 
 }
 

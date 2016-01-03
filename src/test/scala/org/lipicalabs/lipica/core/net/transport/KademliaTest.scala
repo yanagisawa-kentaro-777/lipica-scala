@@ -91,9 +91,7 @@ class KademliaTest extends Specification {
 
 	def getNode(random: Random, id: Array[Byte], i: Int): Node = {
 		id(0) = (id(0) + i).toByte
-		val n = getNode(random)
-		n.id = ImmutableBytes(id)
-		n
+		new Node(ImmutableBytes(id), InetAddress.getByName("127.0.0.1"), 30303)
 	}
 
 	def getTestNodeTable(random: Random, nodesCount: Int): NodeTable = {

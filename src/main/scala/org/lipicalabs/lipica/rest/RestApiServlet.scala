@@ -26,9 +26,9 @@ class RestApiServlet extends ScalatraServlet {
 				val hostAddress = each.node.address.getHostAddress
 				val hostName = each.node.address.getCanonicalHostName
 				if (hostAddress != hostName) {
-					"%s...\t%s\t%s\t%d".format(each.peerIdShort, hostAddress, hostName, each.node.port)
+					"%s\t%s\t%s\t%d".format(each.peerIdShort, hostAddress, hostName, each.node.port)
 				} else {
-					"%s...\t%s\t%d".format(each.peerIdShort, hostAddress, each.node.port)
+					"%s\t%s\t%d".format(each.peerIdShort, hostAddress, each.node.port)
 				}
 			}).mkString("\n"),
 			worldManager.peersPool.bannedPeerIdSet.size,
