@@ -74,12 +74,11 @@ class PeerConnectionExaminer {
 	}
 
 	def nodeStatusChanged(nodeHandler: NodeHandler): Unit = {
-		//TODO この実装、メモリリークに近い。
 		if (!connectedCandidates.contains(nodeHandler)) {
 			logger.debug("<PeerConnectionExaminer> Submitting node for transport: " + nodeHandler)
+			this.connectedCandidates.put(nodeHandler, nodeHandler)
+			this.peerConnectionPool.execute(new ConnectTask(nodeHandler))
 		}
-		this.connectedCandidates.put(nodeHandler, nodeHandler)
-		this.peerConnectionPool.execute(new ConnectTask(nodeHandler))
 	}
 
 }
