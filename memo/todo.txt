@@ -2,6 +2,7 @@
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
 ・ブロック情報の保存と再生を実行する。
 ・NewBlockとは何か？
+・PeerIdを文字列で扱うのは正式仕様なのか？
 ・Kademliaのソートを学ぶ。
 ・KademliaTest test(3)、seed = 1451268255658L で 5000件時にエラー。
 ・Active Peerについて考えなおす。
@@ -15,8 +16,6 @@
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-・PeerIdを文字列で扱うのは正式仕様なのか？
-・WorldManagerのactivePeerという名前はないだろう。
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
 ・WARNは別のログに出した方が良かろう。

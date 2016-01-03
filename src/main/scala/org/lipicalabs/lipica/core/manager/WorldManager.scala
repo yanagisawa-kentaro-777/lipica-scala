@@ -77,9 +77,8 @@ class WorldManager extends Closeable {
 	}
 
 
-	private val activePeerRef = new AtomicReference[PeerClient](null)
-	def activePeer: PeerClient = this.activePeerRef.get
-	def activePeer_=(v: PeerClient): Unit = this.activePeerRef.set(v)
+	private val clientRef = new AtomicReference[PeerClient](null)
+	def client: PeerClient = this.clientRef.get
 
 
 	def init(): Unit = {
@@ -91,7 +90,7 @@ class WorldManager extends Closeable {
 
 		loadBlockchain()
 
-		this.activePeer = new PeerClient
+		this.clientRef.set(new PeerClient)
 
 		this.udpListener.start()
 		this.syncManager.start()

@@ -17,7 +17,7 @@ import org.lipicalabs.lipica.core.net.submit.{TransactionExecutor, TransactionTa
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
-import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
+import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -34,7 +34,7 @@ class LipicaImpl extends Lipica {
 	def channelManager: ChannelManager = worldManager.channelManager
 	val peerServer: PeerServer = new PeerServer
 	val blockLoader: BlockLoader = new BlockLoader
-	val programInvokeFactory: ProgramInvokeFactory = new ProgramInvokeFactoryImpl
+	def programInvokeFactory: ProgramInvokeFactory = worldManager.programInvokeFactory
 
 	private val manaPriceTracker = new ManaPriceTracker
 
@@ -113,16 +113,8 @@ class LipicaImpl extends Lipica {
 
 	override def addListener(listener: LipicaListener) = worldManager.listener.addListener(listener)
 
-	override def getDefaultPeer: PeerClient = {
-		var result = this.worldManager.activePeer
-		if (result eq null) {
-			result = new PeerClient
-			this.worldManager.activePeer = result
-		}
-		result
-	}
+	override def client: PeerClient = this.worldManager.client
 
-	override def isConnected: Boolean = Option(this.worldManager.activePeer).isDefined
 
 	/**
 	 * Factory for general transaction

@@ -32,7 +32,7 @@ trait Lipica extends Closeable {
 
 	def getPeers: Set[PeerInfo]
 
-	def getDefaultPeer: PeerClient
+	def client: PeerClient
 
 	def startPeerDiscovery(): Unit
 
@@ -45,8 +45,6 @@ trait Lipica extends Closeable {
 	def getBlockchain: BlockchainIF
 
 	def addListener(listener: LipicaListener): Unit
-
-	def isConnected: Boolean
 
 	override def close(): Unit
 
