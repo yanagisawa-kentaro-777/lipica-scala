@@ -94,7 +94,7 @@ class PeersPool {
 			val hits = this.disconnectHits.getOrElse(peer.peerId, 0)
 			if (DisconnectHitsThreshold < hits) {
 				ban(peer)
-				logger.info("<PeersPool> Peer %s is banned due to frequent disconnections.".format(peer.peerIdShort))
+				logger.info("<PeersPool> Banning a peer: Peer %s is banned due to frequent disconnections.".format(peer.peerIdShort))
 				this.disconnectHits.remove(peer.peerId)
 			} else {
 				this.disconnectHits.put(peer.peerId, hits + 1)
@@ -184,6 +184,12 @@ class PeersPool {
 
 	def logBannedPeers(): Unit = {
 		//TODO 未実装。
+	}
+
+	def bannedPeerIdSet: Set[String] = {
+		this.synchronized {
+			this.bans.keySet.map(_.substring(1, 8)).toSet
+		}
 	}
 
 	private def releaseBans(): Unit = {

@@ -153,7 +153,7 @@ class SyncManager {
 	def reportInvalidBlock(nodeId: ImmutableBytes): Unit = {
 		this.pool.getByNodeId(nodeId).foreach {
 			peer => {
-				logger.info("<SyncManager> Peer %s: Invalid block received. Ban it.".format(peer.peerIdShort))
+				logger.info("<SyncManager> Banning a peer: Peer %s: Invalid block received.".format(peer.peerIdShort))
 				this.pool.ban(peer)
 			}
 		}
@@ -292,7 +292,7 @@ class SyncManager {
 	private def removeUselessPeers(): Unit = {
 		val removed = this.pool.peers.filter(_.hasBlocksLack)
 		for (each <- removed) {
-			logger.info("<SyncManager> Peer %s has no more blocks. Removing.".format(each.peerIdShort))
+			logger.info("<SyncManager> Banning a peer: Peer %s has no more blocks. Removing.".format(each.peerIdShort))
 			this.pool.ban(each)
 			updateLowerUsefulDifficulty(each.totalDifficulty)
 		}

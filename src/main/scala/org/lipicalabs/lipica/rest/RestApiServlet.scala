@@ -16,7 +16,7 @@ class RestApiServlet extends ScalatraServlet {
 		val worldManager = WorldManager.instance
 		val bestBlock = worldManager.blockchain.bestBlock
 
-		val response = "NodeId=%s\nExternalAddress=%s;BindAddress=%s\n\nBestBlock=[%,d %s]\n\nActive Peers:%d\n%s\n\n".format(
+		val response = "NodeId=%s\nExternalAddress=%s;BindAddress=%s\n\nBestBlock=[%,d %s]\n\nActive Peers:%,d\n%s\n\nBanned Peers:%,d\n%s".format(
 			SystemProperties.CONFIG.nodeId,
 			SystemProperties.CONFIG.externalAddress,
 			SystemProperties.CONFIG.bindAddress,
@@ -30,7 +30,9 @@ class RestApiServlet extends ScalatraServlet {
 				} else {
 					"%s...\t%s\t%d".format(each.peerIdShort, hostAddress, each.node.port)
 				}
-			}).mkString("\n")
+			}).mkString("\n"),
+			worldManager.peersPool.bannedPeerIdSet.size,
+			worldManager.peersPool.bannedPeerIdSet.mkString("\n")
 		)
 		status = 200
 		Ok(response)
