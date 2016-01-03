@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.transport.discover
+package org.lipicalabs.lipica.core.net.server
 
 import java.net.InetSocketAddress
 
@@ -6,9 +6,16 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.socket.DatagramPacket
 import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
+import org.lipicalabs.lipica.core.net.transport.discover.{DiscoveryEvent, NodeManager}
 import org.slf4j.LoggerFactory
 
 /**
+ * UDPListener で netty のハンドラパイプラインに登録されて、
+ * ネットワークと NodeManager との橋渡し役を務めるクラスです。
+ *
+ * 送信すべきメッセージをUDPデータグラムに変換して netty に渡します。
+ * （つまり、PacketDecoder の逆側です。）
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/21 10:54
  * YANAGISAWA, Kentaro

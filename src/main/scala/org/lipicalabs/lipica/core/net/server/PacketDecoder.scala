@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.transport.discover
+package org.lipicalabs.lipica.core.net.server
 
 import java.util
 
@@ -6,9 +6,15 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.MessageToMessageDecoder
 import org.lipicalabs.lipica.core.net.transport.TransportMessage
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.net.transport.discover.DiscoveryEvent
 
 /**
+ * UDPListener で netty のハンドラパイプラインに登録されて、
+ * ネットワークと NodeManager との橋渡し役を務めるクラスです。
+ *
+ * 受信したUDPデータグラムをメッセージに変換して netty のパイプラインに渡します。
+ * （つまり、MessageHandlerの逆側です。）
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/22 15:47
  * YANAGISAWA, Kentaro

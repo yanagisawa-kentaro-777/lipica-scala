@@ -12,7 +12,6 @@ import org.specs2.runner.JUnitRunner
  * 2015/09/08 13:01
  * YANAGISAWA, Kentaro
  */
-
 @RunWith(classOf[JUnitRunner])
 class EncodingTest extends Specification {
 	sequential
@@ -144,7 +143,6 @@ class EncodingTest extends Specification {
 				"f856a000000000000000000000000000000000000000000000000000000000000000001dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000"
 		}
 	}
-
 
 	"new case 1" should {
 		"be right" in {

@@ -8,7 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioDatagramChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.net.transport.discover.{DiscoveryExecutor, MessageHandler, PacketDecoder}
+import org.lipicalabs.lipica.core.net.transport.discover.DiscoveryExecutor
 import org.slf4j.LoggerFactory
 
 /**

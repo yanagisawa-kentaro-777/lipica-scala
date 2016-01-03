@@ -9,6 +9,7 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.db.datasource.mapdb.{MapDBFactoryImpl, MapDBFactory}
 import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.net.server.MessageHandler
 import org.lipicalabs.lipica.core.net.transport._
 import org.lipicalabs.lipica.core.net.transport.discover.NodeStatistics.Persistent
 import org.lipicalabs.lipica.core.net.transport.discover.table.NodeTable
