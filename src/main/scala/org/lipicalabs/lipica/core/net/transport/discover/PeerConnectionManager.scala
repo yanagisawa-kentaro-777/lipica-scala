@@ -38,7 +38,7 @@ class PeerConnectionManager {
 					logger.debug("<PeerConnectionManager> Trying node connection " + this.nodeHandler)
 				}
 				val node = this.nodeHandler.node
-				worldManager.activePeer.connect(node.address, node.port, node.id.toHexString, discoveryMode = true)
+				worldManager.activePeer.connect(node.address.getAddress, node.address.getPort, node.id.toHexString, discoveryMode = true)
 				if (logger.isDebugEnabled) {
 					logger.debug("<PeerConnectionManager> Terminated node connection " + this.nodeHandler)
 				}

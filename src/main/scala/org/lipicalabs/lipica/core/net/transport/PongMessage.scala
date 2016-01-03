@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import java.net.InetAddress
+import java.net.InetSocketAddress
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.utils.{ByteUtils, RBACCodec, ImmutableBytes}
@@ -37,18 +37,18 @@ class PongMessage extends TransportMessage {
 
 object PongMessage {
 
-	def create(token: ImmutableBytes, address: InetAddress, port: Int, privateKey: ECKey): PongMessage = {
+	def create(token: ImmutableBytes, address: InetSocketAddress, privateKey: ECKey): PongMessage = {
 		val timestamp = System.currentTimeMillis / 1000L
 
-		val encodedAddress = RBACCodec.Encoder.encode(address.getAddress)
-		val encodedPort = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(port))
-		val encodedTo = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedPort, encodedPort))
+		val encodedAddress = RBACCodec.Encoder.encode(address.getAddress.getAddress)
+		val encodedPort = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(address.getPort))
+		val encodedDest = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedPort, encodedPort))
 
 		val encodedToken = RBACCodec.Encoder.encode(token)
 		val encodedTimestamp = RBACCodec.Encoder.encode(ByteUtils.toByteArrayWithNoLeadingZeros(timestamp))
 
 		val messageType = Array[Byte](2)
-		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedTo, encodedToken, encodedTimestamp))
+		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedDest, encodedToken, encodedTimestamp))
 
 		val pong: PongMessage = TransportMessage.encode(messageType, data, privateKey)
 		pong._token = token

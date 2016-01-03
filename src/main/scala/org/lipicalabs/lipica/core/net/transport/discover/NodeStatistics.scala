@@ -49,7 +49,7 @@ class NodeStatistics(val node: Node) {
 	val transportOutMessages = new StatHandler
 	val transportInMessages = new StatHandler
 
-	def statName = "discover.nodes.%s:%d".format(this.node.address, this.node.port)
+	def statName = "discover.nodes.%s".format(this.node.address)
 	val discoverMessageLatency: Statter = new SimpleStatter(statName + ".message.latency")
 
 	private var _clientId: String = ""

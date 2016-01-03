@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import java.net.InetAddress
+import java.net.{InetSocketAddress, InetAddress}
 import java.util.Random
 
 import org.junit.runner.RunWith
@@ -86,12 +86,12 @@ class KademliaTest extends Specification {
 	}
 
 	private def getNode(random: Random): Node = {
-		new Node(getNodeId(random), InetAddress.getByName("127.0.0.1"), 30303)
+		new Node(getNodeId(random), new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 30303))
 	}
 
 	def getNode(random: Random, id: Array[Byte], i: Int): Node = {
 		id(0) = (id(0) + i).toByte
-		new Node(ImmutableBytes(id), InetAddress.getByName("127.0.0.1"), 30303)
+		new Node(ImmutableBytes(id), new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 30303))
 	}
 
 	def getTestNodeTable(random: Random, nodesCount: Int): NodeTable = {

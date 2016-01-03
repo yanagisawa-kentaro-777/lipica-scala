@@ -23,12 +23,12 @@ class RestApiServlet extends ScalatraServlet {
 			bestBlock.blockNumber, bestBlock.hash.toShortString,
 			worldManager.peersPool.activeCount,
 			worldManager.peersPool.peers.map(each => {
-				val hostAddress = each.node.address.getHostAddress
-				val hostName = each.node.address.getCanonicalHostName
+				val hostAddress = each.node.address.getAddress.getHostAddress
+				val hostName = each.node.address.getAddress.getCanonicalHostName
 				if (hostAddress != hostName) {
-					"%s\t%s\t%s\t%d".format(each.peerIdShort, hostAddress, hostName, each.node.port)
+					"%s\t%s\t%s\t%d".format(each.peerIdShort, hostAddress, hostName, each.node.address.getPort)
 				} else {
-					"%s\t%s\t%d".format(each.peerIdShort, hostAddress, each.node.port)
+					"%s\t%s\t%d".format(each.peerIdShort, hostAddress, each.node.address.getPort)
 				}
 			}).mkString("\n"),
 			worldManager.peersPool.bannedPeerIdSet.size,

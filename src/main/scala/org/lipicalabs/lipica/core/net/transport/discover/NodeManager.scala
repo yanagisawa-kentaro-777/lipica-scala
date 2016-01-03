@@ -117,7 +117,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 
 	def setMessageSender(v: MessageHandler): Unit = this._messageSender = v
 
-	private def getKey(n: Node): String = getKey(new InetSocketAddress(n.address, n.port))
+	private def getKey(n: Node): String = getKey(n.address)
 
 	private def getKey(address: InetSocketAddress): String = {
 		val addr = address.getAddress
@@ -158,7 +158,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	def handleInbound(event: DiscoveryEvent): Unit = {
 		val m = event.message
 		val sender = event.address
-		val n = new Node(m.nodeId, sender.getAddress, sender.getPort)
+		val n = new Node(m.nodeId, sender)
 
 		if (this.inboundOnlyFromKnownNodes && !hasNodeHandler(n)) {
 			logger.debug("<NodeManager> Inbound packet from unknown peer. Rejected.")
@@ -257,7 +257,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 object NodeManager {
 	private val logger = LoggerFactory.getLogger("discover")
 
-	private val DummyStat = new NodeStatistics(new Node(ImmutableBytes.empty, InetAddress.getByAddress(new Array[Byte](4)), 0))
+	private val DummyStat = new NodeStatistics(new Node(ImmutableBytes.empty, new InetSocketAddress(InetAddress.getByAddress(new Array[Byte](4)), 0)))
 	private val Persist: Boolean = SystemProperties.CONFIG.peerDiscoveryPersist
 
 	private val ListenerRefreshRate = 1000L
@@ -266,7 +266,8 @@ object NodeManager {
 
 	def create: NodeManager = {
 		val key = SystemProperties.CONFIG.myKey
-		val homeNode = new Node(SystemProperties.CONFIG.nodeId, InetAddress.getByName(SystemProperties.CONFIG.externalAddress), SystemProperties.CONFIG.bindPort)
+		val homeNodeAddress = new InetSocketAddress(SystemProperties.CONFIG.externalAddress, SystemProperties.CONFIG.bindPort)
+		val homeNode = new Node(SystemProperties.CONFIG.nodeId, homeNodeAddress)
 		val table = new NodeTable(homeNode, SystemProperties.CONFIG.isPublicHomeNode)
 		new NodeManager(table, key)
 	}
