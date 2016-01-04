@@ -7,6 +7,7 @@ import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.MessageToMessageDecoder
 import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.net.transport.discover.DiscoveryEvent
+import org.slf4j.LoggerFactory
 
 /**
  * UDPListener で netty のハンドラパイプラインに登録されて、
@@ -21,16 +22,22 @@ import org.lipicalabs.lipica.core.net.transport.discover.DiscoveryEvent
  */
 class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 
+	import PacketDecoder._
+
 	override def decode(ctx: ChannelHandlerContext, packet: DatagramPacket, out: util.List[AnyRef]): Unit = {
 		val buf = packet.content
 		val encoded = new Array[Byte](buf.readableBytes)
 		buf.readBytes(encoded)
-		val message: TransportMessage = TransportMessage.decode(encoded)
-
-		//println("Received: %s %s from %s".format(message.messageType, ImmutableBytes(encoded), packet.sender))
-
-		val event = new DiscoveryEvent(message, packet.sender)
-		out.add(event)
+		TransportMessage.decode(encoded) match {
+			case Right(message) =>
+				val event = new DiscoveryEvent(message, packet.sender)
+				out.add(event)
+			case Left(e) =>
+				logger.warn("<PacketDecoder> Exception caught: %s".format(e.getClass.getSimpleName), e)
+		}
 	}
+}
 
+object PacketDecoder {
+	private val logger = LoggerFactory.getLogger(getClass)
 }

@@ -2,6 +2,7 @@
 ・時間が経つと？ PING や FIND_NODE に返信がなくなる。
 ・またactive nodesもidleばかりになる。
 
+・https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
 ・ブロック情報の保存と再生を実行する。
 ・NewBlockとは何か？

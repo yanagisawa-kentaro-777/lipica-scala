@@ -27,7 +27,14 @@ class PingMessage extends TransportMessage {
 	override def parse(data: Array[Byte]): Unit = {
 		val items = RBACCodec.Decoder.decode(data).right.get.items
 		val fromSeq = items(1).items
-		this._address = InetAddress.getByAddress(fromSeq.head.bytes.toByteArray)
+		this._address =
+			if ((fromSeq.head.bytes.length == 4) || (fromSeq.head.bytes.length == 16)) {
+				//アドレス表記とみなす。正しい仕様はこちら。
+				InetAddress.getByAddress(fromSeq.head.bytes.toByteArray)
+			} else {
+				//仕様を誤解して文字列を送ってきているのではないか。
+				InetAddress.getByName(fromSeq.head.asString)
+			}
 		this._port = fromSeq(1).asInt
 		this._expiration = items(3).asPositiveLong
 	}

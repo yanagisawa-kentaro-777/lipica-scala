@@ -111,33 +111,37 @@ object TransportMessage {
 		result.asInstanceOf[T]
 	}
 
-	def decode[T <: TransportMessage](wire: Array[Byte]): T = {
-		if (wire.length < 98) {
-			throw new IllegalArgumentException("Bad message")
+	def decode[T <: TransportMessage](wire: Array[Byte]): Either[Throwable, T] = {
+		try {
+			if (wire.length < 98) {
+				throw new IllegalArgumentException("Message too short %,d < %,d".format(wire.length, 98))
+			}
+			val mdc = util.Arrays.copyOfRange(wire, 0, 32)
+			val signature = util.Arrays.copyOfRange(wire, 32, 32 + 65)
+			val messageType = Array[Byte](wire(97))
+
+			if (logger.isDebugEnabled) {
+				logger.debug("<TransportMessage> Decoding: %d".format(messageType.head))
+			}
+
+			val data = util.Arrays.copyOfRange(wire, 98, wire.length)
+
+			val mdcCheck = DigestUtils.digest256(util.Arrays.copyOfRange(wire, 32, wire.length))
+			if (!util.Arrays.equals(mdc, mdcCheck)) {
+				throw new IllegalArgumentException("MDC check failed.")
+			}
+
+			val result = createMessage(messageType(0))
+			result._mdc = ImmutableBytes(mdc)
+			result._signature = ImmutableBytes(signature)
+			result._messageType = ImmutableBytes(messageType)
+			result._data = ImmutableBytes(data)
+			result._wire = wire
+			result.parse(data)
+			Right(result.asInstanceOf[T])
+		} catch {
+			case any: Throwable => Left(any)
 		}
-		val mdc = util.Arrays.copyOfRange(wire, 0, 32)
-		val signature = util.Arrays.copyOfRange(wire, 32, 32 + 65)
-		val messageType = Array[Byte](wire(97))
-
-		if (logger.isDebugEnabled) {
-			logger.debug("<TransportMessage> Decoding: %d".format(messageType.head))
-		}
-
-		val data = util.Arrays.copyOfRange(wire, 98, wire.length)
-
-		val mdcCheck = DigestUtils.digest256(util.Arrays.copyOfRange(wire, 32, wire.length))
-		if (!util.Arrays.equals(mdc, mdcCheck)) {
-			throw new IllegalArgumentException("MDC check failed.")
-		}
-
-		val result = createMessage(messageType(0))
-		result._mdc = ImmutableBytes(mdc)
-		result._signature = ImmutableBytes(signature)
-		result._messageType = ImmutableBytes(messageType)
-		result._data = ImmutableBytes(data)
-		result._wire = wire
-		result.parse(data)
-		result.asInstanceOf[T]
 	}
 
 	private def createMessage(messageType: Byte): TransportMessage = {
