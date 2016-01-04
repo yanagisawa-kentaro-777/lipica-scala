@@ -53,8 +53,9 @@ class UDPListener {
 	private def bind(): Unit = {
 		val group = new NioEventLoopGroup(1)
 		val nodeManager = WorldManager.instance.nodeManager
-		while (true) {
-			try {
+
+		try {
+			while (true) {
 				val b = new Bootstrap
 				b.group(group).channel(classOf[NioDatagramChannel]).handler(new ChannelInitializer[NioDatagramChannel] {
 					override def initChannel(ch: NioDatagramChannel): Unit = {
@@ -72,12 +73,17 @@ class UDPListener {
 
 				//このチャネルが切断されるまで待つ。
 				channel.closeFuture().sync()
-
 				logger.info("<UDPListener> Stopped binding on [%s]:%d".format(this.address, this.port))
+				//切断されたとしたら、例外の処理を誤ってスタックフレームを遡行したことによるものであろうから、
+				//しばらく待って再度 bind する。
 				Thread.sleep(5000L)
-			} finally {
-				group.shutdownGracefully()
 			}
+		} catch {
+			case any: Throwable =>
+				//ここに来るのは想定外である。
+				logger.warn("<UDPListener> Exception caught: %s".format(any.getClass.getSimpleName), any)
+		} finally {
+			group.shutdownGracefully()
 		}
 	}
 

@@ -1,5 +1,6 @@
 １、既存環境との完全同期
 ・時間が経つと？ PING や FIND_NODE に返信がなくなる。
+・またactive nodesもidleばかりになる。
 
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
 ・ブロック情報の保存と再生を実行する。
