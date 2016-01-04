@@ -38,7 +38,11 @@ trait Lpc {
 
 	def bestKnownHash: ImmutableBytes
 
+	def getSyncState: SyncStateName
+
 	def getSyncStats: SyncStatistics
+
+	def syncStateSummaryAsString: String
 
 	def enableTransactions(): Unit
 

@@ -44,7 +44,10 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	private var blocksLackHits: Int = 0
 
-	protected var syncState: SyncStateName = SyncStateName.Idle
+	protected var _syncState: SyncStateName = SyncStateName.Idle
+	private def syncState: SyncStateName = this._syncState
+
+	override def getSyncState: SyncStateName = this._syncState
 	protected var syncDone: Boolean = false
 
 
@@ -343,7 +346,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 				return
 			}
 		}
-		this.syncState = newState
+		this._syncState = newState
 	}
 
 	override def isHashRetrievingDone = this.syncState == SyncStateName.DoneHashRetrieving
@@ -380,6 +383,17 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			this.syncQueue.returnHashes(this.sentHashes.toSeq)
 		}
 		this.sentHashes.clear()
+	}
+
+	override def syncStateSummaryAsString: String = {
+		this.syncState match {
+			case SyncStateName.BlockRetrieving =>
+				"Version=%s; State=%s; Blocks=%,d".format(this.version, SyncStateName.BlockRetrieving, this.syncStats.blocksCount)
+			case SyncStateName.HashRetrieving =>
+				"Version=%s; State=%s; Blocks=%,d".format(this.version, SyncStateName.HashRetrieving, this.syncStats.hashesCount)
+			case any =>
+				"Version=%s; State=%s".format(this.version, any)
+		}
 	}
 
 }

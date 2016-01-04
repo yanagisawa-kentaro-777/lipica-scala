@@ -93,15 +93,13 @@ class SyncManager {
 		}
 		val peerTotalDifficulty = peer.totalDifficulty
 		if (!isIn20PercentRange(peerTotalDifficulty, this.lowerUsefulDiffuculty)) {
-			if (logger.isTraceEnabled) {
-				logger.trace("<SyncManager> Peer %s: Difficulty is significantly lower than ours (%,d < %,d). Skipping.".format(peer.peerIdShort, peerTotalDifficulty, this.lowerUsefulDiffuculty))
+			if (logger.isDebugEnabled) {
+				logger.debug("<SyncManager> Peer %s: Difficulty is significantly lower than ours (%,d < %,d). Skipping.".format(peer.peerIdShort, peerTotalDifficulty, this.lowerUsefulDiffuculty))
 			}
 			return
 		}
 		if (this.state.is(SyncStateName.HashRetrieving) && !isIn20PercentRange(highestKnownDiffuculty, peerTotalDifficulty)) {
-			if (logger.isTraceEnabled) {
-				logger.trace("<SyncManager> Peer %s: Chain is better than the known best: (%,d < %,d). Rotating master peer.".format(peer.peerIdShort, this.highestKnownDiffuculty, peerTotalDifficulty))
-			}
+			logger.info("<SyncManager> Peer %s: Chain is better than the known best: (%,d < %,d). Rotating master peer.".format(peer.peerIdShort, this.highestKnownDiffuculty, peerTotalDifficulty))
 			this.stateMutex.synchronized {
 				startMaster(peer)
 			}

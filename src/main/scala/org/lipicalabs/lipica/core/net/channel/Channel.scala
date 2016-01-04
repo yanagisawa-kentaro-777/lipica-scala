@@ -185,6 +185,12 @@ class Channel {
 
 	def lpcVersion: LpcVersion = this.lpc.version
 
+	def syncState: SyncStateName = this.lpc.getSyncState
+
+	def syncStats: SyncStatistics = this.lpc.getSyncStats
+
+	def syncStateSummaryAsString: String =  this.lpc.syncStateSummaryAsString
+
 	override def equals(o: Any): Boolean = {
 		try {
 			val another = o.asInstanceOf[Channel]

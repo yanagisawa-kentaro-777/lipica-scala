@@ -46,6 +46,10 @@ class LpcAdaptor extends Lpc {
 
 	override def lastHashToAsk_=(v: ImmutableBytes) = ()
 
+	override def getSyncState: SyncStateName = SyncStateName.Idle
+
+	override def syncStateSummaryAsString: String = ""
+
 	override def lastHashToAsk = ImmutableBytes.empty
 
 	override def getSyncStats = this.syncStats

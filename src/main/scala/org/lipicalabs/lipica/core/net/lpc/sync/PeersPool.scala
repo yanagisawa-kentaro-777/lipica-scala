@@ -48,21 +48,7 @@ class PeersPool {
 		this.bans.synchronized {
 			this.bans.remove(peer.peerId)
 		}
-		logger.info("<PeersPool> %s. Added to pool.".format(peer.peerIdShort))
-	}
-
-	def remove(peer: Channel): Unit = {
-		this.activePeers.synchronized {
-			this.activePeers.remove(peer.nodeId)
-		}
-	}
-
-	def removeAll(removed: Iterable[Channel]): Unit = {
-		this.activePeers.synchronized {
-			removed.foreach {
-				each => this.activePeers.remove(each.nodeId)
-			}
-		}
+		logger.info("<PeersPool> %s. ADDED to pool.".format(peer.peerIdShort))
 	}
 
 	def getBest: Option[Channel] = {
@@ -81,13 +67,15 @@ class PeersPool {
 
 	def onDisconnect(peer: Channel): Unit = {
 		if (logger.isTraceEnabled) {
-			logger.trace("<PeerPool> Peer %s: disconnected.".format(peer.peerIdShort))
+			logger.trace("<PeersPool> Peer %s: disconnected.".format(peer.peerIdShort))
 		}
 		if (peer.nodeId.isEmpty) {
 			return
 		}
 		this.activePeers.synchronized {
-			this.activePeers.remove(peer.nodeId)
+			this.activePeers.remove(peer.nodeId).foreach {
+				_ => logger.info("<PeersPool> %s. REMOVED from pool (disconnection).".format(peer.peerIdShort))
+			}
 			this.bannedPeers.remove(peer)
 		}
 		this.disconnectHits.synchronized {
@@ -112,6 +100,7 @@ class PeersPool {
 			}
 			return
 		}
+		logger.info("<PeersPool> CONNECTING to %s (%s).".format(node.hexIdShort, node.address))
 		this.pendingConnections.synchronized {
 			lipica.connect(node)
 			this.pendingConnections.put(node.hexId, System.currentTimeMillis + ConnectionTimeout)
@@ -166,6 +155,8 @@ class PeersPool {
 
 	def activeCount: Int = this.activePeers.size
 
+	def pendingCount: Int = this.pendingConnections.size
+
 	def peers: Iterable[Channel] = {
 		this.activePeers.synchronized {
 			this.activePeers.values
@@ -188,7 +179,7 @@ class PeersPool {
 
 	def bannedPeerIdSet: Set[String] = {
 		this.synchronized {
-			this.bans.keySet.map(_.substring(1, 8)).toSet
+			this.bans.keySet.toSet
 		}
 	}
 

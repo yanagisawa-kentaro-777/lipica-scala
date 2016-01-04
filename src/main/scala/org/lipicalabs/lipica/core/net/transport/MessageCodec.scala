@@ -142,7 +142,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	}
 
 	override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-		val output = "<MessageCode> Exception caught: %s".format(cause.getClass.getSimpleName)
+		val output = "<MessageCodec> Exception caught: %s".format(cause.getClass.getSimpleName)
 		if (this._channel.isDiscoveryMode) {
 			loggerNet.debug(output, cause)
 		} else {
@@ -184,7 +184,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 			}
 		} else {
 			if (loggerWire.isDebugEnabled) {
-				loggerWire.debug("<MessageCode> Not initiator.")
+				loggerWire.debug("<MessageCodec> Not initiator.")
 			}
 			if (this._frameCodec eq null) {
 				val authInitPacket = new Array[Byte](AuthInitiateMessage.length + ECIESCoder.getOverhead)

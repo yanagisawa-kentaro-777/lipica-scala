@@ -48,6 +48,48 @@
 			<MaxFileSize>10MB</MaxFileSize>
 		</triggeringPolicy>
 	</appender>
+	<appender name="BLOCKCHAIN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/blockchain.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/blockchain%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="VM" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/vm.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/vm%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="WIRE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/wire.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/wire%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
 	<root level="WARN">
 		<appender-ref ref="EXT_LIB"/>
 	</root>
@@ -56,7 +98,7 @@
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="blockchain" level="DEBUG" additivity="false">
-		<appender-ref ref="NODE_TRACE"/>
+		<appender-ref ref="BLOCKCHAIN"/>
 	</logger>
 	<logger name="blockqueue" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
@@ -71,10 +113,10 @@
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="execute" level="DEBUG" additivity="false">
-		<appender-ref ref="NODE_TRACE"/>
+		<appender-ref ref="BLOCKCHAIN"/>
 	</logger>
 	<logger name="mana" level="DEBUG" additivity="false">
-		<appender-ref ref="NODE_TRACE"/>
+		<appender-ref ref="VM"/>
 	</logger>
 	<logger name="net" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
@@ -95,10 +137,10 @@
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="wire" level="DEBUG" additivity="false">
-		<appender-ref ref="NODE_TRACE"/>
+		<appender-ref ref="WIRE"/>
 	</logger>
 	<logger name="VM" level="DEBUG" additivity="false">
-		<appender-ref ref="NODE_TRACE"/>
+		<appender-ref ref="VM"/>
 	</logger>
 
 	<logger name="general" level="DEBUG" additivity="false">
