@@ -28,7 +28,8 @@ class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 		val buf = packet.content
 		val encoded = new Array[Byte](buf.readableBytes)
 		buf.readBytes(encoded)
-		TransportMessage.decode(encoded) match {
+		val decodedOrError: Either[Throwable, TransportMessage] = TransportMessage.decode(encoded)
+		decodedOrError match {
 			case Right(message) =>
 				val event = new DiscoveryEvent(message, packet.sender)
 				out.add(event)
