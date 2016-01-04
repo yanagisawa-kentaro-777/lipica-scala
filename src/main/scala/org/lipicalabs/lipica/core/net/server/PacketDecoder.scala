@@ -33,6 +33,9 @@ class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 				val event = new DiscoveryEvent(message, packet.sender)
 				out.add(event)
 			case Left(e) =>
+				//UDPは各データグラムが独立しているので、
+				//１個の解析に失敗したことは後続に影響を及ぼさない。
+				//他ノードから送られたメッセージの解析に失敗したことを、WARNレベルにするか否かは非常に微妙だ。
 				logger.warn("<PacketDecoder> Exception caught: %s".format(e.getClass.getSimpleName), e)
 		}
 	}

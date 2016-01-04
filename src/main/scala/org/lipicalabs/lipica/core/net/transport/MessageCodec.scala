@@ -128,6 +128,8 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	}
 
 	override def decode(ctx: ChannelHandlerContext, in: ByteBuf, out: util.List[AnyRef]): Unit = {
+		//TCPはストリームであって、メッセージ解析の失敗は尾を引くので、
+		//このメソッドでは例外を捕捉しない。
 		if (loggerWire.isDebugEnabled) {
 			loggerWire.debug("<MessageCodec> Received packet bytes: %,d".format(in.readableBytes))
 		}
@@ -148,6 +150,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		} else {
 			loggerNet.warn(output, cause)
 		}
+		//TCPはストリームなので、１個のメッセージの解析に失敗したら、もうその受信ハンドラは見捨てざるを得ない。
 		ctx.close()
 	}
 
