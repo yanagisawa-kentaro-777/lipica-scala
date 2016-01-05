@@ -31,7 +31,7 @@ class NodeBucket(val depth: Int) {
 	}
 
 	private def lastSeen: Option[NodeEntry] = {
-		nodes.sortWith((n1, n2) => new TimeComparator().compare(n1, n2) <= 0).headOption
+		nodes.sortWith((n1, n2) => new TimeComparator().compare(n1, n2) < 0).headOption
 	}
 
 	def dropNode(entry: NodeEntry): Unit = {

@@ -72,7 +72,9 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	override def channelRead0(ctx: ChannelHandlerContext, message: LpcMessage) = {
 		if (LpcMessageCode.inRange(message.command.asByte)) {
-			loggerNet.trace("<LpcHandler> Invoke: %s".format(message.command))
+			if (loggerNet.isDebugEnabled) {
+				loggerNet.debug("<LpcHandler> Received: %s".format(message.command))
+			}
 		}
 		this.worldManager.listener.trace("<LpcHandler> Invoke: %s".format(message.command))
 		channel.nodeStatistics.lpcInbound.add

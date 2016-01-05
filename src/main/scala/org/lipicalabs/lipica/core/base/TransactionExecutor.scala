@@ -6,6 +6,7 @@ import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm._
+import org.lipicalabs.lipica.core.vm.program.Program.ProgramException
 import org.lipicalabs.lipica.core.vm.program.{ProgramResult, Program}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
@@ -185,8 +186,12 @@ class TransactionExecutor(
 			}
 		} catch {
 			case e: Throwable =>
-				//マナ不足等でもここに来る。ゆえに、ここに来ることは想定外とは言えない。
-				logger.info("<TxExecutor> Exception caught: %s".format(e.getClass.getSimpleName), e)
+				if (e.isInstanceOf[ProgramException]) {
+					//マナ不足等でもここに来る。ゆえに、ここに来ることは想定外とは言えない。
+					logger.info("<TxExecutor> Exception caught %s: %s".format(e.getClass.getSimpleName, e.getMessage))
+				} else {
+					logger.warn("<TxExecutor> Exception caught: %s".format(e.getClass.getSimpleName), e)
+				}
 				this.cacheTrack.rollback()
 				this.endMana = 0
 		}

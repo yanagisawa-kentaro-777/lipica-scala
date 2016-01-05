@@ -79,10 +79,9 @@ class LipicaImpl extends Lipica {
 	override def connect(node: Node) = connect(node.address, node.id)
 
 	override def connect(address: InetSocketAddress, remoteNodeId: ImmutableBytes): Unit = {
-		val client = new PeerClient
 		Executors.newSingleThreadExecutor.submit(new Runnable {
 			override def run(): Unit = {
-				client.connect(address.getAddress, address.getPort, remoteNodeId)
+				worldManager.client.connect(address.getAddress, address.getPort, remoteNodeId)
 			}
 		})
 	}

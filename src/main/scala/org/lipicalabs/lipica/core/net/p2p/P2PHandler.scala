@@ -57,8 +57,8 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 
 	override def channelRead0(ctx: ChannelHandlerContext, message: P2PMessage): Unit = {
 		if (P2PMessageCode.inRange(message.command.asByte)) {
-			if (logger.isTraceEnabled) {
-				logger.trace("<P2PHandler> P2PHandler invoked: %s".format(message.command))
+			if (logger.isDebugEnabled) {
+				logger.debug("<P2PHandler> Received: %s".format(message.command))
 			}
 		}
 		this.worldManager.listener.trace("<P2PHandler> P2PHandler invoked: %s".format(message.command))
@@ -157,17 +157,17 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 		}
 	}
 
-	def sendTransaction(tx: TransactionLike): Unit = {
-		val message = new TransactionsMessage(Seq(tx))
-		this.messageQueue.sendMessage(message)
-	}
+//	def sendTransaction(tx: TransactionLike): Unit = {
+//		val message = new TransactionsMessage(Seq(tx))
+//		this.messageQueue.sendMessage(message)
+//	}
+//
+//	def sendNewBlock(block: Block): Unit = {
+//		val message = new NewBlockMessage(block, block.difficulty)
+//		this.messageQueue.sendMessage(message)
+//	}
 
-	def sendNewBlock(block: Block): Unit = {
-		val message = new NewBlockMessage(block, block.difficulty)
-		this.messageQueue.sendMessage(message)
-	}
-
-	def sendDisconnect(): Unit =  this.messageQueue.disconnect()
+//	def sendDisconnect(): Unit =  this.messageQueue.disconnect()
 
 	private def startTimers(): Unit = {
 		this.pingTask = pingTimer.scheduleAtFixedRate(

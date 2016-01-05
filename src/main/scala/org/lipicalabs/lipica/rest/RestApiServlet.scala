@@ -14,20 +14,36 @@ class RestApiServlet extends ScalatraServlet {
 
 	get("/:apiVersion/node/status") {
 		val worldManager = WorldManager.instance
-		val bestBlock = worldManager.blockchain.bestBlock
-		val totalDifficulty = worldManager.blockchain.totalDifficulty
+		val blockchain = worldManager.blockchain
+		val bestBlock = blockchain.bestBlock
+		val totalDifficulty = blockchain.totalDifficulty
+
+		val peersPool = worldManager.peersPool
+		val nodeManager = worldManager.nodeManager
+		val syncManager = worldManager.syncManager
+
+		val bannedPeers = peersPool.bannedPeersMap
 
 		val response = ("NodeId=%s\n" +
 				"ExternalAddress=%s\nBindAddress=%s\n\n" +
 				"BestBlock=[%,d %s]\nTotalDifficulty=%,d\n\n" +
-				"Active Peers:%,d\n%s\n\n" + "Banned Peers:%,d\n%s\n\n" + "Pending Peers:%,d\n\n").format(
+				"ProcessingBlock=%s\n\n" +
+				"LowerTD=%,d\nHighestKnownTD=%,d\n\n" +
+				"Active Peers:%,d\n%s\n\n" + "Banned Peers:%,d\n%s\n\n" + "Pending Peers:%,d\n\n" +
+				"NumNodeHandlers:%,d\nNumNodesInTable:%,d\n\n").format(
 			SystemProperties.CONFIG.nodeId,
 			SystemProperties.CONFIG.externalAddress,
 			SystemProperties.CONFIG.bindAddress,
+
 			bestBlock.blockNumber, bestBlock.hash.toShortString,
 			totalDifficulty,
-			worldManager.peersPool.activeCount,
-			worldManager.peersPool.peers.map(each => {
+			blockchain.processingBlockOption.map(_.summaryString(short = true)).getOrElse("None"),
+
+			syncManager.lowerUsefulDifficulty,
+			syncManager.highestKnownDifficulty,
+
+			peersPool.activeCount,
+			peersPool.peers.map(each => {
 				val hostAddress = each.node.address.getAddress.getHostAddress
 				val hostName = each.node.address.getAddress.getCanonicalHostName
 				if (hostAddress != hostName) {
@@ -36,9 +52,12 @@ class RestApiServlet extends ScalatraServlet {
 					"%s\t%s\t%d\t%s\tTD=%,d".format(each.peerIdShort, hostAddress, each.node.address.getPort, each.syncStateSummaryAsString, each.totalDifficulty)
 				}
 			}).mkString("\n"),
-			worldManager.peersPool.bannedPeerIdSet.size,
-			worldManager.peersPool.bannedPeerIdSet.map(each => each.substring(0, 8) + "...").mkString("\n"),
-			worldManager.peersPool.pendingCount
+			bannedPeers.size,
+			bannedPeers.map(entry => entry._1.toShortString + " -> " + entry._2).mkString("\n"),
+			peersPool.pendingCount,
+
+			nodeManager.numberOfKnownNodes,
+			nodeManager.table.getNodeCount
 		)
 		status = 200
 		Ok(response)

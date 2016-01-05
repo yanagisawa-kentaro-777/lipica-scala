@@ -86,6 +86,11 @@ trait Blockchain {
 
 	def close(): Unit
 
+	/**
+	 * 現在処理中のブロックがあれば、それを返します。
+	 */
+	def processingBlockOption: Option[Block]
+
 }
 
 object Blockchain {

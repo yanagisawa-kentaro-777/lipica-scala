@@ -99,6 +99,10 @@ class MessageQueue {
 			each => {
 				val message = each.message
 				this.worldManager.listener.onSendMessage(message)
+				if (logger.isDebugEnabled) {
+					logger.debug("<MessageQueue> Sending %s".format(message.command.getClass.getSimpleName))
+				}
+
 				this.ctx.writeAndFlush(message)
 
 				if (message.answerMessage.nonEmpty) {

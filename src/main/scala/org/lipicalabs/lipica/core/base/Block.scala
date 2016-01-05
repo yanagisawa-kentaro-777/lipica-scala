@@ -226,7 +226,7 @@ class PlainBlock private[base](override val blockHeader: BlockHeader, override v
 
 	override def summaryString(short: Boolean): String = {
 		val template = "Block[BlockNumber=%,d; Hash=%s; ParentHash=%s; Coinbase=%s; Difficulty=%,d]"
-		template.format(this.blockNumber, this.hash.toShortString, this.parentHash.toShortString, this.coinbase, this.difficultyAsBigInt)
+		template.format(this.blockNumber, this.hash.toShortString, this.parentHash.toShortString, this.coinbase.toShortString, this.difficultyAsBigInt)
 	}
 
 	def toFlatString: String = {

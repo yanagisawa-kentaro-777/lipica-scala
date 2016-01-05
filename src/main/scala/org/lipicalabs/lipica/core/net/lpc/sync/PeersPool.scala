@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable
 
 /**
+ * 現在自ノードが通信しているピアを格納し管理するためのクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/12 13:24
  * YANAGISAWA, Kentaro
@@ -18,15 +20,21 @@ import scala.collection.mutable
 class PeersPool {
 	import PeersPool._
 
+	//TODO 全体的に String はいかがなものか。
+
 	private val activePeers: mutable.Map[ImmutableBytes, Channel] = new mutable.HashMap[ImmutableBytes, Channel]
-	private val bannedPeers: mutable.Set[Channel] = new mutable.HashSet[Channel]
+	private val bannedPeers: mutable.Map[Channel, BanReason] = new mutable.HashMap[Channel, BanReason]
 	private val disconnectHits: mutable.Map[String, Int] = new mutable.HashMap[String, Int]
 	private val bans: mutable.Map[String, Long] = new mutable.HashMap[String, Long]
 	private val pendingConnections: mutable.Map[String, Long] = new mutable.HashMap[String, Long]
 
 	private def lipica: Lipica = Lipica.instance
 
+	/**
+	 * 生成後に１回だけ実行される初期化処理です。
+	 */
 	def init(): Unit = {
+		//定期処理を登録し実行します。
 		Executors.newSingleThreadScheduledExecutor.scheduleWithFixedDelay(
 			new Runnable {
 				override def run(): Unit = {
@@ -37,6 +45,10 @@ class PeersPool {
 		)
 	}
 
+	/**
+	 * 渡されたノードをアクティブなものとして追加します。
+	 * ChannelManager -> SyncManager という経路で呼びだされます。
+	 */
 	def add(peer: Channel): Unit = {
 		this.activePeers.synchronized {
 			this.activePeers.put(peer.nodeId, peer)
@@ -51,6 +63,9 @@ class PeersPool {
 		logger.info("<PeersPool> %s. ADDED to pool.".format(peer.peerIdShort))
 	}
 
+	/**
+	 * active peerの中から、最大のTDを持つノードを選択して返します。
+	 */
 	def getBest: Option[Channel] = {
 		this.activePeers.synchronized {
 			if (this.activePeers.isEmpty) {
@@ -63,14 +78,17 @@ class PeersPool {
 		}
 	}
 
+	/**
+	 * active peerの中から、指定されたIDを持つノードを選択して返します。
+	 */
 	def getByNodeId(nodeId: ImmutableBytes): Option[Channel] = this.activePeers.get(nodeId)
 
 	def onDisconnect(peer: Channel): Unit = {
+		if ((peer eq null) || isNullOrEmpty(peer.nodeId)) {
+			return
+		}
 		if (logger.isTraceEnabled) {
 			logger.trace("<PeersPool> Peer %s: disconnected.".format(peer.peerIdShort))
-		}
-		if (peer.nodeId.isEmpty) {
-			return
 		}
 		this.activePeers.synchronized {
 			this.activePeers.remove(peer.nodeId).foreach {
@@ -78,10 +96,12 @@ class PeersPool {
 			}
 			this.bannedPeers.remove(peer)
 		}
+
 		this.disconnectHits.synchronized {
+			//接続断が頻発するようであれば反省させる。
 			val hits = this.disconnectHits.getOrElse(peer.peerId, 0)
 			if (DisconnectHitsThreshold < hits) {
-				ban(peer)
+				ban(peer, FrequentDisconnects)
 				logger.info("<PeersPool> Banning a peer: Peer %s is banned due to frequent disconnections.".format(peer.peerIdShort))
 				this.disconnectHits.remove(peer.peerId)
 			} else {
@@ -90,11 +110,17 @@ class PeersPool {
 		}
 	}
 
+	/**
+	 * 指定されたノードに接続を試みます。
+	 * SyncManager の fill up 処理によって呼び出されます。
+	 */
 	def connect(node: Node): Unit = {
 		if (logger.isTraceEnabled) {
 			logger.trace("<PeersPool> Peer %s: initiating connection.".format(node.hexIdShort))
 		}
+
 		if (isInUse(node.hexId)) {
+			//既に認識済みのノードである。
 			if (logger.isTraceEnabled) {
 				logger.trace("<PeersPool> Peer %s: already initiated.".format(node.hexIdShort))
 			}
@@ -107,13 +133,15 @@ class PeersPool {
 		}
 	}
 
-
-	def ban(peer: Channel): Unit = {
+	/**
+	 * 指定されたノードを、banリストに登録します。
+	 */
+	def ban(peer: Channel, reason: BanReason): Unit = {
 		peer.changeSyncState(SyncStateName.Idle)
 		this.activePeers.synchronized {
 			if (this.activePeers.contains(peer.nodeId)) {
 				this.activePeers.remove(peer.nodeId)
-				this.bannedPeers.add(peer)
+				this.bannedPeers.put(peer, reason)
 			}
 		}
 		this.bans.synchronized {
@@ -122,6 +150,9 @@ class PeersPool {
 		logger.info("<PeersPool> Banned the peer: %s".format(peer.peerIdShort))
 	}
 
+	/**
+	 * このインスタンスにとって既知であるノードの集合を返します。
+	 */
 	def nodesInUse: Set[String] = {
 		var result: Set[String] =
 			this.activePeers.synchronized {
@@ -177,18 +208,21 @@ class PeersPool {
 		//TODO 未実装。
 	}
 
-	def bannedPeerIdSet: Set[String] = {
+	def bannedPeersMap: Map[ImmutableBytes, BanReason] = {
 		this.synchronized {
-			this.bans.keySet.toSet
+			this.bannedPeers.map(entry => entry._1.nodeId -> entry._2).toMap
 		}
 	}
 
+	/**
+	 * 時間が経過したban対象を赦免し、active peersに戻します。
+	 */
 	private def releaseBans(): Unit = {
 		var released: Set[String] = Set.empty
 		this.bans.synchronized {
 			released = getTimeoutExceeded(this.bans)
 			this.activePeers.synchronized {
-				for (peer <- this.bannedPeers) {
+				for (peer <- this.bannedPeers.keys) {
 					if (released.contains(peer.peerId)) {
 						this.activePeers.put(peer.nodeId, peer)
 					}
@@ -202,6 +236,9 @@ class PeersPool {
 		}
 	}
 
+	/**
+	 * pending状態のノードのうち、一定の時間が経過したものを忘れます。
+	 */
 	private def processConnections(): Unit = {
 		this.pendingConnections.synchronized {
 			getTimeoutExceeded(this.pendingConnections).foreach {
@@ -209,12 +246,6 @@ class PeersPool {
 			}
 		}
 	}
-
-	private def getTimeoutExceeded(map: mutable.Map[String, Long]): Set[String] = {
-		val now = System.currentTimeMillis
-		map.withFilter(entry => entry._2 <= now).map(entry => entry._1).toSet
-	}
-
 }
 
 object PeersPool {
@@ -225,4 +256,21 @@ object PeersPool {
 	private val DefaultBanTimeout = TimeUnit.MINUTES.toMillis(1)
 	private val ConnectionTimeout = TimeUnit.SECONDS.toMillis(30)
 
+	private def isNullOrEmpty(nodeId: ImmutableBytes): Boolean = {
+		(nodeId eq null) || nodeId.isEmpty
+	}
+
+	private def getTimeoutExceeded(map: mutable.Map[String, Long]): Set[String] = {
+		//渡された連想配列の要素を時刻として解釈し、すでにその時刻が到来している要素の集合を返す。
+		val now = System.currentTimeMillis
+		map.withFilter(entry => entry._2 <= now).map(entry => entry._1).toSet
+	}
+
 }
+
+sealed trait BanReason
+
+case object FrequentDisconnects extends BanReason
+case object BlocksLack extends BanReason
+case object InvalidBlock extends BanReason
+case object Stuck extends BanReason

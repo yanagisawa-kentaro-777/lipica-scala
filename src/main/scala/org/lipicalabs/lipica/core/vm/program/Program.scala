@@ -643,35 +643,37 @@ object Program {
 
 	private val MaxStackSize = 1024
 
+	class ProgramException(message: String) extends RuntimeException(message)
+
 	/**
 	 * スタックが予想されたほど深くない場合に発生する例外。
 	 */
-	class StackTooSmallException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+	class StackTooSmallException(message: String, args: Any*) extends ProgramException(message.format(args)) {
 		//
 	}
 
 	/**
 	 * スタックオーバーフロー時に発生する例外。
 	 */
-	class StackTooLargeException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+	class StackTooLargeException(message: String, args: Any*) extends ProgramException(message.format(args)) {
 		//
 	}
 
 	/**
 	 * JUMPもしくはJUMPI命令のジャンプ先が正当でない場合に発生する例外。
 	 */
-	class BadJumpDestinationException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+	class BadJumpDestinationException(message: String, args: Any*) extends ProgramException(message.format(args)) {
 		//
 	}
 
 	/**
 	 * 実行に必要なマナが枯渇した際に発生する例外。
 	 */
-	class OutOfManaException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+	class OutOfManaException(message: String, args: Any*) extends ProgramException(message.format(args)) {
 		//
 	}
 
-	class IllegalOperationException(message: String, args: Any*) extends RuntimeException(message.format(args)) {
+	class IllegalOperationException(message: String, args: Any*) extends ProgramException(message.format(args)) {
 		//
 	}
 

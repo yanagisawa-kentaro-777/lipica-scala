@@ -89,7 +89,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 			val comparator = new Comparator[NodeStatistics.Persistent] {
 				override def compare(o1: Persistent, o2: Persistent) = o2.reputation - o1.reputation
 			}
-			val sorted = this._nodeStatsDB.entrySet().toIndexedSeq.sortWith((e1, e2) => comparator.compare(e1.getValue, e2.getValue) <= 0)
+			val sorted = this._nodeStatsDB.entrySet().toIndexedSeq.sortWith((e1, e2) => comparator.compare(e1.getValue, e2.getValue) < 0)
 			sorted.take(DbMaxLoadNodes).foreach {
 				each => getNodeHandler(each.getKey).nodeStatistics.setPersistedData(each.getValue)
 			}
@@ -205,7 +205,16 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 
 	private def getNodes(predicate: (NodeHandler) => Boolean, comparator: Comparator[NodeHandler], limit: Int): Seq[NodeHandler] = {
 		this.synchronized {
-			this.nodeHandlerMap.values.toSeq.filter(predicate).sortWith((e1, e2) => comparator.compare(e1, e2) <= 0).take(limit)
+			this.nodeHandlerMap.values.toSeq.filter(predicate).sortWith((e1, e2) => comparator.compare(e1, e2) < 0).take(limit)
+		}
+	}
+
+	/**
+	 * このインスタンスが知っているノードの数を返します。
+	 */
+	def numberOfKnownNodes: Int = {
+		this.synchronized {
+			this.nodeHandlerMap.size
 		}
 	}
 
@@ -279,6 +288,7 @@ object NodeManager {
 		override def compare(n1: NodeHandler, n2: NodeHandler): Int = {
 			val d1 = n1.nodeStatistics.lpcTotalDifficulty
 			val d2 = n2.nodeStatistics.lpcTotalDifficulty
+			//TDの大きい方が順位が前になる。
 			d2.compare(d1)
 		}
 	}

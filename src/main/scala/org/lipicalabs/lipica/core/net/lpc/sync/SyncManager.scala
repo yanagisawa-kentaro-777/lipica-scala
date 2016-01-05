@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.net.lpc.sync
 
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
 import org.lipicalabs.lipica.core.base.{Blockchain, BlockWrapper}
@@ -30,8 +31,11 @@ class SyncManager {
 	private var syncDone: Boolean = false
 	def isSyncDone: Boolean = this.syncDone
 
-	private var lowerUsefulDiffuculty = UtilConsts.Zero
-	private var highestKnownDiffuculty = UtilConsts.Zero
+	private val lowerUsefulDifficultyRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
+	def lowerUsefulDifficulty: BigInt = this.lowerUsefulDifficultyRef.get
+
+	private val highestKnownDifficultyRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
+	def highestKnownDifficulty: BigInt = this.highestKnownDifficultyRef.get
 
 	private val worker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor
 
@@ -92,14 +96,14 @@ class SyncManager {
 			logger.trace("<SyncManager> Adding a peer: %s".format(peer.peerIdShort))
 		}
 		val peerTotalDifficulty = peer.totalDifficulty
-		if (!isIn20PercentRange(peerTotalDifficulty, this.lowerUsefulDiffuculty)) {
+		if (!isIn20PercentRange(peerTotalDifficulty, this.lowerUsefulDifficulty)) {
 			if (logger.isDebugEnabled) {
-				logger.debug("<SyncManager> Peer %s: Difficulty is significantly lower than ours (%,d < %,d). Skipping.".format(peer.peerIdShort, peerTotalDifficulty, this.lowerUsefulDiffuculty))
+				logger.debug("<SyncManager> Peer %s: Difficulty is significantly lower than ours (%,d < %,d). Skipping.".format(peer.peerIdShort, peerTotalDifficulty, this.lowerUsefulDifficulty))
 			}
 			return
 		}
-		if (this.state.is(SyncStateName.HashRetrieving) && !isIn20PercentRange(highestKnownDiffuculty, peerTotalDifficulty)) {
-			logger.info("<SyncManager> Peer %s: Chain is better than the known best: (%,d < %,d). Rotating master peer.".format(peer.peerIdShort, this.highestKnownDiffuculty, peerTotalDifficulty))
+		if (this.state.is(SyncStateName.HashRetrieving) && !isIn20PercentRange(highestKnownDifficulty, peerTotalDifficulty)) {
+			logger.info("<SyncManager> Peer %s: Chain is better than the known best: (%,d < %,d). Rotating master peer.".format(peer.peerIdShort, this.highestKnownDifficulty, peerTotalDifficulty))
 			this.stateMutex.synchronized {
 				startMaster(peer)
 			}
@@ -152,7 +156,7 @@ class SyncManager {
 		this.pool.getByNodeId(nodeId).foreach {
 			peer => {
 				logger.info("<SyncManager> Banning a peer: Peer %s: Invalid block received.".format(peer.peerIdShort))
-				this.pool.ban(peer)
+				this.pool.ban(peer, InvalidBlock)
 			}
 		}
 	}
@@ -229,14 +233,14 @@ class SyncManager {
 	}
 
 	private def updateLowerUsefulDifficulty(difficulty: BigInt): Unit = {
-		if (this.lowerUsefulDiffuculty < difficulty) {
-			this.lowerUsefulDiffuculty = difficulty
+		if (this.lowerUsefulDifficulty < difficulty) {
+			this.lowerUsefulDifficultyRef.set(difficulty)
 		}
 	}
 
 	private def updateHighestKnownDifficulty(difficulty: BigInt): Unit = {
-		if (this.highestKnownDiffuculty < difficulty) {
-			this.highestKnownDiffuculty = difficulty
+		if (this.highestKnownDifficulty < difficulty) {
+			this.highestKnownDifficultyRef.set(difficulty)
 		}
 	}
 
@@ -253,7 +257,7 @@ class SyncManager {
 		val listener = new DiscoverListener {
 			override def nodeAppeared(handler: NodeHandler) = {
 				if (logger.isTraceEnabled) {
-					logger.trace("<SyncManager> Peer %s: new best chain peer discovered: %,d vs %,d".format(handler.node.hexIdShort, handler.nodeStatistics.lpcTotalDifficulty, highestKnownDiffuculty))
+					logger.trace("<SyncManager> Peer %s: new best chain peer discovered: %,d vs %,d".format(handler.node.hexIdShort, handler.nodeStatistics.lpcTotalDifficulty, highestKnownDifficulty))
 				}
 				pool.connect(handler.node)
 			}
@@ -264,7 +268,7 @@ class SyncManager {
 		this.nodeManager.addDiscoveryListener(
 			listener,
 			(nodeStats: NodeStatistics) => {
-				!isIn20PercentRange(this.highestKnownDiffuculty, nodeStats.lpcTotalDifficulty)
+				!isIn20PercentRange(this.highestKnownDifficulty, nodeStats.lpcTotalDifficulty)
 			}
 		)
 
@@ -291,7 +295,7 @@ class SyncManager {
 		val removed = this.pool.peers.filter(_.hasBlocksLack)
 		for (each <- removed) {
 			logger.info("<SyncManager> Banning a peer: Peer %s has no more blocks. Removing.".format(each.peerIdShort))
-			this.pool.ban(each)
+			this.pool.ban(each, BlocksLack)
 			updateLowerUsefulDifficulty(each.totalDifficulty)
 		}
 	}
@@ -301,8 +305,9 @@ class SyncManager {
 		if (lackSize <= 0) {
 			return
 		}
+		//十分なTDを持ち、なおかつ既知でないノードを選択する。
 		val nodesInUse = this.pool.nodesInUse
-		var newNodes = this.nodeManager.getBestLpcNodes(nodesInUse, this.lowerUsefulDiffuculty, lackSize)
+		var newNodes = this.nodeManager.getBestLpcNodes(nodesInUse, this.lowerUsefulDifficulty, lackSize)
 		if (this.pool.isEmpty && newNodes.isEmpty) {
 			newNodes = this.nodeManager.getBestLpcNodes(nodesInUse, UtilConsts.Zero, lackSize)
 		}

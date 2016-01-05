@@ -97,7 +97,7 @@ class HashRetrievingState extends AbstractSyncState(SyncStateName.HashRetrieving
 		if (Option(master).isDefined) {
 			if (syncManager.isPeerStuck(master)) {
 				logger.info("<SyncState> Banning a peer: %s. Stuck.".format(master.peerIdShort))
-				syncManager.pool.ban(master)
+				syncManager.pool.ban(master, Stuck)
 				//いちおう、取得できるブロックがないかどうか確認した上で、HashRetrievingを続ける。
 				syncManager.changeState(SyncStateName.BlockRetrieving)
 				return

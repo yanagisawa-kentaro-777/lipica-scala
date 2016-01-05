@@ -29,7 +29,6 @@ class PeerClient {
 	/**
 	 *
 	 * @param address 接続先アドレス。
-	 * @param port
 	 * @param nodeId 接続先ノードID。
 	 */
 	def connect(address: InetAddress, port: Int, nodeId: ImmutableBytes): Unit = connect(address, port, nodeId, discoveryMode = false)
@@ -48,20 +47,19 @@ class PeerClient {
 				handler(channelInitializer)
 			//クライアントとして接続する。
 			val future = b.connect().sync()
-			logger.debug("<PeerClient> Connection is established to [%s]:%d.".format(address, port))
+			logger.debug("<PeerClient> Connection is established to %s [%s]:%d.".format(nodeId.toShortString, address, port))
 			//接続がクローズされるまで待つ。
 			future.channel().closeFuture().sync()
-			logger.debug("<PeerClient> Connection is closed to [%s]:%d.".format(address, port))
+			logger.debug("<PeerClient> Connection is closed to %s [%s]:%d.".format(nodeId.toShortString, address, port))
 		} catch {
 			case e: Throwable =>
 				if (discoveryMode) {
-					logger.debug("<PeerClient> Exception caught: %s".format(e.getClass.getSimpleName), e)
+					logger.debug("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
 				} else {
-					logger.warn("<PeerClient> Exception caught: %s".format(e.getClass.getSimpleName), e)
+					logger.warn("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
 				}
 		}
 	}
-
 
 }
 

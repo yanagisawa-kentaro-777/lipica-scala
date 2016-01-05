@@ -87,7 +87,8 @@ class NodeTable(val node: Node, includedHomeNode: Boolean) {
 
 	def getClosestNodes(targetId: ImmutableBytes): Seq[Node] = {
 		this.synchronized {
-			getAllNodes.sortWith((e1, e2) => new DistanceComparator(targetId).compare(e1, e2) <= 0).take(KademliaOptions.BucketSize).map(_.node)
+			val comparator = new DistanceComparator(targetId)
+			getAllNodes.sortWith((e1, e2) => comparator.compare(e1, e2) < 0).take(KademliaOptions.BucketSize).map(_.node)
 		}
 	}
 

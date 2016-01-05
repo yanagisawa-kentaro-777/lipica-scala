@@ -67,38 +67,38 @@ object NodeEntry {
 	}
 
 	def distance(ownerId: ImmutableBytes, targetId: ImmutableBytes): Int ={
-		val h1 = targetId
-		val h2 = ownerId
+		//２個のバイト配列の256ビットダイジェストのXORを新たなバイト配列に格納する。
+		val digest1 = ownerId.digest256
+		val digest2 = targetId.digest256
+		val xor = new Array[Byte](digest1.length)
+		for (i <- xor.indices) {
+			//等しいバイトはゼロになる。
+			xor(i) = ((digest1(i) & 0xFF) ^ (digest2(i) & 0xFF)).toByte
+		}
 
-		val hash = new Array[Byte](h1.length min h2.length)
-		for (i <- hash.indices) {
-			hash(i) = ((h1(i) & 0xFF) ^ (h2(i) & 0xFF)).toByte
-		}
-		var d = KademliaOptions.Bins
-		val outerBrk = new Breaks
-		outerBrk.breakable {
-			for (b <- hash) {
-				if (b == 0) {
-					d -= 8
-				} else {
-					var count = 0
-					val brk = new Breaks
-					brk.breakable {
-						for (i <- 7 to 0 by -1) {
-							val a: Boolean = (b & (1 << i)) == 0
-							if (a) {
-								count += 1
-							} else {
-								brk.break()
-							}
-						}
-					}
-					d -= count
-					outerBrk.break()
+		var result = KademliaOptions.Bins
+		//先頭から連続して一致している（つまり、xorがゼロになっている）バイト数は？
+		val equalBytes = xor.takeWhile(each => each == 0).length
+		//そのバイト数のビットの数だけ、距離を減らす。
+		result -= (equalBytes * 8)
+		//次の１バイトについて、先頭から一致するビット数を数える。
+		val equalBits =
+			if (equalBytes == xor.length) {
+				//全部一致しているので残りはない。
+				0
+			} else {
+				var count = 0
+				var mask = 0x80
+				val b = xor(equalBytes) & 0xFF
+				//１ビットずつ右にシフトして、最上位ビットからの連続ゼロを数える。
+				while ((mask != 0) && ((mask & b) == 0)) {
+					count += 1
+					mask = mask >>> 1
 				}
+				count
 			}
-		}
-		//println(ownerId.toHexString + " & " + targetId.toHexString + " -> " + d)
-		d
+		//発見されたビット数だけ距離を減らす。
+		result -= equalBits
+		result
 	}
 }

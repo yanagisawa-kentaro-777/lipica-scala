@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
 import java.io.{Closeable, BufferedWriter, FileWriter}
+import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
@@ -71,6 +72,8 @@ class BlockchainImpl(
 	override def exitOn: Long = this._exitOn
 	override def exitOn_=(v: Long): Unit = this._exitOn = v
 
+	private val processingBlockRef: AtomicReference[Block] = new AtomicReference[Block](null)
+
 	var byTest: Boolean = false
 	private var fork: Boolean = false
 
@@ -123,46 +126,51 @@ class BlockchainImpl(
 	 * ローカルに保存していたブロック情報を連結する場合。
 	 */
 	override def tryToConnect(block: Block): ImportResult = {
-		logger.info("<Blockchain> Trying to connect %s. Repos state=%s".format(block.summaryString(short = true), this.repository.rootHash))
-		val result =
-			if (this.bestBlock eq null) {
-				if (logger.isDebugEnabled) {
-					logger.debug("<Blockchain> The first block: %s".format(block.summaryString(short = true)))
+		this.processingBlockRef.set(block)
+		try {
+			logger.info("<Blockchain> Trying to connect %s. Repos state=%s".format(block.summaryString(short = true), this.repository.rootHash))
+			val result =
+				if (this.bestBlock eq null) {
+					if (logger.isDebugEnabled) {
+						logger.debug("<Blockchain> The first block: %s".format(block.summaryString(short = true)))
+					}
+					recordBlock(block)
+					append(block)
+					ImportResult.ImportedBest
+				} else if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
+					//既存ブロック。
+					if (logger.isDebugEnabled) {
+						logger.debug("<Blockchain> Block already exists: %s".format(block.summaryString(short = true)))
+					}
+					ImportResult.Exists
+				} else if (this.bestBlock.isParentOf(block)) {
+					//単純連結。
+					if (logger.isDebugEnabled) {
+						logger.debug("<Blockchain> Appending block: %s".format(block.summaryString(short = true)))
+					}
+					recordBlock(block)
+					append(block)
+					ImportResult.ImportedBest
+				} else if (this.blockStore.existsBlock(block.parentHash)) {
+					//フォーク連結。
+					if (logger.isDebugEnabled) {
+						logger.debug("<Blockchain> Forking block: %s".format(block.summaryString(short = true)))
+					}
+					recordBlock(block)
+					tryConnectAndFork(block)
+				} else {
+					//得体の知れないブロック。
+					logger.info("<Blockchain> Unknown block: %s".format(block.summaryString(short = true)))
+					ImportResult.NoParent
 				}
-				recordBlock(block)
-				append(block)
-				ImportResult.ImportedBest
-			} else if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
-				//既存ブロック。
-				if (logger.isDebugEnabled) {
-					logger.debug("<Blockchain> Block already exists: %s".format(block.summaryString(short = true)))
-				}
-				ImportResult.Exists
-			} else if (this.bestBlock.isParentOf(block)) {
-				//単純連結。
-				if (logger.isDebugEnabled) {
-					logger.debug("<Blockchain> Appending block: %s".format(block.summaryString(short = true)))
-				}
-				recordBlock(block)
-				append(block)
-				ImportResult.ImportedBest
-			} else if (this.blockStore.existsBlock(block.parentHash)) {
-				//フォーク連結。
-				if (logger.isDebugEnabled) {
-					logger.debug("<Blockchain> Forking block: %s".format(block.summaryString(short = true)))
-				}
-				recordBlock(block)
-				tryConnectAndFork(block)
-			} else {
-				//得体の知れないブロック。
-				logger.info("<Blockchain> Unknown block: %s".format(block.summaryString(short = true)))
-				ImportResult.NoParent
-			}
-		logger.info("<Blockchain> Tried to connect %s. Result=%s. Repos state=%s".format(block.summaryString(short = false), result, this.repository.rootHash))
-		result
+			logger.info("<Blockchain> Tried to connect %s. Result=%s. Repos state=%s".format(block.summaryString(short = false), result, this.repository.rootHash))
+			result
+		} finally {
+			this.processingBlockRef.set(null)
+		}
 	}
 
-	def tryConnectAndFork(block: Block): ImportResult = {
+	private def tryConnectAndFork(block: Block): ImportResult = {
 		val savedRepo = this.repository
 		val savedBest = this.bestBlock
 		val savedTD = this.totalDifficulty
@@ -202,6 +210,8 @@ class BlockchainImpl(
 			ImportResult.ImportedNotBest
 		}
 	}
+
+	override def processingBlockOption: Option[Block] = Option(this.processingBlockRef.get)
 
 	private def recordBlock(block: Block): Unit = {
 		if (!SystemProperties.CONFIG.recordBlocks) {

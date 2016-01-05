@@ -1,15 +1,28 @@
-１、既存環境との完全同期
-・時間が経つと？ PING や FIND_NODE に返信がなくなる。
-←この原因は判明したと思われる。
-・またactive nodesもidleばかりになる。
-←これも同原因？
+０、仕様
 ・https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol
-・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
-・ブロック情報の保存と再生を実行する。
+に基いてコメントを書く。
+・secp256k1 について学ぶ。
+・node discovery protocol と secure transport protocolが兄弟関係なわけだ。
+・mdc = modification detection code
+・idle 等の状態遷移の仕様
 ・NewBlockとは何か？
 ・PeerIdを文字列で扱うのは正式仕様なのか？
-・Kademliaのソートを学ぶ。
-・KademliaTest test(3)、seed = 1451268255658L で 5000件時にエラー。
+・gap recoveryは？
+・fill up nodesは？
+
+０、不具合
+・どうもコネクションタイムアウトしすぎではないか。
+←何かの約束違反を犯している？　あるいは、これが正常な動作であるのか。
+
+・Fill up できないのはどういう時？←既知であるかTDが低いとき。
+
+・Caused by: java.net.SocketException: Too many open files
+← lsof -c java リソースリーク疑惑。UDP不通問題が解消されて顕在化したのだから、TCPの接続が疑わしいか。
+
+
+１、既存環境との完全同期
+・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
+・ブロック情報の保存と再生を実行する。
 ・Active Peerについて考えなおす。
 ・BlockchainImpl の連結失敗時のエラー処理が甘い。
 ・CallTransactionの変更に追随する。
@@ -21,13 +34,16 @@
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-・banの理由。
+・masterを表示する。
+
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
+・expirationによるdiscardを実装する。（replay attack対策）
 ・WARNは別のログに出した方が良かろう。
 ・アウトラインログを作る。（特にマスターのスイッチ）
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
+・多数のJARファイルは、ディスクリプタ数の面で非常に不利。
 ・ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 ・nullを排除する。
 ・ImmutableBytes#toByteArray を排除する。
