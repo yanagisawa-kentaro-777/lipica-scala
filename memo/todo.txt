@@ -2,10 +2,15 @@
 ・https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol
 に基いてコメントを書く。
 ・secp256k1 について学ぶ。
+・Encryption Handshakeについて。
+https://github.com/ethereum/devp2p/blob/master/rlpx.md
+・NewBlockとは何か？
+https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 ・node discovery protocol と secure transport protocolが兄弟関係なわけだ。
 ・mdc = modification detection code
+・mac = message authentication code
 ・idle 等の状態遷移の仕様
-・NewBlockとは何か？
+・pending transactionの意味は？
 ・PeerIdを文字列で扱うのは正式仕様なのか？
 ・gap recoveryは？
 ・fill up nodesは？
