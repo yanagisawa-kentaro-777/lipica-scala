@@ -103,6 +103,10 @@ class VM {
 				logger.info(logString.format("[%5s]".format(program.getPC), "%-12s".format(op.name), program.getMana.longValue, program.getCallDepth, hint))
 			}
 			vmCounter += 1
+			if ((vmCounter % 10) == 0) {
+				//他のスレッドのことを考える。
+				Thread.`yield`()
+			}
 		} catch {
 			case e: RuntimeException =>
 				logger.info("[VM] VM halted: [%s]", e.toString)

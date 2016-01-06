@@ -251,7 +251,7 @@ class SyncManager {
 	}
 
 	private def updateLowerUsefulDifficulty(difficulty: BigInt): Unit = {
-		if (this.lowerUsefulDifficulty < difficulty) {
+		if ((this.lowerUsefulDifficulty < difficulty) && (difficulty <= this.highestKnownDifficulty)) {
 			this.lowerUsefulDifficultyRef.set(difficulty)
 		}
 	}

@@ -20,12 +20,12 @@ https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 ・どうもコネクションタイムアウトしすぎではないか。
 ←何かの約束違反を犯している？　あるいは、これが正常な動作であるのか。
 ←プロセッサ負荷が高すぎて、pingを送れていないのではないかという仮説。以下と合わせて。
+←mediumにしても、10万手前の難関で落とされるように見える。
+インスタンスを変えるか、yield でうまくやるか、タイムアウト時間を延ばすか。インスタンスは、c4.large が良いかもしれない。
 
 ・１時間もの断絶が発生している。考えられないことだ。スレッド数過大か。topはJava100%。
 2016-01-06 01:13:44.659 INFO  <TxExecutor> Withdraw in advance: TxManaCost: 70,000,000,000,000,000, ManaPrice: 70,000,000,000, ManaLimit: 1,000,000 [Thread-4] TransactionExecutor.scala:85
 2016-01-06 02:19:33.374 DEBUG <TxExecutor> Contract invocation: [1194e966965418c7d73a42cceeb254d875860356]=[1,823 bytes] [Thread-4] TransactionExecutor.scala:137
-
-・LowTDとHighTDとの関係を整備する。LowTDを上げ過ぎるのは得策ではない。
 
 ・Fill up できないのはどういう時？←既知であるかTDが低いとき。
 

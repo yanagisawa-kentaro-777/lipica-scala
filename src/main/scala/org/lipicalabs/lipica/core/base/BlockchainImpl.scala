@@ -374,6 +374,10 @@ class BlockchainImpl(
 			executor.execute()
 			executor.go()
 			executor.finalization()
+
+			//他のスレッドのことを考える。
+			Thread.`yield`()
+
 			val manaUsedForTx = executor.manaUsed
 			cumulativeManaUsed += manaUsedForTx
 

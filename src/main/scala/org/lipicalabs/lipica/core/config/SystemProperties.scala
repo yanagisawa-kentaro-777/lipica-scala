@@ -184,7 +184,13 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 			return result
 		}
 		this.privateKeyRef.synchronized {
-			val hex = this.config.getString("node.private.key")
+			val key = "node.private.key"
+			val hex =
+				if (config.hasPath(key)) {
+					config.getString(key)
+				} else {
+					""
+				}
 			val keyBytes =
 				if (isNullOrEmpty(hex) || (hex.length < 64)) {
 					//指定されていないのでランダムに生成する。
@@ -198,7 +204,8 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 			val privateKey = ECKey.fromPrivate(keyBytes).decompress
 			this.privateKeyRef.set(privateKey)
 		}
-		myKey
+		//再帰的自己呼び出し。
+		this.myKey
 	}
 
 	/**

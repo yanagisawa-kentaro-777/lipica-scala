@@ -30,7 +30,7 @@ class RestApiServlet extends ScalatraServlet {
 				"ExternalAddress=%s\nBindAddress=%s\n\n" +
 				"BestBlock=[%,d %s]\nTD=%,d\n\n" +
 				"ProcessingBlock=%s\n\n" +
-				"SyncState=%s\nLowerTD=%,d\nHighestKnownTD=%,d\n\n" +
+				"SyncState=%s\nTD Range:\n\t%,d\n\t%,d\n\n" +
 				"Active Peers:%,d\n%s\n\n" + "Banned Peers:%,d\n%s\n\n" + "Pending Peers:%,d\n\n" +
 				"NumNodeHandlers:%,d\nNumNodesInTable:%,d\n\n" +
 				"Threads: %,d\n\n").format(
