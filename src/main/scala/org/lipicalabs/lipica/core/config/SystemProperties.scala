@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.config
 import java.io.InputStream
 import java.net.{Socket, URI}
 import java.nio.file.{Paths, Path}
+import java.security.SecureRandom
 import java.util.Properties
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
@@ -15,6 +16,8 @@ import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
+
+import scala.annotation.tailrec
 
 /**
  * このシステムの設定を表すインターフェイスです。
@@ -170,12 +173,32 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 	 */
 	override def networkId: Int = this.config.getInt("node.network.id")
 
+	private val privateKeyRef = new AtomicReference[ECKey](null)
 	/**
 	 * 自ノードの秘密鍵です。
 	 */
-	override def myKey: ECKey = {
-		val hex = this.config.getString("node.private.key")
-		ECKey.fromPrivate(Hex.decodeHex(hex.toCharArray)).decompress
+	@tailrec
+	override final def myKey: ECKey = {
+		val result = this.privateKeyRef.get
+		if (result ne null) {
+			return result
+		}
+		this.privateKeyRef.synchronized {
+			val hex = this.config.getString("node.private.key")
+			val keyBytes =
+				if (isNullOrEmpty(hex) || (hex.length < 64)) {
+					//指定されていないのでランダムに生成する。
+					val random = new SecureRandom()
+					val bytes = new Array[Byte](32)
+					random.nextBytes(bytes)
+					bytes
+				} else {
+					Hex.decodeHex(hex.toCharArray)
+				}
+			val privateKey = ECKey.fromPrivate(keyBytes).decompress
+			this.privateKeyRef.set(privateKey)
+		}
+		myKey
 	}
 
 	/**

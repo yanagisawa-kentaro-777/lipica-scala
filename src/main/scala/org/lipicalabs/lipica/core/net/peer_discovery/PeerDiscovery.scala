@@ -6,7 +6,7 @@ import java.util.concurrent._
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.net.p2p.Peer
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{mutable, JavaConversions}
@@ -34,14 +34,14 @@ class PeerDiscovery {
 
 	def start(): Unit = {
 		this.rejectionHandler = new RejectionLogger
-		this.threadFactory = Executors.defaultThreadFactory
+		this.threadFactory = new CountingThreadFactory("peer-discovery-worker")
 		this.executorPool = new ThreadPoolExecutor(
 			SystemProperties.CONFIG.peerDiscoveryWorkers, SystemProperties.CONFIG.peerDiscoveryWorkers, 10, TimeUnit.SECONDS,
 			new ArrayBlockingQueue[Runnable](1000), this.threadFactory, this.rejectionHandler
 		)
 		this.monitor = new PeerMonitorTask(this.executorPool, 1, this)
-		val monitorThread = new Thread(this.monitor)
-		monitorThread.start()
+		val monitorExecutor = Executors.newSingleThreadExecutor(new CountingThreadFactory("peer-discovery-monitor"))
+		monitorExecutor.execute(this.monitor)
 
 		val peerDataSeq = parsePeerDiscoveryAddresses(SystemProperties.CONFIG.seedNodes)
 		addPeers(peerDataSeq)

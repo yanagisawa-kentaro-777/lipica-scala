@@ -392,7 +392,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			case SyncStateName.BlockRetrieving =>
 				"Version=%s; State=%s; Blocks=%,d".format(this.version, SyncStateName.BlockRetrieving, this.syncStats.blocksCount)
 			case SyncStateName.HashRetrieving =>
-				"Version=%s; State=%s; Blocks=%,d".format(this.version, SyncStateName.HashRetrieving, this.syncStats.hashesCount)
+				"Version=%s; State=%s; Hashes=%,d".format(this.version, SyncStateName.HashRetrieving, this.syncStats.hashesCount)
 			case any =>
 				"Version=%s; State=%s".format(this.version, any)
 		}

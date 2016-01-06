@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.net.server
 
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelInitializer
@@ -9,6 +10,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.transport.discover.DiscoveryExecutor
+import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 /**
@@ -27,7 +29,7 @@ class UDPListener {
 	private val address: String = SystemProperties.CONFIG.bindAddress
 	private val port: Int = SystemProperties.CONFIG.bindPort
 
-	private val executor = Executors.newSingleThreadExecutor
+	private val executor = Executors.newSingleThreadExecutor(new CountingThreadFactory("udp-starter"))
 
 	def start(): Boolean = {
 		if (SystemProperties.CONFIG.peerDiscoveryEnabled) {
@@ -51,8 +53,10 @@ class UDPListener {
 	}
 
 	private def bind(): Unit = {
-		val group = new NioEventLoopGroup(1)
+		val group = new NioEventLoopGroup(1, new CountingThreadFactory("udp-listener"))
 		val nodeManager = WorldManager.instance.nodeManager
+		val discoverExecutor = new DiscoveryExecutor(nodeManager)
+		val startedRef: AtomicBoolean = new AtomicBoolean(false)
 
 		try {
 			while (true) {
@@ -68,8 +72,10 @@ class UDPListener {
 				val channel = b.bind(this.address, this.port).sync().channel()
 				logger.info("<UDPListener> Bound on address [%s]:%d".format(this.address, this.port))
 
-				val discoverExecutor = new DiscoveryExecutor(nodeManager)
-				discoverExecutor.discover()
+				if (startedRef.compareAndSet(false, true)) {
+					logger.info("<UDPListener> Starting discovery tasks. [%s]:%d".format(this.address, this.port))
+					discoverExecutor.discover()
+				}
 
 				//このチャネルが切断されるまで待つ。
 				channel.closeFuture().sync()

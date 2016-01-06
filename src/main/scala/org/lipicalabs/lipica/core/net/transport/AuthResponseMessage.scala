@@ -36,6 +36,8 @@ class AuthResponseMessage {
 		buffer
 	}
 
+	override def toString: String = "AuthResponseMessage"
+
 }
 
 object AuthResponseMessage {

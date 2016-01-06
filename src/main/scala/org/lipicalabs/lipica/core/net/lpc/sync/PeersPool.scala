@@ -5,7 +5,7 @@ import java.util.concurrent.{Executors, TimeUnit}
 import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.transport.Node
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -35,7 +35,7 @@ class PeersPool {
 	 */
 	def init(): Unit = {
 		//定期処理を登録し実行します。
-		Executors.newSingleThreadScheduledExecutor.scheduleWithFixedDelay(
+		Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("peers-pool")).scheduleWithFixedDelay(
 			new Runnable {
 				override def run(): Unit = {
 					releaseBans()
@@ -166,14 +166,21 @@ class PeersPool {
 
 	def isInUse(nodeId: String): Boolean = nodesInUse.contains(nodeId)
 
+	/**
+	 * すべてのピアについて、状態を指定されたものに遷移させようとします。
+	 *
+	 * @param stateName 遷移先の状態。
+	 */
 	def changeState(stateName: SyncStateName): Unit = {
-		this.activePeers.synchronized {
-			for (peer <- this.activePeers.values) {
-				peer.changeSyncState(stateName)
-			}
-		}
+		changeState(stateName, each => true)
 	}
 
+	/**
+	 * 条件に合致したピアについて、状態を指定されたものに遷移させようとします。
+	 *
+	 * @param stateName 遷移先の状態。
+	 * @param predicate 条件。
+	 */
 	def changeState(stateName: SyncStateName, predicate: (Channel) => Boolean): Unit = {
 		this.activePeers.synchronized {
 			this.activePeers.values.withFilter(each => predicate(each)).foreach {

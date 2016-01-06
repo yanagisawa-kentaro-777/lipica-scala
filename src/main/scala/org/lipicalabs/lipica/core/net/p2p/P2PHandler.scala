@@ -4,12 +4,10 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent._
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import org.lipicalabs.lipica.core.base.{Block, TransactionLike}
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
-import org.lipicalabs.lipica.core.net.lpc.message.{NewBlockMessage, TransactionsMessage}
 import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode._
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
@@ -17,6 +15,7 @@ import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.net.transport.HandshakeHelper
+import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 /**
@@ -191,8 +190,5 @@ object P2PHandler {
 	private val logger = LoggerFactory.getLogger("net")
 	val Version: Byte = 4
 
-	private val pingTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory {
-		override def newThread(r: Runnable) = new Thread(r, "P2PPingTimer")
-	})
-
+	private val pingTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("p2p-ping-timer"))
 }

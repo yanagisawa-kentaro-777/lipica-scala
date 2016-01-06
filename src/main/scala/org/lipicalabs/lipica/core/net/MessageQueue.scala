@@ -1,12 +1,12 @@
 package org.lipicalabs.lipica.core.net
 
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent._
 
 import io.netty.channel.ChannelHandlerContext
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, ReasonCode, Message}
 import org.lipicalabs.lipica.core.net.p2p.{DisconnectMessage, PingMessage}
+import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 /**
@@ -95,23 +95,32 @@ class MessageQueue {
 	}
 
 	private def sendToWire(messageRoundtrip: MessageRoundtrip): Unit = {
-		Option(messageRoundtrip).withFilter(_.retryTimes == 0).foreach {
+		Option(messageRoundtrip).foreach {
 			each => {
-				val message = each.message
-				this.worldManager.listener.onSendMessage(message)
-				if (logger.isDebugEnabled) {
-					logger.debug("<MessageQueue> Sending %s".format(message.command.getClass.getSimpleName))
-				}
+				if (each.retryTimes == 0) {
+					val message = each.message
+					this.worldManager.listener.onSendMessage(message)
+					if (logger.isDebugEnabled) {
+						logger.debug("<MessageQueue> Sending %s to %s".format(message.command.getClass.getSimpleName, this.ctx.channel.remoteAddress))
+					}
+					//送信する。
+					this.ctx.writeAndFlush(message)
 
-				this.ctx.writeAndFlush(message)
-
-				if (message.answerMessage.nonEmpty) {
-					//送信済みとして記録する。
-					messageRoundtrip.incrementRetryTimes()
-					messageRoundtrip.saveTime()
+					if (message.answerMessage.nonEmpty) {
+						//送信済みとして記録する。
+						messageRoundtrip.incrementRetryTimes()
+						messageRoundtrip.saveTime()
+					} else {
+						//返信不要のメッセージだから、これ以上保持する必要がない。
+						this.messageQueue.remove()
+					}
 				} else {
-					//保持する必要がない。
-					this.messageQueue.remove()
+					//TODO retry をどうするか。
+					each.incrementRetryTimes()
+					if (500 <= each.retryTimes) {
+						//タイムアウト扱い。
+						each.answer()
+					}
 				}
 			}
 		}
@@ -126,10 +135,6 @@ class MessageQueue {
 object MessageQueue {
 	private val logger = LoggerFactory.getLogger("net")
 
-	private val timer = Executors.newScheduledThreadPool(4, new ThreadFactory {
-		private val cnt = new AtomicInteger(0)
-		override def newThread(r: Runnable) = {
-			new Thread(r, "MessageQueueTimer-" + this.cnt.getAndIncrement)
-		}
-	})
+	private val timer = Executors.newScheduledThreadPool(8, new CountingThreadFactory("message-queue-timer"))
+
 }

@@ -2,11 +2,11 @@ package org.lipicalabs.lipica.core.net.transport.discover
 
 import java.util
 import java.util.{Collections, Comparator}
-import java.util.concurrent.{Executors, LinkedBlockingDeque, TimeUnit, ThreadPoolExecutor}
+import java.util.concurrent._
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.utils.UtilConsts
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, UtilConsts}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -26,11 +26,12 @@ class PeerConnectionExaminer {
 
 	private val connectedCandidates: mutable.Map[NodeHandler, NodeHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[NodeHandler, NodeHandler])
 
-	private val peerConnectionPool = new ThreadPoolExecutor(ConnectThreads, ConnectThreads, 0L, TimeUnit.SECONDS, new MutablePriorityQueue[Runnable, ConnectTask](new Comparator[ConnectTask] {
+	private val queue = new MutablePriorityQueue[Runnable, ConnectTask](new Comparator[ConnectTask] {
 		override def compare(o1: ConnectTask, o2: ConnectTask): Int = o2.nodeHandler.nodeStatistics.reputation - o1.nodeHandler.nodeStatistics.reputation
-	}))
+	})
+	private val peerConnectionPool = new ThreadPoolExecutor(ConnectThreads, ConnectThreads, 0L, TimeUnit.SECONDS, queue, new CountingThreadFactory("conn-examiner"))
 
-	private val reconnectTimer = Executors.newSingleThreadScheduledExecutor
+	private val reconnectTimer = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("reconnect-timer"))
 	private var _reconnectPeersCount = 0
 
 	class ConnectTask(val nodeHandler: NodeHandler) extends Runnable {

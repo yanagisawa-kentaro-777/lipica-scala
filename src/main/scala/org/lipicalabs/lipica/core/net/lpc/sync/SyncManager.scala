@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.{ChannelManager, Channel}
 import org.lipicalabs.lipica.core.net.transport.discover.{NodeStatistics, DiscoverListener, NodeHandler, NodeManager}
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, UtilConsts, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -21,7 +21,8 @@ class SyncManager {
 	import SyncManager._
 
 	private val syncStates: Map[SyncStateName, SyncState] = buildSyncStates(this)
-	private var state: SyncState = null
+	private val stateRef: AtomicReference[SyncState] = new AtomicReference[SyncState](null)
+	def state: SyncState = this.stateRef.get
 	private val stateMutex = new Object
 
 	private var gapBlock: BlockWrapper = null
@@ -37,7 +38,7 @@ class SyncManager {
 	private val highestKnownDifficultyRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
 	def highestKnownDifficulty: BigInt = this.highestKnownDifficultyRef.get
 
-	private val worker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor
+	private val worker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("sync-manager"))
 
 
 	private def worldManager: WorldManager = WorldManager.instance
@@ -59,7 +60,7 @@ class SyncManager {
 					return
 				}
 				logger.info("<SyncManager> SyncManager: ON.")
-				state = syncStates.get(SyncStateName.Idle).get
+				stateRef.set(syncStates.get(SyncStateName.Idle).get)
 
 				updateDifficulties()
 				changeState(initialState())
@@ -85,7 +86,7 @@ class SyncManager {
 				}
 			}
 		}
-		new Thread(task).start()
+		Executors.newSingleThreadExecutor(new CountingThreadFactory("sync-manager-starter")).execute(task)
 	}
 
 	def addPeer(peer: Channel): Unit = {
@@ -121,10 +122,11 @@ class SyncManager {
 
 	def tryGapRecovery(blockWrapper: BlockWrapper): Unit = {
 		if (!isGapRecoveryAllowed(blockWrapper)) {
+			logger.debug("<SyncManager> Don't start gap recovery.")
 			return
 		}
 		if (logger.isDebugEnabled) {
-			logger.debug("<SyncManager> Recovering gap: best.number %,d vs block.number %s".format(this.blockchain.bestBlock.blockNumber, blockWrapper.blockNumber))
+			logger.debug("<SyncManager> Recovering gap: Best=%,d vs Pending=%s".format(this.blockchain.bestBlock.blockNumber, blockWrapper.blockNumber))
 		}
 		this.gapBlock = blockWrapper
 		val gap = gapSize(blockWrapper)
@@ -173,10 +175,14 @@ class SyncManager {
 
 	private def isGapRecoveryAllowed(block: BlockWrapper): Boolean = {
 		if (this.state.is(SyncStateName.HashRetrieving)) {
-			//まだそんな段階ではない。
+			//まだハッシュ値をダウンロードしている最中なのだから、ブロックのギャップを気にすべき段階ではない。
+			if (logger.isDebugEnabled) {
+				logger.debug("<SyncManager> Still retrieving hashes. No need to recover gap.")
+			}
 			return false
 		}
 		if ((block == this.gapBlock) && !this.state.is(SyncStateName.Idle)) {
+			//すでに同じ問題を解消するための取り組みを実施中である。
 			if (logger.isTraceEnabled) {
 				logger.trace("<SyncManager> Gap recovery is already in progress for %,d".format(this.gapBlock.blockNumber))
 			}
@@ -188,22 +194,30 @@ class SyncManager {
 		}
 		//ブロックをダウンロード中である。新ブロックならidleになるまで待つべきである。
 		if (!block.isNewBlock) {
-			GapRecoveryTimeout < block.timeSinceFailed
+			val elapsed = block.timeSinceFailed
+			val ok = GapRecoveryTimeout < elapsed
+			if (!ok) {
+				logger.debug("<SyncManager> Wait a while before starting gap recovery. (%,d < %,d)".format(elapsed, GapRecoveryTimeout))
+			}
+			ok
 		} else {
 			this.state.is(SyncStateName.Idle)
 		}
 	}
 
+	/**
+	 * 同期処理の状態をさせます。
+	 */
 	def changeState(stateName: SyncStateName): Unit = {
 		this.syncStates.get(stateName).foreach {
 			newState => {
 				if (newState == this.state) {
 					return
 				}
-				logger.info("<SyncManager> Changin state from %s to %s".format(this.state, newState))
+				logger.info("<SyncManager> CHANGING STATE: %s -> %s".format(this.state, newState))
 				this.stateMutex.synchronized {
 					newState.doOnTransition()
-					this.state = newState
+					this.stateRef.set(newState)
 				}
 			}
 		}
@@ -214,9 +228,13 @@ class SyncManager {
 		(PeerStuckTimeout < stats.millisSinceLastUpdate) || (0 < stats.emptyResponsesCount)
 	}
 
+	/**
+	 * 指定されたピアを新たなマスターとして、ダイジェスト値の収集を開始します。
+	 */
 	def startMaster(master: Channel): Unit = {
 		this.pool.changeState(SyncStateName.Idle)
 		if (this.gapBlock ne null) {
+			//ギャップの解決中ならば、その直前の取得を優先する。
 			master.lastHashToAsk = this.gapBlock.parentHash
 		} else {
 			master.lastHashToAsk = master.bestKnownHash
@@ -275,7 +293,7 @@ class SyncManager {
 	}
 
 	private def startLogWorker(): Unit = {
-		Executors.newSingleThreadScheduledExecutor.scheduleWithFixedDelay(
+		Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("sync-logger")).scheduleWithFixedDelay(
 			new Runnable {
 				override def run(): Unit = {
 					try {
@@ -354,7 +372,7 @@ object SyncManager {
 			SyncStateName.HashRetrieving -> new HashRetrievingState,
 			SyncStateName.BlockRetrieving -> new BlockRetrievingState
 		)
-		result.values.foreach(each => each.asInstanceOf[AbstractSyncState].syncManager = syncManager)
+		result.values.foreach(_.assign(syncManager))
 		result
 	}
 

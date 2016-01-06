@@ -15,7 +15,7 @@ import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.server.PeerServer
 import org.lipicalabs.lipica.core.net.submit.{TransactionExecutor, TransactionTask}
 import org.lipicalabs.lipica.core.net.transport.Node
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
@@ -41,7 +41,7 @@ class LipicaImpl extends Lipica {
 	override def init(): Unit = {
 		val bindPort = SystemProperties.CONFIG.bindPort
 		if (0 < bindPort) {
-			Executors.newSingleThreadExecutor.submit(new Runnable {
+			Executors.newSingleThreadExecutor(new CountingThreadFactory("front-server")).submit(new Runnable {
 				override def run(): Unit = {
 					peerServer.start(bindPort)
 				}
@@ -78,8 +78,9 @@ class LipicaImpl extends Lipica {
 
 	override def connect(node: Node) = connect(node.address, node.id)
 
+	private val connectExecutor = Executors.newCachedThreadPool(new CountingThreadFactory("front-connector"))
 	override def connect(address: InetSocketAddress, remoteNodeId: ImmutableBytes): Unit = {
-		Executors.newSingleThreadExecutor.submit(new Runnable {
+		this.connectExecutor.submit(new Runnable {
 			override def run(): Unit = {
 				worldManager.client.connect(address.getAddress, address.getPort, remoteNodeId)
 			}

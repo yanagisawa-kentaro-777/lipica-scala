@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.net.transport.discover
 import java.util.concurrent.{TimeUnit, Executors}
 
 import org.lipicalabs.lipica.core.net.transport.discover.table.KademliaOptions
+import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,8 +12,8 @@ import org.lipicalabs.lipica.core.net.transport.discover.table.KademliaOptions
  */
 class DiscoveryExecutor(val nodeManager: NodeManager) {
 
-	private val discoverer = Executors.newSingleThreadScheduledExecutor
-	private val refresher = Executors.newSingleThreadScheduledExecutor
+	private val discoverer = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("discoverer"))
+	private val refresher = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("refresher"))
 
 	def discover(): Unit = {
 		this.discoverer.scheduleWithFixedDelay(

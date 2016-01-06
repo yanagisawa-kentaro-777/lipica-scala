@@ -57,6 +57,8 @@ class AuthInitiateMessage {
 		buffer
 	}
 
+	override def toString: String = "AuthInitiateMessage"
+
 }
 
 object AuthInitiateMessage {

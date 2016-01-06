@@ -1,11 +1,12 @@
 package org.lipicalabs.lipica.core.db
 
+import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.base.BlockWrapper
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.{Serializers, MapDBFactory}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.mapdb.{Serializer, DB}
 import org.slf4j.LoggerFactory
 
@@ -40,7 +41,7 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 	private val readMutex = new Object
 
 	override def open(): Unit = {
-		new Thread() {
+		val task = new Runnable() {
 			override def run(): Unit = {
 				BlockQueueImpl.this.initLock.lock()
 				try {
@@ -64,7 +65,8 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 					BlockQueueImpl.this.initLock.unlock()
 				}
 			}
-		}.start()
+		}
+		Executors.newSingleThreadExecutor(new CountingThreadFactory("block-queue")).execute(task)
 	}
 
 	override def addAll(aBlocks: Iterable[BlockWrapper]): Unit = {

@@ -1,8 +1,6 @@
 package org.lipicalabs.lipica.core.net.client
 
 import java.net.InetAddress
-import java.util.concurrent.ThreadFactory
-import java.util.concurrent.atomic.AtomicInteger
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.{DefaultMessageSizeEstimator, ChannelOption, EventLoopGroup}
@@ -11,7 +9,7 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -65,14 +63,5 @@ class PeerClient {
 
 object PeerClient {
 	private val logger = LoggerFactory.getLogger("net")
-
-	private val workerGroup: EventLoopGroup = new NioEventLoopGroup(
-		0,
-		new ThreadFactory {
-			private val count = new AtomicInteger(0)
-			override def newThread(r: Runnable): Thread = {
-				new Thread(r, "LpcClientWorker-" + this.count.getAndIncrement)
-			}
-		}
-	)
+	private val workerGroup: EventLoopGroup = new NioEventLoopGroup(0, new CountingThreadFactory("peer-client-worker"))
 }

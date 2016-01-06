@@ -5,6 +5,7 @@ import java.util.concurrent.{CopyOnWriteArrayList, Executors, ScheduledExecutorS
 import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.lpc.sync.SyncManager
+import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
@@ -28,7 +29,7 @@ class ChannelManager {
 	private val newPeers = new CopyOnWriteArrayList[Channel]()
 	private val activePeers = new CopyOnWriteArrayList[Channel]()
 
-	private val mainWorker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor
+	private val mainWorker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("channel-manager"))
 
 	def init(): Unit = {
 		this.mainWorker.scheduleWithFixedDelay(new Runnable {

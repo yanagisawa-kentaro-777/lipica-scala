@@ -8,7 +8,7 @@ import io.netty.handler.logging.LoggingHandler
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -24,7 +24,8 @@ class PeerServer {
 	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer(ImmutableBytes.empty)
 
 	def start(port: Int): Unit = {
-		val bossGroup = new NioEventLoopGroup(1)
+		val factory = new CountingThreadFactory("peer-server")
+		val bossGroup = new NioEventLoopGroup(1, factory)
 		val workerGroup = new NioEventLoopGroup
 
 		this.worldManager.listener.trace("Listening on port %d".format(port))

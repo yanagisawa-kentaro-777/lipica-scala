@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
+import java.util.concurrent.atomic.AtomicLong
+
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
@@ -12,13 +14,12 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 
 	import BlockWrapper._
 
-	private var _importFailedAt: Long = 0L
-	def importFailedAt: Long = this._importFailedAt
-	def importFailedAt_=(v: Long): Unit = this._importFailedAt = v
+	private val failedTimestamp: AtomicLong = new AtomicLong(0L)
+	def importFailedAt: Long = this.failedTimestamp.get
+	def importFailedAt_=(v: Long): Unit = this.failedTimestamp.set(v)
 	def fireImportFailed(): Unit = {
-		if (this._importFailedAt == 0L) {
-			this._importFailedAt = System.currentTimeMillis()
-		}
+		val now = System.currentTimeMillis
+		this.failedTimestamp.compareAndSet(0L, now)
 	}
 
 	private var _receivedAt: Long = 0L
@@ -34,17 +35,18 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 	def parentHash: ImmutableBytes = this.block.parentHash
 
 	def timeSinceFailed: Long = {
-		if (this._importFailedAt == 0) {
-			0
+		val timestamp = this.importFailedAt
+		if (timestamp <= 0L) {
+			0L
 		} else {
-			System.currentTimeMillis - _importFailedAt
+			System.currentTimeMillis - timestamp
 		}
 	}
 	def timeSinceReceiving: Long = System.currentTimeMillis - this._receivedAt
 
 	def toBytes: ImmutableBytes = {
 		val encodedBlock = this.block.encode
-		val encodedImportFailed = RBACCodec.Encoder.encode(BigInt(this._importFailedAt))
+		val encodedImportFailed = RBACCodec.Encoder.encode(BigInt(this.importFailedAt))
 		val encodedReceivedAt = RBACCodec.Encoder.encode(BigInt(this._receivedAt))
 		val encodedNewBlock = RBACCodec.Encoder.encode(if (this.isNewBlock) 1.toByte else 0.toByte)
 		val encodedNodeId = RBACCodec.Encoder.encode(this.nodeId)

@@ -1,10 +1,11 @@
 package org.lipicalabs.lipica.core.db
 
+import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.{Serializers, MapDBFactory}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.mapdb.{Serializer, DB}
 import org.slf4j.LoggerFactory
 
@@ -29,7 +30,7 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 	private val init = this.initLock.newCondition
 
 	override def open(): Unit = {
-		new Thread {
+		val task = new Runnable() {
 			override def run(): Unit = {
 				initLock.lock()
 				try {
@@ -49,7 +50,8 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 					initLock.unlock()
 				}
 			}
-		}.start()
+		}
+		Executors.newSingleThreadExecutor(new CountingThreadFactory("hash-store")).execute(task)
 	}
 
 	override def close() = {

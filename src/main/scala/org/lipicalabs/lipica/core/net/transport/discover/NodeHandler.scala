@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{TimeUnit, ScheduledExecutorService, Executors}
 
 import org.lipicalabs.lipica.core.net.transport._
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -215,7 +215,7 @@ object NodeHandler {
 	private val logger = LoggerFactory.getLogger("discover")
 
 	val aliveNodes: util.Queue[NodeHandler] = new util.ArrayDeque[NodeHandler]
-	private val pongTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor
+	private val pongTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("pong-timer"))
 	private val PingTimeout: Long = 15000L
 
 	sealed trait State

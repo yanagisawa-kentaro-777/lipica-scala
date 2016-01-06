@@ -1,0 +1,6 @@
+・https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol
+・secp256k1 について学ぶ。
+・Encryption Handshakeについて。
+https://github.com/ethereum/devp2p/blob/master/rlpx.md
+・Ethについて。
+https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol

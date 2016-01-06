@@ -24,13 +24,16 @@ class RestApiServlet extends ScalatraServlet {
 
 		val bannedPeers = peersPool.bannedPeersMap
 
-		val response = ("NodeId=%s\n" +
+		val threads = Utils.allThreads
+
+		val body = ("NodeId=%s\n" +
 				"ExternalAddress=%s\nBindAddress=%s\n\n" +
-				"BestBlock=[%,d %s]\nTotalDifficulty=%,d\n\n" +
+				"BestBlock=[%,d %s]\nTD=%,d\n\n" +
 				"ProcessingBlock=%s\n\n" +
-				"LowerTD=%,d\nHighestKnownTD=%,d\n\n" +
+				"SyncState=%s\nLowerTD=%,d\nHighestKnownTD=%,d\n\n" +
 				"Active Peers:%,d\n%s\n\n" + "Banned Peers:%,d\n%s\n\n" + "Pending Peers:%,d\n\n" +
-				"NumNodeHandlers:%,d\nNumNodesInTable:%,d\n\n").format(
+				"NumNodeHandlers:%,d\nNumNodesInTable:%,d\n\n" +
+				"Threads: %,d\n\n").format(
 			SystemProperties.CONFIG.nodeId,
 			SystemProperties.CONFIG.externalAddress,
 			SystemProperties.CONFIG.bindAddress,
@@ -39,6 +42,7 @@ class RestApiServlet extends ScalatraServlet {
 			totalDifficulty,
 			blockchain.processingBlockOption.map(_.summaryString(short = true)).getOrElse("None"),
 
+			syncManager.state.name,
 			syncManager.lowerUsefulDifficulty,
 			syncManager.highestKnownDifficulty,
 
@@ -57,9 +61,18 @@ class RestApiServlet extends ScalatraServlet {
 			peersPool.pendingCount,
 
 			nodeManager.numberOfKnownNodes,
-			nodeManager.table.getNodeCount
+			nodeManager.table.getNodeCount,
+
+			threads.length
 		)
 		status = 200
-		Ok(response)
+		Ok(body)
+	}
+
+	get("/:apiVersion/node/threads") {
+		val threads = Utils.allThreads.toSeq.sortWith((t1, t2) => t1.getName.compareTo(t2.getName) < 0)
+		val body = "Number of threads: %,d\n\n%s\n\n".format(threads.size, threads.map(_.getName).mkString("\n"))
+		status = 200
+		Ok(body)
 	}
 }

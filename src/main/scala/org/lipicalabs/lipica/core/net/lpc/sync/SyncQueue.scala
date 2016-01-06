@@ -1,11 +1,13 @@
 package org.lipicalabs.lipica.core.net.lpc.sync
 
+import java.util.concurrent.Executors
+
 import org.lipicalabs.lipica.core.base._
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.BlockHeaderValidator
 import org.slf4j.LoggerFactory
 
@@ -34,13 +36,13 @@ class SyncQueue {
 		this.blockQueue = new BlockQueueImpl(mapDBFactory)
 		this.blockQueue.open()
 
-		val queueProducer = new Runnable {
-			override def run() = produceQueue()
+		val task = new Runnable {
+			override def run() = consumeQueue()
 		}
-		new Thread(queueProducer).start()
+		Executors.newSingleThreadExecutor(new CountingThreadFactory("sync-queue")).execute(task)
 	}
 
-	private def produceQueue(): Unit = {
+	private def consumeQueue(): Unit = {
 		while (true) {
 			try {
 				val blockWrapper = this.blockQueue.take

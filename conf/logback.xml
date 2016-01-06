@@ -90,10 +90,24 @@
 			<MaxFileSize>10MB</MaxFileSize>
 		</triggeringPolicy>
 	</appender>
+	<appender name="REPOS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/repository.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/repository%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+
 	<root level="WARN">
 		<appender-ref ref="EXT_LIB"/>
 	</root>
-
 	<logger name="block" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
@@ -125,7 +139,7 @@
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="repository" level="INFO" additivity="false">
-		<appender-ref ref="NODE_TRACE"/>
+		<appender-ref ref="REPOS"/>
 	</logger>
 	<logger name="state" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>

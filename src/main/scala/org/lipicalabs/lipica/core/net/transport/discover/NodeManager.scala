@@ -13,7 +13,7 @@ import org.lipicalabs.lipica.core.net.server.MessageHandler
 import org.lipicalabs.lipica.core.net.transport._
 import org.lipicalabs.lipica.core.net.transport.discover.NodeStatistics.Persistent
 import org.lipicalabs.lipica.core.net.transport.discover.table.NodeTable
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.mapdb.{HTreeMap, DB}
 import org.slf4j.LoggerFactory
 
@@ -55,7 +55,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 			return
 		}
 		this._isInitDone = true
-		val executor = Executors.newSingleThreadScheduledExecutor
+		val executor = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("listener-processor"))
 		executor.scheduleAtFixedRate(new Runnable {
 			override def run(): Unit = {
 				processListeners()
