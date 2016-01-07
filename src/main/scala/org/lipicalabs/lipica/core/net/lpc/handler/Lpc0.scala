@@ -46,6 +46,11 @@ class Lpc0 extends LpcHandler(V0) {
 		sendGetBlockHashesByNumber(blockNumber, this.maxHashesAsk)
 	}
 
+	/**
+	 * 渡されたブロック番号を最古（＝最小）のブロック番号とし、
+	 * そこから指定された個数分だけ未来に向かう（＝ブロック番号を足し算する）ブロックの
+	 * ダイジェスト値を要求するメッセージを送信します。
+	 */
 	private def sendGetBlockHashesByNumber(blockNumber: Long, maxHashesAsk: Int): Unit = {
 		if (logger.isTraceEnabled) {
 			logger.trace("<Lpc0> Peer %s: send GetBlockHashesByNumber: BlockNumber=%,d, MashHashesAsk=%,d".format(this.channel.peerIdShort, blockNumber, maxHashesAsk))

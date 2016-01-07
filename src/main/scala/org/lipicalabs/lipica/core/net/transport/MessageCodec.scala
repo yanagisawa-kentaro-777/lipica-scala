@@ -82,7 +82,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		override def channelActive(ctx: ChannelHandlerContext): Unit = {
 			channel.inetSocketAddress = ctx.channel.remoteAddress.asInstanceOf[InetSocketAddress]
 			if (remoteNodeId.length == 64) {
-				channel.setNode(remoteNodeId)
+				channel.assignNode(remoteNodeId)
 				initiate(ctx)
 			} else {
 				_handshake = EncryptionHandshake.createResponder
@@ -213,7 +213,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 					val remoteIdBytes = new Array[Byte](compressed.length - 1)
 					System.arraycopy(compressed, 1, remoteIdBytes, 0, remoteIdBytes.length)
 					this._remoteNodeId = ImmutableBytes(remoteIdBytes)
-					this._channel.setNode(this._remoteNodeId)
+					this._channel.assignNode(this._remoteNodeId)
 
 					val byteBuffer = ctx.alloc.buffer(responsePacket.length)
 					byteBuffer.writeBytes(responsePacket)

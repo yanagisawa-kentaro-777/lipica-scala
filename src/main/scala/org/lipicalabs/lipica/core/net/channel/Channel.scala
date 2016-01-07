@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.net.channel
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 import io.netty.channel.{ChannelHandlerContext, ChannelPipeline}
 import io.netty.handler.timeout.ReadTimeoutHandler
@@ -35,6 +36,7 @@ class Channel {
 	import Channel._
 
 	private def worldManager: WorldManager = WorldManager.instance
+	private def nodeManager: NodeManager = worldManager.nodeManager
 
 	private val messageQueue: MessageQueue = new MessageQueue
 	private val messageCodec: MessageCodec = new MessageCodec
@@ -43,9 +45,6 @@ class Channel {
 	private val shhHandler: ShhHandler = new ShhHandler
 	private val bzzHandler: BzzHandler = new BzzHandler
 
-
-	private def nodeManager: NodeManager = worldManager.nodeManager
-
 	private val lpcHandlerFactory = LpcHandlerFactory
 	private var lpc: Lpc = new LpcAdaptor
 
@@ -53,14 +52,18 @@ class Channel {
 	def inetSocketAddress: InetSocketAddress = this._inetSocketAddress
 	def inetSocketAddress_=(v: InetSocketAddress): Unit = this._inetSocketAddress = v
 
-	private var _node: Node = null
-	def node: Node = this._node
+	private val nodeRef: AtomicReference[Node] = new AtomicReference[Node](null)
+	def node: Node = this.nodeRef.get
 	def nodeId: ImmutableBytes = Option(this.node).map(_.id).orNull
 	def peerId: String = Option(this.node).map(_.hexId).getOrElse("null")
 	def peerIdShort: String = Option(this.node).map(_.hexIdShort).getOrElse("null")
-	def setNode(nodeId: ImmutableBytes): Unit = {
-		this._node = new Node(nodeId, this.inetSocketAddress)
-		this._nodeStatistics = this.nodeManager.getNodeStatistics(this._node)
+
+	/**
+	 * このチャネルと、渡された識別子を持つノードとを結びつけます。
+	 */
+	def assignNode(nodeId: ImmutableBytes): Unit = {
+		this.nodeRef.set(new Node(nodeId, this.inetSocketAddress))
+		this._nodeStatistics = this.nodeManager.getNodeStatistics(this.node)
 	}
 
 	private var _nodeStatistics: NodeStatistics = null
