@@ -46,11 +46,12 @@ class Channel {
 	private val bzzHandler: BzzHandler = new BzzHandler
 
 	private val lpcHandlerFactory = LpcHandlerFactory
-	private var lpc: Lpc = new LpcAdaptor
+	private val lpcRef: AtomicReference[Lpc] = new AtomicReference[Lpc](new LpcAdaptor)
+	private def lpc: Lpc = this.lpcRef.get
 
-	private var _inetSocketAddress: InetSocketAddress = null
-	def inetSocketAddress: InetSocketAddress = this._inetSocketAddress
-	def inetSocketAddress_=(v: InetSocketAddress): Unit = this._inetSocketAddress = v
+	private val inetSocketAddressRef: AtomicReference[InetSocketAddress] = new AtomicReference[InetSocketAddress](null)
+	def inetSocketAddress: InetSocketAddress = this.inetSocketAddressRef.get
+	def inetSocketAddress_=(v: InetSocketAddress): Unit = this.inetSocketAddressRef.set(v)
 
 	private val nodeRef: AtomicReference[Node] = new AtomicReference[Node](null)
 	def node: Node = this.nodeRef.get
@@ -121,7 +122,7 @@ class Channel {
 		val messageFactory = createLpcMessageFactory(version)
 		this.messageCodec.setLpcMessageFactory(messageFactory)
 
-		logger.info("<Channel> Lpc %s: [address=%s, id=%s]".format(handler.version, this._inetSocketAddress, peerIdShort))
+		logger.info("<Channel> Lpc %s: [address=%s, id=%s]".format(handler.version, this.inetSocketAddress, peerIdShort))
 
 		ctx.pipeline.addLast(Capability.LPC, handler)
 		handler.messageQueue = this.messageQueue
@@ -130,7 +131,7 @@ class Channel {
 
 		handler.activate()
 
-		this.lpc = handler
+		this.lpcRef.set(handler)
 	}
 
 	private def createLpcMessageFactory(version: LpcVersion): MessageFactory = {
