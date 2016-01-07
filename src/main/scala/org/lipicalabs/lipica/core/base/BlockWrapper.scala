@@ -29,7 +29,7 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 	/**
 	 * 受け付けた日時。
 	 */
-	private var receivedTimestamp: AtomicLong = new AtomicLong(System.currentTimeMillis)
+	private val receivedTimestamp: AtomicLong = new AtomicLong(0L)
 	def receivedAt: Long = this.receivedTimestamp.get
 	def receivedAt_=(v: Long): Unit = this.receivedTimestamp.set(v)
 

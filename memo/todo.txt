@@ -58,11 +58,11 @@ PingやPongのゼロバイト問題は？
 
 
 １、既存環境との完全同期
-・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
-・ブロック情報の保存と再生を実行する。
-・Active Peerについて考えなおす。
 ・BlockchainImpl の連結失敗時のエラー処理が甘い。
+・ブロック情報の保存と再生を実行する。
 ・CallTransactionの変更に追随する。
+・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
+・Active Peerについて考えなおす。
 
 ２、自前ノード間での動作＆トランザクション実行
 ・miningの具体的な方法を実装する。
@@ -70,6 +70,7 @@ PingやPongのゼロバイト問題は？
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
+・パッケージ構造の再定義。
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
 ・expirationによるdiscardを実装する。（replay attack対策）
