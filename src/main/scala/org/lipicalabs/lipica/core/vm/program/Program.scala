@@ -286,7 +286,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 				if (localResult.exception ne null) {
 					//エラーが発生した。
 					if (logger.isDebugEnabled) {
-						logger.debug("contract run halted by Exception: contract: [%s], exception: [%s]".format(newAddress.toHexString, localResult.exception))
+						logger.debug("<Program> Contract run halted by Exception: contract: [%s], exception: [%s]".format(newAddress.toHexString, localResult.exception))
 					}
 					internalTx.reject()
 					localResult.rejectInternalTransactions()
@@ -500,7 +500,9 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	}
 
 	def spendMana(manaValue: Long, cause: String): Unit = {
-		manaLogger.info("[%s] Spent for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+		if (manaLogger.isInfoEnabled) {
+			manaLogger.info("[%s] Spent for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+		}
 		if ((getMana.longValue - manaValue) < 0) {
 			throw Exception.notEnoughSpendingMana(cause, manaValue, this)
 		}
@@ -510,11 +512,15 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		spendMana(getMana.longValue, "Spending all remaining")
 	}
 	def refundMana(manaValue: Long, cause: String): Unit = {
-		manaLogger.info("[%s] Refund for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+		if (manaLogger.isInfoEnabled) {
+			manaLogger.info("[%s] Refund for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+		}
 		this.result.refundMana(manaValue)
 	}
 	def futureRefundMana(manaValue: Long): Unit = {
-		logger.info("Future refund added: %,d".format(manaValue))
+		if (logger.isInfoEnabled) {
+			logger.info("Future refund added: %,d".format(manaValue))
+		}
 		this.result.addFutureRefund(manaValue)
 	}
 	def resetFutureRefund(): Unit = this.result.resetFutureRefund()

@@ -110,7 +110,9 @@ class VM {
 			}
 		} catch {
 			case e: RuntimeException =>
-				logger.info("[VM] VM halted: [%s]", e.toString)
+				if (logger.isInfoEnabled) {
+					logger.info("[VM] VM halted: [%s]", e.toString)
+				}
 				program.spendAllMana()
 				program.resetFutureRefund()
 				program.stop()

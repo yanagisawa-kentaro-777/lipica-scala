@@ -30,8 +30,18 @@ c4.large (vCPU=2, ECU=8) では 236,246まで行ったが、苦しい。プロ�
 c4.xlarge (vCPU=4, ECU=16) にすると、top の CPU使用率がほぼ常時200%を超える（300%を超える時間帯も長く、377%を確認）ので、やはりc4.largeでは足りなかったのだ。
 c4.xlarge でも、Block[262,929]処理中に、
 2016-01-07 11:01:42.553 INFO  <TxExecutor> Withdraw in advance: TxManaCost: 70,000,000,000,000,000, ManaPrice: 70,000,000,000, ManaLimit: 1,000,000 [sync-queue-000] TransactionExecutor.scala:86
-で固まる現象が発生。前回とまったく同じ箇所！ 呼び出されるコントラクトが長い。これをよく調べるべきだ。
+2016-01-07 11:21:36.759 DEBUG <TxExecutor> Contract invocation: [1194e966965418c7d73a42cceeb254d875860356]=[1,823 bytes] [sync-queue-000] TransactionExecutor.scala:138
+で固まる現象が発生。それにともなって、HTTPの反応が悪くなり、またactive peerの数が現象。
+Block[275,210]でもまったく同様の事象。
+
+前回とまったく同じ箇所！ 呼び出されるコントラクトが長い。これをよく調べるべきだ。
 Tx: 0x95def7f925d36c4f459200e2c29213878a97d4e0708b6396885da03b2ec1b9a1
+
+2016-01-07 11:01:42.466 INFO  <RepositoryImpl> Updated batch: accounts: 0; contractDetails: 0 [sync-queue-000] RepositoryImpl.scala:138
+2016-01-07 11:21:38.108 INFO  <RepositoryImpl> Updating batch: accounts: 3; contractDetails: 3 [sync-queue-000] RepositoryImpl.scala:105
+
+VMログが10世代分一気に埋まってる。VMログを出しすぎたかも知れない。
+←VMログをoffにするか。
 
 ・１時間もの断絶が発生している。考えられないことだ。スレッド数過大か。topはJava100%。
 2016-01-06 01:13:44.659 INFO  <TxExecutor> Withdraw in advance: TxManaCost: 70,000,000,000,000,000, ManaPrice: 70,000,000,000, ManaLimit: 1,000,000 [Thread-4] TransactionExecutor.scala:85
