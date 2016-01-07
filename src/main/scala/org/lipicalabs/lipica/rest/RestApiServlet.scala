@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.rest
 
+import java.text.SimpleDateFormat
+
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.scalatra.ScalatraServlet
@@ -14,6 +16,9 @@ class RestApiServlet extends ScalatraServlet {
 
 	get("/:apiVersion/node/status") {
 		val worldManager = WorldManager.instance
+		val startedUnixMillis = worldManager.adminInfo.startupTimeStamp
+		val startedTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z").format(startedUnixMillis)
+
 		val blockchain = worldManager.blockchain
 		val bestBlock = blockchain.bestBlock
 		val totalDifficulty = blockchain.totalDifficulty
@@ -27,22 +32,25 @@ class RestApiServlet extends ScalatraServlet {
 		val threads = Utils.allThreads
 
 		val body = ("NodeId=%s\n" +
-				"ExternalAddress=%s\nBindAddress=%s\n\n" +
+				"ExternalAddress=%s\nBindAddress=%s\nStartedTime=%s\n\n" +
 				"BestBlock=[%,d %s]\nTD=%,d\n\n" +
 				"ProcessingBlock=%s\n\n" +
-				"SyncState=%s\nTD Range:\n\t%,d\n\t%,d\n\n" +
+				"SyncState=%s\nSyncHashes=%,d\nSyncBlocks=%,d\nTD Range:\n\t%,d\n\t%,d\n\n" +
 				"Active Peers:%,d\n%s\n\n" + "Banned Peers:%,d\n%s\n\n" + "Pending Peers:%,d\n\n" +
 				"NumNodeHandlers:%,d\nNumNodesInTable:%,d\n\n" +
 				"Threads: %,d\n\n").format(
 			SystemProperties.CONFIG.nodeId,
 			SystemProperties.CONFIG.externalAddress,
 			SystemProperties.CONFIG.bindAddress,
+			startedTime,
 
 			bestBlock.blockNumber, bestBlock.hash.toShortString,
 			totalDifficulty,
 			blockchain.processingBlockOption.map(_.summaryString(short = true)).getOrElse("None"),
 
 			syncManager.state.name,
+			syncManager.queue.hashStoreSize,
+			syncManager.queue.blockQueueSize,
 			syncManager.lowerUsefulDifficulty,
 			syncManager.highestKnownDifficulty,
 

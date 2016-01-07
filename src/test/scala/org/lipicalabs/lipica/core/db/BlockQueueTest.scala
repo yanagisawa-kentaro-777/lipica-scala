@@ -117,7 +117,7 @@ class BlockQueueTest extends Specification {
 
 				this.blockQueue.size mustEqual this.blocks.size
 
-				val filtered = this.blockQueue.filterExisting(this.hashes)
+				val filtered = this.blockQueue.excludeExisting(this.hashes)
 				filtered.isEmpty mustEqual true
 
 				var prevBlockNumber = -1L

@@ -8,6 +8,9 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 送信元ノードが知っているブロックダイジェスト値を、
  * 送信先ノードに通知するためのメッセージです。
  *
+ * 最新に近い（＝ブロック番号が大きい）ブロックのハッシュ値を先頭とし、
+ * そこから連続するブロックのハッシュ値が含まれます。
+ *
  * GetBlockHashes や GetBlockHashesByNumber を受信した際に送信され、
  * 受信側ではSyncQueueに登録されます。
  *

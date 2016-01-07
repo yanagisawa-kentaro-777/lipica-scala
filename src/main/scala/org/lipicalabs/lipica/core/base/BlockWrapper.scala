@@ -6,6 +6,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * ブロックに幾つかの情報を追加した薄いラッパークラスです。
  *
  * @since 2015/11/21
  * @author YANAGISAWA, Kentaro
@@ -14,6 +15,9 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 
 	import BlockWrapper._
 
+	/**
+	 * ブロックチェーンへの連結に失敗した日時。
+	 */
 	private val failedTimestamp: AtomicLong = new AtomicLong(0L)
 	def importFailedAt: Long = this.failedTimestamp.get
 	def importFailedAt_=(v: Long): Unit = this.failedTimestamp.set(v)
@@ -22,9 +26,12 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 		this.failedTimestamp.compareAndSet(0L, now)
 	}
 
-	private var _receivedAt: Long = 0L
-	def receivedAt: Long = this._receivedAt
-	def receivedAt_=(v: Long): Unit = this._receivedAt = v
+	/**
+	 * 受け付けた日時。
+	 */
+	private var receivedTimestamp: AtomicLong = new AtomicLong(System.currentTimeMillis)
+	def receivedAt: Long = this.receivedTimestamp.get
+	def receivedAt_=(v: Long): Unit = this.receivedTimestamp.set(v)
 
 	def isSolidBlock: Boolean = !isNewBlock || (SolidBlockDurationThresholdMillis < timeSinceReceiving)
 
@@ -42,12 +49,12 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 			System.currentTimeMillis - timestamp
 		}
 	}
-	def timeSinceReceiving: Long = System.currentTimeMillis - this._receivedAt
+	def timeSinceReceiving: Long = System.currentTimeMillis - this.receivedAt
 
 	def toBytes: ImmutableBytes = {
 		val encodedBlock = this.block.encode
 		val encodedImportFailed = RBACCodec.Encoder.encode(BigInt(this.importFailedAt))
-		val encodedReceivedAt = RBACCodec.Encoder.encode(BigInt(this._receivedAt))
+		val encodedReceivedAt = RBACCodec.Encoder.encode(BigInt(this.receivedAt))
 		val encodedNewBlock = RBACCodec.Encoder.encode(if (this.isNewBlock) 1.toByte else 0.toByte)
 		val encodedNodeId = RBACCodec.Encoder.encode(this.nodeId)
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedBlock, encodedImportFailed, encodedReceivedAt, encodedNewBlock, encodedNodeId))

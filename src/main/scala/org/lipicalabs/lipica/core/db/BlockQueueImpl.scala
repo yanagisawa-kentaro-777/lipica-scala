@@ -170,7 +170,10 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 		this.db.commit()
 	}
 
-	override def filterExisting(aHashes: Seq[ImmutableBytes]): Seq[ImmutableBytes] = {
+	/**
+	 * 渡されたハッシュ値の中から、既にこのキューに溜まっているものを除外したものを返します。
+	 */
+	override def excludeExisting(aHashes: Seq[ImmutableBytes]): Seq[ImmutableBytes] = {
 		awaitInit()
 		aHashes.filter(each => !this.hashes.contains(each))
 	}

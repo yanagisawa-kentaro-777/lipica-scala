@@ -6,6 +6,9 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * 指定するハッシュ値の直前N個のハッシュ値を送るよう要求するメッセージです。
+ * 返信として BlockHashes メッセージを期待します。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/09 20:57
  * YANAGISAWA, Kentaro

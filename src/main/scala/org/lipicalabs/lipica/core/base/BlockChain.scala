@@ -59,9 +59,19 @@ trait Blockchain {
 	 */
 	def getBlockByHash(hash: ImmutableBytes): Option[Block]
 
+	/**
+	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
+	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
+	 */
+	def getSeqOfHashesEndingWith(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes]
 
-	def getSeqOfHashesStartingFrom(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes]
-
+	/**
+	 * 渡されたブロック番号を最古（＝最小）のブロック番号として、
+	 * そこから指定された個数分だけのより新しい（＝ブロック番号が大きい）ブロックを
+	 * 並べて返します。
+	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として
+	 * 過去に遡行する形となります。
+	 */
 	def getSeqOfHashesStartingFromBlock(blockNumber: Long, count: Int): Seq[ImmutableBytes]
 
 	def getTransactionReceiptByHash(hash: ImmutableBytes): Option[TransactionReceipt]

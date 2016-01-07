@@ -1,5 +1,8 @@
 ０、仕様
 ・last hash asked の仕様は？
+マスターのbestハッシュ値か、インポートに失敗したブロックの親がセットされる。
+そして、GetBlocksは未消化のハッシュ値を一定数ずつ消化するだけ。
+
 ・https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol
 に基いてコメントを書く。
 ・secp256k1 について学ぶ。
@@ -22,6 +25,9 @@ https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 ←プロセッサ負荷が高すぎて、pingを送れていないのではないかという仮説。以下と合わせて。
 ←mediumにしても、10万手前の難関で落とされるように見える。
 インスタンスを変えるか、yield でうまくやるか、タイムアウト時間を延ばすか。インスタンスは、c4.large が良いかもしれない。
+c4.large (vCPU=2, ECU=8) では 236,246まで行ったが、苦しい。プロセッサ限界によると思われる接続切れが発生した。
+c4.xlarge (vCPU=4, ECU=16) にすると、top の CPU使用率がほぼ常時200%を超える（300%を超える時間帯も長く、377%を確認）ので、やはりc4.largeでは足りなかったのだ。
+
 
 ・１時間もの断絶が発生している。考えられないことだ。スレッド数過大か。topはJava100%。
 2016-01-06 01:13:44.659 INFO  <TxExecutor> Withdraw in advance: TxManaCost: 70,000,000,000,000,000, ManaPrice: 70,000,000,000, ManaLimit: 1,000,000 [Thread-4] TransactionExecutor.scala:85
@@ -51,9 +57,8 @@ PingやPongのゼロバイト問題は？
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-・Repositoryログを分割する。
-
-・masterを表示する。
+・起動以来の時間数を表示する。
+・ハッシュ数を表示する。
 
 ・再起動するとエラー。
 ・gracefulな終了を実現する。

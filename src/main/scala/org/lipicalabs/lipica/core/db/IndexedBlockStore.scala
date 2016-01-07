@@ -231,6 +231,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 
 	/**
 	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
+	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
 	 */
 	override def getHashesEndingWith(hash: ImmutableBytes, number: Long): Seq[ImmutableBytes] = {
 		val seq =
@@ -246,6 +247,7 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 				for (i <- 0L until number) {
 					val block = Block.decode(encodedBytes)
 					buffer.append(block.hash)
+					//親をたどって、後続に追加する。
 					blocks.get(block.parentHash) match {
 						case Some(b) =>
 							encodedBytes = b

@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.manager
 
-import java.util
-
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,27 +11,25 @@ class AdminInfo {
 
 	val startupTimeStamp = System.currentTimeMillis
 
-	private var _consensus = true
+	private val consensusRef = new AtomicBoolean(true)
 
-	private val blockExecTimes = new util.LinkedList[Long]
+//	private val blockExecTimes = new util.LinkedList[Long]
 
 
-	def lostConsensus(): Unit = {
-		this._consensus = false
-	}
+	def lostConsensus(): Unit = this.consensusRef.set(false)
 
-	def isConsensusKept: Boolean = this._consensus
+	def isConsensusKept: Boolean = this.consensusRef.get
 
-	def addBlockExecNanos(nanos: Long): Unit = {
-		this.blockExecTimes.add(nanos)
-	}
-
-	def getExecAverage: Long = {
-		if (this.blockExecTimes.isEmpty) {
-			return 0L
-		}
-		import scala.collection.JavaConversions._
-		this.blockExecTimes.sum / this.blockExecTimes.size
-	}
+//	def addBlockExecNanos(nanos: Long): Unit = {
+//		this.blockExecTimes.add(nanos)
+//	}
+//
+//	def getExecAverage: Long = {
+//		if (this.blockExecTimes.isEmpty) {
+//			return 0L
+//		}
+//		import scala.collection.JavaConversions._
+//		this.blockExecTimes.sum / this.blockExecTimes.size
+//	}
 
 }

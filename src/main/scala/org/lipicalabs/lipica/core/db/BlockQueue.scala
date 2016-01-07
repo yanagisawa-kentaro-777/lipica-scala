@@ -28,6 +28,9 @@ trait BlockQueue extends DiskStore {
 
 	def clear(): Unit
 
-	def filterExisting(hashes: Seq[ImmutableBytes]): Seq[ImmutableBytes]
+	/**
+	 * 渡されたハッシュ値の中から、既にこのキューに溜まっているものを除外したものを返します。
+	 */
+	def excludeExisting(hashes: Seq[ImmutableBytes]): Seq[ImmutableBytes]
 
 }

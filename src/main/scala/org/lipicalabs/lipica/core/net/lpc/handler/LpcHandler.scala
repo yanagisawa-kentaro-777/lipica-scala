@@ -58,6 +58,9 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	protected var bestHash: ImmutableBytes = null
 	override def bestKnownHash = this.bestHash
 
+	/**
+	 * 要求すべき最先端（＝ブロック番号が最も大きい）ブロックのハッシュ値。
+	 */
 	protected var _lastHashToAsk: ImmutableBytes = null
 	override def lastHashToAsk = this._lastHashToAsk
 	override def lastHashToAsk_=(v: ImmutableBytes) = this._lastHashToAsk = v
@@ -167,10 +170,10 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	protected def sendStatus(): Unit = {
 		val protocolVersion = this.version.code
-		val newtworkdId = SystemProperties.CONFIG.networkId
+		val newtworkId = SystemProperties.CONFIG.networkId
 		val totalDifficulty = this.blockchain.totalDifficulty
 		val bestHash = this.blockchain.bestBlockHash
-		val message = StatusMessage(protocolVersion, newtworkdId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, Blockchain.GenesisHash)
+		val message = StatusMessage(protocolVersion, newtworkId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, Blockchain.GenesisHash)
 		sendMessage(message)
 	}
 
@@ -201,6 +204,9 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		}
 	}
 
+	/**
+	 * GetBlockHashes メッセージを送信します。
+	 */
 	protected def sendGetBlockHashes(): Unit = {
 		if (loggerSync.isTraceEnabled) {
 			loggerSync.trace("<LpcHandler> Peer %s: send GetBlockHashes. Hash=%s, MaxAsk=%,d".format(this.channel.peerIdShort, this.lastHashToAsk, this.maxHashesAsk))
@@ -208,8 +214,11 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		sendMessage(new GetBlockHashesMessage(this.lastHashToAsk, this.maxHashesAsk))
 	}
 
+	/**
+	 * 他ノードからの GetBlockHashes メッセージを処理します。
+	 */
 	protected def processGetBlockHashes(message: GetBlockHashesMessage): Unit = {
-		val hashes = this.blockchain.getSeqOfHashesStartingFrom(message.bestHash, message.maxBlocks max SystemProperties.CONFIG.maxHashesAsk)
+		val hashes = this.blockchain.getSeqOfHashesEndingWith(message.bestHash, message.maxBlocks max SystemProperties.CONFIG.maxHashesAsk)
 		sendMessage(BlockHashesMessage(hashes))
 	}
 
@@ -281,10 +290,10 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 				}
 			}
 			this.syncQueue.addBlocks(message.blocks, this.channel.nodeId)
-			loggerSync.info("<LpcHandler> %,d blocks from [%,d] added to sync queue. (QueueSize=%,d). State: %s".format(message.blocks.size, message.blocks.head.blockNumber, this.syncQueue.size, this.syncState))
+			loggerSync.info("<LpcHandler> %,d blocks from [%,d] added to sync queue. (QueueSize=%,d). State: %s".format(message.blocks.size, message.blocks.head.blockNumber, this.syncQueue.blockQueueSize, this.syncState))
 			this.syncQueue.logHashQueueSize()
 		} else {
-			loggerSync.info("<LpcHandler> Block LACK!!! SyncQueueSize = %,d.".format(this.syncQueue.size))
+			loggerSync.info("<LpcHandler> Block LACK!!! SyncQueueSize=%,d.".format(this.syncQueue.blockQueueSize))
 			changeState(SyncStateName.BlocksLack)
 		}
 		if (this.syncState == SyncStateName.BlockRetrieving) {

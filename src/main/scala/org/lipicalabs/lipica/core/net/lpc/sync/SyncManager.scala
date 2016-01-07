@@ -13,6 +13,9 @@ import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, UtilConsts, Immu
 import org.slf4j.LoggerFactory
 
 /**
+ * 先行する他ノードの情報を自ノードに同期する際の
+ * 中核もしくはハブとなるクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/02 20:51
  * YANAGISAWA, Kentaro
@@ -20,14 +23,23 @@ import org.slf4j.LoggerFactory
 class SyncManager {
 	import SyncManager._
 
+	/**
+	 * 自ノードの基本的な同期状態。
+	 */
 	private val syncStates: Map[SyncStateName, SyncState] = buildSyncStates(this)
 	private val stateRef: AtomicReference[SyncState] = new AtomicReference[SyncState](null)
 	def state: SyncState = this.stateRef.get
+	/**
+	 * 排他制御オブジェクト。
+	 */
 	private val stateMutex = new Object
 
-	private var gapBlock: BlockWrapper = null
-	def getGapBlock: BlockWrapper = this.gapBlock
-	def resetGapRecovery(): Unit = this.gapBlock = null
+	/**
+	 * 早期解決を要する未取得ブロック。
+	 */
+	private val gapBlockRef: AtomicReference[BlockWrapper] = new AtomicReference[BlockWrapper](null)
+	def gapBlockOption: Option[BlockWrapper] = Option(this.gapBlockRef.get)
+	def resetGapRecovery(): Unit = this.gapBlockRef.set(null)
 
 	private var syncDone: Boolean = false
 	def isSyncDone: Boolean = this.syncDone
@@ -128,7 +140,7 @@ class SyncManager {
 		if (logger.isDebugEnabled) {
 			logger.debug("<SyncManager> Recovering gap: Best=%,d vs Pending=%s".format(this.blockchain.bestBlock.blockNumber, blockWrapper.blockNumber))
 		}
-		this.gapBlock = blockWrapper
+		this.gapBlockRef.set(blockWrapper)
 		val gap = gapSize(blockWrapper)
 		if (LargeGapSize <= gap) {
 			changeState(SyncStateName.HashRetrieving)
@@ -181,10 +193,10 @@ class SyncManager {
 			}
 			return false
 		}
-		if ((block == this.gapBlock) && !this.state.is(SyncStateName.Idle)) {
+		if (this.gapBlockOption.contains(block) && !this.state.is(SyncStateName.Idle)) {
 			//すでに同じ問題を解消するための取り組みを実施中である。
 			if (logger.isTraceEnabled) {
-				logger.trace("<SyncManager> Gap recovery is already in progress for %,d".format(this.gapBlock.blockNumber))
+				logger.trace("<SyncManager> Gap recovery is already in progress for %,d".format(this.gapBlockOption.map(_.blockNumber).getOrElse(-1L)))
 			}
 			return false
 		}
@@ -233,12 +245,14 @@ class SyncManager {
 	 */
 	def startMaster(master: Channel): Unit = {
 		this.pool.changeState(SyncStateName.Idle)
-		if (this.gapBlock ne null) {
-			//ギャップの解決中ならば、その直前の取得を優先する。
-			master.lastHashToAsk = this.gapBlock.parentHash
-		} else {
-			master.lastHashToAsk = master.bestKnownHash
-			this.queue.clearHashes()
+		this.gapBlockOption match {
+			case Some(gapBlock) =>
+				//ギャップの解決中ならば、その直前の取得を優先する。
+				master.lastHashToAsk = gapBlock.parentHash
+			case _ =>
+				//ギャップ解決中でないならば、最先端から逆順に取得する。
+				master.lastHashToAsk = master.bestKnownHash
+				this.queue.clearHashes()
 		}
 		master.changeSyncState(SyncStateName.HashRetrieving)
 		logger.info("<SyncManager> Peer %s: %s initiated. LastHashToAsk=%s, AskLimit=%,d".format(master.peerIdShort, this.state, master.lastHashToAsk, master.maxHashesAsk))

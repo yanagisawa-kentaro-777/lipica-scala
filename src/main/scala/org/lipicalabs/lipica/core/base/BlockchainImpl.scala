@@ -101,12 +101,22 @@ class BlockchainImpl(
 		throw new UnsupportedOperationException("Not implemented.")
 	}
 
-
-	override def getSeqOfHashesStartingFrom(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes] = {
+	/**
+	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
+	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
+	 */
+	override def getSeqOfHashesEndingWith(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes] = {
 		//逆順でよい。
 		this.blockStore.getHashesEndingWith(hash, count)
 	}
 
+	/**
+	 * 渡されたブロック番号を最古（＝最小）のブロック番号として、
+	 * そこから指定された個数分だけのより新しい（＝ブロック番号が大きい）ブロックを
+	 * 並べて返します。
+	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として
+	 * 過去に遡行する形となります。
+	 */
 	override def getSeqOfHashesStartingFromBlock(aBlockNumber: Long, aCount: Int): Seq[ImmutableBytes] = {
 		val bestBlockNumber = this.bestBlock.blockNumber
 		if (bestBlockNumber < aBlockNumber) {
@@ -375,7 +385,10 @@ class BlockchainImpl(
 			executor.go()
 			executor.finalization()
 
-			//他のスレッドのことを考える。
+			//CPUの貧弱な環境において、トランザクションの実行にばかり夢中になっていると
+			//ping通信などを怠ってしまう可能性があるため、
+			//トランザクションとトランザクションの間で、明示的に他のスレッドに譲る。
+			//トランザクションの中身が重い場合には、さらにVM内でも同様の謙譲がある。
 			Thread.`yield`()
 
 			val manaUsedForTx = executor.manaUsed
@@ -399,9 +412,9 @@ class BlockchainImpl(
 		this.track.commit()
 		val endTime = System.nanoTime
 
-		this.adminInfo.addBlockExecNanos(endTime - startTime)
+		//this.adminInfo.addBlockExecNanos(endTime - startTime)
 		if (logger.isTraceEnabled) {
-			logger.trace("<Blockchain> Applied block: %s, TxSize=%,d".format(block.summaryString(short = true), block.transactions.size))
+			logger.trace("<Blockchain> Applied block: %s, TxSize=%,d. ElapsedNanos=%,d.".format(block.summaryString(short = true), block.transactions.size, endTime - startTime))
 		}
 		receipts.toIndexedSeq
 	}

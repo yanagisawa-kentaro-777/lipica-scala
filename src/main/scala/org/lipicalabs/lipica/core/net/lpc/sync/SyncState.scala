@@ -146,6 +146,7 @@ class HashRetrievingState extends AbstractSyncState(SyncStateName.HashRetrieving
 				syncManager.changeState(SyncStateName.BlockRetrieving)
 				return
 			}
+			//既存の問題ないなら、そのまま継続。
 		} else {
 			if (logger.isTraceEnabled) {
 				logger.trace("<HashRetrievingState> Hash retrieving is in progress.")
@@ -153,8 +154,8 @@ class HashRetrievingState extends AbstractSyncState(SyncStateName.HashRetrieving
 			//マスターが選定されていないか行方不明になってしまったので、 以下で新たにマスターピアを選択する。
 			//
 			//ギャップを解決中であるならば、そのギャップの発生源ノードをマスターにする。
-			if (syncManager.getGapBlock ne null) {
-				master = syncManager.pool.getByNodeId(syncManager.getGapBlock.nodeId).orNull
+			if (syncManager.gapBlockOption.isDefined) {
+				master = syncManager.pool.getByNodeId(syncManager.gapBlockOption.get.nodeId).orNull
 			}
 			//もっともTDが大きいピア。
 			if (master eq null) {

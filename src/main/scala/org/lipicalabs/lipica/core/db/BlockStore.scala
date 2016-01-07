@@ -42,7 +42,8 @@ trait BlockStore {
 	def existsBlock(hash: ImmutableBytes): Boolean
 
 	/**
-	 * 指定されたハッシュ値で終わるハッシュ値の並びを、指定された個数分返します。
+	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
+	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
 	 */
 	def getHashesEndingWith(hash: ImmutableBytes, count: Long): Seq[ImmutableBytes]
 
