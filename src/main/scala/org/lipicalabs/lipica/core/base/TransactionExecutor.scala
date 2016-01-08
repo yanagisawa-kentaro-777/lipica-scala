@@ -122,6 +122,9 @@ class TransactionExecutor(
 		this.precompiledContract = PrecompiledContracts.getContractForAddress(DataWord(targetAddress))
 		this.precompiledContract match {
 			case Some(contract) =>
+				if (logger.isDebugEnabled) {
+					logger.debug("<TxExecutor> Precompiled contract invocation: [%s]".format(targetAddress))
+				}
 				val requiredMana = contract.manaForData(this.tx.data)
 				val txManaLimit = this.tx.manaLimit.toPositiveBigInt.longValue()
 				if (!localCall && txManaLimit < requiredMana) {
@@ -132,10 +135,13 @@ class TransactionExecutor(
 					contract.execute(this.tx.data)
 				}
 			case None =>
+				if (logger.isDebugEnabled) {
+					logger.debug("<TxExecutor> User defined contract invocation: [%s]".format(targetAddress))
+				}
 				this.track.getCode(targetAddress) match {
 					case Some(code) =>
 						if (logger.isDebugEnabled) {
-							logger.debug("<TxExecutor> Contract invocation: [%s]=[%,d bytes]".format(targetAddress, code.length))
+							logger.debug("<TxExecutor> Contract loaded: [%s]=[%,d bytes]".format(targetAddress, code.length))
 						}
 						val invoke = this.programInvokeFactory.createProgramInvoke(this.tx, this.currentBlock, this.cacheTrack, this.blockStore)
 						this.vm = new VM

@@ -317,10 +317,19 @@ class BlockchainImpl(
 		}
 
 		if (needsFlushing(block)) {
+			val startNanos = System.nanoTime
 			logger.info("<Blockchain> Flushing data.")
 			this.repository.flush()
+			val reposEndNanos = System.nanoTime
+			logger.info("<Blockchain> Flushed repos in %,d nanos.".format(reposEndNanos - startNanos))
+
 			this.blockStore.flush()
+			val endNanos = System.nanoTime
+			logger.info("<Blockchain> Flushed block store in %,d nanos.".format(endNanos - reposEndNanos))
+
 			System.gc()
+			val gcEndNanos = System.nanoTime
+			logger.info("<Blockchain> GC executed in %,d nanos.".format(gcEndNanos - endNanos))
 		}
 		//approve されたのでペンディング状態を解消する。
 		this.wallet.removeTransactions(block.transactions)

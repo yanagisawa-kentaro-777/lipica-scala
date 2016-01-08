@@ -129,7 +129,7 @@
 	<logger name="execute" level="DEBUG" additivity="false">
 		<appender-ref ref="BLOCKCHAIN"/>
 	</logger>
-	<logger name="mana" level="DEBUG" additivity="false">
+	<logger name="mana" level="INFO" additivity="false">
 		<appender-ref ref="VM"/>
 	</logger>
 	<logger name="net" level="DEBUG" additivity="false">
@@ -153,7 +153,7 @@
 	<logger name="wire" level="DEBUG" additivity="false">
 		<appender-ref ref="WIRE"/>
 	</logger>
-	<logger name="VM" level="DEBUG" additivity="false">
+	<logger name="VM" level="INFO" additivity="false">
 		<appender-ref ref="VM"/>
 	</logger>
 

@@ -102,7 +102,9 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	}
 
 	override def updateBatch(stateCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
-		logger.info("<RepositoryImpl> Updating batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
+		if (logger.isDebugEnabled) {
+			logger.debug("<RepositoryImpl> Updating batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
+		}
 		for (eachEntry <- stateCache) {
 			val (hash, accountState) = eachEntry
 			var contractDetails = detailsCache.get(hash).get
@@ -135,7 +137,9 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		}
 		stateCache.clear()
 		detailsCache.clear()
-		logger.info("<RepositoryImpl> Updated batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
+		if (logger.isDebugEnabled) {
+			logger.debug("<RepositoryImpl> Updated batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
+		}
 	}
 
 	override def flushNoReconnect(): Unit = {
@@ -151,9 +155,15 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 	override def flush(): Unit = {
 		withLock {
 			() => {
-				logger.info("<RepositoryImpl> Flushing to disk.")
+				logger.info("<Repos> Flushing to disk.")
+				val startNanos = System.nanoTime
 				this.dds.flush()
+				val ddsEndNanos = System.nanoTime
+				logger.info("<Repos> DDS flushed in %,d nanos.".format(ddsEndNanos - startNanos))
+
 				this.worldState.sync()
+				val stateEndNanos = System.nanoTime
+				logger.info("<Repos> State flushed in %,d nanos.".format(stateEndNanos - ddsEndNanos))
 
 				val rootHash = this.worldState.rootHash
 				reset()
@@ -290,7 +300,14 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		withAccessCounting {
 			() => {
 				val storageRoot = getAccountState(address).map(_.storageRoot).getOrElse(DigestUtils.EmptyTrieHash)
-				this.dds.get(address).map(_.getSnapshotTo(storageRoot))
+				if (logger.isDebugEnabled) {
+					logger.debug("<Repos> Loading contract details: %s".format(address.toHexString))
+				}
+				val contractDetailsOption = this.dds.get(address)
+				if (logger.isDebugEnabled) {
+					logger.debug("<Repos> Loaded contract details: %s".format(address.toHexString))
+				}
+				contractDetailsOption.map(_.getSnapshotTo(storageRoot))
 			}
 		}
 	}

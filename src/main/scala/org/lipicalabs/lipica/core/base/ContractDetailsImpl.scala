@@ -7,6 +7,7 @@ import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
@@ -16,6 +17,8 @@ import scala.collection.mutable
  * @author YANAGISAWA, Kentaro
  */
 class ContractDetailsImpl() extends ContractDetails {
+
+	import ContractDetailsImpl._
 
 	private var _address = ImmutableBytes.empty
 
@@ -147,6 +150,7 @@ class ContractDetailsImpl() extends ContractDetails {
 	}
 
 	override def encode: ImmutableBytes = {
+		val startTime = System.nanoTime
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
 		val encodedIsExternalStorage = RBACCodec.Encoder.encode(this.externalStorage)
 		val encodedStorageRoot = RBACCodec.Encoder.encode(
@@ -160,10 +164,19 @@ class ContractDetailsImpl() extends ContractDetails {
 		val encodedCode = RBACCodec.Encoder.encode(this.code)
 		val encodedKeys = RBACCodec.Encoder.encode(this.keys.toSeq)
 
-		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedIsExternalStorage, encodedStorage, encodedCode, encodedKeys, encodedStorageRoot))
+		val result = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedIsExternalStorage, encodedStorage, encodedCode, encodedKeys, encodedStorageRoot))
+		val endTime = System.nanoTime
+
+		if (logger.isInfoEnabled) {
+			logger.info("<ContractDetails> [%s] Encoding took %,d nanos for %,d entries. (%,d bytes)".format(
+				this.address.toShortString, endTime - startTime, this.keys.size, encodedStorage.length
+			))
+		}
+		result
 	}
 
 	override def decode(data: ImmutableBytes) = {
+		val startTime = System.nanoTime
 		val items = RBACCodec.Decoder.decode(data).right.get.items
 		this.address = items.head.bytes
 		this.externalStorage = items(1).asPositiveLong > 0L
@@ -176,15 +189,23 @@ class ContractDetailsImpl() extends ContractDetails {
 			this.storageTrie.root = items(5).bytes
 			this.storageTrie.cache.setDB(getExternalStorageDataSource)
 		}
+		val endTime = System.nanoTime
+		if (logger.isInfoEnabled) {
+			logger.info("<ContractDetails> [%s] Decoding took %,d nanos for %,d entries. (%,d bytes)".format(
+				this.address.toShortString, endTime - startTime, this.keys.size, items(2).bytes.length
+			))
+		}
 	}
 
 	override def toString: String = {
-		"Code: %s; Storage: %s".format(this.code.toHexString, storageContent.toString())
+		"Address: %s; Code: %s; Storage: %s".format(this.address.toHexString, this.code.toHexString, storageContent.toString())
 	}
 
 }
 
 object ContractDetailsImpl {
+
+	private val logger = LoggerFactory.getLogger("repository")
 
 	def decode(bytes: ImmutableBytes): ContractDetailsImpl = {
 		val result = new ContractDetailsImpl

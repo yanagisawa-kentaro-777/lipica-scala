@@ -1,26 +1,40 @@
 ０、仕様
-・last hash asked の仕様は？
-マスターのbestハッシュ値か、インポートに失敗したブロックの親がセットされる。
-GetBlockHashesByNumberによって、既知の部分から一定数ずつ昇順にハッシュ値を取得していく。
-そして、GetBlocksは未消化のハッシュ値を一定数ずつ消化するだけ。
+・external storageの正確な仕様を調べる。
 
-・https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol
-に基いてコメントを書く。
 ・secp256k1 について学ぶ。
-・Encryption Handshakeについて。
-https://github.com/ethereum/devp2p/blob/master/rlpx.md
-・NewBlockとは何か？
-https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol
 ・node discovery protocol と secure transport protocolが兄弟関係なわけだ。
 ・mdc = modification detection code
 ・mac = message authentication code
-・idle 等の状態遷移の仕様
 ・pending transaction の意味は？
 ・PeerId を文字列で扱うのは正式仕様なのか？
-・gap recovery は？
-・fill up nodes は？
 
 ０、不具合
+・[ec2-user@ip-172-30-0-47 lipica]$ <Blockchain> State conflict at Block[BlockNumber=229,084; Hash=81a54835...; ParentHash=890baeb2...; Coinbase=52bc44d5...; Difficulty=7,040,247,001,388]: 3f3f7cb148ac12e268e82f3e9c49c8a0db4eb581f070fbff2fafaf8dfc7d094a != 393f3e494579deff116a9581b9e6db67dd1b5e00e203b4aafc1f500c00f5a4df
+2016-01-08 11:19:53.385 INFO  <Blockchain> Trying to connect Block[BlockNumber=229,084; Hash=81a54835...; ParentHash=890baeb2...; Coinbase=52bc44d5...; Difficulty=7,040,247,001,388]. Repos state=f29769c7aec3c6261dc53e0468e0250ddf151ea8e7ff74aa07217e61e2c2e5db [sync-queue-000] BlockchainImpl.scala:141
+2016-01-08 11:19:53.385 DEBUG <Blockchain> Appending block: Block[BlockNumber=229,084; Hash=81a54835...; ParentHash=890baeb2...; Coinbase=52bc44d5...; Difficulty=7,040,247,001,388] [sync-queue-000] BlockchainImpl.scala:159
+2016-01-08 11:19:53.385 DEBUG <Blockchain> [Valid] Block[BlockNumber=229,084; Hash=81a54835...; ParentHash=890baeb2...; Coinbase=52bc44d5...; Difficulty=7,040,247,001,388] [sync-queue-000] BlockchainImpl.scala:506
+2016-01-08 11:19:53.387 DEBUG <Blockchain> Executing Tx[Hash=e7fa86db...; Nonce=4; Sender=be1f2ac71a9703275a4d3ea01a340f378c931740; Receiver=7011f3edc7fa43c81440f9f43a6458174113b162; Value=1,000,000,000,000,000,000; ManaLimit=500,000; ManaPrice=50,000,000,000; Data=53746570...] [sync-queue-000] BlockchainImpl.scala:388
+2016-01-08 11:19:53.387 INFO  <TxExecutor> Withdraw in advance: TxManaCost: 25,000,000,000,000,000, ManaPrice: 50,000,000,000, ManaLimit: 500,000 [sync-queue-000] TransactionExecutor.scala:86
+2016-01-08 11:19:53.387 DEBUG <TxExecutor> User defined contract invocation: [7011f3edc7fa43c81440f9f43a6458174113b162] [sync-queue-000] TransactionExecutor.scala:139
+2016-01-08 11:19:53.387 DEBUG <TxExecutor> Contract loaded: [7011f3edc7fa43c81440f9f43a6458174113b162]=[3,237 bytes] [sync-queue-000] TransactionExecutor.scala:144
+2016-01-08 11:19:53.388 DEBUG <Transfer> Transferring 1,000,000,000,000,000,000 from be1f2ac71a9703275a4d3ea01a340f378c931740 to 7011f3edc7fa43c81440f9f43a6458174113b162 [sync-queue-000] Transfer.scala:18
+2016-01-08 11:19:53.495 INFO  <TxExecutor> Paying total refund to sender: be1f2ac71a9703275a4d3ea01a340f378c931740. RefundVal=19,988,600,000,000,000. (ManaLeftOver=399,772. ManaRefund=0. EndMana=399,772) [sync-queue-000] TransactionExecutor.scala:231
+2016-01-08 11:19:53.495 INFO  <TxExecutor> Paying fee to miner: 52bc44d5378309ee2abf1539bf71de1b7d7be3b5, fee: 5,011,400,000,000,000 [sync-queue-000] TransactionExecutor.scala:236
+2016-01-08 11:19:53.498 DEBUG <Blockchain> Total reward for Block[BlockNumber=229,084; Hash=81a54835...; ParentHash=890baeb2...; Coinbase=52bc44d5...; Difficulty=7,040,247,001,388] is 5,000,000,000,000,000,000. (Uncles=0) [sync-queue-000] BlockchainImpl.scala:441
+2016-01-08 11:19:53.498 DEBUG <Blockchain> Total difficulty is updated to 939,489,861,385,215,301 [sync-queue-000] BlockchainImpl.scala:533
+2016-01-08 11:19:53.498 INFO  <Blockchain> Block[229,084] processed. Summary: [Block[BlockNumber=229,084; Hash=81a54835...; ParentHash=890baeb2...; Coinbase=52bc44d5...; Difficulty=7,040,247,001,388]]. TxSize=1; Chain=[TD=939,489,861,385,215,301; StateRoot=393f3e494579deff116a9581b9e6db67dd1b5e00e203b4aafc1f500c00f5a4df] [sync-queue-000] BlockchainImpl.scala:353
+2016-01-08 11:19:53.498 INFO  <Blockchain> Block[229,084] processed. Tx[0]=Tx[Hash=e7fa86db...; Nonce=4; Sender=be1f2ac71a9703275a4d3ea01a340f378c931740; Receiver=7011f3edc7fa43c81440f9f43a6458174113b162; Value=1,000,000,000,000,000,000; ManaLimit=500,000; ManaPrice=50,000,000,000; Data=53746570...]; ManaUsed=100,228; AccumManaUsed=100,228 [sync-queue-000] BlockchainImpl.scala:359
+
+←この問題は、details.inmemory.storage.limit を 16にしたら発生したので、外部ストレージ利用のバグによるある可能性あり。
+実際、この呼出に使われたコントラクトは、条件に合致してロードされたばかりだ。
+2016-01-08 11:08:36.009 INFO  <ContractDetails> [7011f3ed...] Encoding took 75,946 nanos for 65 entries. (38 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 11:08:57.613 INFO  <ContractDetails> [7011f3ed...] Decoding took 11,122,219 nanos for 65 entries. (37 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+2016-01-08 11:12:53.250 INFO  <ContractDetails> [7011f3ed...] Encoding took 90,987 nanos for 125 entries. (38 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 11:13:08.818 INFO  <ContractDetails> [7011f3ed...] Decoding took 9,707,092 nanos for 125 entries. (37 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+2016-01-08 11:16:47.665 INFO  <ContractDetails> [7011f3ed...] Encoding took 2,544,480 nanos for 165 entries. (71,145 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 11:19:51.289 INFO  <ContractDetails> [7011f3ed...] Decoding took 24,274,033 nanos for 165 entries. (71,141 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+
+
 ・どうもコネクションタイムアウトしすぎではないか。
 ←何かの約束違反を犯している？　あるいは、これが正常な動作であるのか。
 ←プロセッサ負荷が高すぎて、pingを送れていないのではないかという仮説。以下と合わせて。
@@ -42,19 +56,57 @@ Tx: 0x95def7f925d36c4f459200e2c29213878a97d4e0708b6396885da03b2ec1b9a1
 
 VMログが10世代分一気に埋まってる。VMログを出しすぎたかも知れない。
 ←VMログをoffにするか。
+←VMログをoffにしたらだいぶ良くなった。
+2016-01-08 03:56:07.989 INFO  <TxExecutor> Withdraw in advance: TxManaCost: 70,000,000,000,000,000, ManaPrice: 70,000,000,000, ManaLimit: 1,000,000 [sync-queue-000] TransactionExecutor.scala:86
+2016-01-08 03:57:41.754 DEBUG <TxExecutor> Contract invocation: [1194e966965418c7d73a42cceeb254d875860356]=[1,823 bytes] [sync-queue-000] TransactionExecutor.scala:138
+しかし、妙なところで間が空くなあ？
+
+・flushing data でも止まる。
+2016-01-08 05:41:59.119 INFO  <Blockchain> Flushing data. [sync-queue-000] BlockchainImpl.scala:320
+2016-01-08 05:43:32.172 DEBUG <BlockChainImpl> Clear tx: hash=c1c82ea1... [sync-queue-000] BlockchainImpl.scala:575
+
+・意外なところで。
+2016-01-08 06:10:01.129 DEBUG <Repos> Loaded account: 1194e966... [sync-queue-000] RepositoryImpl.scala:342
+2016-01-08 06:10:01.129 DEBUG <Repos> Getting contract: 1194e966... [sync-queue-000] RepositoryImpl.scala:346
+2016-01-08 06:10:01.129 DEBUG <Repos> Details (1): 1194e966... [sync-queue-000] RepositoryImpl.scala:293
+2016-01-08 06:10:01.130 DEBUG <Repos> Details (2): 1194e966... [sync-queue-000] RepositoryImpl.scala:297
+2016-01-08 06:11:35.688 DEBUG <ContractDetails> Snap shooting: 42 keys. [sync-queue-000] ContractDetailsImpl.scala:128
+2016-01-08 06:11:35.688 DEBUG <ContractDetails> Snap shot taken: 42 keys. [sync-queue-000] ContractDetailsImpl.scala:142
+
+・意外。
+2016-01-08 06:19:19.785 DEBUG <Repos> Details (1): 1194e966... [sync-queue-000] RepositoryImpl.scala:293
+2016-01-08 06:19:19.785 DEBUG <Repos> Details (2): 1194e966... [sync-queue-000] RepositoryImpl.scala:297
+2016-01-08 06:24:28.245 DEBUG <ContractDetails> Snap shooting: 42 keys. [sync-queue-000] ContractDetailsImpl.scala:128
+2016-01-08 06:24:28.246 DEBUG <ContractDetails> Snap shot taken: 42 keys. [sync-queue-000] ContractDetailsImpl.scala:142
+2016-01-08 06:24:28.247 DEBUG <Repos> Details (3): 1194e966... [sync-queue-000] RepositoryImpl.scala:301
+
+<- 結局、遅いのは ContractDetailsStore からのロードだった。探索かロードかデコードかは不明だが。
+ContractDetailsImplのexternalStorageは、このためにあるんだな。。。
+
+<- encode と decode で時間がかかっていることは分かった。
+2016-01-08 08:00:29.910 INFO  <ContractDetails> Encoding took 819,175,830 nanos for 42 entries. (3,055,736 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 08:00:47.044 INFO  <ContractDetails> Decoding took 5,869,296,461 nanos for 42 entries. (3,055,732 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+2016-01-08 08:02:54.029 INFO  <ContractDetails> Encoding took 3,911,833,499 nanos for 42 entries. (5,818,444 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 08:03:46.649 INFO  <ContractDetails> Decoding took 25,823,275,629 nanos for 42 entries. (5,818,440 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+2016-01-08 08:05:42.843 INFO  <ContractDetails> Encoding took 11,747,919,072 nanos for 42 entries. (10,422,995 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 08:07:38.515 INFO  <ContractDetails> Decoding took 97,231,356,874 nanos for 42 entries. (10,422,991 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+2016-01-08 08:09:48.486 INFO  <ContractDetails> Encoding took 23,649,648,948 nanos for 42 entries. (13,821,753 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 08:13:36.248 INFO  <ContractDetails> Decoding took 211,952,561,116 nanos for 42 entries. (13,821,749 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+2016-01-08 08:16:09.313 INFO  <ContractDetails> Encoding took 31,912,134,697 nanos for 42 entries. (16,582,699 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+2016-01-08 08:21:44.183 INFO  <ContractDetails> Decoding took 319,398,880,762 nanos for 42 entries. (16,582,695 bytes) [sync-queue-000] ContractDetailsImpl.scala:194
+2016-01-08 08:24:08.613 INFO  <ContractDetails> Encoding took 41,758,134,332 nanos for 42 entries. (19,070,600 bytes) [sync-queue-000] ContractDetailsImpl.scala:171
+
+<- external storage にすれば解決するだろうか？
 
 ・１時間もの断絶が発生している。考えられないことだ。スレッド数過大か。topはJava100%。
 2016-01-06 01:13:44.659 INFO  <TxExecutor> Withdraw in advance: TxManaCost: 70,000,000,000,000,000, ManaPrice: 70,000,000,000, ManaLimit: 1,000,000 [Thread-4] TransactionExecutor.scala:85
 2016-01-06 02:19:33.374 DEBUG <TxExecutor> Contract invocation: [1194e966965418c7d73a42cceeb254d875860356]=[1,823 bytes] [Thread-4] TransactionExecutor.scala:137
 
-・Fill up できないのはどういう時？←既知であるかTDが低いとき。
-
-・Caused by: java.net.SocketException: Too many open files
-← lsof -c java リソースリーク疑惑。UDP不通問題が解消されて顕在化したのだから、TCPの接続が疑わしいか。
-PingやPongのゼロバイト問題は？
-
 ・ストレージ操作に時間を消費している可能性もある？
 ←可能性は高くないが、ストレージ関係の出力をまとめよう。
+
+<- 解決！！！！
+details.inmemory.storage.limitを16にまで減らしたら、固まらなくなった。
 
 
 １、既存環境との完全同期
