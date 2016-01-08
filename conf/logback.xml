@@ -104,6 +104,20 @@
 			<MaxFileSize>10MB</MaxFileSize>
 		</triggeringPolicy>
 	</appender>
+	<appender name="BLOCKS_RECORD" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/blocks_rec.txt</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%msg %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>1000</maxIndex>
+			<FileNamePattern>./work/logs/blocks_rec%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>100MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
 
 	<root level="WARN">
 		<appender-ref ref="EXT_LIB"/>
@@ -155,6 +169,9 @@
 	</logger>
 	<logger name="VM" level="INFO" additivity="false">
 		<appender-ref ref="VM"/>
+	</logger>
+	<logger name="blocks_record" level="INFO" additivity="false">
+		<appender-ref ref="BLOCKS_RECORD"/>
 	</logger>
 
 	<logger name="general" level="DEBUG" additivity="false">

@@ -5,10 +5,10 @@ import java.nio.charset.StandardCharsets
 import java.util.Scanner
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.base.{BlockHeader, Block, Blockchain}
+import org.lipicalabs.lipica.core.base.ImportResult.ImportedBest
+import org.lipicalabs.lipica.core.base.{Block, Blockchain}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.validator.BlockHeaderValidator
 import org.slf4j.LoggerFactory
 
 /**
@@ -20,13 +20,15 @@ class BlockLoader {
 
 	private val logger = LoggerFactory.getLogger("general")
 
-	private def headerValidator: BlockHeaderValidator = WorldManager.instance.blockHeaderValidator
 	private def blockchain: Blockchain = WorldManager.instance.blockchain
 
 	def loadBlocks(): Unit = {
 		val filePath = SystemProperties.CONFIG.blocksFile
+		if (filePath.isEmpty) {
+			return
+		}
 		val file = new java.io.File(filePath)
-		if (filePath.isEmpty || !file.exists) {
+		if (!file.exists) {
 			return
 		}
 		try {
@@ -37,11 +39,9 @@ class BlockLoader {
 				val encodedBlockBytes = Hex.decodeHex(scanner.nextLine.toCharArray)
 				val block = Block.decode(ImmutableBytes(encodedBlockBytes))
 				if (blockchain.bestBlock.blockNumber <= block.blockNumber) {
-					if ((0 < block.blockNumber) && !isValid(block.blockHeader)) {
-						shouldContinue = false
-					} else {
-						blockchain.tryToConnect(block)
-					}
+					val result = blockchain.tryToConnect(block)
+					println("Block[%,d] %s".format(block.blockNumber, result))
+					shouldContinue = result == ImportedBest
 				}
 			}
 		} catch {
@@ -50,7 +50,4 @@ class BlockLoader {
 		}
 	}
 
-	private def isValid(blockHeader: BlockHeader): Boolean = {
-		headerValidator.validate(blockHeader)
-	}
 }

@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.base
 
-import java.io.{Closeable, BufferedWriter, FileWriter}
 import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.config.SystemProperties
@@ -223,49 +222,18 @@ class BlockchainImpl(
 
 	override def processingBlockOption: Option[Block] = Option(this.processingBlockRef.get)
 
+	/**
+	 * ブロックを、再生可能な状態で記録します。
+	 */
 	private def recordBlock(block: Block): Unit = {
 		if (!SystemProperties.CONFIG.recordBlocks) {
 			return
 		}
-		val dumpDir = SystemProperties.CONFIG.databaseDir + "/" + SystemProperties.CONFIG.dumpDir
-		val dumpFile = new java.io.File(dumpDir + "/blocks-rec.dmp")
-		var fw: FileWriter = null
-		var bw: BufferedWriter = null
-		try {
-			dumpFile.getParentFile.mkdirs()
-			if (!dumpFile.exists()) {
-				dumpFile.createNewFile()
-			}
-			fw = new FileWriter(dumpFile.getAbsoluteFile, true)
-			bw = new BufferedWriter(fw)
-
-			if (this.bestBlock.isGenesis) {
-				bw.write(this.bestBlock.encode.toHexString)
-				bw.write("\n")
-			}
-			bw.write(block.encode.toHexString)
-			bw.write("\n")
-
-			bw.flush()
-			fw.flush()
-		} catch {
-			case e: Throwable =>
-				logger.warn("<Blockchain>", e)
-		} finally {
-			closeIfNotNull(bw)
-			closeIfNotNull(fw)
+		if (this.bestBlock.isGenesis) {
+			//genesisは記録する機会がないので、ブロック番号１のブロックのついでに記録しておく。
+			recordingLogger.info(this.bestBlock.encode.toHexString)
 		}
-	}
-
-	private def closeIfNotNull(closeable: Closeable): Unit = {
-		if (closeable ne null) {
-			try {
-				closeable.close()
-			} catch {
-				case e: Throwable =>
-					logger.warn("<Blockchain>", e)
-			}
-		}
+		recordingLogger.info(block.encode.toHexString)
 	}
 
 	override def append(block: Block): Unit = {
@@ -622,4 +590,6 @@ class BlockchainImpl(
 object BlockchainImpl {
 	private val logger = LoggerFactory.getLogger("blockchain")
 	private val stateLogger = LoggerFactory.getLogger("state")
+
+	private val recordingLogger = LoggerFactory.getLogger("blocks_record")
 }

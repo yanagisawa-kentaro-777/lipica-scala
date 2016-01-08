@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.base.{CallTransaction, TransactionLike}
 import org.lipicalabs.lipica.core.listener.LipicaListener
-import org.lipicalabs.lipica.core.manager.{BlockLoader, AdminInfo}
+import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
@@ -77,8 +77,6 @@ trait Lipica extends Closeable {
 	def getChannelManager: ChannelManager
 
 	def getPendingTransactions: Set[TransactionLike]
-
-	def getBlockLoader: BlockLoader
 
 	/**
 	 * 最近のトランザクションにおけるマナ価格の実績に基いて、

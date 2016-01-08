@@ -60,6 +60,7 @@ class WorldManager extends Closeable {
 
 	val programInvokeFactory: ProgramInvokeFactory = ComponentFactory.createProgramInvokeFactory
 
+	val blockLoader: BlockLoader = new BlockLoader
 
 	def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
 
@@ -88,7 +89,10 @@ class WorldManager extends Closeable {
 		val coinbaseAddress = DigestUtils.digest256(SystemProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
 		this.wallet.importKey(ImmutableBytes(coinbaseAddress))
 
+		//データベースからブロックを読み込む。
 		loadBlockchain()
+		//ファイルからブロックを読み込む。
+		this.blockLoader.loadBlocks()
 
 		this.clientRef.set(new PeerClient)
 

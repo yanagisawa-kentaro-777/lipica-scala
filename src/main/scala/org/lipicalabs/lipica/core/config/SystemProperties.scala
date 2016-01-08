@@ -158,9 +158,10 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 	def blockchainOnly_=(v: Boolean): Unit = this.blockchainOnlyRef.set(v)
 	override def blockchainOnly: Boolean = this.blockchainOnlyRef.get
 
-	private var _recordBlocks = this.config.getBoolean("record.blocks")
-	def recordBlocks_=(v: Boolean): Unit = this._recordBlocks = v
-	override def recordBlocks: Boolean = this._recordBlocks
+	//取得したブロックを、ブロックチェーンに連結する際にファイルにも出力するか否か。
+	private val recordBlocksRef: AtomicBoolean = new AtomicBoolean(this.config.getBoolean("record.blocks"))
+	def recordBlocks_=(v: Boolean): Unit = this.recordBlocksRef.set(v)
+	override def recordBlocks: Boolean = this.recordBlocksRef.get
 
 	override def cacheFlushMemory: Double = this.config.getDouble("cache.flush.memory")
 	override def cacheFlushBlocks: Int = this.config.getInt("cache.flush.blocks")

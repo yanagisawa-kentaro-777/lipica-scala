@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.base.CallTransaction
 import org.lipicalabs.lipica.core.base.{Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
-import org.lipicalabs.lipica.core.manager.{BlockLoader, AdminInfo, WorldManager}
+import org.lipicalabs.lipica.core.manager.{AdminInfo, WorldManager}
 import org.lipicalabs.lipica.core.net.client.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
@@ -18,7 +18,6 @@ import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
-import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
 
@@ -33,7 +32,6 @@ class LipicaImpl extends Lipica {
 	def adminInfo: AdminInfo = worldManager.adminInfo
 	def channelManager: ChannelManager = worldManager.channelManager
 	val peerServer: PeerServer = new PeerServer
-	val blockLoader: BlockLoader = new BlockLoader
 	def programInvokeFactory: ProgramInvokeFactory = worldManager.programInvokeFactory
 
 	private val manaPriceTracker = new ManaPriceTracker
@@ -148,9 +146,6 @@ class LipicaImpl extends Lipica {
 
 	override def getPendingTransactions: Set[TransactionLike] = this.worldManager.blockchain.pendingTransactions
 
-
-	override def getBlockLoader = this.blockLoader
-
 	override def getChannelManager = this.worldManager.channelManager
 
 	/**
@@ -169,8 +164,4 @@ class LipicaImpl extends Lipica {
 
 	override def exitOn(number: Long) = this.worldManager.blockchain.exitOn = number
 
-}
-
-object LipicaImpl {
-	private val logger = LoggerFactory.getLogger("general")
 }
