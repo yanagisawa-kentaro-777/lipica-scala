@@ -83,7 +83,7 @@ trait SystemPropertiesLike {
 	def peerDiscoveryTouchSeconds: Int
 	def peerDiscoveryTouchMaxNodes: Int
 
-	def blocksFile: String
+	def srcBlocksDir: String
 
 	def restApiEnabled: Boolean
 	def restApiBindAddress: String
@@ -299,7 +299,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 
 	override def peerDiscoveryTouchSeconds: Int = this.config.getInt("peer.discovery.touch.period")
 	override def peerDiscoveryTouchMaxNodes: Int = this.config.getInt("peer.discovery.touch.max.nodes")
-	override def blocksFile: String = this.config.getString("blocks.file")
+	override def srcBlocksDir: String = getOrElse(this.config, "src.blocks.dir", "")
 
 	override def restApiEnabled: Boolean = this.config.getBoolean("api.rest.enabled")
 	override def restApiBindAddress: String = this.config.getString("api.rest.bind.address")
@@ -366,7 +366,7 @@ object DummySystemProperties extends SystemPropertiesLike {
 
 	override def networkId: Int = 1
 
-	override def blocksFile: String = ""
+	override def srcBlocksDir: String = ""
 
 	override def isFrontier: Boolean = false
 
@@ -473,6 +473,14 @@ object SystemProperties {
 				None
 		} finally {
 			httpClient.close()
+		}
+	}
+
+	private def getOrElse(config: Config, key: String, value: String): String = {
+		if (config.hasPath(key)) {
+			config.getString(key).trim
+		} else {
+			value
 		}
 	}
 

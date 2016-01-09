@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.manager
 
 import java.io.{File, FileInputStream}
 import java.nio.charset.StandardCharsets
-import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.Scanner
 
 import org.apache.commons.codec.binary.Hex
@@ -21,12 +21,16 @@ class BlockLoader {
 
 	private val logger = LoggerFactory.getLogger("general")
 
+	/**
+	 * 設定されたディレクトリ以下に存在するファイルから、
+	 * ブロック情報を読み取って、渡されたチェーンに連結します。
+	 */
 	def loadBlocks(chain: Blockchain): Unit = {
-		val filePath = SystemProperties.CONFIG.blocksFile
-		if (filePath.isEmpty) {
+		val path = SystemProperties.CONFIG.srcBlocksDir
+		if (path.isEmpty) {
 			return
 		}
-		val dir = new java.io.File(filePath)
+		val dir = Paths.get(path).toAbsolutePath.toFile
 		if (!dir.exists) {
 			return
 		}
@@ -43,25 +47,33 @@ class BlockLoader {
 	}
 
 	private def loadBlocksFromFile(src: File, chain: Blockchain): Unit = {
-		println("Loading from file: %s".format(src))
-		val inputStream = new FileInputStream(src)
+		withLinesInFile(src) {
+			line => {
+				val encodedBlockBytes = Hex.decodeHex(line.toCharArray)
+				val block = Block.decode(ImmutableBytes(encodedBlockBytes))
+				val bestBlock = chain.bestBlock
+				if (bestBlock.blockNumber <= block.blockNumber) {
+					val result = chain.tryToConnect(block)
+					println("Block[%,d] %s".format(block.blockNumber, result))
+					(result == ImportedBest) || (result == Exists)
+				} else {
+					false
+				}
+			}
+		}
+	}
+
+	private def withLinesInFile(file: File)(proc: (String) => Boolean): Unit = {
+		val inputStream = new FileInputStream(file)
 		try {
 			val scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name)
 			var shouldContinue = true
 			while (shouldContinue && scanner.hasNextLine) {
 				val line = launderLine(scanner.nextLine)
 				if (!line.isEmpty) {
-					val encodedBlockBytes = Hex.decodeHex(line.toCharArray)
-					val block = Block.decode(ImmutableBytes(encodedBlockBytes))
-					val bestBlock = chain.bestBlock
-					if (bestBlock.blockNumber <= block.blockNumber) {
-						val result = chain.tryToConnect(block)
-						println("Block[%,d] %s".format(block.blockNumber, result))
-						shouldContinue = ((result == ImportedBest) || (result == Exists))
-					}
+					shouldContinue = proc(line)
 				}
 			}
-			println("Loaded from file: %s.".format(src))
 		} finally {
 			inputStream.close()
 		}
