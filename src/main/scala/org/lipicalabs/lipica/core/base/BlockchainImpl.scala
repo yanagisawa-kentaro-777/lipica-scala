@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.base
 
 import java.util.concurrent.atomic.AtomicReference
 
+import org.lipicalabs.lipica.core.base.ImportResult.{ImportedBest, NoParent, InvalidBlock, ConsensusBreak}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.listener.LipicaListener
@@ -144,8 +145,13 @@ class BlockchainImpl(
 						logger.debug("<Blockchain> The first block: %s".format(block.summaryString(short = true)))
 					}
 					recordBlock(block)
-					append(block)
-					ImportResult.ImportedBest
+					val result = append(block)
+					if (result == ConsensusBreak) {
+						//TODO 乱暴すぎるが。
+						this.adminInfo.lostConsensus()
+						System.exit(1)
+					}
+					result
 				} else if ((block.blockNumber <= this.blockStore.getMaxBlockNumber) && this.blockStore.existsBlock(block.hash)) {
 					//既存ブロック。
 					if (logger.isDebugEnabled) {
@@ -158,8 +164,13 @@ class BlockchainImpl(
 						logger.debug("<Blockchain> Appending block: %s".format(block.summaryString(short = true)))
 					}
 					recordBlock(block)
-					append(block)
-					ImportResult.ImportedBest
+					val result = append(block)
+					if (result == ConsensusBreak) {
+						//TODO 乱暴すぎるが。
+						this.adminInfo.lostConsensus()
+						System.exit(1)
+					}
+					result
 				} else if (this.blockStore.existsBlock(block.parentHash)) {
 					//フォーク連結。
 					if (logger.isDebugEnabled) {
@@ -189,11 +200,15 @@ class BlockchainImpl(
 		this.totalDifficulty = this.blockStore.getTotalDifficultyForHash(block.parentHash)
 		this.repository = this.repository.createSnapshotTo(this.bestBlock.stateRoot)
 		this.fork = true
-		try {
-			//共通祖先に、渡されたブロックを追加する。
-			append(block)
-		} finally {
-			this.fork = false
+		val result =
+			try {
+				//共通祖先に、渡されたブロックを追加する。
+				append(block)
+			} finally {
+				this.fork = false
+			}
+		if (result != ImportedBest) {
+			return result
 		}
 
 		if (savedTD < this.totalDifficulty) {
@@ -234,22 +249,24 @@ class BlockchainImpl(
 		recordingLogger.info(block.encode.toHexString)
 	}
 
-	override def append(block: Block): Unit = {
+	override protected def append(block: Block): ImportResult = {
 		if (this.exitOn < block.blockNumber) {
 			val message = "<Blockchain> Exiting after BlockNumber: %,d".format(this.bestBlock.blockNumber)
 			logger.info(message)
 			System.out.println(message)
-			System.exit(-1)//TODO いささか無作法に過ぎるが。
+			System.exit(-1)//TODO いささか無作法に過ぎるが、デバッグ用の機能である。
+			return ImportedBest
 		}
 
 		//ブロック自体の破損検査を行う。
 		if (!isValid(block)) {
 			logger.warn("<Blockchain> INVALID BLOCK: %s".format(block.summaryString(short = true)))
-			return
+			return InvalidBlock
 		}
 		if ((this.bestBlock ne null) && this.bestBlock.hash != block.parentHash) {
+			//ここには来ないはず。
 			logger.warn("<Blockchain> CANNOT CONNECT: %s is not the parent of %s".format(this.bestBlock.summaryString(short = true), block.summaryString(short = true)))
-			return
+			return NoParent
 		}
 
 		if (logger.isTraceEnabled) {
@@ -264,24 +281,31 @@ class BlockchainImpl(
 
 		val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
-			//TODO 厳密化が必要。
 			logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
-			//return
+			return ConsensusBreak
 		}
 		val calculatedLogBloomHash = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
 		if (block.logsBloom != calculatedLogBloomHash) {
-			//TODO 厳密化が必要。
 			logger.warn("<Blockchain> LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
-			//return
+			return ConsensusBreak
 		}
 		track.commit()
+
+		//状態の整合性を検査する。
+		if (!SystemProperties.CONFIG.blockchainOnly) {
+			if (block.stateRoot != this.repository.rootHash) {
+				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.rootHash)
+				logger.warn(message)
+				stateLogger.warn(message)
+				return ConsensusBreak
+			}
+		}
 
 		//ブロックを保存する。
 		storeBlock(block, receipts)
 		if (logger.isTraceEnabled) {
 			logger.trace("<Blockchain> %s is stored. Total difficulty is %,d".format(block.summaryString(short = true), this.totalDifficulty))
 		}
-
 		if (needsFlushing(block)) {
 			flushAndGc()
 		}
@@ -296,6 +320,7 @@ class BlockchainImpl(
 		if (logger.isDebugEnabled) {
 			logger.debug("<Blockchain> The block is successfully appended: %s. Chain size is now %,d.".format(block.summaryString(short = true), this.size))
 		}
+		ImportedBest
 	}
 
 	private def flushAndGc(): Unit = {
@@ -505,17 +530,7 @@ class BlockchainImpl(
 		}
 	}
 
-	override def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {
-		if (!SystemProperties.CONFIG.blockchainOnly) {
-			if (block.stateRoot != this.repository.rootHash) {
-				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.rootHash)
-				println(message)
-				stateLogger.warn(message)
-				this.adminInfo.lostConsensus()
-				System.exit(1)
-			}
-		}
-
+	override protected def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {
 		if (this.fork) {
 			this.blockStore.saveBlock(block, this.totalDifficulty, mainChain = false)
 		} else {

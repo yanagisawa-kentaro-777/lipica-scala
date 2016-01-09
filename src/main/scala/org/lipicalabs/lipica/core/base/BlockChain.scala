@@ -17,9 +17,9 @@ trait Blockchain {
 	/**
 	 * このチェーンの末尾にブロックを加えます。
 	 */
-	def append(block: Block): Unit
+	protected def append(block: Block): ImportResult
 
-	def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit
+	protected def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit
 
 	/**
 	 * このチェーンにおける最新のブロック。

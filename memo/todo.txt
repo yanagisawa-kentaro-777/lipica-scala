@@ -40,8 +40,8 @@
 ←encode / decodeか、snap shotか、どちらかだろう。
 
 １、既存環境との完全同期
-・BlockchainImpl の連結失敗時のエラー処理が甘い。
 ・CallTransactionの変更に追随する。
+・IndexedBlockStoreの実装がかなり遅い。MapDBが良くないのだろう。MapDBを廃絶することが重要であると思われる。
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
 ・Active Peerについて考えなおす。
 
