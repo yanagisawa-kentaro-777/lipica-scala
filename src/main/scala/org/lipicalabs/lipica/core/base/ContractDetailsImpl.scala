@@ -37,7 +37,8 @@ class ContractDetailsImpl() extends ContractDetails {
 	private val keysRef = new AtomicReference[mutable.HashSet[ImmutableBytes]](new mutable.HashSet[ImmutableBytes])
 	private def keys: mutable.HashSet[ImmutableBytes] = this.keysRef.get
 
-	private var storageTrie = new SecureTrie(null)
+	private val storageTrieRef: AtomicReference[SecureTrie] = new AtomicReference[SecureTrie](new SecureTrie(null))
+	private def storageTrie: SecureTrie = this.storageTrieRef.get
 
 	private val isDirtyRef: AtomicBoolean = new AtomicBoolean(false)
 	override def isDirty = this.isDirtyRef.get
@@ -138,8 +139,6 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	private def dataSourceName = "details-storage/" + address.toHexString
 
-
-
 	override def getSnapshotTo(hash: ImmutableBytes) = {
 		val keyValueDataSource = this.storageTrie.cache.dataSource
 		val snapStorage =
@@ -233,7 +232,7 @@ object ContractDetailsImpl {
 	def newInstance(address: ImmutableBytes, trie: SecureTrie, code: ImmutableBytes): ContractDetailsImpl = {
 		val result = new ContractDetailsImpl
 		result.address = address
-		result.storageTrie = trie
+		result.storageTrieRef.set(trie)
 		result.code = code
 		result
 	}
