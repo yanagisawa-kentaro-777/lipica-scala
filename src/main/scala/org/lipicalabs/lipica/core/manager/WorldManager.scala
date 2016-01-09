@@ -92,7 +92,7 @@ class WorldManager extends Closeable {
 		//データベースからブロックを読み込む。
 		loadBlockchain()
 		//ファイルからブロックを読み込む。
-		this.blockLoader.loadBlocks()
+		this.blockLoader.loadBlocks(this.blockchain)
 
 		this.clientRef.set(new PeerClient)
 
