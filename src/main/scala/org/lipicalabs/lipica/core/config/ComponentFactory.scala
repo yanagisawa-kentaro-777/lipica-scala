@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.manager.AdminInfo
 import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
-import org.lipicalabs.lipica.core.net.server.UDPListener
+import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
 import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
 import org.lipicalabs.lipica.core.validator._

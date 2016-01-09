@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.server
+package org.lipicalabs.lipica.core.net.peer_discovery.udp
 
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
