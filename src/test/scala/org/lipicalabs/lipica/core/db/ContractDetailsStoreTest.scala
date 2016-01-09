@@ -143,7 +143,7 @@ class ContractDetailsStoreTest extends Specification {
 			loaded.storageContent.size mustEqual limit + 1
 			val encodedBytes = loaded.encode
 			val decoded = new ContractDetailsImpl
-			decoded.setExternalStorageDataSource(externalStorage)
+			decoded.externalStorageDataSource = externalStorage
 			decoded.decode(encodedBytes)
 
 			decoded.storageContent.size mustEqual limit + 1
@@ -172,7 +172,7 @@ class ContractDetailsStoreTest extends Specification {
 		val result = new ContractDetailsImpl
 		result.code = randomBytes(codeSize)
 
-		result.setExternalStorageDataSource(storageDataSource)
+		result.externalStorageDataSource = storageDataSource
 		for (i <- 0 until storageSize) {
 			result.put(randomDataWord, randomDataWord)
 		}

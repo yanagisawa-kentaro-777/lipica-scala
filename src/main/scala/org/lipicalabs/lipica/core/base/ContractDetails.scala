@@ -4,7 +4,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
- * コントラクトの内容を表す trait です。
+ * コントラクトの内容である、コードやストレージデータを
+ * 保持するクラスが実装すべき trait です。
  *
  * Created by IntelliJ IDEA.
  * 2015/10/25 14:03

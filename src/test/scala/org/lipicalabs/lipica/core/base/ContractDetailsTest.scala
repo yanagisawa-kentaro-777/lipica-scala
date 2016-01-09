@@ -151,7 +151,7 @@ class ContractDetailsTest extends Specification {
 			val externalStorage = new HashMapDB
 
 			val original = new ContractDetailsImpl
-			original.setExternalStorageDataSource(externalStorage)
+			original.externalStorageDataSource = externalStorage
 			original.address = address
 			original.code = code
 
@@ -167,7 +167,7 @@ class ContractDetailsTest extends Specification {
 
 			val encodedBytes = original.encode
 			val decodedDetails = new ContractDetailsImpl
-			decodedDetails.setExternalStorageDataSource(externalStorage)
+			decodedDetails.externalStorageDataSource = externalStorage
 			decodedDetails.decode(encodedBytes)
 
 			code.toHexString mustEqual decodedDetails.code.toHexString
@@ -193,7 +193,7 @@ class ContractDetailsTest extends Specification {
 			val externalStorage = new HashMapDB
 
 			val original = new ContractDetailsImpl
-			original.setExternalStorageDataSource(externalStorage)
+			original.externalStorageDataSource = externalStorage
 			original.address = address
 			original.code = code
 
@@ -235,7 +235,7 @@ class ContractDetailsTest extends Specification {
 
 	private def deserialize(encodedBytes: ImmutableBytes, externalStorage: KeyValueDataSource): ContractDetails = {
 		val result = new ContractDetailsImpl
-		result.setExternalStorageDataSource(externalStorage)
+		result.externalStorageDataSource = externalStorage
 		result.decode(encodedBytes)
 		result
 	}

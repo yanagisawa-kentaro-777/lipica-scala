@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.base
 
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.datasource.{DataSourcePool, KeyValueDataSource}
@@ -12,6 +14,10 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable
 
 /**
+ * ContractDetails の実装クラスです。
+ *
+ * コントラクトの内容である、コードやストレージデータを保持します。
+ *
  *
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
@@ -20,29 +26,40 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	import ContractDetailsImpl._
 
-	private var _address = ImmutableBytes.empty
+	private val addressRef: AtomicReference[ImmutableBytes] = new AtomicReference[ImmutableBytes](ImmutableBytes.empty)
+	override def address: ImmutableBytes = this.addressRef.get
+	override def address_=(v: ImmutableBytes) = this.addressRef.set(v)
 
-	private var _code = ImmutableBytes.empty
+	private val codeRef: AtomicReference[ImmutableBytes] = new AtomicReference[ImmutableBytes](ImmutableBytes.empty)
+	override def code = this.codeRef.get
+	override def code_=(v: ImmutableBytes) = this.codeRef.set(v)
 
-	private val keys = new mutable.HashSet[ImmutableBytes]
+	private val keysRef = new AtomicReference[mutable.HashSet[ImmutableBytes]](new mutable.HashSet[ImmutableBytes])
+	private def keys: mutable.HashSet[ImmutableBytes] = this.keysRef.get
 	private var storageTrie = new SecureTrie(null)
 
-	private var _isDirty = false
-	private var _isDeleted = false
-	private var externalStorage = false
-	private var externalStorageDataSource: KeyValueDataSource = null
+	private val isDirtyRef: AtomicBoolean = new AtomicBoolean(false)
+	override def isDirty = this.isDirtyRef.get
+	override def isDirty_=(v: Boolean) = this.isDirtyRef.set(v)
 
-	override def address: ImmutableBytes = this._address
-	override def address_=(v: ImmutableBytes) = this._address = v
+	private val isDeletedRef: AtomicBoolean = new AtomicBoolean(false)
+	override def isDeleted: Boolean = this.isDeletedRef.get
+	override def isDeleted_=(v: Boolean): Unit = this.isDeletedRef.set(v)
 
-	override def code = this._code
-	override def code_=(v: ImmutableBytes) = this._code = v
+	private val useExternalStorageRef: AtomicBoolean = new AtomicBoolean(false)
+	def useExternalStorage: Boolean = this.useExternalStorageRef.get
+	def useExternalStorage_=(v: Boolean): Unit = this.useExternalStorageRef.set(v)
 
-	override def isDirty = this._isDirty
-	override def isDirty_=(v: Boolean) = this._isDirty = v
-
-	override def isDeleted: Boolean = this._isDeleted
-	override def isDeleted_=(v: Boolean): Unit = this._isDeleted = v
+	private val externalStorageDataSourceRef: AtomicReference[KeyValueDataSource] = new AtomicReference[KeyValueDataSource](null)
+	def externalStorageDataSource: KeyValueDataSource = {
+		if (this.externalStorageDataSourceRef.get eq null) {
+			this.externalStorageDataSourceRef.set(DataSourcePool.levelDbByName(dataSourceName))
+		}
+		this.externalStorageDataSourceRef.get
+	}
+	def externalStorageDataSource_=(v: KeyValueDataSource): Unit = {
+		this.externalStorageDataSourceRef.set(v)
+	}
 
 	private def addKey(key: ImmutableBytes): Unit = this.keys.add(key)
 
@@ -62,7 +79,7 @@ class ContractDetailsImpl() extends ContractDetails {
 			addKey(key.data)
 		}
 		this.isDirty = true
-		this.externalStorage = externalStorage || (SystemProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size)
+		this.useExternalStorage = useExternalStorage || (SystemProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size)
 	}
 
 	override def get(key: DataWord): Option[DataWord] = {
@@ -104,8 +121,8 @@ class ContractDetailsImpl() extends ContractDetails {
 	override def storageSize: Int = this.keys.size
 
 	override def syncStorage(): Unit = {
-		if (externalStorage) {
-			this.storageTrie.cache.setDB(getExternalStorageDataSource)
+		if (useExternalStorage) {
+			this.storageTrie.cache.setDB(externalStorageDataSource)
 			this.storageTrie.sync()
 
 			DataSourcePool.closeDataSource(dataSourceName)
@@ -114,15 +131,7 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	private def dataSourceName = "details-storage/" + address.toHexString
 
-	private def getExternalStorageDataSource: KeyValueDataSource = {
-		if (this.externalStorageDataSource eq null) {
-			this.externalStorageDataSource = DataSourcePool.levelDbByName(dataSourceName)
-		}
-		this.externalStorageDataSource
-	}
-	def setExternalStorageDataSource(v: KeyValueDataSource): Unit = {
-		this.externalStorageDataSource = v
-	}
+
 
 	override def getSnapshotTo(hash: ImmutableBytes) = {
 		val keyValueDataSource = this.storageTrie.cache.dataSource
@@ -135,7 +144,8 @@ class ContractDetailsImpl() extends ContractDetails {
 		snapStorage.cache = this.storageTrie.cache
 
 		val details = ContractDetailsImpl.newInstance(this.address, snapStorage, this.code)
-		this.keys.foreach(details.keys.add)
+		details.keysRef.set(this.keys)
+		//this.keys.foreach(details.keys.add)
 		details
 	}
 
@@ -152,9 +162,9 @@ class ContractDetailsImpl() extends ContractDetails {
 	override def encode: ImmutableBytes = {
 		val startTime = System.nanoTime
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
-		val encodedIsExternalStorage = RBACCodec.Encoder.encode(this.externalStorage)
+		val encodedIsExternalStorage = RBACCodec.Encoder.encode(this.useExternalStorage)
 		val encodedStorageRoot = RBACCodec.Encoder.encode(
-			if (this.externalStorage) {
+			if (this.useExternalStorage) {
 				this.storageTrie.rootHash
 			} else {
 				Array.emptyByteArray
@@ -179,15 +189,15 @@ class ContractDetailsImpl() extends ContractDetails {
 		val startTime = System.nanoTime
 		val items = RBACCodec.Decoder.decode(data).right.get.items
 		this.address = items.head.bytes
-		this.externalStorage = items(1).asPositiveLong > 0L
+		this.useExternalStorage = items(1).asPositiveLong > 0L
 		this.storageTrie.deserialize(items(2).bytes)
 		this.code = items(3).bytes
 		items(4).items.foreach {
 			each => addKey(each.bytes)
 		}
-		if (externalStorage) {
+		if (useExternalStorage) {
 			this.storageTrie.root = items(5).bytes
-			this.storageTrie.cache.setDB(getExternalStorageDataSource)
+			this.storageTrie.cache.setDB(externalStorageDataSource)
 		}
 		val endTime = System.nanoTime
 		if (logger.isInfoEnabled) {

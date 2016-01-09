@@ -382,7 +382,7 @@ object DummySystemProperties extends SystemPropertiesLike {
 
 	override def seedNodes: Seq[String] = Seq.empty
 
-	override def detailsInMemoryStorageLimit: Int = 10000
+	override def detailsInMemoryStorageLimit: Int = 100
 
 	override def blockchainOnly: Boolean = false
 
