@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.peer_discovery
+package org.lipicalabs.lipica.core.net.peer_discovery.active_discovery
 
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean

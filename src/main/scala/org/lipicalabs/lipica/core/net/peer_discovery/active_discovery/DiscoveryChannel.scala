@@ -1,19 +1,18 @@
-package org.lipicalabs.lipica.core.net.peer_discovery
+package org.lipicalabs.lipica.core.net.peer_discovery.active_discovery
 
 import java.net.InetAddress
 
 import io.netty.bootstrap.Bootstrap
-import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel._
+import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
-import org.lipicalabs.lipica.core.net.channel.Channel
+import org.lipicalabs.lipica.core.net.channel.{Channel, LipicaChannelInitializer}
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc0, LpcHandler}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler}
-import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.utils.ImmutableBytes

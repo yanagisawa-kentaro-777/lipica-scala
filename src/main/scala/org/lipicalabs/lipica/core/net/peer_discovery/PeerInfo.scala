@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.net.peer_discovery
 
-import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.util.concurrent.atomic.{AtomicReference, AtomicLong, AtomicBoolean}
 
 import org.lipicalabs.lipica.core.net.client.Capability
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
@@ -8,45 +9,48 @@ import org.lipicalabs.lipica.core.net.p2p.HelloMessage
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+
 
 /**
  * Created by IntelliJ IDEA.
  * 2015/12/07 20:28
  * YANAGISAWA, Kentaro
  */
-class PeerInfo(val address: InetAddress, val port: Int, val nodeId: ImmutableBytes) {
+class PeerInfo(val address: InetSocketAddress, val nodeId: ImmutableBytes) {
 
-	@transient
-	private var _online: Boolean = false
+	private val onlineRef: AtomicBoolean = new AtomicBoolean(false)
 	def online: Boolean = {
 		if (this.capabilities.isEmpty) {
 			false
 		} else {
-			this._online
+			this.onlineRef.get
 		}
 	}
-	def online_=(v: Boolean): Unit = this._online = v
+	def online_=(v: Boolean): Unit = this.onlineRef.set(v)
 
-	@transient
-	private var _lastCheckTime: Long = 0L
-	def lastCheckTime: Long = this._lastCheckTime
-	def lastCheckTime_=(v: Long): Unit = this._lastCheckTime = v
+	private val lastCheckTimeRef: AtomicLong = new AtomicLong(0L)
+	def lastCheckTime: Long = this.lastCheckTimeRef.get
+	def lastCheckTime_=(v: Long): Unit = this.lastCheckTimeRef.set(v)
 
-	private val _capabilities: mutable.Buffer[Capability] = new ArrayBuffer[Capability]
-	def addCapabilities(aCapabilities: Iterable[Capability]): Unit = this._capabilities.appendAll(aCapabilities)
-	def capabilities: Seq[Capability] = this._capabilities.toSeq
+	private val capabilitiesRef: AtomicReference[Iterable[Capability]] = new AtomicReference[Iterable[Capability]](mutable.Iterable.empty)
+	def addCapabilities(aCapabilities: Iterable[Capability]): Unit = {
+		this.capabilitiesRef.synchronized {
+			val current = this.capabilitiesRef.get
+			this.capabilitiesRef.set(current ++ aCapabilities)
+		}
+	}
+	def capabilities: Seq[Capability] = this.capabilitiesRef.get.toSeq
 
-	private var _handshakeHelloMessage: HelloMessage = null
-	def handshakeHelloMessage: HelloMessage = this._handshakeHelloMessage
-	def handshakeHelloMessage_=(v: HelloMessage): Unit = this._handshakeHelloMessage = v
+	private val handshakeHelloMessageRef: AtomicReference[HelloMessage] = new AtomicReference[HelloMessage](null)
+	def handshakeHelloMessage: HelloMessage = this.handshakeHelloMessageRef.get
+	def handshakeHelloMessage_=(v: HelloMessage): Unit = this.handshakeHelloMessageRef.set(v)
 
-	private var _statusMessage: StatusMessage = null
-	def statusMessage: StatusMessage = this._statusMessage
-	def statusMessage_=(v: StatusMessage): Unit = this._statusMessage = v
+	private val statusMessageRef: AtomicReference[StatusMessage] = new AtomicReference[StatusMessage](null)
+	def statusMessage: StatusMessage = this.statusMessageRef.get
+	def statusMessage_=(v: StatusMessage): Unit = this.statusMessageRef.set(v)
 
 	override def hashCode: Int = {
-		this.address.hashCode * 31 + this.port
+		this.address.getAddress.hashCode * 31 + this.address.getPort.hashCode
 	}
 
 	override def equals(o: Any): Boolean = {
@@ -54,15 +58,15 @@ class PeerInfo(val address: InetAddress, val port: Int, val nodeId: ImmutableByt
 			//peerIdは、敢えて同一性の基準に含めない。
 			//同一アドレス＆ポート間で後勝ち。
 			val another = o.asInstanceOf[PeerInfo]
-			(this.address == another.address) && (this.port == another.port)
+			this.address == another.address
 		} catch {
 			case any: Throwable => false
 		}
 	}
 
 	override def toString: String = {
-		"PeerInfo[Address=%s, Port=%d, NodeId=%s, HelloMessage=%s, StatusMessage=%s".format(
-			this.address, this.port, this.nodeId.toShortString, this.handshakeHelloMessage, this.statusMessage
+		"PeerInfo[Address=%s, NodeId=%s, HelloMessage=%s, StatusMessage=%s".format(
+			this.address, this.nodeId.toShortString, this.handshakeHelloMessage, this.statusMessage
 		)
 	}
 

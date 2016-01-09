@@ -121,7 +121,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 			logger.info("<P2PHandler> No new peers discovered. Do not answer GetPeers.")
 			return
 		}
-		val peerSet = peers.map(each => new Peer(each.address, each.port, each.nodeId, Seq.empty))
+		val peerSet = peers.map(each => new Peer(each.address.getAddress, each.address.getPort, each.nodeId, Seq.empty))
 		val message = PeersMessage(peerSet)
 		this.lastPeersSent = peers
 		this.messageQueue.sendMessage(message)
@@ -147,7 +147,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 			}
 			val address: InetAddress = ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress].getAddress
 			val port = message.listenPort
-			val confirmedPeer = new PeerInfo(address, port, message.peerId)
+			val confirmedPeer = new PeerInfo(new InetSocketAddress(address, port), message.peerId)
 			confirmedPeer.online = false
 			confirmedPeer.addCapabilities(message.capabilities)
 

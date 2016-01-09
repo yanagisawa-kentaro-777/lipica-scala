@@ -1,6 +1,6 @@
-package org.lipicalabs.lipica.core.net.peer_discovery
+package org.lipicalabs.lipica.core.net.peer_discovery.active_discovery
 
-import java.util.concurrent.{ThreadPoolExecutor, RejectedExecutionHandler}
+import java.util.concurrent.{RejectedExecutionHandler, ThreadPoolExecutor}
 
 import org.slf4j.LoggerFactory
 

@@ -1,7 +1,8 @@
-package org.lipicalabs.lipica.core.net.peer_discovery
+package org.lipicalabs.lipica.core.net.peer_discovery.active_discovery
 
 import java.util.concurrent.ThreadPoolExecutor
 
+import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.slf4j.LoggerFactory
 
 /**
@@ -36,7 +37,7 @@ class WorkerTask extends Runnable {
 	private def processCommand(): Unit = {
 		try {
 			val discoveryChannel = new DiscoveryChannel
-			discoveryChannel.connect(this.peerInfo.address, this.peerInfo.port, this.peerInfo.nodeId)
+			discoveryChannel.connect(this.peerInfo.address.getAddress, this.peerInfo.address.getPort, this.peerInfo.nodeId)
 			peerInfo.online = true
 
 			peerInfo.handshakeHelloMessage = discoveryChannel.getHelloHandshake

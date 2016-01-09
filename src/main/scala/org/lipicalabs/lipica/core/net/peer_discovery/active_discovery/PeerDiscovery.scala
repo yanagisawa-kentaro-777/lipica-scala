@@ -1,15 +1,16 @@
-package org.lipicalabs.lipica.core.net.peer_discovery
+package org.lipicalabs.lipica.core.net.peer_discovery.active_discovery
 
-import java.net.{URI, UnknownHostException, InetAddress}
-import java.util.concurrent.atomic.AtomicBoolean
+import java.net.{InetSocketAddress, InetAddress, URI, UnknownHostException}
 import java.util.concurrent._
+import java.util.concurrent.atomic.AtomicBoolean
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.net.p2p.Peer
+import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
-import scala.collection.{mutable, JavaConversions}
+import scala.collection.{JavaConversions, mutable}
 
 /**
  * Created by IntelliJ IDEA.
@@ -75,7 +76,7 @@ class PeerDiscovery {
 	def addPeers(newPeers: Set[Peer]): Unit = {
 		this._peers.synchronized {
 			for (newPeer <- newPeers) {
-				val peerInfo = new PeerInfo(newPeer.address, newPeer.port, newPeer.nodeId)
+				val peerInfo = new PeerInfo(new InetSocketAddress(newPeer.address, newPeer.port), newPeer.nodeId)
 				if (this.isStarted && !this._peers.contains(peerInfo)) {
 					startWorker(peerInfo)
 				}
@@ -91,7 +92,7 @@ class PeerDiscovery {
 					val trimmed = each.trim
 					val uri = URI.create(trimmed)
 
-					Option(new PeerInfo(InetAddress.getByName(uri.getHost), uri.getPort, ImmutableBytes.parseHexString(uri.getUserInfo)))
+					Option(new PeerInfo(new InetSocketAddress(InetAddress.getByName(uri.getHost), uri.getPort), ImmutableBytes.parseHexString(uri.getUserInfo)))
 				} catch {
 					case e: UnknownHostException =>
 						logger.warn("<PeerDiscovery> Unknown host.", e)
