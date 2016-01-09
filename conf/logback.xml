@@ -105,7 +105,7 @@
 		</triggeringPolicy>
 	</appender>
 	<appender name="BLOCKS_RECORD" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>./work/logs/blocks_rec.txt</File>
+		<File>./work/logs/blocks_rec.log</File>
 		<Append>true</Append>
 		<encoder>
 			<pattern>%msg %n</pattern>

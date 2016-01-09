@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.manager
 
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
 import java.nio.charset.StandardCharsets
+import java.nio.file.Path
 import java.util.Scanner
 
 import org.apache.commons.codec.binary.Hex
@@ -25,12 +26,26 @@ class BlockLoader {
 		if (filePath.isEmpty) {
 			return
 		}
-		val file = new java.io.File(filePath)
-		if (!file.exists) {
+		val dir = new java.io.File(filePath)
+		if (!dir.exists) {
 			return
 		}
 		try {
-			val inputStream = new FileInputStream(filePath)
+			val files = dir.listFiles.sortWith((f1, f2) => f1.getName.compareTo(f2.getName) < 0)
+			for (file <- files) {
+				loadBlocksFromFile(file, chain)
+			}
+		} catch {
+			case e: Throwable =>
+				logger.warn("<BlockLoader> Exception caught: %s".format(e.getClass.getSimpleName), e)
+				e.printStackTrace()
+		}
+	}
+
+	private def loadBlocksFromFile(src: File, chain: Blockchain): Unit = {
+		println("Loading from file: %s".format(src))
+		val inputStream = new FileInputStream(src)
+		try {
 			val scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name)
 			var shouldContinue = true
 			while (shouldContinue && scanner.hasNextLine) {
@@ -46,11 +61,9 @@ class BlockLoader {
 					}
 				}
 			}
-			println("Loaded.")
-		} catch {
-			case e: Throwable =>
-				logger.warn("<BlockLoader> Exception caught: %s".format(e.getClass.getSimpleName), e)
-				e.printStackTrace()
+			println("Loaded from file: %s.".format(src))
+		} finally {
+			inputStream.close()
 		}
 	}
 
