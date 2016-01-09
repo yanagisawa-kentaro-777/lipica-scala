@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.db.datasource
 
 import java.nio.file.{Files, Path, Paths}
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import org.iq80.leveldb
 import org.iq80.leveldb.{CompressionType, DB, Options}
@@ -18,12 +19,19 @@ import scala.collection.mutable
 class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 	import LevelDbDataSource._
 
-	private var name: String = _name
-	private var db: DB = null
-	private var alive = false
+	private val nameRef: AtomicReference[String] = new AtomicReference[String](_name)
+	private def name = this.nameRef.get
+	override def setName(v: String): Unit = this.nameRef.set(v)
+	override def getName: String = this.nameRef.get
+
+	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
+	private def db: DB = this.dbRef.get
+
+	private val aliveRef: AtomicBoolean = new AtomicBoolean(false)
+	override def isAlive: Boolean = this.aliveRef.get
 
 	override def init(): Unit = {
-		if (this.alive) {
+		if (this.isAlive) {
 			return
 		}
 		try {
@@ -37,56 +45,50 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 			options.verifyChecksums(true)
 
 			if (logger.isDebugEnabled) {
-				logger.debug("<LevelDbDataSource> Opening database: %s".format(this.name))
+				logger.debug("<LevelDBDS> Opening database: %s".format(this.name))
 			}
 			val dbPath = Paths.get(SystemProperties.CONFIG.databaseDir, this.name)
 			Files.createDirectories(dbPath.getParent)
 
 			if (logger.isDebugEnabled) {
-				logger.debug("<LevelDbDataSource> Initializing database: %s at %s".format(this.name, dbPath))
+				logger.debug("<LevelDBDS> Initializing database: %s at %s".format(this.name, dbPath))
 			}
-			this.db = org.fusesource.leveldbjni.JniDBFactory.factory.open(dbPath.toFile, options)
-			this.alive = true
+			this.dbRef.set(org.fusesource.leveldbjni.JniDBFactory.factory.open(dbPath.toFile, options))
+			this.aliveRef.set(true)
 		} catch {
 			case e: Exception =>
-				logger.warn("<LevelDbDataSource>", e)
+				logger.warn("<LevelDBDS>", e)
 				throw new RuntimeException(e)
 		}
 	}
 
 	def destroyDB(path: Path): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("<LevelDbDataSource> Destroying database at %s".format(path))
+			logger.debug("<LevelDBDS> Destroying database at %s".format(path))
 		}
 		try {
 			org.fusesource.leveldbjni.JniDBFactory.factory.destroy(path.toFile, new leveldb.Options)
 		} catch {
 			case e: Exception =>
-				logger.warn("<LevelDbDataSource>", e)
+				logger.warn("<LevelDBDS>", e)
 		}
 	}
-
-	override def isAlive: Boolean = this.alive
 
 	override def close(): Unit = {
 		if (!isAlive) {
 			return
 		}
 		if (logger.isDebugEnabled) {
-			logger.debug("<LevelDbDataSource> Closing database: %s".format(this.name))
+			logger.debug("<LevelDBDS> Closing database: %s".format(this.name))
 		}
 		try {
 			this.db.close()
-			this.alive = false
+			this.aliveRef.set(false)
 		} catch {
 			case e: Exception =>
-				logger.warn("<LevelDbDataSource>", e)
+				logger.warn("<LevelDBDS>", e)
 		}
 	}
-
-	override def setName(v: String): Unit = this.name = v
-
-	override def getName: String = this.name
 
 	override def get(key: ImmutableBytes): Option[ImmutableBytes] = {
 		val result = this.db.get(key.toByteArray)
@@ -140,7 +142,7 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 					updateBatch(rows)
 				} catch {
 					case e1: Exception =>
-						logger.warn("<LevelDbDataSource>", e1)
+						logger.warn("<LevelDBDS>", e1)
 						throw new RuntimeException(e1)
 				}
 		}

@@ -206,11 +206,14 @@ class ContractDetailsTest extends Specification {
 				}
 			}
 			original.syncStorage()
+			//まだ外部ストレージには書かれない。
 			externalStorage.getAddedItems mustEqual 0
 
+			//エンコードおよびデコードを通す。
 			val encodedBytes = original.encode
 			val decodedDetails = deserialize(encodedBytes, externalStorage)
 
+			//メモリ上の限界を超えて追加する。
 			(0 until 10).foreach {
 				_ => {
 					val key = randomWord
@@ -220,8 +223,10 @@ class ContractDetailsTest extends Specification {
 				}
 			}
 			decodedDetails.syncStorage()
+			//今度は外部ストレージに書かれている。
 			(0 < externalStorage.getAddedItems) mustEqual true
 
+			//再度エンコードおよびデコードを通す。
 			val decodedDetails2 = deserialize(decodedDetails.encode, externalStorage)
 			val storageContent = decodedDetails2.storageContent
 			storageContent.size mustEqual elements.size

@@ -37,6 +37,7 @@
 もっと早く出た。
 <Blockchain> State conflict at Block[BlockNumber=68,131; Hash=3057ea6f...; ParentHash=52811f08...; Coinbase=f927a40c...; Difficulty=1,964,858,213,527]: 3cc200bd02c4f8abb916afaa799dc730d97256794c8ce10203fde0dfcba475f9 != d2df310ce6dc1d8fba3b3ca7380fd881bad8412d5477b07b9c5159643675117a
 
+←encode / decodeか、snap shotか、どちらかだろう。
 
 １、既存環境との完全同期
 ・BlockchainImpl の連結失敗時のエラー処理が甘い。

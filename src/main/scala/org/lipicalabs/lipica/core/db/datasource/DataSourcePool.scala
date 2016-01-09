@@ -24,12 +24,11 @@ object DataSourcePool {
 	def closeDataSource(name: String): Unit = {
 		pool.remove(name).foreach {
 			ds => {
-				ds match {
-					case hashMapDB: HashMapDB => this.pool.put(name, hashMapDB)
-					case _ =>
-						ds.synchronized {
-							ds.close()
-						}
+				ds.synchronized {
+					ds match {
+						case hashMapDB: HashMapDB => this.pool.put(name, hashMapDB)
+						case _ => ds.close()
+					}
 				}
 			}
 		}

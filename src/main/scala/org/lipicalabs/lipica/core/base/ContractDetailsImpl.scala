@@ -36,6 +36,7 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	private val keysRef = new AtomicReference[mutable.HashSet[ImmutableBytes]](new mutable.HashSet[ImmutableBytes])
 	private def keys: mutable.HashSet[ImmutableBytes] = this.keysRef.get
+
 	private var storageTrie = new SecureTrie(null)
 
 	private val isDirtyRef: AtomicBoolean = new AtomicBoolean(false)
@@ -47,8 +48,13 @@ class ContractDetailsImpl() extends ContractDetails {
 	override def isDeleted_=(v: Boolean): Unit = this.isDeletedRef.set(v)
 
 	private val useExternalStorageRef: AtomicBoolean = new AtomicBoolean(false)
-	def useExternalStorage: Boolean = this.useExternalStorageRef.get
-	def useExternalStorage_=(v: Boolean): Unit = this.useExternalStorageRef.set(v)
+	def useExternalStorage: Boolean = {
+		if (this.useExternalStorageRef.get) {
+			return true
+		}
+		SystemProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size
+	}
+	//def useExternalStorage_=(v: Boolean): Unit = this.useExternalStorageRef.set(v)
 
 	private val externalStorageDataSourceRef: AtomicReference[KeyValueDataSource] = new AtomicReference[KeyValueDataSource](null)
 	def externalStorageDataSource: KeyValueDataSource = {
@@ -79,7 +85,8 @@ class ContractDetailsImpl() extends ContractDetails {
 			addKey(key.data)
 		}
 		this.isDirty = true
-		this.useExternalStorage = useExternalStorage || (SystemProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size)
+		//キーの数が上限を超えるようならば、ストレージ用の独立したデータベースを定義しなければならない。
+		this.useExternalStorageRef.set(useExternalStorage)
 	}
 
 	override def get(key: DataWord): Option[DataWord] = {
@@ -189,7 +196,7 @@ class ContractDetailsImpl() extends ContractDetails {
 		val startTime = System.nanoTime
 		val items = RBACCodec.Decoder.decode(data).right.get.items
 		this.address = items.head.bytes
-		this.useExternalStorage = items(1).asPositiveLong > 0L
+		this.useExternalStorageRef.set(items(1).asPositiveLong > 0L)
 		this.storageTrie.deserialize(items(2).bytes)
 		this.code = items(3).bytes
 		items(4).items.foreach {
