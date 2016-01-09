@@ -1,12 +1,12 @@
-package org.lipicalabs.lipica.core.net.client
+package org.lipicalabs.lipica.core.net
 
 import java.nio.charset.StandardCharsets
 
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
-import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**

@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery
 import java.net.InetSocketAddress
 import java.util.concurrent.atomic.{AtomicReference, AtomicLong, AtomicBoolean}
 
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.HelloMessage
 import org.lipicalabs.lipica.core.utils.ImmutableBytes

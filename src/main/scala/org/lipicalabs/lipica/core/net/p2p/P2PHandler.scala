@@ -6,7 +6,7 @@ import java.util.concurrent._
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode._

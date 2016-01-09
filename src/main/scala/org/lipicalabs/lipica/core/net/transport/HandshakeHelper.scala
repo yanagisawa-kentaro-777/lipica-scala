@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.p2p.HelloMessage
 
 /**

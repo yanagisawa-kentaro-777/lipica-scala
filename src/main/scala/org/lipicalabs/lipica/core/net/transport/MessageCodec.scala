@@ -10,7 +10,7 @@ import io.netty.handler.codec.ByteToMessageCodec
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.{ECIESCoder, ECKey}
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.net.message.{Command, MessageFactory, Message}
 import org.lipicalabs.lipica.core.net.p2p.{P2PMessageFactory, DisconnectMessage, HelloMessage, P2PMessageCode}

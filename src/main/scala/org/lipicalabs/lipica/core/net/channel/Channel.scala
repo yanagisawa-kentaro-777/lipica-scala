@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.base.TransactionLike
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc, LpcAdaptor, LpcHandlerFactory}
 import org.lipicalabs.lipica.core.net.lpc.message.LpcMessageFactory

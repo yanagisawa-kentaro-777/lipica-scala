@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.client
+package org.lipicalabs.lipica.core.net.endpoint
 
 import java.net.InetAddress
 

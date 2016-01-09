@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.transport
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.{LpcVersion, LpcMessageCode}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode
 import org.lipicalabs.lipica.core.net.shh.ShhMessageCode

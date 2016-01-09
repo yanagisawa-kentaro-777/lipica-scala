@@ -5,7 +5,7 @@ import java.security.SecureRandom
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification

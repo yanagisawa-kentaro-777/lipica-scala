@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.p2p
 
 import java.net.InetAddress
 
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.ImmutableBytes

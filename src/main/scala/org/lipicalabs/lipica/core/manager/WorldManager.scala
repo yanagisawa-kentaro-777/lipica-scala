@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.config.{SystemProperties, ComponentFactory}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db._
 import org.lipicalabs.lipica.core.listener.{CompositeLipicaListener, LipicaListener}
-import org.lipicalabs.lipica.core.net.client.PeerClient
+import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery

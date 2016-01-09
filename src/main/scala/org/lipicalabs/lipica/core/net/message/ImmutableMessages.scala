@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.message
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.p2p._
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 

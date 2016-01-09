@@ -1,9 +1,9 @@
-package org.lipicalabs.lipica.core.net.server
+package org.lipicalabs.lipica.core.net.endpoint
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.{DefaultMessageSizeEstimator, ChannelOption}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.channel.{ChannelOption, DefaultMessageSizeEstimator}
 import io.netty.handler.logging.LoggingHandler
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.manager.WorldManager

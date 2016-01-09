@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.p2p
 
-import org.lipicalabs.lipica.core.net.client.Capability
+import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode.Hello
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
