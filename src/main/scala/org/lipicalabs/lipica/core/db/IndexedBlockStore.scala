@@ -53,18 +53,23 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 		for (key <- this.cache.blocks.keys) {
 			this.blocks.put(key, this.cache.blocks.get(key).get)
 		}
+		val time1 = System.nanoTime
+
 		for (entry <- this.cache.index) {
 			val (number, cachedInfoSeq) = entry
 
 			val infoSeq = cachedInfoSeq ++ this.index.getOrElse(number, Seq.empty[BlockInfo])
 			this.index.put(number, infoSeq)
 		}
+		val time2 = System.nanoTime
+
 		this.cache.blocks.close()
 		this.cache.index.clear()
-		val endTime = System.nanoTime
-
 		this.indexDB.commit()
-		logger.info("<IndexBlockStore> Flushed block store in %,d nanos.".format(endTime - startTime))
+		val endTime = System.nanoTime
+		logger.info("<IndexBlockStore> Flushed block store in %,d nanos (Blocks=%,d nanos; Indices=%,d nanos; Commit=%,d nanos.".format(
+			endTime - startTime, time1 - startTime, time2 - time1, endTime - time2
+		))
 	}
 
 	/**
@@ -214,7 +219,6 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 			case Some(block) => block.cumulativeDifficulty
 			case None => UtilConsts.Zero
 		}
-
 	}
 
 	/**

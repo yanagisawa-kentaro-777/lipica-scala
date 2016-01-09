@@ -204,9 +204,7 @@ class BlockchainImpl(
 			this.repository = savedRepo
 			this.repository.syncToRoot(block.stateRoot)
 			if (!byTest) {
-				this.repository.flush()
-				this.blockStore.flush()
-				System.gc()
+				flushAndGc()
 			}
 			ImportResult.ImportedBest
 		} else {
@@ -285,19 +283,7 @@ class BlockchainImpl(
 		}
 
 		if (needsFlushing(block)) {
-			val startNanos = System.nanoTime
-			logger.info("<Blockchain> Flushing data.")
-			this.repository.flush()
-			val reposEndNanos = System.nanoTime
-			logger.info("<Blockchain> Flushed repos in %,d nanos.".format(reposEndNanos - startNanos))
-
-			this.blockStore.flush()
-			val endNanos = System.nanoTime
-			logger.info("<Blockchain> Flushed block store in %,d nanos.".format(endNanos - reposEndNanos))
-
-			System.gc()
-			val gcEndNanos = System.nanoTime
-			logger.info("<Blockchain> GC executed in %,d nanos.".format(gcEndNanos - endNanos))
+			flushAndGc()
 		}
 		//approve されたのでペンディング状態を解消する。
 		this.wallet.removeTransactions(block.transactions)
@@ -310,6 +296,23 @@ class BlockchainImpl(
 		if (logger.isDebugEnabled) {
 			logger.debug("<Blockchain> The block is successfully appended: %s. Chain size is now %,d.".format(block.summaryString(short = true), this.size))
 		}
+	}
+
+	private def flushAndGc(): Unit = {
+		val startNanos = System.nanoTime
+		logger.info("<Blockchain> Flushing data.")
+		this.repository.flush()
+		val reposEndNanos = System.nanoTime
+		logger.info("<Blockchain> Flushed repos in %,d nanos.".format(reposEndNanos - startNanos))
+
+		this.blockStore.flush()
+		val endNanos = System.nanoTime
+		logger.info("<Blockchain> Flushed block store in %,d nanos.".format(endNanos - reposEndNanos))
+
+		//GCの明示的実行はみだりにすべきでないが、ここは例外。
+		System.gc()
+		val gcEndNanos = System.nanoTime
+		logger.info("<Blockchain> GC executed in %,d nanos.".format(gcEndNanos - endNanos))
 	}
 
 	private def processBlock(block: Block): Seq[TransactionReceipt] = {
