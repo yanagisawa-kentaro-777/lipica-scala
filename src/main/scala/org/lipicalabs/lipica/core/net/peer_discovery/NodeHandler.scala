@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery
 
 import java.net.InetSocketAddress
 import java.util
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReference, AtomicBoolean}
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryEvent
@@ -20,18 +20,22 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 
 	import NodeHandler._
 
-	private var _state: State = State.Init
-	def state: State = this._state
+	private val stateRef: AtomicReference[State] = new AtomicReference(State.Init)
+	def state: State = this.stateRef.get
 
 	val nodeStatistics = new NodeStatistics(this.node)
 
-	private val _waitForPongRef = new AtomicBoolean(false)
-	def waitForPong: Boolean = this._waitForPongRef.get
+	private val waitForPongRef = new AtomicBoolean(false)
+	def waitForPong: Boolean = this.waitForPongRef.get
 
-	private var _pingSent: Long = 0L
-	private var _pingTrials: Int = 3
+	private val pingSentRef: AtomicLong = new AtomicLong(0L)
+	private def pingSent: Long = this.pingSentRef.get
 
-	private var _replaceCandidate: NodeHandler = null
+	private val pingTrialsRef: AtomicInteger = new AtomicInteger(3)
+	private def pingTrials: Int = this.pingTrialsRef.get
+
+	private val replaceCandidateRef: AtomicReference[NodeHandler] = new AtomicReference[NodeHandler](null)
+	private def replaceCandidate: NodeHandler = this.replaceCandidateRef.get
 
 	changeState(State.Discovered)
 
@@ -39,12 +43,12 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 	def inetSocketAddress: InetSocketAddress = this.node.address
 
 	private def challengeWith(aCandidate: NodeHandler): Unit = {
-		this._replaceCandidate = aCandidate
+		this.replaceCandidateRef.set(aCandidate)
 		changeState(State.EvictCandidate)
 	}
 
 	private def changeState(aNewState: State): Unit = {
-		val oldState = this._state
+		val oldState = this.state
 		var newState = aNewState
 		if (newState == State.Discovered) {
 			sendPing()
@@ -74,7 +78,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		if (newState == State.NonActive) {
 			if (oldState == State.EvictCandidate) {
 				this.nodeManager.table.dropNode(this.node)
-				this._replaceCandidate.changeState(State.Active)
+				this.replaceCandidate.changeState(State.Active)
 			} else {
 				//
 			}
@@ -83,7 +87,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 			//生き残るためにpingを送る。
 			sendPing()
 		}
-		this._state = newState
+		this.stateRef.set(newState)
 		stateChanged(oldState, newState)
 	}
 
@@ -109,9 +113,9 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 			logger.debug("<NodeHandler> Received [PONG] " + this)
 		}
 		if (this.waitForPong) {
-			this._waitForPongRef.set(false)
+			this.waitForPongRef.set(false)
 			this.nodeStatistics.discoverInPong.add
-			this.nodeStatistics.discoverMessageLatency.add(System.currentTimeMillis - this._pingSent)
+			this.nodeStatistics.discoverMessageLatency.add(System.currentTimeMillis - this.pingSent)
 			changeState(State.Alive)
 		}
 	}
@@ -136,14 +140,14 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 	}
 
 	def handleTimedOut(): Unit = {
-		this._waitForPongRef.set(false)
-		this._pingTrials -= 1
-		if (0 < this._pingTrials) {
+		this.waitForPongRef.set(false)
+		this.pingTrialsRef.decrementAndGet
+		if (0 < this.pingTrials) {
 			sendPing()
 		} else {
-			if (this._state == State.Discovered) {
+			if (this.state == State.Discovered) {
 				changeState(State.Dead)
-			} else if (this._state == State.EvictCandidate) {
+			} else if (this.state == State.EvictCandidate) {
 				changeState(State.NonActive)
 			} else {
 				//
@@ -160,8 +164,8 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		//相手ノードのアドレス。
 		val destAddress = this.node.address
 		val ping = PingMessage.create(srcAddress, destAddress, this.nodeManager.key)
-		this._waitForPongRef.set(true)
-		this._pingSent = System.currentTimeMillis
+		this.waitForPongRef.set(true)
+		this.pingSentRef.set(System.currentTimeMillis)
 
 		sendMessage(ping)
 		this.nodeStatistics.discoverOutPing.add
@@ -169,7 +173,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 			new Runnable {
 				override def run(): Unit = {
 					if (waitForPong) {
-						_waitForPongRef.set(false)
+						waitForPongRef.set(false)
 						handleTimedOut()
 					}
 				}
