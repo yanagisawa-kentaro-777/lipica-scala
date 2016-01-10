@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.validator
 
-import org.lipicalabs.lipica.core.base.BlockHeader
+import org.lipicalabs.lipica.core.kernel.BlockHeader
 
 /**
  *

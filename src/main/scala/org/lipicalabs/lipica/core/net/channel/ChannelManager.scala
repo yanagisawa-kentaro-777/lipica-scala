@@ -2,9 +2,9 @@ package org.lipicalabs.lipica.core.net.channel
 
 import java.util.concurrent.{CopyOnWriteArrayList, Executors, ScheduledExecutorService, TimeUnit}
 
-import org.lipicalabs.lipica.core.base.TransactionLike
+import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
-import org.lipicalabs.lipica.core.net.lpc.sync.SyncManager
+import org.lipicalabs.lipica.core.sync.SyncManager
 import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 

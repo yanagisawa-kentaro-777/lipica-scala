@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.validator
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.base.{BlockHeader, Block}
+import org.lipicalabs.lipica.core.kernel.{BlockHeader, Block}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification

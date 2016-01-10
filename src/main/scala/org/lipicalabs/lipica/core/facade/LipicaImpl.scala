@@ -4,8 +4,8 @@ import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.util.concurrent.{Future, Executors}
 
-import org.lipicalabs.lipica.core.base.CallTransaction
-import org.lipicalabs.lipica.core.base.{Transaction, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.CallTransaction
+import org.lipicalabs.lipica.core.kernel.{Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
 import org.lipicalabs.lipica.core.facade.manager.{AdminInfo, WorldManager}
@@ -89,7 +89,7 @@ class LipicaImpl extends Lipica {
 		tx.sign(ImmutableBytes.create(32))
 
 		val bestBlock = worldManager.blockchain.bestBlock
-		val executor = new org.lipicalabs.lipica.core.base.TransactionExecutor(
+		val executor = new org.lipicalabs.lipica.core.kernel.TransactionExecutor(
 			tx, bestBlock.coinbase, worldManager.repository, worldManager.blockStore, programInvokeFactory, bestBlock, new LipicaListenerAdaptor, 0
 		)
 		executor.localCall = true

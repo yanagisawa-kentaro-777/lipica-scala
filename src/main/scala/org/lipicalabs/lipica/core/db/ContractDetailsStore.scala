@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.db
 
 import java.util.concurrent.ConcurrentHashMap
 
-import org.lipicalabs.lipica.core.base.{ContractDetailsImpl, ContractDetails}
+import org.lipicalabs.lipica.core.kernel.{ContractDetailsImpl, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

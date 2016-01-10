@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import io.netty.channel.{ChannelHandlerContext, ChannelPipeline}
 import io.netty.handler.timeout.ReadTimeoutHandler
-import org.lipicalabs.lipica.core.base.TransactionLike
+import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.Capability
@@ -14,7 +14,7 @@ import org.lipicalabs.lipica.core.net.channel.MessageQueue
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc, LpcAdaptor, LpcHandlerFactory}
 import org.lipicalabs.lipica.core.net.lpc.message.LpcMessageFactory
-import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStateName, SyncStatistics}
+import org.lipicalabs.lipica.core.sync.{SyncStateName, SyncStatistics}
 import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, MessageFactory}
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler, P2PMessageFactory}
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeStatistics, NodeManager, Node}

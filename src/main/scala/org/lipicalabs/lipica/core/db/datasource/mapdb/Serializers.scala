@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.db.datasource.mapdb
 
 import java.io.{DataOutput, DataInput}
 
-import org.lipicalabs.lipica.core.base.{Block, BlockWrapper}
+import org.lipicalabs.lipica.core.kernel.{Block, BlockWrapper}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.mapdb.Serializer
 
@@ -30,7 +30,7 @@ object Serializers {
 			if (bytes.isEmpty) {
 				null
 			} else {
-				org.lipicalabs.lipica.core.base.BlockWrapper.parse(bytes)
+				org.lipicalabs.lipica.core.kernel.BlockWrapper.parse(bytes)
 			}
 		}
 	}
@@ -43,7 +43,7 @@ object Serializers {
 			if (bytes.isEmpty) {
 				null
 			} else {
-				org.lipicalabs.lipica.core.base.Block.decode(bytes)
+				org.lipicalabs.lipica.core.kernel.Block.decode(bytes)
 			}
 		}
 	}

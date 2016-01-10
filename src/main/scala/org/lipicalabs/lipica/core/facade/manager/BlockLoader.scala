@@ -6,8 +6,8 @@ import java.nio.file.Paths
 import java.util.Scanner
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.base.ImportResult.{Exists, ImportedBest}
-import org.lipicalabs.lipica.core.base.{Block, Blockchain}
+import org.lipicalabs.lipica.core.kernel.ImportResult.{Exists, ImportedBest}
+import org.lipicalabs.lipica.core.kernel.{Block, Blockchain}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory

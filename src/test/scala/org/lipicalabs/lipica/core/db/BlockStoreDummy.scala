@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.db
 
-import org.lipicalabs.lipica.core.base.Block
+import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 

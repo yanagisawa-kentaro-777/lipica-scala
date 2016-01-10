@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.validator
 
-import org.lipicalabs.lipica.core.base.{Bloom, TransactionReceipt}
+import org.lipicalabs.lipica.core.kernel.{Bloom, TransactionReceipt}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**

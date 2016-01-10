@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.base.{AccountState, Block}
-import org.lipicalabs.lipica.core.base.ContractDetails
+import org.lipicalabs.lipica.core.kernel.{AccountState, Block}
+import org.lipicalabs.lipica.core.kernel.ContractDetails
 import org.lipicalabs.lipica.core.db.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord

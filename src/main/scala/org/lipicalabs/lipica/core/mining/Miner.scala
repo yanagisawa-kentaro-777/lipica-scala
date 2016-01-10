@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.mining
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.lipicalabs.lipica.core.base.{BlockHeader, Block}
+import org.lipicalabs.lipica.core.kernel.{BlockHeader, Block}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.ProofOfWorkRule

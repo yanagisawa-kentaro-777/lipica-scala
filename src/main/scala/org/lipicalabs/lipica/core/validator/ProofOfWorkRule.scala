@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.validator
 
 import java.math.BigInteger
 
-import org.lipicalabs.lipica.core.base.BlockHeader
+import org.lipicalabs.lipica.core.kernel.BlockHeader
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.spongycastle.util.BigIntegers
 

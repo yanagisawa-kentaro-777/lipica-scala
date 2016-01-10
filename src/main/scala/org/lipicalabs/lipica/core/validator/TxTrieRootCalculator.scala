@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.validator
 
-import org.lipicalabs.lipica.core.base.TransactionLike
+import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.trie.TrieImpl
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec

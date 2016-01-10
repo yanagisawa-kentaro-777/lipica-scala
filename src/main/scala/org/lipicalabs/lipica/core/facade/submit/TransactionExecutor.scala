@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.facade.submit
 
 import java.util.concurrent.{Future, Executors}
 
-import org.lipicalabs.lipica.core.base.TransactionLike
+import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 
 /**

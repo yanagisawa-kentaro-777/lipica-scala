@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.base.AccountState
+import org.lipicalabs.lipica.core.kernel.AccountState
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeMockImpl

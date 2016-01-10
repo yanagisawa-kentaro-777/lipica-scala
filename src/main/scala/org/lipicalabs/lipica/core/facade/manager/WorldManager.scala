@@ -4,13 +4,13 @@ import java.io.Closeable
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 
-import org.lipicalabs.lipica.core.base._
+import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.{SystemProperties, ComponentFactory}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db._
 import org.lipicalabs.lipica.core.facade.listener.{CompositeLipicaListener, LipicaListener}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
-import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
+import org.lipicalabs.lipica.core.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery

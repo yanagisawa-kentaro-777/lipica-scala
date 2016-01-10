@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.lpc.message
 
-import org.lipicalabs.lipica.core.base.{Transaction, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.{Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes

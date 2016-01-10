@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.facade
 
-import org.lipicalabs.lipica.core.base.Blockchain
+import org.lipicalabs.lipica.core.kernel.Blockchain
 
 /**
  *

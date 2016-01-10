@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.validator
 
-import org.lipicalabs.lipica.core.base.{Block, BlockHeader}
+import org.lipicalabs.lipica.core.kernel.{Block, BlockHeader}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 import scala.collection.mutable.ArrayBuffer

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.db
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.base.{ContractDetails, ContractDetailsImpl}
+import org.lipicalabs.lipica.core.kernel.{ContractDetails, ContractDetailsImpl}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.{DataSourcePool, KeyValueDataSource, HashMapDB}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes

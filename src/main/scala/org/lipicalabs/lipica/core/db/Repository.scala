@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.db
 
-import org.lipicalabs.lipica.core.base.{Block, AccountState, ContractDetails}
+import org.lipicalabs.lipica.core.kernel.{Block, AccountState, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 

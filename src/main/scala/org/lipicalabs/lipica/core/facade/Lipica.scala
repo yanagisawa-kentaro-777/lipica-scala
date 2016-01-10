@@ -6,7 +6,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicReference
 
-import org.lipicalabs.lipica.core.base.{CallTransaction, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.{CallTransaction, TransactionLike}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.manager.AdminInfo
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient

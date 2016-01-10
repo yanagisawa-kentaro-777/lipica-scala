@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.db
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
 
-import org.lipicalabs.lipica.core.base._
+import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db.datasource.{HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.facade.listener
 
-import org.lipicalabs.lipica.core.base.{TransactionExecutionSummary, TransactionReceipt, Block, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.{TransactionExecutionSummary, TransactionReceipt, Block, TransactionLike}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.Message
 import org.lipicalabs.lipica.core.net.p2p.HelloMessage

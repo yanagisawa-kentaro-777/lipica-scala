@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.db
 import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
 
-import org.lipicalabs.lipica.core.base.BlockWrapper
+import org.lipicalabs.lipica.core.kernel.BlockWrapper
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.{Serializers, MapDBFactory}
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}

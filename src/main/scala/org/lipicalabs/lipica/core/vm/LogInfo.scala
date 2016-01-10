@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
-import org.lipicalabs.lipica.core.base.Bloom
+import org.lipicalabs.lipica.core.kernel.Bloom
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult

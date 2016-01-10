@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.facade.submit
 
-import org.lipicalabs.lipica.core.base.TransactionLike
+import org.lipicalabs.lipica.core.kernel.TransactionLike
 
 /**
  * Created by IntelliJ IDEA.

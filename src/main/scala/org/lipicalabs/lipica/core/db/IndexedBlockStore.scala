@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.db
 
 import java.io._
 
-import org.lipicalabs.lipica.core.base.Block
+import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.mapdb.{DataIO, Serializer, DB}

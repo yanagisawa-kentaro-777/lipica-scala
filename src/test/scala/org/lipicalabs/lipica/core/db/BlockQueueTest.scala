@@ -6,7 +6,7 @@ import java.util.Random
 
 import org.apache.commons.io.FileUtils
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.base.{BlockWrapper, Block, Genesis}
+import org.lipicalabs.lipica.core.kernel.{BlockWrapper, Block, Genesis}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl

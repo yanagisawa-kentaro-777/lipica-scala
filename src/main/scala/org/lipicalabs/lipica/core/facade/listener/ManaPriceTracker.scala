@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.facade.listener
 
-import org.lipicalabs.lipica.core.base.TransactionExecutionSummary
+import org.lipicalabs.lipica.core.kernel.TransactionExecutionSummary
 
 /**
  * Created by IntelliJ IDEA.
