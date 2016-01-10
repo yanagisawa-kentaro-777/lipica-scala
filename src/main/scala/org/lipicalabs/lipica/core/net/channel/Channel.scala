@@ -10,7 +10,6 @@ import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.Capability
-import org.lipicalabs.lipica.core.net.channel.MessageQueue
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc, LpcAdaptor, LpcHandlerFactory}
 import org.lipicalabs.lipica.core.net.lpc.message.LpcMessageFactory
@@ -55,9 +54,8 @@ class Channel {
 
 	private val nodeRef: AtomicReference[Node] = new AtomicReference[Node](null)
 	def node: Node = this.nodeRef.get
-	def nodeId: ImmutableBytes = Option(this.node).map(_.id).orNull
-	def peerId: String = Option(this.node).map(_.hexId).getOrElse("null")
-	def peerIdShort: String = Option(this.node).map(_.hexIdShort).getOrElse("null")
+	def nodeId: ImmutableBytes = Option(this.node).map(_.id).getOrElse(ImmutableBytes.empty)
+	def nodeIdShort: String = nodeId.toShortString
 
 	/**
 	 * このチャネルと、渡された識別子を持つノードとを結びつけます。
@@ -122,7 +120,7 @@ class Channel {
 		val messageFactory = createLpcMessageFactory(version)
 		this.messageCodec.setLpcMessageFactory(messageFactory)
 
-		logger.info("<Channel> Lpc %s: [address=%s, id=%s]".format(handler.version, this.inetSocketAddress, peerIdShort))
+		logger.info("<Channel> Lpc %s: [address=%s, id=%s]".format(handler.version, this.inetSocketAddress, nodeId.toShortString))
 
 		ctx.pipeline.addLast(Capability.LPC, handler)
 		handler.messageQueue = this.messageQueue

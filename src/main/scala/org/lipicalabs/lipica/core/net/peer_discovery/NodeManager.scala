@@ -193,11 +193,11 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 		}
 	}
 
-	def getBestLpcNodes(used: Set[String], lowerDifficulty: BigInt, limit: Int): Seq[NodeHandler] = {
+	def getBestLpcNodes(used: Set[ImmutableBytes], lowerDifficulty: BigInt, limit: Int): Seq[NodeHandler] = {
 		val predicate: (NodeHandler) => Boolean = (handler) => {
 			if (handler.nodeStatistics.lpcTotalDifficulty eq null) {
 				false
-			} else if (used.contains(handler.node.hexId)) {
+			} else if (used.contains(handler.node.id)) {
 				false
 			} else {
 				lowerDifficulty < handler.nodeStatistics.lpcTotalDifficulty

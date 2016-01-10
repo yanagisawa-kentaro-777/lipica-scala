@@ -37,7 +37,7 @@ class Lpc0 extends LpcHandler(V0) {
 			found => {
 				changeState(DoneHashRetrieving)
 				if (logger.isTraceEnabled) {
-					logger.trace("<Lpc0> Peer %s: got terminal hash: %s".format(this.channel.peerIdShort, this.lastHashToAsk))
+					logger.trace("<Lpc0> Peer %s: got terminal hash: %s".format(this.channel.nodeIdShort, this.lastHashToAsk))
 				}
 				return
 			}
@@ -53,7 +53,7 @@ class Lpc0 extends LpcHandler(V0) {
 	 */
 	private def sendGetBlockHashesByNumber(blockNumber: Long, maxHashesAsk: Int): Unit = {
 		if (logger.isTraceEnabled) {
-			logger.trace("<Lpc0> Peer %s: send GetBlockHashesByNumber: BlockNumber=%,d, MashHashesAsk=%,d".format(this.channel.peerIdShort, blockNumber, maxHashesAsk))
+			logger.trace("<Lpc0> Peer %s: send GetBlockHashesByNumber: BlockNumber=%,d, MashHashesAsk=%,d".format(this.channel.nodeIdShort, blockNumber, maxHashesAsk))
 		}
 		sendMessage(GetBlockHashesByNumberMessage(blockNumber, maxHashesAsk))
 		this.lastAskedNumber = blockNumber
@@ -79,7 +79,7 @@ class Lpc0 extends LpcHandler(V0) {
 	private def startForkCoverage(): Unit = {
 		this.commonAncestorFound = false
 		if (logger.isTraceEnabled) {
-			logger.trace("<Lpc0> Peer %s: start looking for common ancestor.".format(this.channel.peerIdShort))
+			logger.trace("<Lpc0> Peer %s: start looking for common ancestor.".format(this.channel.nodeIdShort))
 		}
 		val bestNumber = this.blockchain.bestBlock.blockNumber
 		val blockNumber = 1L max (bestNumber - ForkCoverBatchSize)
@@ -94,7 +94,7 @@ class Lpc0 extends LpcHandler(V0) {
 						this.commonAncestorFound = true
 						val block = this.blockchain.getBlockByHash(hash).get
 						if (logger.isTraceEnabled) {
-							logger.trace("<Lpc0> Peer %s: common ancestors found: BlockNumber=%,d, BlockHash=%s".format(this.channel.peerIdShort, block.blockNumber, block.shortHash))
+							logger.trace("<Lpc0> Peer %s: common ancestors found: BlockNumber=%,d, BlockHash=%s".format(this.channel.nodeIdShort, block.blockNumber, block.shortHash))
 						}
 						block.blockNumber
 					}
@@ -108,7 +108,7 @@ class Lpc0 extends LpcHandler(V0) {
 			sendGetBlockHashesByNumber(blockNumber, this.maxHashesAsk)
 		} else {
 			if (logger.isTraceEnabled) {
-				logger.trace("<Lpc0> Peer %s: common ancestors not found yet.".format(this.channel.peerIdShort))
+				logger.trace("<Lpc0> Peer %s: common ancestors not found yet.".format(this.channel.nodeIdShort))
 			}
 			sendGetBlockHashesByNumber(blockNumber, ForkCoverBatchSize)
 		}

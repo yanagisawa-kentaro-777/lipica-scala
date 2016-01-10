@@ -58,7 +58,7 @@ class RestApiServlet extends ScalatraServlet {
 			peersPool.peers.map(each => {
 				val hostAddress = each.node.address.getAddress.getHostAddress
 				val hostName = each.node.address.getAddress.getCanonicalHostName
-				"%s\t%s\t%d\t%s\tTD=%,d\t%s".format(each.peerIdShort, hostAddress, each.node.address.getPort, each.syncStateSummaryAsString, each.totalDifficulty, hostName)
+				"%s\t%s\t%d\t%s\tTD=%,d\t%s".format(each.nodeIdShort, hostAddress, each.node.address.getPort, each.syncStateSummaryAsString, each.totalDifficulty, hostName)
 //				if (hostAddress != hostName) {
 //					"%s\t%s\t%s\t%d\t%s\tTD=%,d".format(each.peerIdShort, hostAddress, hostName, each.node.address.getPort, each.syncStateSummaryAsString, each.totalDifficulty)
 //				} else {

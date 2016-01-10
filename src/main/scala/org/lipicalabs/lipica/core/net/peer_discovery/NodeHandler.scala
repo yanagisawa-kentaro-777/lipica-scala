@@ -209,7 +209,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 	}
 
 	override def toString: String = {
-		"NodeHandler[State=%s, Address=%s, ID=%s]".format(this.state, this.node.address, this.node.hexIdShort)
+		"NodeHandler[State=%s, Address=%s, ID=%s]".format(this.state, this.node.address, this.node.id.toShortString)
 	}
 }
 

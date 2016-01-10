@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.sync
 
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 
 import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.core.net.channel.Channel
@@ -19,14 +19,15 @@ import scala.collection.mutable
  */
 class PeersPool {
 	import PeersPool._
+	import scala.collection.JavaConversions._
 
 	//TODO 全体的に String はいかがなものか。
 
-	private val activePeers: mutable.Map[ImmutableBytes, Channel] = new mutable.HashMap[ImmutableBytes, Channel]
-	private val bannedPeers: mutable.Map[Channel, BanReason] = new mutable.HashMap[Channel, BanReason]
-	private val disconnectHits: mutable.Map[String, Int] = new mutable.HashMap[String, Int]
-	private val bans: mutable.Map[String, Long] = new mutable.HashMap[String, Long]
-	private val pendingConnections: mutable.Map[String, Long] = new mutable.HashMap[String, Long]
+	private val activePeers: mutable.Map[ImmutableBytes, Channel] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Channel])
+	private val bannedPeers: mutable.Map[Channel, BanReason] = mapAsScalaConcurrentMap(new ConcurrentHashMap[Channel, BanReason])
+	private val disconnectHits: mutable.Map[ImmutableBytes, Int] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Int])
+	private val bans: mutable.Map[ImmutableBytes, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Long])
+	private val pendingConnections: mutable.Map[ImmutableBytes, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Long])
 
 	private def lipica: Lipica = Lipica.instance
 
@@ -55,12 +56,12 @@ class PeersPool {
 			this.bannedPeers.remove(peer)
 		}
 		this.pendingConnections.synchronized {
-			this.pendingConnections.remove(peer.peerId)
+			this.pendingConnections.remove(peer.nodeId)
 		}
 		this.bans.synchronized {
-			this.bans.remove(peer.peerId)
+			this.bans.remove(peer.nodeId)
 		}
-		logger.info("<PeersPool> %s. ADDED to pool.".format(peer.peerIdShort))
+		logger.info("<PeersPool> %s. ADDED to pool.".format(peer.nodeIdShort))
 	}
 
 	/**
@@ -88,24 +89,24 @@ class PeersPool {
 			return
 		}
 		if (logger.isTraceEnabled) {
-			logger.trace("<PeersPool> Peer %s: disconnected.".format(peer.peerIdShort))
+			logger.trace("<PeersPool> Peer %s: disconnected.".format(peer.nodeIdShort))
 		}
 		this.activePeers.synchronized {
 			this.activePeers.remove(peer.nodeId).foreach {
-				_ => logger.info("<PeersPool> %s. REMOVED from pool (disconnection).".format(peer.peerIdShort))
+				_ => logger.info("<PeersPool> %s. REMOVED from pool (disconnection).".format(peer.nodeIdShort))
 			}
 			this.bannedPeers.remove(peer)
 		}
 
 		this.disconnectHits.synchronized {
 			//接続断が頻発するようであれば反省させる。
-			val hits = this.disconnectHits.getOrElse(peer.peerId, 0)
+			val hits = this.disconnectHits.getOrElse(peer.nodeId, 0)
 			if (DisconnectHitsThreshold < hits) {
 				ban(peer, FrequentDisconnects)
-				logger.info("<PeersPool> Banning a peer: Peer %s is banned due to frequent disconnections.".format(peer.peerIdShort))
-				this.disconnectHits.remove(peer.peerId)
+				logger.info("<PeersPool> Banning a peer: Peer %s is banned due to frequent disconnections.".format(peer.nodeIdShort))
+				this.disconnectHits.remove(peer.nodeId)
 			} else {
-				this.disconnectHits.put(peer.peerId, hits + 1)
+				this.disconnectHits.put(peer.nodeId, hits + 1)
 			}
 		}
 	}
@@ -116,20 +117,20 @@ class PeersPool {
 	 */
 	def connect(node: Node): Unit = {
 		if (logger.isTraceEnabled) {
-			logger.trace("<PeersPool> Peer %s: initiating connection.".format(node.hexIdShort))
+			logger.trace("<PeersPool> Peer %s: initiating connection.".format(node.id.toShortString))
 		}
 
-		if (isInUse(node.hexId)) {
+		if (isInUse(node.id)) {
 			//既に認識済みのノードである。
 			if (logger.isTraceEnabled) {
-				logger.trace("<PeersPool> Peer %s: already initiated.".format(node.hexIdShort))
+				logger.trace("<PeersPool> Peer %s: already initiated.".format(node.id.toShortString))
 			}
 			return
 		}
-		logger.info("<PeersPool> CONNECTING to %s (%s).".format(node.hexIdShort, node.address))
+		logger.info("<PeersPool> CONNECTING to %s (%s).".format(node.id.toShortString, node.address))
 		this.pendingConnections.synchronized {
 			lipica.connect(node)
-			this.pendingConnections.put(node.hexId, System.currentTimeMillis + ConnectionTimeout)
+			this.pendingConnections.put(node.id, System.currentTimeMillis + ConnectionTimeout)
 		}
 	}
 
@@ -145,18 +146,18 @@ class PeersPool {
 			}
 		}
 		this.bans.synchronized {
-			this.bans.put(peer.peerId, System.currentTimeMillis + DefaultBanTimeout)
+			this.bans.put(peer.nodeId, System.currentTimeMillis + DefaultBanTimeout)
 		}
-		logger.info("<PeersPool> Banned the peer: %s".format(peer.peerIdShort))
+		logger.info("<PeersPool> Banned the peer: %s".format(peer.nodeIdShort))
 	}
 
 	/**
 	 * このインスタンスにとって既知であるノードの集合を返します。
 	 */
-	def nodesInUse: Set[String] = {
-		var result: Set[String] =
+	def nodesInUse: Set[ImmutableBytes] = {
+		var result: Set[ImmutableBytes] =
 			this.activePeers.synchronized {
-				this.activePeers.values.map(_.peerId).toSet
+				this.activePeers.values.map(_.nodeId).toSet
 			}
 		result ++= this.bans.synchronized(this.bans.keySet)
 		result ++= this.pendingConnections.synchronized(this.pendingConnections.keySet)
@@ -164,7 +165,7 @@ class PeersPool {
 		result
 	}
 
-	def isInUse(nodeId: String): Boolean = nodesInUse.contains(nodeId)
+	def isInUse(nodeId: ImmutableBytes): Boolean = nodesInUse.contains(nodeId)
 
 	/**
 	 * すべてのピアについて、状態を指定されたものに遷移させようとします。
@@ -225,12 +226,12 @@ class PeersPool {
 	 * 時間が経過したban対象を赦免し、active peersに戻します。
 	 */
 	private def releaseBans(): Unit = {
-		var released: Set[String] = Set.empty
+		var released: Set[ImmutableBytes] = Set.empty
 		this.bans.synchronized {
 			released = getTimeoutExceeded(this.bans)
 			this.activePeers.synchronized {
 				for (peer <- this.bannedPeers.keys) {
-					if (released.contains(peer.peerId)) {
+					if (released.contains(peer.nodeId)) {
 						this.activePeers.put(peer.nodeId, peer)
 					}
 				}
@@ -267,7 +268,7 @@ object PeersPool {
 		(nodeId eq null) || nodeId.isEmpty
 	}
 
-	private def getTimeoutExceeded(map: mutable.Map[String, Long]): Set[String] = {
+	private def getTimeoutExceeded(map: mutable.Map[ImmutableBytes, Long]): Set[ImmutableBytes] = {
 		//渡された連想配列の要素を時刻として解釈し、すでにその時刻が到来している要素の集合を返す。
 		val now = System.currentTimeMillis
 		map.withFilter(entry => entry._2 <= now).map(entry => entry._1).toSet

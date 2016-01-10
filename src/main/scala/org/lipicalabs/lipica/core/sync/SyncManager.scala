@@ -108,17 +108,17 @@ class SyncManager {
 			return
 		}
 		if (logger.isTraceEnabled) {
-			logger.trace("<SyncManager> Adding a peer: %s".format(peer.peerIdShort))
+			logger.trace("<SyncManager> Adding a peer: %s".format(peer.nodeIdShort))
 		}
 		val peerTotalDifficulty = peer.totalDifficulty
 		if (!isIn20PercentRange(peerTotalDifficulty, this.lowerUsefulDifficulty)) {
 			if (logger.isDebugEnabled) {
-				logger.debug("<SyncManager> Peer %s: Difficulty is significantly lower than ours (%,d < %,d). Skipping.".format(peer.peerIdShort, peerTotalDifficulty, this.lowerUsefulDifficulty))
+				logger.debug("<SyncManager> Peer %s: Difficulty is significantly lower than ours (%,d < %,d). Skipping.".format(peer.nodeIdShort, peerTotalDifficulty, this.lowerUsefulDifficulty))
 			}
 			return
 		}
 		if (this.state.is(SyncStateName.HashRetrieving) && !isIn20PercentRange(highestKnownDifficulty, peerTotalDifficulty)) {
-			logger.info("<SyncManager> Peer %s: Chain is better than the known best: (%,d < %,d). Rotating master peer.".format(peer.peerIdShort, this.highestKnownDifficulty, peerTotalDifficulty))
+			logger.info("<SyncManager> Peer %s: Chain is better than the known best: (%,d < %,d). Rotating master peer.".format(peer.nodeIdShort, this.highestKnownDifficulty, peerTotalDifficulty))
 			this.stateMutex.synchronized {
 				startMaster(peer)
 			}
@@ -171,7 +171,7 @@ class SyncManager {
 	def reportInvalidBlock(nodeId: ImmutableBytes): Unit = {
 		this.pool.getByNodeId(nodeId).foreach {
 			peer => {
-				logger.info("<SyncManager> Banning a peer: Peer %s: Invalid block received.".format(peer.peerIdShort))
+				logger.info("<SyncManager> Banning a peer: Peer %s: Invalid block received.".format(peer.nodeIdShort))
 				this.pool.ban(peer, InvalidBlock)
 			}
 		}
@@ -257,7 +257,7 @@ class SyncManager {
 				this.queue.clearHashes()
 		}
 		master.changeSyncState(SyncStateName.HashRetrieving)
-		logger.info("<SyncManager> Peer %s: %s initiated. LastHashToAsk=%s, AskLimit=%,d".format(master.peerIdShort, this.state, master.lastHashToAsk, master.maxHashesAsk))
+		logger.info("<SyncManager> Peer %s: %s initiated. LastHashToAsk=%s, AskLimit=%,d".format(master.nodeIdShort, this.state, master.lastHashToAsk, master.maxHashesAsk))
 	}
 
 
@@ -291,7 +291,7 @@ class SyncManager {
 		val listener = new DiscoverListener {
 			override def nodeAppeared(handler: NodeHandler) = {
 				if (logger.isTraceEnabled) {
-					logger.trace("<SyncManager> Peer %s: new best chain peer discovered: %,d vs %,d".format(handler.node.hexIdShort, handler.nodeStatistics.lpcTotalDifficulty, highestKnownDifficulty))
+					logger.trace("<SyncManager> Peer %s: new best chain peer discovered: %,d vs %,d".format(handler.node.id.toShortString, handler.nodeStatistics.lpcTotalDifficulty, highestKnownDifficulty))
 				}
 				pool.connect(handler.node)
 			}
@@ -329,7 +329,7 @@ class SyncManager {
 	private def removeUselessPeers(): Unit = {
 		val removed = this.pool.peers.filter(_.hasBlocksLack)
 		for (each <- removed) {
-			logger.info("<SyncManager> Banning a peer: Peer %s has no more blocks. Removing.".format(each.peerIdShort))
+			logger.info("<SyncManager> Banning a peer: Peer %s has no more blocks. Removing.".format(each.nodeIdShort))
 			this.pool.ban(each, BlocksLack)
 			updateLowerUsefulDifficulty(each.totalDifficulty)
 		}
@@ -359,7 +359,7 @@ class SyncManager {
 		if (logger.isTraceEnabled) {
 			val found =
 				if (nodes.nonEmpty) {
-					nodes.map(_.node.hexIdShort).mkString(",")
+					nodes.map(_.node.id.toShortString).mkString(",")
 				} else {
 					"empty"
 				}

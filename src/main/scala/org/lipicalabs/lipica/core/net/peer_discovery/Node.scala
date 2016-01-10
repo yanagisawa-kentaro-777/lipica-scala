@@ -18,9 +18,6 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class Node(val id: ImmutableBytes, val address: InetSocketAddress) extends Serializable {
 
-	def hexId: String = this.id.toHexString
-	def hexIdShort: String = this.id.toShortString
-
 	def toEncodedBytes: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(ImmutableBytes(this.address.getAddress.getAddress))
 		val port = this.address.getPort
@@ -46,7 +43,7 @@ class Node(val id: ImmutableBytes, val address: InetSocketAddress) extends Seria
 
 	override def hashCode: Int = toString.hashCode
 
-	override def toString: String = "Node[Id=%s; Address=%s]".format( this.hexIdShort, this.address)
+	override def toString: String = "Node[Id=%s; Address=%s]".format( this.id.toShortString, this.address)
 
 }
 
