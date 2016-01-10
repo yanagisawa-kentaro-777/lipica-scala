@@ -51,7 +51,6 @@
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
 ・expirationによるdiscardを実装する。（replay attack対策）
-・WARNは別のログに出した方が良かろう。
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
