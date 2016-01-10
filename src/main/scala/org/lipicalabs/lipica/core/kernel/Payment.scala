@@ -17,13 +17,15 @@ object Payment {
 
 	/**
 	 * 支払い元から支払い先に資金を移動します。
+	 * @return 支払先の実行後残高。
 	 */
-	def transfer(repository: RepositoryLike, fromAddress: ImmutableBytes, toAddress: ImmutableBytes, value: BigInt, reason: Reason): Unit = {
+	def transfer(repository: RepositoryLike, fromAddress: ImmutableBytes, toAddress: ImmutableBytes, value: BigInt, reason: Reason): BigInt = {
 		repository.addBalance(fromAddress, -value)
-		repository.addBalance(toAddress, value)
+		val result = repository.addBalance(toAddress, value)
 		if (logger.isDebugEnabled) {
 			logger.debug("<Payment> Transferred %,d from %s to %s (%s).".format(value, fromAddress.toShortString, toAddress.toShortString, reason))
 		}
+		result
 	}
 
 	/**

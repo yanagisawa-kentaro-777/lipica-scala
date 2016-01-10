@@ -48,17 +48,16 @@
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
+・IndexedBlockStoreの実装がかなり遅い。70万台では、flushに10分以上かかるのが当たり前。MapDBを廃絶することが重要であると思われる。
+・Validationの厳密化とインターフェイス統一。
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
 ・expirationによるdiscardを実装する。（replay attack対策）
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
-・Validationの厳密化とインターフェイス統一。
 ・ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
-・IndexedBlockStoreの実装がかなり遅い。70万台では、flushに10分以上かかるのが当たり前。MapDBを廃絶することが重要であると思われる。
 ・スレッドセイフティ
-・byTestingは削除する。
 
 ・多数のJARファイルは、ディスクリプタ数の面で非常に不利。
 ・nullを排除する。

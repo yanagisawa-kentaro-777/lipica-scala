@@ -61,7 +61,7 @@ trait ProgramInvoke {
 
 	def byTransaction: Boolean
 
-	def byTestingSuite: Boolean
+	//def byTestingSuite: Boolean
 
 	def getCallDepth: Int
 

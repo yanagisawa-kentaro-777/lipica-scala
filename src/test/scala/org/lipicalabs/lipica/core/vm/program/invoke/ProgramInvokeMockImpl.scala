@@ -130,10 +130,6 @@ class ProgramInvokeMockImpl(private val msgData: ImmutableBytes) extends Program
 		true
 	}
 
-	override def byTestingSuite: Boolean = {
-		false
-	}
-
 	override def getRepository: Repository = {
 		this.repository
 	}

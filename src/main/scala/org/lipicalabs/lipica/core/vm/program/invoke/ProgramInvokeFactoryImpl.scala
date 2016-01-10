@@ -43,12 +43,12 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val difficulty = block.difficulty
 		val blockManaLimit = block.manaLimit
 
-		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, blockStore, byTestingSuite = false)
+		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, blockStore)
 		logger.info("Top level call: %s".format(result))
 		result
 	}
 
-	override def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore, byTestingSuite: Boolean) = {
+	override def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore) = {
 		val address = toAddress
 		val origin = program.getOriginAddress
 		val caller = program.getOwnerAddress
@@ -66,7 +66,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val difficulty = program.getDifficulty
 		val blockManaLimit = program.getBlockManaLimit
 
-		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, parentHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDepth + 1, blockStore, byTestingSuite)
+		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, parentHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDepth + 1, blockStore)
 		logger.info("Internal call: %s".format(result))
 		result
 	}

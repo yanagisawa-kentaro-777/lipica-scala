@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactory, ProgramInvokeFactoryImpl, ProgramInvoke}
-import org.lipicalabs.lipica.core.vm.program.listener.{CompositeProgramListener, ProgramListenerAware}
+import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAware
 import org.slf4j.LoggerFactory
 
 /**
@@ -24,7 +24,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	/** 各種リスナ。 */
 	private var listener: ProgramOutListener = null
 	private val traceListener = new ProgramTraceListener
-	private val programListener = CompositeProgramListener(Some(this.traceListener))
+	//private val programListener = CompositeProgramListener(Some(this.traceListener))
 
 	/** プログラムカウンタ。 */
 	private var pc = 0
@@ -246,13 +246,8 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		val nonce = ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
 		val newAddress = DigestUtils.computeNewAddress(getOwnerAddress.last20Bytes, nonce)
 
-		if (byTestingSuite) {
-			this.result.addCallCreate(programCode, ImmutableBytes.empty, manaLimit.getDataWithoutLeadingZeros, value.getDataWithoutLeadingZeros)
-		}
 		//nonceを更新する。
-		if (!byTestingSuite) {
-			this.storage.increaseNonce(senderAddress)
-		}
+		this.storage.increaseNonce(senderAddress)
 
 		val track = this.storage.startTracking
 		//既存だったら、残高を受け継ぐ。
@@ -264,18 +259,10 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			track.createAccount(newAddress)
 		}
 		//移動を実行する。
-		Payment.transfer(track, senderAddress, newAddress, endowment, Payment.ContractCreationTx)
-		val newBalance = track.getBalance(newAddress).get
-//		track.addBalance(senderAddress, -endowment)
-//		val newBalance: BigInt =
-//			if (!byTestingSuite) {
-//				track.addBalance(newAddress, endowment)
-//			} else {
-//				UtilConsts.Zero
-//			}
+		val newBalance = Payment.transfer(track, senderAddress, newAddress, endowment, Payment.ContractCreationTx)
 		//実行する。
 		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
-		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore, byTestingSuite)
+		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore)
 
 		val programResult =
 			if (programCode.nonEmpty) {
@@ -371,29 +358,14 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		}
 		//コードを取得する。
 		val programCode = this.storage.getCode(codeAddress).getOrElse(ImmutableBytes.empty)
-//			if (this.storage.existsAccount(codeAddress)) {
-//				this.storage.getCode(codeAddress).get
-//			} else {
-//				ImmutableBytes.empty
-//			}
-		Payment.transfer(track, senderAddress, contextAddress, endowment, Payment.ContractInvocationTx)
-		val contextBalance = track.getBalance(contextAddress).get
-
-//		track.addBalance(senderAddress, -endowment)
-//		val contextBalance =
-//			if (byTestingSuite) {
-//				this.result.addCallCreate(data, contextAddress, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
-//				UtilConsts.Zero
-//			} else {
-//				track.addBalance(contextAddress, endowment)
-//			}
+		val contextBalance = Payment.transfer(track, senderAddress, contextAddress, endowment, Payment.ContractInvocationTx)
 
 		//内部トランザクションを生成する。
 		val internalTx = addInternalTx(ImmutableBytes.empty, getBlockManaLimit, senderAddress, contextAddress, endowment, programCode, "call")
 
 		val programResultOption =
 			if (programCode.nonEmpty) {
-				val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.blockStore, byTestingSuite)
+				val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.blockStore)
 
 				val vm = new VM
 				val program = new Program(programCode, programInvoke, internalTx)
@@ -479,12 +451,6 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		//手数料を取る。
 		Payment.transfer(track, senderAddress, contextAddress, message.endowment.value, Payment.ContractInvocationTx)
 
-		if (byTestingSuite) {
-			//テストなので、生成されたコールを蓄積する。
-			this.result.addCallCreate(data, message.codeAddress.last20Bytes, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
-			stackPushOne()
-			return
-		}
 		//データに応じたコストを計算する。
 		val requiredMana = contract.manaForData(data)
 		if (message.mana.longValue < requiredMana) {
@@ -636,8 +602,6 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	def setListener(programOutListener: ProgramOutListener): Unit = {
 		this.listener = programOutListener
 	}
-
-	def byTestingSuite: Boolean = this.invoke.byTestingSuite
 
 }
 

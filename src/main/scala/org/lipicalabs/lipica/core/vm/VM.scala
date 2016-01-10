@@ -23,20 +23,9 @@ class VM {
 
 	def play(program: Program): Unit = {
 		try {
-			//if (SystemProperties.CONFIG.isStorageDictionaryEnabled) {
-				//TODO storageDictHandler
-				//storageDictHandler = new StorageDictionaryHandler(program.getOwnerAddress)
-				//storageDictHandler.vmStartPlayNotify
-			//}
-			if (program.byTestingSuite) return
 			while (!program.isStopped) {
 				this.step(program)
 			}
-			//TODO storageDictHandler
-			//			if (storageDictHandler != null) {
-			//				val details = program.storage.getContractDetails(program.getOwnerAddress.last20Bytes)
-			//				storageDictHandler.vmEndPlayNotify(details)
-			//			}
 		} catch {
 			case e: RuntimeException =>
 				program.setRuntimeFailure(e)

@@ -30,8 +30,7 @@ class ProgramInvokeImpl private(
 	private val repository: RepositoryLike,
 	private val callDepth: Int,
 	override val blockStore: BlockStore,
-	override val byTransaction: Boolean,
-	override val byTestingSuite: Boolean
+	override val byTransaction: Boolean
 ) extends ProgramInvoke {
 
 	/** ADDRESS op. */
@@ -125,8 +124,8 @@ class ProgramInvokeImpl private(
 	override def getRepository = this.repository
 
 	override def toString: String = {
-		"ProgramInvokeImpl{address=%s, origin=%s, caller=%s, balance=%s, mana=%s, manaPrice=%s, callValue=%s, messageData=%s, parentHash=%s, coinbase=%s, timestamp=%s, blockNumber=%s, difficulty=%s, blockManaLimit=%s, byTransaction=%s, byTestingSuite=%s, callDepth=%s}".format(
-			this.address, this.origin, this.caller, this.balance, this.mana, this.manaPrice, this.callValue, this.messageData, this.parentHash, this.coinbase, this.timestamp, this.blockNumber, this.difficulty, this.blockManaLimit, this.byTransaction, this.byTestingSuite, this.callDepth
+		"ProgramInvokeImpl{address=%s, origin=%s, caller=%s, balance=%s, mana=%s, manaPrice=%s, callValue=%s, messageData=%s, parentHash=%s, coinbase=%s, timestamp=%s, blockNumber=%s, difficulty=%s, blockManaLimit=%s, byTransaction=%s, callDepth=%s}".format(
+			this.address, this.origin, this.caller, this.balance, this.mana, this.manaPrice, this.callValue, this.messageData, this.parentHash, this.coinbase, this.timestamp, this.blockNumber, this.difficulty, this.blockManaLimit, this.byTransaction, this.callDepth
 		)
 	}
 
@@ -159,13 +158,12 @@ object ProgramInvokeImpl {
 		blockManaLimit: DataWord,
 		repository: RepositoryLike,
 		callDepth: Int,
-		blockStore: BlockStore,
-		byTestingSuite: Boolean
+		blockStore: BlockStore
 	): ProgramInvokeImpl = {
 		new ProgramInvokeImpl(
 			address = address, origin = origin, caller = caller, balance = balance, manaPrice = manaPrice, mana = mana, callValue = callValue, messageData = messageData,
 			parentHash = parentHash, coinbase = coinbase, timestamp = timestamp, blockNumber = blockNumber, difficulty = difficulty, blockManaLimit = blockManaLimit,
-			repository = repository, callDepth = callDepth, blockStore = blockStore, byTransaction = false,  byTestingSuite = byTestingSuite
+			repository = repository, callDepth = callDepth, blockStore = blockStore, byTransaction = false
 		)
 	}
 
@@ -185,8 +183,7 @@ object ProgramInvokeImpl {
 		difficulty: ImmutableBytes,
 		blockManaLimit: ImmutableBytes,
 		repository: RepositoryLike,
-		blockStore: BlockStore,
-		byTestingSuite: Boolean
+		blockStore: BlockStore
 	): ProgramInvokeImpl = {
 		new ProgramInvokeImpl(
 			address = DataWord(address), origin = DataWord(origin), caller = DataWord(caller),
@@ -194,7 +191,7 @@ object ProgramInvokeImpl {
 			callValue = DataWord(callValue), messageData = messageData,
 			parentHash = DataWord(parentHash), coinbase = DataWord(coinbase), timestamp = DataWord(timestamp),
 			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty), blockManaLimit = DataWord(blockManaLimit),
-			repository = repository, callDepth = 0, blockStore = blockStore, byTransaction = true, byTestingSuite = byTestingSuite
+			repository = repository, callDepth = 0, blockStore = blockStore, byTransaction = true
 		)
 	}
 }
