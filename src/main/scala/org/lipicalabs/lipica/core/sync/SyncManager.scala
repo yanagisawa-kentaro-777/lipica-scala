@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.sync
 
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
 import org.lipicalabs.lipica.core.kernel.{Blockchain, BlockWrapper}
@@ -42,8 +42,8 @@ class SyncManager {
 	def gapBlockOption: Option[BlockWrapper] = Option(this.gapBlockRef.get)
 	def resetGapRecovery(): Unit = this.gapBlockRef.set(null)
 
-	private var syncDone: Boolean = false
-	def isSyncDone: Boolean = this.syncDone
+	private val syncDoneRef: AtomicBoolean = new AtomicBoolean(false)
+	def isSyncDone: Boolean = this.syncDoneRef.get
 
 	private val lowerUsefulDifficultyRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
 	def lowerUsefulDifficulty: BigInt = this.lowerUsefulDifficultyRef.get
@@ -153,12 +153,12 @@ class SyncManager {
 	}
 
 	def notifyNewBlockImported(wrapper: BlockWrapper): Unit = {
-		if (this.syncDone) {
+		if (this.isSyncDone) {
 			return
 		}
 		if (!wrapper.isSolidBlock) {
 			//最新情報をインポートできるとは、完全に追いついたようだ。
-			this.syncDone = true
+			this.syncDoneRef.set(true)
 			onSyncDone()
 			if (logger.isDebugEnabled) {
 				logger.debug("<SyncManager> New block %,d is imported. Sync is complete.".format(wrapper.blockNumber))

@@ -5,6 +5,9 @@ import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.net.channel.Channel
 import org.slf4j.LoggerFactory
 
+/**
+ * 同期状態の識別子となる列挙型です。
+ */
 sealed trait SyncStateName
 
 object SyncStateName {
