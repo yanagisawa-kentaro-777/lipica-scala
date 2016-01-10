@@ -269,7 +269,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 }
 
 object NodeManager {
-	private val logger = LoggerFactory.getLogger("discover")
+	private val logger = LoggerFactory.getLogger("discovery")
 
 	private val DummyStat = new NodeStatistics(new Node(ImmutableBytes.empty, new InetSocketAddress(InetAddress.getByAddress(new Array[Byte](4)), 0)))
 	private val Persist: Boolean = SystemProperties.CONFIG.peerDiscoveryPersist

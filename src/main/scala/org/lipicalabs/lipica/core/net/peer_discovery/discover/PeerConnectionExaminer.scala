@@ -87,7 +87,7 @@ class PeerConnectionExaminer {
 }
 
 object PeerConnectionExaminer {
-	private val logger = LoggerFactory.getLogger("discover")
+	private val logger = LoggerFactory.getLogger("discovery")
 
 	private val ConnectThreads = SystemProperties.CONFIG.peerDiscoveryWorkers
 	private val ReconnectPeriod = SystemProperties.CONFIG.peerDiscoveryTouchSeconds * 1000L

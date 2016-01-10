@@ -819,7 +819,7 @@ class VM {
 }
 
 object VM {
-	private val logger = LoggerFactory.getLogger("VM")
+	private val logger = LoggerFactory.getLogger("vm")
 	private val dumpLogger = LoggerFactory.getLogger("dump")
 
 	private val Zero = UtilConsts.Zero

@@ -31,5 +31,5 @@ class TransactionTask(private val tx: TransactionLike, private val worldManager:
 }
 
 object TransactionTask {
-	private val logger = LoggerFactory.getLogger("net")
+	private val logger = LoggerFactory.getLogger("general")
 }

@@ -70,7 +70,7 @@ import java.util.Arrays;
  * bitcoinj on GitHub</a>.
  */
 public class ECKey implements Serializable {
-    private static final Logger logger = LoggerFactory.getLogger(ECKey.class);
+    private static final Logger logger = LoggerFactory.getLogger("general");
 
     /**
      * The parameters of the secp256k1 curve that Ethereum uses.

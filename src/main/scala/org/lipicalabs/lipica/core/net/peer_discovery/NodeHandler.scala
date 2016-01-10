@@ -214,7 +214,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 }
 
 object NodeHandler {
-	private val logger = LoggerFactory.getLogger("discover")
+	private val logger = LoggerFactory.getLogger("discovery")
 
 	val aliveNodes: util.Queue[NodeHandler] = new util.ArrayDeque[NodeHandler]
 	private val pongTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("pong-timer"))

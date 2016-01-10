@@ -354,7 +354,7 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 
 
 object Transaction {
-	val logger = LoggerFactory.getLogger(getClass)
+	val logger = LoggerFactory.getLogger("general")
 
 	private val DEFAULT_MANA_PRICE = BigInt("10000000000000")
 	private val DEFAULT_BALANCE_MANA = BigInt("21000")

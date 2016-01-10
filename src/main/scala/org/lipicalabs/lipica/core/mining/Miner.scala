@@ -79,7 +79,7 @@ class Miner {
 }
 
 object Miner {
-	private val logger = LoggerFactory.getLogger("miner")
+	private val logger = LoggerFactory.getLogger("mining")
 
 	def increment(bytes: Array[Byte]): Boolean = {
 		val startIndex = 0

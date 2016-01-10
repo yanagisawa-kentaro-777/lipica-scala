@@ -638,7 +638,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 }
 
 object Program {
-	private val logger = LoggerFactory.getLogger("VM")
+	private val logger = LoggerFactory.getLogger("vm")
 	private val manaLogger = LoggerFactory.getLogger("mana")
 
 	/**

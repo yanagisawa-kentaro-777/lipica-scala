@@ -271,7 +271,7 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 }
 
 object StorageDictionaryHandler {
-	private val logger: Logger = LoggerFactory.getLogger("VM")
+	private val logger: Logger = LoggerFactory.getLogger("vm")
 
 	class Entry(val hashValue: DataWord, val input: ImmutableBytes) {
 		override def toString: String = {

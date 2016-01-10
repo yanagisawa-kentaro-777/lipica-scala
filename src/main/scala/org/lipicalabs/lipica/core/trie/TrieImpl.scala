@@ -473,7 +473,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 }
 
 object TrieImpl {
-	private val logger = LoggerFactory.getLogger("trie")
+	private val logger = LoggerFactory.getLogger("general")
 
 	private val EMPTY_TRIE_HASH = DigestUtils.EmptyTrieHash
 

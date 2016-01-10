@@ -106,5 +106,5 @@ class PeerDiscovery {
 }
 
 object PeerDiscovery {
-	private val logger = LoggerFactory.getLogger("peerdiscovery")
+	private val logger = LoggerFactory.getLogger("discovery")
 }

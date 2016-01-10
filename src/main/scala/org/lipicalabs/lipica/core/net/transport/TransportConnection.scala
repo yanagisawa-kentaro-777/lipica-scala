@@ -50,5 +50,5 @@ class TransportConnection(private val secrets: Secrets, inputStream: InputStream
 }
 
 object TransportConnection {
-	private val logger = LoggerFactory.getLogger("discover")
+	private val logger = LoggerFactory.getLogger("net")
 }

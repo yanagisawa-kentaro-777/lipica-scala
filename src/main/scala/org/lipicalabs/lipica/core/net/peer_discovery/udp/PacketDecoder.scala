@@ -45,5 +45,5 @@ class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 }
 
 object PacketDecoder {
-	private val logger = LoggerFactory.getLogger(getClass)
+	private val logger = LoggerFactory.getLogger("discovery")
 }

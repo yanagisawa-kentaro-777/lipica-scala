@@ -247,7 +247,7 @@ class PlainBlock private[kernel](override val blockHeader: BlockHeader, override
 }
 
 object Block {
-	private[kernel] val logger = LoggerFactory.getLogger("block")
+	private[kernel] val logger = LoggerFactory.getLogger("general")
 
 	val BlockReward =
 		if (SystemProperties.CONFIG.isFrontier) {

@@ -56,5 +56,5 @@ class MessageHandler(private val channel: NioDatagramChannel, private val nodeMa
 }
 
 object MessageHandler {
-	private val logger = LoggerFactory.getLogger("discover")
+	private val logger = LoggerFactory.getLogger("discovery")
 }

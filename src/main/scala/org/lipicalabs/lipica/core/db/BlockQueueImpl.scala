@@ -224,7 +224,7 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 
 object BlockQueueImpl {
 
-	private val logger = LoggerFactory.getLogger("blockqueue")
+	private val logger = LoggerFactory.getLogger("database")
 	private val ReadHitsCommitThreshold: Int = 1000
 	private val StoreName: String = "blockqueue"
 	private val HashSetName: String = "hashset"

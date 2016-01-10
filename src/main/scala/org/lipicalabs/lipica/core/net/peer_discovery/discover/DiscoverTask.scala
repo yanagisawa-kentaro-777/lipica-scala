@@ -63,5 +63,5 @@ class DiscoverTask(val nodeManager: NodeManager) extends Runnable {
 }
 
 object DiscoverTask {
-	private val logger = LoggerFactory.getLogger("discover")
+	private val logger = LoggerFactory.getLogger("discovery")
 }

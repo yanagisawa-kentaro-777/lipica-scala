@@ -221,7 +221,7 @@ class ContractDetailsImpl() extends ContractDetails {
 
 object ContractDetailsImpl {
 
-	private val logger = LoggerFactory.getLogger("repository")
+	private val logger = LoggerFactory.getLogger("database")
 
 	def decode(bytes: ImmutableBytes): ContractDetailsImpl = {
 		val result = new ContractDetailsImpl

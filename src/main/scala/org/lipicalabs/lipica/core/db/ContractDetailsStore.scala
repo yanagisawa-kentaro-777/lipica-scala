@@ -61,7 +61,7 @@ class ContractDetailsStore(private val _db: DatabaseImpl) {
 
 		val flushSize = totalSize.toDouble / 1048576
 		val flushMillis = (finish - start).toDouble / 1000000
-		gLogger.info("Flush details in: %02.2f ms, %d keys, %02.2fMB".format(flushMillis, numberOfKeys, flushSize))
+		logger.info("<ContractDetailsStore> Flushed details in: %02.2f ms, %d keys, %02.2fMB".format(flushMillis, numberOfKeys, flushSize))
 	}
 
 	private def flushInternal: Long = {
@@ -97,5 +97,5 @@ class ContractDetailsStore(private val _db: DatabaseImpl) {
 }
 
 object ContractDetailsStore {
-	private val gLogger = LoggerFactory.getLogger("general")
+	private val logger = LoggerFactory.getLogger("database")
 }

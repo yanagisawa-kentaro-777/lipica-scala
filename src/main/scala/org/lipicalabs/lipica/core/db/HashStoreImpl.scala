@@ -218,6 +218,6 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 }
 
 object HashStoreImpl {
-	private val logger = LoggerFactory.getLogger("blockqueue")
+	private val logger = LoggerFactory.getLogger("database")
 	private val StoreName: String = "hashstore"
 }

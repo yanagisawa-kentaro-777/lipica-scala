@@ -64,5 +64,5 @@ class WorkerTask extends Runnable {
 }
 
 object WorkerTask {
-	private val logger = LoggerFactory.getLogger("peerdiscovery")
+	private val logger = LoggerFactory.getLogger("discovery")
 }

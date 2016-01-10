@@ -300,7 +300,6 @@ class BlockchainImpl(
 			if (block.stateRoot != this.repository.rootHash) {
 				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.rootHash)
 				logger.warn(message)
-				stateLogger.warn(message)
 				return ConsensusBreak
 			}
 		}
@@ -611,7 +610,5 @@ class BlockchainImpl(
 
 object BlockchainImpl {
 	private val logger = LoggerFactory.getLogger("blockchain")
-	private val stateLogger = LoggerFactory.getLogger("state")
-
 	private val recordingLogger = LoggerFactory.getLogger("blocks_record")
 }

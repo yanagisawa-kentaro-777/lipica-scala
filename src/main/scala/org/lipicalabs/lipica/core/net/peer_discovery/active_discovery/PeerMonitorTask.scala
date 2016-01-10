@@ -42,5 +42,5 @@ class PeerMonitorTask(private val executor: ThreadPoolExecutor, private val dela
 }
 
 object PeerMonitorTask {
-	private val logger = LoggerFactory.getLogger("peermonitor")
+	private val logger = LoggerFactory.getLogger("discovery")
 }

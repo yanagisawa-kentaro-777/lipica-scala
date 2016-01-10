@@ -272,5 +272,5 @@ class SyncQueue {
 }
 
 object SyncQueue {
-	private val logger = LoggerFactory.getLogger("blockqueue")
+	private val logger = LoggerFactory.getLogger("sync")
 }

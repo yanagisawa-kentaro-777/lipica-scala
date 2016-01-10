@@ -74,5 +74,5 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 }
 
 object ProgramInvokeFactoryImpl {
-	private val logger = LoggerFactory.getLogger("VM")
+	private val logger = LoggerFactory.getLogger("vm")
 }
