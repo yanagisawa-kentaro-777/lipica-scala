@@ -44,18 +44,21 @@ class PeerInfo(val address: InetSocketAddress, val nodeId: ImmutableBytes) {
 	private val handshakeHelloMessageRef: AtomicReference[HelloMessage] = new AtomicReference[HelloMessage](null)
 	def handshakeHelloMessage: HelloMessage = this.handshakeHelloMessageRef.get
 	def handshakeHelloMessage_=(v: HelloMessage): Unit = this.handshakeHelloMessageRef.set(v)
+	def handshakeHelloMessageOption: Option[HelloMessage] = Option(this.handshakeHelloMessageRef.get)
 
 	private val statusMessageRef: AtomicReference[StatusMessage] = new AtomicReference[StatusMessage](null)
 	def statusMessage: StatusMessage = this.statusMessageRef.get
 	def statusMessage_=(v: StatusMessage): Unit = this.statusMessageRef.set(v)
+	def statusMessageOption: Option[StatusMessage] = Option(this.statusMessageRef.get)
 
 	override def hashCode: Int = {
+		//nodeIdは、敢えて同一性の基準に含めない。
 		this.address.getAddress.hashCode * 31 + this.address.getPort.hashCode
 	}
 
 	override def equals(o: Any): Boolean = {
 		try {
-			//peerIdは、敢えて同一性の基準に含めない。
+			//nodeIdは、敢えて同一性の基準に含めない。
 			//同一アドレス＆ポート間で後勝ち。
 			val another = o.asInstanceOf[PeerInfo]
 			this.address == another.address
@@ -66,7 +69,7 @@ class PeerInfo(val address: InetSocketAddress, val nodeId: ImmutableBytes) {
 
 	override def toString: String = {
 		"PeerInfo[Address=%s, NodeId=%s, HelloMessage=%s, StatusMessage=%s".format(
-			this.address, this.nodeId.toShortString, this.handshakeHelloMessage, this.statusMessage
+			this.address, this.nodeId.toShortString, this.handshakeHelloMessageOption, this.statusMessageOption
 		)
 	}
 

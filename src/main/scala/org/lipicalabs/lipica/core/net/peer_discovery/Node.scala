@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
- * 自ノードもしくは他ノードの重要な情報をモデル化したクラスです。
+ * 自ノードもしくは他ノードの中核的な情報をモデル化したクラスです。
  *
  * @param id ノードの一意識別子。（内容はノードの秘密鍵に対応する公開鍵です。）
  * @param address ノードのアドレスおよびポート番号。

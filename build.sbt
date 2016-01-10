@@ -35,7 +35,6 @@ def jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % "1.9.13"
 def nettyAll = "io.netty" % "netty-all" % "4.0.33.Final"
 
 def httpClient = "org.apache.httpcomponents" % "httpclient" % "4.5.1"
-
 def scalatra = "org.scalatra" %% "scalatra" % "2.4.0"
 def jettyWebApp = "org.eclipse.jetty" % "jetty-webapp" % "9.3.6.v20151106"
 
