@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.base.{Block, Blockchain, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.lpc.{LpcMessageCode, LpcVersion}
 import org.lipicalabs.lipica.core.net.lpc.message._

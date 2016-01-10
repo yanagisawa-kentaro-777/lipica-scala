@@ -6,8 +6,8 @@ import java.nio.file.Paths
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.db.{RepositoryImpl, BlockInfo, IndexedBlockStore}
-import org.lipicalabs.lipica.core.listener.LipicaListenerAdaptor
-import org.lipicalabs.lipica.core.manager.AdminInfo
+import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
+import org.lipicalabs.lipica.core.facade.manager.AdminInfo
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.{DifficultyRule, ParentNumberRule, ParentBlockHeaderValidator}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactoryImpl

@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.manager
+package org.lipicalabs.lipica.core.facade.manager
 
 import java.io.Closeable
 import java.nio.charset.StandardCharsets
@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.base._
 import org.lipicalabs.lipica.core.config.{SystemProperties, ComponentFactory}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db._
-import org.lipicalabs.lipica.core.listener.{CompositeLipicaListener, LipicaListener}
+import org.lipicalabs.lipica.core.facade.listener.{CompositeLipicaListener, LipicaListener}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager

@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.manager
+package org.lipicalabs.lipica.core.facade.manager
 
 import java.io.{File, FileInputStream}
 import java.nio.charset.StandardCharsets

@@ -8,7 +8,7 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.scrypt.SCrypt
-import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.slf4j.LoggerFactory
 

@@ -5,8 +5,8 @@ import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.base.ImportResult.{ImportedBest, NoParent, InvalidBlock, ConsensusBreak}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
-import org.lipicalabs.lipica.core.listener.LipicaListener
-import org.lipicalabs.lipica.core.manager.AdminInfo
+import org.lipicalabs.lipica.core.facade.listener.LipicaListener
+import org.lipicalabs.lipica.core.facade.manager.AdminInfo
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.lipicalabs.lipica.core.validator._
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory

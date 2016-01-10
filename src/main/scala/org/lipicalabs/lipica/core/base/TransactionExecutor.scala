@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.base
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.{RepositoryLike, RepositoryTrackLike, BlockStore}
-import org.lipicalabs.lipica.core.listener.LipicaListener
+import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm._

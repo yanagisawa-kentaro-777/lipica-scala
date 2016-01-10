@@ -5,7 +5,7 @@ import java.util.{Collections, Comparator}
 import java.util.concurrent._
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeHandler
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, UtilConsts}
 import org.slf4j.LoggerFactory

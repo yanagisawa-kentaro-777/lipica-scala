@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
-import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

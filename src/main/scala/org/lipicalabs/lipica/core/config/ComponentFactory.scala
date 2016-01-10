@@ -5,8 +5,8 @@ import java.net.URI
 import org.lipicalabs.lipica.core.base.Wallet
 import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, HashMapDB, LevelDbDataSource}
 import org.lipicalabs.lipica.core.db._
-import org.lipicalabs.lipica.core.listener.CompositeLipicaListener
-import org.lipicalabs.lipica.core.manager.AdminInfo
+import org.lipicalabs.lipica.core.facade.listener.CompositeLipicaListener
+import org.lipicalabs.lipica.core.facade.manager.AdminInfo
 import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeManager, Node}

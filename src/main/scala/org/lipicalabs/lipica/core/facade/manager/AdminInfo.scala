@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.manager
+package org.lipicalabs.lipica.core.facade.manager
 
 import java.util.concurrent.atomic.AtomicBoolean
 

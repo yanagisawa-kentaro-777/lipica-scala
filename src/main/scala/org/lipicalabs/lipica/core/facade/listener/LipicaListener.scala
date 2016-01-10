@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.listener
+package org.lipicalabs.lipica.core.facade.listener
 
 import org.lipicalabs.lipica.core.base.{TransactionReceipt, Block, TransactionLike, TransactionExecutionSummary}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage

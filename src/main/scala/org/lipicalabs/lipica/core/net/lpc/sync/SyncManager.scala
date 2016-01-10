@@ -5,8 +5,8 @@ import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
 import org.lipicalabs.lipica.core.base.{Blockchain, BlockWrapper}
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.listener.LipicaListener
-import org.lipicalabs.lipica.core.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.listener.LipicaListener
+import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.{ChannelManager, Channel}
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeStatistics, NodeManager, NodeHandler}
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoverListener
