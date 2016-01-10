@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.validator
 
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
@@ -17,6 +18,7 @@ abstract class AbstractValidationRule extends ValidationRule {
 
 	def logErrors(logger: Logger): Unit = {
 		for (each <- this.errors) {
+			ErrorLogger.logger.warn("<Validator> [%s] %s".format(getEntityClass, each))
 			logger.warn("<Validator> [%s] %s".format(getEntityClass, each))
 		}
 	}

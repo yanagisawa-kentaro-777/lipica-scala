@@ -18,7 +18,7 @@ import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.shh.ShhMessageCode
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzMessageCode
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 import org.spongycastle.crypto.InvalidCipherTextException
 
@@ -148,6 +148,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		if (this._channel.isDiscoveryMode) {
 			loggerNet.debug(output, cause)
 		} else {
+			ErrorLogger.logger.warn(output, cause)
 			loggerNet.warn(output, cause)
 		}
 		//TCPはストリームなので、１個のメッセージの解析に失敗したら、もうその受信ハンドラは見捨てざるを得ない。
@@ -220,6 +221,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 					ctx.writeAndFlush(byteBuffer).sync()
 				} catch {
 					case e: InvalidCipherTextException =>
+						ErrorLogger.logger.warn("<MessageCodec> Failed to decrypt the auth initiate message.")
 						loggerNet.warn("<MessageCodec> Failed to decrypt the auth initiate message.")
 				}
 			} else {

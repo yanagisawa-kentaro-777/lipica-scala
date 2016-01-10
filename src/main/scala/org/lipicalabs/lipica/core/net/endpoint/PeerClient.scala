@@ -9,7 +9,7 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -54,6 +54,7 @@ class PeerClient {
 				if (discoveryMode) {
 					logger.debug("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
 				} else {
+					ErrorLogger.logger.warn("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
 					logger.warn("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
 				}
 		}

@@ -6,7 +6,7 @@ import java.util
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PongMessage, PingMessage}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 import org.spongycastle.util.BigIntegers
 
@@ -50,9 +50,11 @@ class TransportMessage {
 			Right(ECKey.signatureToKey(messageHash, generatedSignature.toBase64))
 		} catch {
 			case e: SignatureException =>
+				ErrorLogger.logger.warn("<TransportMessage> Signature exception.", e)
 				logger.warn("<TransportMessage> Signature exception.", e)
 				Left(e)
 			case any: Throwable =>
+				ErrorLogger.logger.warn("<TransportMessage> Exception caught: %s".format(any.getClass.getSimpleName), any)
 				logger.warn("<TransportMessage> Exception caught: %s".format(any.getClass.getSimpleName), any)
 				Left(any)
 		}

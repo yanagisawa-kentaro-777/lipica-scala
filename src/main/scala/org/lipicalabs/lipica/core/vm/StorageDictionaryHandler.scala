@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.lipicalabs.lipica.core.kernel.ContractDetails
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.{LoggerFactory, Logger}
 
 import scala.collection.mutable
@@ -35,7 +35,8 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 		} catch {
 			case e: Throwable =>
 				//例外は伝播させない。
-				logger.warn("Unexpected exception: ", e)
+				ErrorLogger.logger.warn("<StorageDictHandler> Unexpected exception: ", e)
+				logger.warn("<StorageDictHandler> Unexpected exception: ", e)
 		}
 	}
 

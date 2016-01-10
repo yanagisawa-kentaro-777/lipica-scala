@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -58,6 +58,7 @@ class LipicaChannelInitializer(val nodeId: ImmutableBytes) extends ChannelInitia
 			}
 		} catch {
 			case e: Exception =>
+				ErrorLogger.logger.warn("<ChannelInitializer> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				logger.warn("<ChannelInitializer> Exception caught: %s".format(e.getClass.getSimpleName), e)
 		}
 	}

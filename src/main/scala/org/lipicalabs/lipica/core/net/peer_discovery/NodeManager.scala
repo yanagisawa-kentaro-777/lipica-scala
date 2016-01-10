@@ -14,7 +14,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.discover._
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.NodeTable
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PingMessage, PongMessage}
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageHandler
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.mapdb.{DB, HTreeMap}
 import org.slf4j.LoggerFactory
 
@@ -96,12 +96,14 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 			}
 		} catch {
 			case e: Exception =>
+				ErrorLogger.logger.warn("<NodeManager> Error reading from db.")
 				logger.warn("<NodeManager> Error reading from db.")
 				try {
 					this._db.delete("nodeStats")
 					this._nodeStatsDB = this._db.hashMap("nodeStats")
 				} catch {
 					case ex: Exception =>
+						ErrorLogger.logger.warn("<NodeManager> Error creating db.")
 						logger.warn("<NodeManager> Error creating db.")
 				}
 		}
@@ -226,6 +228,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 					handler.checkAll()
 				} catch {
 					case e: Exception =>
+						ErrorLogger.logger.warn("<NodeManager> Error processing listener: " + handler, e)
 						logger.warn("<NodeManager> Error processing listener: " + handler, e)
 				}
 			}

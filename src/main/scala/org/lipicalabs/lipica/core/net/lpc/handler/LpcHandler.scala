@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.net.lpc.message._
 import org.lipicalabs.lipica.core.sync._
 import org.lipicalabs.lipica.core.net.message.ReasonCode
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -115,6 +115,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	}
 
 	override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+		ErrorLogger.logger.warn("<LpcHandler> Exception caught.", cause)
 		loggerNet.warn("<LpcHandler> Exception caught.", cause)
 		onShutdown()
 		ctx.close()

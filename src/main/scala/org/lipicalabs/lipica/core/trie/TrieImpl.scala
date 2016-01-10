@@ -218,6 +218,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				putToCache(TrieNode(newNode.toSeq))
 			case other =>
 				val s = if (other eq null) "null" else other.getClass.getSimpleName
+				ErrorLogger.logger.warn("<Trie> Trie error: Node is %s".format(s))
 				logger.warn("<Trie> Trie error: Node is %s".format(s))
 				valueNode
 		}
@@ -434,6 +435,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				}}
 				this.root = TrieNode(Value.fromEncodedBytes(encodedRoot).decode)
 			case Left(e) =>
+				ErrorLogger.logger.warn("<TrieImpl> Deserialization error.", e)
 				logger.warn("<TrieImpl> Deserialization error.", e)
 		}
 	}

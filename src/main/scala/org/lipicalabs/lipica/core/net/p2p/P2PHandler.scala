@@ -14,7 +14,7 @@ import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.net.transport.HandshakeHelper
-import org.lipicalabs.lipica.core.utils.CountingThreadFactory
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
 import org.slf4j.LoggerFactory
 
 /**
@@ -101,6 +101,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 	}
 
 	override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+		ErrorLogger.logger.warn("<P2PHandler> Error caught: %s".format(cause))
 		logger.warn("<P2PHandler> Error caught: %s".format(cause))
 		ctx.close()
 		killTimers()

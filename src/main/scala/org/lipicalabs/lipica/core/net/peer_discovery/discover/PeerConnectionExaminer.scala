@@ -7,7 +7,7 @@ import java.util.concurrent._
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeHandler
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, UtilConsts}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -70,6 +70,7 @@ class PeerConnectionExaminer {
 				}
 			} catch {
 				case e: Exception =>
+					ErrorLogger.logger.warn("<PeerConnectionExaminer> Exception caught: %s".format(e.getClass.getSimpleName), e)
 					logger.warn("<PeerConnectionExaminer> Exception caught: %s".format(e.getClass.getSimpleName), e)
 			}
 		}

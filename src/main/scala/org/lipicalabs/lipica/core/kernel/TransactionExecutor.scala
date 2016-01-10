@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.{RepositoryLike, RepositoryTrackLike, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm._
 import org.lipicalabs.lipica.core.vm.program.Program.ProgramException
@@ -196,6 +196,7 @@ class TransactionExecutor(
 					//マナ不足等でもここに来る。ゆえに、ここに来ることは想定外とは言えない。
 					logger.info("<TxExecutor> Exception caught %s: %s".format(e.getClass.getSimpleName, e.getMessage))
 				} else {
+					ErrorLogger.logger.warn("<TxExecutor> Exception caught: %s".format(e.getClass.getSimpleName), e)
 					logger.warn("<TxExecutor> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				}
 				this.cacheTrack.rollback()

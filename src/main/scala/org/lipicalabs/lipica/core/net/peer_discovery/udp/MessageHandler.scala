@@ -8,6 +8,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryEvent
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -47,6 +48,7 @@ class MessageHandler(private val channel: NioDatagramChannel, private val nodeMa
 	override def channelReadComplete(ctx: ChannelHandlerContext): Unit = ctx.flush()
 
 	override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+		ErrorLogger.logger.warn("<MessageHandler> Exception caught: %s".format(cause.getClass.getSimpleName), cause)
 		logger.warn("<MessageHandler> Exception caught: %s".format(cause.getClass.getSimpleName), cause)
 		ctx.close()
 	}

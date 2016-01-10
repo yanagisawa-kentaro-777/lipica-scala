@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.manager.AdminInfo
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts}
 import org.lipicalabs.lipica.core.validator._
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
@@ -260,11 +260,13 @@ class BlockchainImpl(
 
 		//ブロック自体の破損検査を行う。
 		if (!isValid(block)) {
+			ErrorLogger.logger.warn("<Blockchain> INVALID BLOCK: %s".format(block.summaryString(short = true)))
 			logger.warn("<Blockchain> INVALID BLOCK: %s".format(block.summaryString(short = true)))
 			return InvalidBlock
 		}
 		if ((this.bestBlock ne null) && this.bestBlock.hash != block.parentHash) {
 			//ここには来ないはず。
+			ErrorLogger.logger.warn("<Blockchain> CANNOT CONNECT: %s is not the parent of %s".format(this.bestBlock.summaryString(short = true), block.summaryString(short = true)))
 			logger.warn("<Blockchain> CANNOT CONNECT: %s is not the parent of %s".format(this.bestBlock.summaryString(short = true), block.summaryString(short = true)))
 			return NoParent
 		}
@@ -281,11 +283,13 @@ class BlockchainImpl(
 
 		val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
 		if (block.receiptsRoot != calculatedReceiptsHash) {
+			ErrorLogger.logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
 			logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
 			return ConsensusBreak
 		}
 		val calculatedLogBloomHash = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
 		if (block.logsBloom != calculatedLogBloomHash) {
+			ErrorLogger.logger.warn("<Blockchain> LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
 			logger.warn("<Blockchain> LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
 			return ConsensusBreak
 		}

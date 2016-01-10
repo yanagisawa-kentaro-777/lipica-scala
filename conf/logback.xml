@@ -118,6 +118,20 @@
 			<MaxFileSize>100MB</MaxFileSize>
 		</triggeringPolicy>
 	</appender>
+	<appender name="ERRORS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/errors.log</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>./work/logs/errors%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
 
 	<root level="WARN">
 		<appender-ref ref="EXT_LIB"/>
@@ -172,6 +186,9 @@
 	</logger>
 	<logger name="blocks_record" level="INFO" additivity="false">
 		<appender-ref ref="BLOCKS_RECORD"/>
+	</logger>
+	<logger name="errors" level="INFO" additivity="false">
+		<appender-ref ref="ERRORS"/>
 	</logger>
 
 	<logger name="general" level="DEBUG" additivity="false">

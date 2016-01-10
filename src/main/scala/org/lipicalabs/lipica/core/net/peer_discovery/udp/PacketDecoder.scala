@@ -7,6 +7,7 @@ import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.MessageToMessageDecoder
 import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryEvent
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -37,6 +38,7 @@ class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 				//UDPは各データグラムが独立しているので、
 				//１個の解析に失敗したことは後続に影響を及ぼさない。
 				//他ノードから送られたメッセージの解析に失敗したことを、WARNレベルにするか否かは非常に微妙だ。
+				ErrorLogger.logger.warn("<PacketDecoder> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				logger.warn("<PacketDecoder> Exception caught: %s".format(e.getClass.getSimpleName), e)
 		}
 	}

@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.BlockHeaderValidator
 import org.slf4j.LoggerFactory
 
@@ -106,6 +106,7 @@ class SyncQueue {
 			} catch {
 				case e: Throwable =>
 					//ループの外に例外を突き抜けさせない。
+					ErrorLogger.logger.warn("<SyncQueue> Exception caught: %s".format(e.getClass.getSimpleName), e)
 					logger.warn("<SyncQueue> Exception caught: %s".format(e.getClass.getSimpleName), e)
 			}
 		}

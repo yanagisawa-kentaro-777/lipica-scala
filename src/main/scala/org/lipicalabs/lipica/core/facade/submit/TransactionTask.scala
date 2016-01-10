@@ -4,6 +4,7 @@ import java.util.concurrent.Callable
 
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -22,6 +23,7 @@ class TransactionTask(private val tx: TransactionLike, private val worldManager:
 			this.tx
 		} catch {
 			case e: Throwable =>
+				ErrorLogger.logger.warn("<TransactionTask> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				logger.warn("<TransactionTask> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				null
 		}

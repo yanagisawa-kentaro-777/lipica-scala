@@ -14,7 +14,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.peer_discovery.Node
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -469,6 +469,7 @@ object SystemProperties {
 			}
 		} catch {
 			case e: Throwable =>
+				ErrorLogger.logger.warn("<SystemProperties> Failed to detect ip address by %s".format(uri))
 				logger.warn("<SystemProperties> Failed to detect ip address by %s".format(uri))
 				None
 		} finally {

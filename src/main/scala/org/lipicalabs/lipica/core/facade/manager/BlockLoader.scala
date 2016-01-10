@@ -9,7 +9,7 @@ import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.kernel.ImportResult.{Exists, ImportedBest}
 import org.lipicalabs.lipica.core.kernel.{Block, Blockchain}
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -41,6 +41,7 @@ class BlockLoader {
 			}
 		} catch {
 			case e: Throwable =>
+				ErrorLogger.logger.warn("<BlockLoader> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				logger.warn("<BlockLoader> Exception caught: %s".format(e.getClass.getSimpleName), e)
 				e.printStackTrace()
 		}

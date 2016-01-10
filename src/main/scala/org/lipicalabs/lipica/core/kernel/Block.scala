@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.TxTrieRootCalculator
 import org.slf4j.LoggerFactory
 
@@ -274,13 +274,12 @@ object Block {
 		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
 			val givenTxs = items(1).items.map(_.bytes).mkString(",")
 			val rebuiltTxs = transactions.map(_.toEncodedBytes).mkString(",")
+			ErrorLogger.logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  GivenHash: %s != CalculatedHash: %s ; GivenTxs=[%s] ; RebuiltTxs=[%s]".format(
+				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs
+			))
 			logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  GivenHash: %s != CalculatedHash: %s ; GivenTxs=[%s] ; RebuiltTxs=[%s]".format(
-				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs)
-			)
-			//TODO RBACの仕様上、ゼロを合法的に表す方法が２通りあるため、扱いに悩みがある。
-//			System.out.println("<Block> Tx root unmatch at Block %,d! TxSize=%,d  GivenHash: %s != CalculatedHash: %s ; GivenTxs=[%s] ; RebuiltTxs=[%s]".format(
-//				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs)
-//			)
+				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs
+			))
 		} else if (transactions.nonEmpty) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<Block> Tx root matched at Block %,d. TxSize=%,d ; TxTrieRoot=%s".format(blockHeader.blockNumber, transactions.size, calculatedTxTrieRoot))

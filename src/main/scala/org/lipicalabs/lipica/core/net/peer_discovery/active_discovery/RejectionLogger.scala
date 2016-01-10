@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery.active_discovery
 
 import java.util.concurrent.{RejectedExecutionHandler, ThreadPoolExecutor}
 
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -13,6 +14,7 @@ class RejectionLogger extends RejectedExecutionHandler {
 	import RejectionLogger._
 
 	override def rejectedExecution(r: Runnable, executor: ThreadPoolExecutor): Unit = {
+		ErrorLogger.logger.warn("%s is rejected.".format(r))
 		logger.warn("%s is rejected.".format(r))
 	}
 

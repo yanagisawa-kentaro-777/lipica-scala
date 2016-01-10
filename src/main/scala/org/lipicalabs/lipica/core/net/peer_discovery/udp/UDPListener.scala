@@ -10,7 +10,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryExecutor
-import org.lipicalabs.lipica.core.utils.CountingThreadFactory
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
 import org.slf4j.LoggerFactory
 
 /**
@@ -39,6 +39,7 @@ class UDPListener {
 						UDPListener.this.bind()
 					} catch {
 						case e: Exception =>
+							ErrorLogger.logger.warn("<UDPListener> Exception (%s) caught in binding [%s]:%d".format(e.getClass.getSimpleName, address, port), e)
 							logger.warn("<UDPListener> Exception (%s) caught in binding [%s]:%d".format(e.getClass.getSimpleName, address, port), e)
 					}
 				}
@@ -87,6 +88,7 @@ class UDPListener {
 		} catch {
 			case any: Throwable =>
 				//ここに来るのは想定外である。
+				ErrorLogger.logger.warn("<UDPListener> Exception caught: %s".format(any.getClass.getSimpleName), any)
 				logger.warn("<UDPListener> Exception caught: %s".format(any.getClass.getSimpleName), any)
 		} finally {
 			group.shutdownGracefully()

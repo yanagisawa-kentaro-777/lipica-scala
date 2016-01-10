@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import org.iq80.leveldb
 import org.iq80.leveldb.{CompressionType, DB, Options}
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -57,6 +57,7 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 			this.aliveRef.set(true)
 		} catch {
 			case e: Exception =>
+				ErrorLogger.logger.warn("<LevelDBDS>", e)
 				logger.warn("<LevelDBDS>", e)
 				throw new RuntimeException(e)
 		}
@@ -70,6 +71,7 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 			org.fusesource.leveldbjni.JniDBFactory.factory.destroy(path.toFile, new leveldb.Options)
 		} catch {
 			case e: Exception =>
+				ErrorLogger.logger.warn("<LevelDBDS>", e)
 				logger.warn("<LevelDBDS>", e)
 		}
 	}
@@ -86,6 +88,7 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 			this.aliveRef.set(false)
 		} catch {
 			case e: Exception =>
+				ErrorLogger.logger.warn("<LevelDBDS>", e)
 				logger.warn("<LevelDBDS>", e)
 		}
 	}
@@ -142,6 +145,7 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 					updateBatch(rows)
 				} catch {
 					case e1: Exception =>
+						ErrorLogger.logger.warn("<LevelDBDS>", e)
 						logger.warn("<LevelDBDS>", e1)
 						throw new RuntimeException(e1)
 				}

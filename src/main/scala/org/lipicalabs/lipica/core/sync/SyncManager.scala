@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.facade.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.{ChannelManager, Channel}
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeStatistics, NodeManager, NodeHandler}
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoverListener
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, UtilConsts, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -88,6 +88,7 @@ class SyncManager {
 								maintainState()
 							} catch {
 								case e: Throwable =>
+									ErrorLogger.logger.warn("<SyncManager> Exception caught: %s".format(e.getClass.getSimpleName), e)
 									logger.warn("<SyncManager> Exception caught: %s".format(e.getClass.getSimpleName), e)
 							}
 						}
@@ -317,6 +318,7 @@ class SyncManager {
 						logger.info("State: %s".format(state))
 					} catch {
 						case e: Throwable =>
+							ErrorLogger.logger.warn("<SyncManager> Exception caught: %s".format(e.getClass.getSimpleName), e)
 							logger.warn("<SyncManager> Exception caught: %s".format(e.getClass.getSimpleName), e)
 					}
 				}

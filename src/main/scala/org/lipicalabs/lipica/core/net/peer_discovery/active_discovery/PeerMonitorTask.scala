@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery.active_discovery
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -31,6 +32,7 @@ class PeerMonitorTask(private val executor: ThreadPoolExecutor, private val dela
 				case e: InterruptedException =>
 					this.shutdown()
 				case any: Throwable =>
+					ErrorLogger.logger.warn("<PeerMonitorTask> Exception caught %s".format(any.getClass.getSimpleName), any)
 					logger.warn("<PeerMonitorTask> Exception caught %s".format(any.getClass.getSimpleName), any)
 			}
 		}
