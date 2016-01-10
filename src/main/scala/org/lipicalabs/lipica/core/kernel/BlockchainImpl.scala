@@ -432,14 +432,14 @@ class BlockchainImpl(
 		if (0 < block.uncles.size) {
 			for (uncle <- block.uncles) {
 				val uncleReward = BigDecimal(Block.BlockReward) * (BigDecimal(8 + uncle.blockNumber - block.blockNumber) / BigDecimal(8))
-				this.track.addBalance(uncle.coinbase, uncleReward.toBigInt())
+				Payment.reward(this.track, uncle.coinbase, uncleReward.toBigInt(), Payment.UncleReward)
 				totalBlockReward = totalBlockReward + Block.InclusionReward
 			}
 		}
 		if (logger.isDebugEnabled) {
 			logger.debug("<Blockchain> Total reward for %s is %,d. (Uncles=%,d)".format(block.summaryString(short = true), totalBlockReward, block.uncles.size))
 		}
-		this.track.addBalance(block.coinbase, totalBlockReward)
+		Payment.reward(this.track, block.coinbase, totalBlockReward, Payment.BlockReward)
 	}
 
 	private def needsFlushing(block: Block): Boolean = {

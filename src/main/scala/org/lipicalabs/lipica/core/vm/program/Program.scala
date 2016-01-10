@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.kernel.{Transfer, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.{Payment, TransactionLike}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
@@ -217,7 +217,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		}
 
 		addInternalTx(ImmutableBytes.empty, DataWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
-		Transfer.transfer(this.storage, owner, obtainer, balance)
+		Payment.transfer(this.storage, owner, obtainer, balance, Payment.Bequest)
 		result.addDeletedAccount(getOwnerAddress)
 	}
 
@@ -255,7 +255,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		}
 
 		val track = this.storage.startTracking
-		//ハッシュ値衝突が発生した場合の配慮のため、残高を検査する。
+		//既存だったら、残高を受け継ぐ。
 		if (track.existsAccount(newAddress)) {
 			val oldBalance = track.getBalance(newAddress).getOrElse(UtilConsts.Zero)
 			track.createAccount(newAddress)
@@ -264,13 +264,15 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			track.createAccount(newAddress)
 		}
 		//移動を実行する。
-		track.addBalance(senderAddress, -endowment)
-		val newBalance: BigInt =
-			if (!byTestingSuite) {
-				track.addBalance(newAddress, endowment)
-			} else {
-				UtilConsts.Zero
-			}
+		Payment.transfer(track, senderAddress, newAddress, endowment, Payment.ContractCreationTx)
+		val newBalance = track.getBalance(newAddress).get
+//		track.addBalance(senderAddress, -endowment)
+//		val newBalance: BigInt =
+//			if (!byTestingSuite) {
+//				track.addBalance(newAddress, endowment)
+//			} else {
+//				UtilConsts.Zero
+//			}
 		//実行する。
 		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
 		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore, byTestingSuite)
@@ -374,15 +376,17 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 //			} else {
 //				ImmutableBytes.empty
 //			}
-		track.addBalance(senderAddress, -endowment)
+		Payment.transfer(track, senderAddress, contextAddress, endowment, Payment.ContractInvocationTx)
+		val contextBalance = track.getBalance(contextAddress).get
 
-		val contextBalance =
-			if (byTestingSuite) {
-				this.result.addCallCreate(data, contextAddress, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
-				UtilConsts.Zero
-			} else {
-				track.addBalance(contextAddress, endowment)
-			}
+//		track.addBalance(senderAddress, -endowment)
+//		val contextBalance =
+//			if (byTestingSuite) {
+//				this.result.addCallCreate(data, contextAddress, message.mana.getDataWithoutLeadingZeros, message.endowment.getDataWithoutLeadingZeros)
+//				UtilConsts.Zero
+//			} else {
+//				track.addBalance(contextAddress, endowment)
+//			}
 
 		//内部トランザクションを生成する。
 		val internalTx = addInternalTx(ImmutableBytes.empty, getBlockManaLimit, senderAddress, contextAddress, endowment, programCode, "call")
@@ -436,7 +440,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 			}
 		} else {
 			//全額。
-			this.refundMana(message.mana.longValue, "remaining gas from the internal call")
+			this.refundMana(message.mana.longValue, "remaining mana from the internal call")
 		}
 	}
 
@@ -473,7 +477,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		val data = this.memoryChunk(message.inDataOffset.intValue, message.inDataSize.intValue)
 		//手数料を取る。
-		Transfer.transfer(track, senderAddress, contextAddress, message.endowment.value)
+		Payment.transfer(track, senderAddress, contextAddress, message.endowment.value, Payment.ContractInvocationTx)
 
 		if (byTestingSuite) {
 			//テストなので、生成されたコールを蓄積する。

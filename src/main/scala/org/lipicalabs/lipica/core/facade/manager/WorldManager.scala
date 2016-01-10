@@ -114,7 +114,7 @@ class WorldManager extends Closeable {
 				val genesis = Genesis.getInstance
 				for (entry <- genesis.premine) {
 					this.repository.createAccount(entry._1)
-					this.repository.addBalance(entry._1, entry._2.balance)
+					Payment.reward(this.repository, entry._1, entry._2.balance, Payment.PremineReward)
 				}
 				this.blockStore.saveBlock(genesis, genesis.cumulativeDifficulty, mainChain = true)
 				this.blockchain.bestBlock = genesis

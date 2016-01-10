@@ -82,7 +82,7 @@ class TransactionExecutor(
 			val txManaPrice = this.tx.manaPrice.toPositiveBigInt
 			val txManaLimit = this.tx.manaLimit.toPositiveBigInt
 			val txManaCost = txManaPrice * txManaLimit
-			this.track.addBalance(tx.senderAddress, -txManaCost)
+			Payment.txFee(this.track, tx.senderAddress, -txManaCost, Payment.TxFeeAdvanceWithdrawal)
 			logger.info("<TxExecutor> Withdraw in advance: TxManaCost: %,d, ManaPrice: %,d, ManaLimit: %,d".format(txManaCost, txManaPrice, txManaLimit))
 		}
 		if (this.tx.isContractCreation) {
@@ -111,7 +111,7 @@ class TransactionExecutor(
 			}
 		}
 		val endowment = this.tx.value.toPositiveBigInt
-		Transfer.transfer(this.cacheTrack, this.tx.senderAddress, newContractAddress, endowment)
+		Payment.transfer(this.cacheTrack, this.tx.senderAddress, newContractAddress, endowment, Payment.ContractCreationTx)
 	}
 
 	private def call(): Unit = {
@@ -136,7 +136,7 @@ class TransactionExecutor(
 				}
 			case None =>
 				if (logger.isDebugEnabled) {
-					logger.debug("<TxExecutor> User defined contract invocation: [%s]".format(targetAddress))
+					logger.debug("<TxExecutor> User defined contract invocation? [%s]".format(targetAddress))
 				}
 				this.track.getCode(targetAddress) match {
 					case Some(code) =>
@@ -147,12 +147,15 @@ class TransactionExecutor(
 						this.vm = new VM
 						this.program = new Program(code, invoke, this.tx)
 					case None =>
+						if (logger.isTraceEnabled) {
+							logger.trace("<TxExecutor> Normal tx.")
+						}
 						this.endMana = this.tx.manaLimit.toPositiveBigInt.longValue() - this.basicTxCost
 				}
 		}
 
 		val endowment = this.tx.value.toPositiveBigInt
-		Transfer.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment)
+		Payment.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment, Payment.TxSettlement)
 	}
 
 	def go(): Unit = {
@@ -228,13 +231,13 @@ class TransactionExecutor(
 
 		//払い戻す。
 		val payback = summary.calculateLeftOver + summary.calculateRefund
-		this.track.addBalance(this.tx.senderAddress, payback)
-		logger.info("<TxExecutor> Paying total refund to sender: %s. RefundVal=%,d. (ManaLeftOver=%,d. ManaRefund=%,d. EndMana=%,d)".format(
+		Payment.txFee(this.track, this.tx.senderAddress, payback, Payment.TxFeeRefund)
+		logger.info("<TxExecutor> Payed total refund to sender: %s. RefundVal=%,d. (ManaLeftOver=%,d. ManaRefund=%,d. EndMana=%,d)".format(
 			this.tx.senderAddress, payback, summary.manaLeftOver, summary.manaRefund, this.endMana)
 		)
 		//採掘報酬。
-		this.track.addBalance(this.coinbase, summary.calculateFee)
-		logger.info("<TxExecutor> Paying fee to miner: %s, fee: %,d".format(this.coinbase, summary.calculateFee))
+		Payment.txFee(this.track, this.coinbase, summary.calculateFee, Payment.TxFee)
+		logger.info("<TxExecutor> Payed fee to miner: %s, fee: %,d".format(this.coinbase, summary.calculateFee))
 
 		Option(this.result).foreach {
 			r => {
