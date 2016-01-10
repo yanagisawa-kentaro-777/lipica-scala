@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 /**
  * 十六進文字列を、終端記号付き（オプショナル）のバイト列に変換するための実装オブジェクトです。
  *
- * 終端記号は、trie、Patricia-Tree、Merkle-Patricia-Tree で
+ * 終端記号は、trie（Merkle Patricia Tree）で
  * 接頭辞、接尾辞関係を扱うために必要となるので、
  * その有無を表すフラグを持つこととします。
  *
@@ -16,6 +16,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * エンコードされたバイト列を、"0f1248" に戻すべきか "f1248" に戻すべきか
  * わからない、という問題が発生してしまいます。
  * これを解決するために、元のバイト列が偶数か奇数かを表すフラグを持つこととします。
+ *
+ * @author YANAGISAWA, Kentaro
  */
 object NibbleCodec {
 
@@ -116,6 +118,11 @@ object NibbleCodec {
 		binToNibbles(bytes, withTerminator = false)
 	}
 
+	/**
+	 * バイト列を、１ニブル（＝４ビット）１文字（＝１バイト）のバイト列に変換して返します。
+	 * 終端記号の有無は指定に従います。
+	 * すなわち、バイト数は 2 * bytes.length に増大します。
+	 */
 	private def binToNibbles(bytes: ImmutableBytes, withTerminator: Boolean): ImmutableBytes = {
 		val hexChars = bytes.toHexString
 		val result =

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.endpoint
 
-import java.net.InetAddress
+import java.net.InetSocketAddress
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.{DefaultMessageSizeEstimator, ChannelOption, EventLoopGroup}
@@ -25,14 +25,18 @@ class PeerClient {
 	private def worldManager: WorldManager = WorldManager.instance
 
 	/**
+	 * 他ノードに対して接続確立を試行します。
 	 *
 	 * @param address 接続先アドレス。
 	 * @param nodeId 接続先ノードID。
 	 */
-	def connect(address: InetAddress, port: Int, nodeId: ImmutableBytes): Unit = connect(address, port, nodeId, discoveryMode = false)
+	def connect(address: InetSocketAddress, nodeId: ImmutableBytes): Unit = connect(address, nodeId, discoveryMode = false)
 
-	def connect(address: InetAddress, port: Int, nodeId: ImmutableBytes, discoveryMode: Boolean): Unit = {
-		this.worldManager.listener.trace("<PeerClient> Connecting to [%s]:%d".format(address, port))
+	/**
+	 * 他ノードに対して接続確立を試行します。
+	 */
+	def connect(address: InetSocketAddress, nodeId: ImmutableBytes, discoveryMode: Boolean): Unit = {
+		this.worldManager.listener.trace("<PeerClient> Connecting to %s".format(address))
 		val channelInitializer = new LipicaChannelInitializer(nodeId)
 		channelInitializer.peerDiscoveryMode = discoveryMode
 
@@ -41,21 +45,21 @@ class PeerClient {
 				option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE).
 				option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT).
 				option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Integer.valueOf(SystemProperties.CONFIG.connectionTimeoutMillis)).
-				remoteAddress(address, port).
+				remoteAddress(address).
 				handler(channelInitializer)
 			//クライアントとして接続する。
 			val future = b.connect().sync()
-			logger.debug("<PeerClient> Connection is established to %s [%s]:%d.".format(nodeId.toShortString, address, port))
+			logger.debug("<PeerClient> Connection is established to %s %s.".format(nodeId.toShortString, address))
 			//接続がクローズされるまで待つ。
 			future.channel().closeFuture().sync()
-			logger.debug("<PeerClient> Connection is closed to %s [%s]:%d.".format(nodeId.toShortString, address, port))
+			logger.debug("<PeerClient> Connection is closed to %s %s.".format(nodeId.toShortString, address))
 		} catch {
 			case e: Throwable =>
 				if (discoveryMode) {
-					logger.debug("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
+					logger.debug("<PeerClient> Exception caught: %s connecting to %s...(%s)".format(e.getClass.getSimpleName, nodeId.toShortString, address), e)
 				} else {
-					ErrorLogger.logger.warn("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
-					logger.warn("<PeerClient> Exception caught: %s connecting to %s...([%s]:%d)".format(e.getClass.getSimpleName, nodeId.toShortString, address, port), e)
+					ErrorLogger.logger.warn("<PeerClient> Exception caught: %s connecting to %s (%s)".format(e.getClass.getSimpleName, nodeId.toShortString, address), e)
+					logger.warn("<PeerClient> Exception caught: %s connecting to %s (%s)".format(e.getClass.getSimpleName, nodeId.toShortString, address), e)
 				}
 		}
 	}

@@ -45,7 +45,7 @@ class PeerConnectionExaminer {
 				//
 				//接続を試行し、切断されるまでブロックする。
 				val node = this.nodeHandler.node
-				worldManager.client.connect(node.address.getAddress, node.address.getPort, node.id, discoveryMode = true)
+				worldManager.client.connect(node.address, node.id, discoveryMode = true)
 				if (logger.isDebugEnabled) {
 					logger.debug("<PeerConnectionExaminer> Terminated node connection " + this.nodeHandler)
 				}

@@ -183,7 +183,7 @@ object RBACCodec {
 		}
 
 		/**
-		 * アイテムをエンコードします。
+		 * １個の値をエンコードします。
 		 */
 		private def encodeItem(value: Any): ImmutableBytes = {
 			value match {
@@ -191,6 +191,7 @@ object RBACCodec {
 					//空のアイテムとする。
 					ImmutableBytes.fromOneByte(OFFSET_SHORT_ITEM.asInstanceOf[Byte])
 				case _ =>
+					//値をバイト列に変換する。
 					val bytes = toBytes(value)
 					if (bytes.isEmpty) {
 						ImmutableBytes.fromOneByte(OFFSET_SHORT_ITEM.asInstanceOf[Byte])
@@ -223,6 +224,9 @@ object RBACCodec {
 			}
 		}
 
+		/**
+		 * １個の値をバイト列に変換します。
+		 */
 		@tailrec
 		private def toBytes(input: Any): ImmutableBytes = {
 			input match {

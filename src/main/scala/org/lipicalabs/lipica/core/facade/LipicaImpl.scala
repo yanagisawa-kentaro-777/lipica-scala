@@ -38,9 +38,11 @@ class LipicaImpl extends Lipica {
 	override def init(): Unit = {
 		val bindPort = SystemProperties.CONFIG.bindPort
 		if (0 < bindPort) {
+			val bindAddress = SystemProperties.CONFIG.bindAddress
+			val socketAddress = new InetSocketAddress(bindAddress, bindPort)
 			Executors.newSingleThreadExecutor(new CountingThreadFactory("front-server")).submit(new Runnable {
 				override def run(): Unit = {
-					peerServer.start(bindPort)
+					peerServer.start(socketAddress)
 				}
 			})
 		}
@@ -79,7 +81,7 @@ class LipicaImpl extends Lipica {
 	override def connect(address: InetSocketAddress, remoteNodeId: ImmutableBytes): Unit = {
 		this.connectExecutor.submit(new Runnable {
 			override def run(): Unit = {
-				worldManager.client.connect(address.getAddress, address.getPort, remoteNodeId)
+				worldManager.client.connect(address, remoteNodeId)
 			}
 		})
 	}

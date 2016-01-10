@@ -11,6 +11,8 @@ object Utils {
 
 	/**
 	 * 現在動作しているすべてのスレッドの数を返します。
+	 *
+	 * 返される結果は概要に過ぎず、何らかの時点での厳密なスナップショットではありません。
 	 */
 	def numberOfThreads: Int = {
 		val rootGroup = getRootThreadGroup(Thread.currentThread.getThreadGroup)
@@ -37,8 +39,10 @@ object Utils {
 	private def getRootThreadGroup(group: ThreadGroup): ThreadGroup = {
 		val parent = group.getParent
 		if (parent eq null) {
+			//これが最上位である。
 			group
 		} else {
+			//さらに上をたどる。
 			getRootThreadGroup(parent)
 		}
 	}
