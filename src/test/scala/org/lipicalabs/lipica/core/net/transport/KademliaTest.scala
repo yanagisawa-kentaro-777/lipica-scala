@@ -4,6 +4,7 @@ import java.net.{InetSocketAddress, InetAddress}
 import java.util.Random
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.{DistanceComparator, NodeEntry, KademliaOptions, NodeTable}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification

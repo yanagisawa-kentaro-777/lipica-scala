@@ -13,7 +13,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

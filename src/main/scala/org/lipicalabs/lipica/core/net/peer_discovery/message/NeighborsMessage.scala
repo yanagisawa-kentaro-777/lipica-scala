@@ -1,7 +1,9 @@
-package org.lipicalabs.lipica.core.net.transport
+package org.lipicalabs.lipica.core.net.peer_discovery.message
 
-import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.net.peer_discovery.Node
+import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**

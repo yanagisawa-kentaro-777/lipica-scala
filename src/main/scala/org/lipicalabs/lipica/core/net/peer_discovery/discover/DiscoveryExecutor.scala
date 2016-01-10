@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
 import java.util.concurrent.{TimeUnit, Executors}
 
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.KademliaOptions
 import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 

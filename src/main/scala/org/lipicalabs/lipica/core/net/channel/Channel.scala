@@ -17,11 +17,11 @@ import org.lipicalabs.lipica.core.net.lpc.message.LpcMessageFactory
 import org.lipicalabs.lipica.core.net.lpc.sync.{SyncStateName, SyncStatistics}
 import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, MessageFactory}
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler, P2PMessageFactory}
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeStatistics, NodeManager, Node}
 import org.lipicalabs.lipica.core.net.shh.{ShhHandler, ShhMessageFactory}
 import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzHandler, BzzMessageFactory}
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
-import org.lipicalabs.lipica.core.net.peer_discovery.discover.{NodeManager, NodeStatistics}
-import org.lipicalabs.lipica.core.net.transport.{FrameCodec, MessageCodec, Node}
+import org.lipicalabs.lipica.core.net.transport.{FrameCodec, MessageCodec}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

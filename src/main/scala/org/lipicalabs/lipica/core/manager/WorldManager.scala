@@ -12,9 +12,9 @@ import org.lipicalabs.lipica.core.listener.{CompositeLipicaListener, LipicaListe
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
-import org.lipicalabs.lipica.core.net.peer_discovery.discover.NodeManager
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
 import org.slf4j.LoggerFactory

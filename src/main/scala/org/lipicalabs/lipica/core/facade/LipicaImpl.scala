@@ -10,11 +10,10 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
 import org.lipicalabs.lipica.core.manager.{AdminInfo, WorldManager}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
-import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
+import org.lipicalabs.lipica.core.net.peer_discovery.{Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.endpoint.PeerServer
 import org.lipicalabs.lipica.core.net.submit.{TransactionExecutor, TransactionTask}
-import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory

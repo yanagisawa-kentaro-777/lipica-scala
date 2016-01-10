@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.base.{TransactionExecutionSummary, Transaction
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.Message
 import org.lipicalabs.lipica.core.net.p2p.HelloMessage
-import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.net.peer_discovery.Node
 
 /**
  * Created by IntelliJ IDEA.

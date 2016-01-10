@@ -5,6 +5,7 @@ import java.net.{InetSocketAddress, InetAddress}
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PongMessage, PingMessage}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner

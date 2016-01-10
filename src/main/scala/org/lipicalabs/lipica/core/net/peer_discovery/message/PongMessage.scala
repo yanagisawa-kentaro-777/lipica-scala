@@ -1,9 +1,10 @@
-package org.lipicalabs.lipica.core.net.transport
+package org.lipicalabs.lipica.core.net.peer_discovery.message
 
 import java.net.InetSocketAddress
 
-import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 
 /**

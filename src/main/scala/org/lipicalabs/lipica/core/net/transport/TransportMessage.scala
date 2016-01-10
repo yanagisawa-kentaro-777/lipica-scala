@@ -5,6 +5,7 @@ import java.util
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PongMessage, PingMessage}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 import org.spongycastle.util.BigIntegers

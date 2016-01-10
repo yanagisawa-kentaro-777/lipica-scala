@@ -4,7 +4,7 @@ import java.util.concurrent.{Executors, TimeUnit}
 
 import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.core.net.channel.Channel
-import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 

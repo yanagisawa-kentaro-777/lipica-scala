@@ -1,10 +1,9 @@
-package org.lipicalabs.lipica.core.net.peer_discovery.discover
+package org.lipicalabs.lipica.core.net.peer_discovery
 
-import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
+import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.ReasonCode
-import org.lipicalabs.lipica.core.net.transport.Node
 import org.lipicalabs.lipica.core.utils.UtilConsts
 
 /**

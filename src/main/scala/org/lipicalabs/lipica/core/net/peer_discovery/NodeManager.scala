@@ -1,23 +1,24 @@
-package org.lipicalabs.lipica.core.net.peer_discovery.discover
+package org.lipicalabs.lipica.core.net.peer_discovery
 
 import java.net.{InetAddress, InetSocketAddress}
 import java.util
 import java.util.Comparator
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent.{Executors, TimeUnit}
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.db.datasource.mapdb.{MapDBFactoryImpl, MapDBFactory}
+import org.lipicalabs.lipica.core.db.datasource.mapdb.{MapDBFactory, MapDBFactoryImpl}
 import org.lipicalabs.lipica.core.manager.WorldManager
-import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageHandler
-import org.lipicalabs.lipica.core.net.transport._
-import org.lipicalabs.lipica.core.net.peer_discovery.discover.NodeStatistics.Persistent
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeStatistics.Persistent
+import org.lipicalabs.lipica.core.net.peer_discovery.discover._
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.NodeTable
+import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PingMessage, PongMessage}
+import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageHandler
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
-import org.mapdb.{HTreeMap, DB}
+import org.mapdb.{DB, HTreeMap}
 import org.slf4j.LoggerFactory
 
-import scala.collection.{mutable, JavaConversions}
+import scala.collection.{JavaConversions, mutable}
 
 /**
  * Created by IntelliJ IDEA.

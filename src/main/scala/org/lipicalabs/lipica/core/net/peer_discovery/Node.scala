@@ -1,10 +1,10 @@
-package org.lipicalabs.lipica.core.net.transport
+package org.lipicalabs.lipica.core.net.peer_discovery
 
-import java.net.{InetSocketAddress, InetAddress, URI}
+import java.net.{InetAddress, InetSocketAddress, URI}
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * 自ノードもしくは他ノードの重要な情報をモデル化したクラスです。

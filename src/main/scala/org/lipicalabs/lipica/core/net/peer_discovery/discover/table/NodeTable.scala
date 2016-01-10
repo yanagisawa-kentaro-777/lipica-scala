@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 
-import org.lipicalabs.lipica.core.net.transport.Node
+import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 import scala.collection.mutable.ArrayBuffer

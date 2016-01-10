@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
 import java.util.Random
 
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
