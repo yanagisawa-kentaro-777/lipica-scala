@@ -2,10 +2,9 @@ package org.lipicalabs.lipica.core.net.message
 
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
-trait Command {
-	//
-}
-
+/**
+ * ノード間のあらゆる通信メッセージが実装すべき trait です。
+ */
 trait Message {
 	def isParsed: Boolean
 	def toEncodedBytes: ImmutableBytes
@@ -15,6 +14,9 @@ trait Message {
 }
 
 /**
+ * エンコードされた形ではなく、
+ * プログラミング言語から扱える形に解析・変換されたメッセージを表す trait です。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/03 21:02
  * YANAGISAWA, Kentaro
@@ -23,7 +25,9 @@ trait ParsedMessage extends Message {
 	override val isParsed: Boolean = true
 }
 
-abstract class EncodedMessage(private val encodedBytes: ImmutableBytes) extends Message {
-	override val isParsed: Boolean = false
-	override val toEncodedBytes = this.encodedBytes
+/**
+ * メッセージが何の指示であるかを表す列挙型です。
+ */
+trait Command {
+	//
 }

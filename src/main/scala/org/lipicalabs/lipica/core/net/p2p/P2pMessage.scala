@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.net.p2p
 
-import org.lipicalabs.lipica.core.net.message.{EncodedMessage, ParsedMessage}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.net.message.ParsedMessage
 
 /**
  * Created by IntelliJ IDEA.
