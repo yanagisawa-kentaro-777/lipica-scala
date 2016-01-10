@@ -58,7 +58,7 @@ object GenesisLoader {
 	}
 
 	private def calculateRootHash(premine: Map[ImmutableBytes, AccountState]): ImmutableBytes = {
-		val trie = new SecureTrie(null)
+		val trie = SecureTrie.newInstance
 		for (entry <- premine) {
 			trie.update(entry._1, entry._2.encode)
 		}

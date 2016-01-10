@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/11/04 20:49
  * YANAGISAWA, Kentaro
  */
-class SecureTrie private[core](_db: KeyValueDataSource, _root: ImmutableBytes) extends TrieImpl(_db, _root) {
+class SecureTrie(_db: KeyValueDataSource, _root: ImmutableBytes) extends TrieImpl(_db, _root) {
 
 	def this(_db: KeyValueDataSource) = this(_db, DigestUtils.EmptyTrieHash)
 
@@ -22,4 +22,8 @@ class SecureTrie private[core](_db: KeyValueDataSource, _root: ImmutableBytes) e
 
 	override def delete(key: ImmutableBytes): Unit = this.update(key, ImmutableBytes.empty)
 
+}
+
+object SecureTrie {
+	def newInstance: SecureTrie = new SecureTrie(null)
 }

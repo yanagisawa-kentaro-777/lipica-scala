@@ -37,7 +37,7 @@ class ContractDetailsImpl() extends ContractDetails {
 	private val keysRef = new AtomicReference[mutable.HashSet[ImmutableBytes]](new mutable.HashSet[ImmutableBytes])
 	private def keys: mutable.HashSet[ImmutableBytes] = this.keysRef.get
 
-	private val storageTrieRef: AtomicReference[SecureTrie] = new AtomicReference[SecureTrie](new SecureTrie(null))
+	private val storageTrieRef: AtomicReference[SecureTrie] = new AtomicReference[SecureTrie](SecureTrie.newInstance)
 	private def storageTrie: SecureTrie = this.storageTrieRef.get
 
 	private val isDirtyRef: AtomicBoolean = new AtomicBoolean(false)

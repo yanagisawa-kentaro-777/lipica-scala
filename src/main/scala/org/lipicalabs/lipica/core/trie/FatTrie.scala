@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class FatTrie(origTrieDS: KeyValueDataSource, secureTrieDS: KeyValueDataSource) extends Trie {
 
-	private val _origTrie = new TrieImpl(origTrieDS)
+	private val _origTrie = TrieImpl.newInstance(origTrieDS)
 	private val _secureTrie = new SecureTrie(secureTrieDS)
 
 	def origTrie: TrieImpl = this._origTrie

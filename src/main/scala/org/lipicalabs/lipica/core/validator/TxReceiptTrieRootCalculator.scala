@@ -16,7 +16,7 @@ object TxReceiptTrieRootCalculator {
 		if (receipts.isEmpty) {
 			return DigestUtils.EmptyTrieHash
 		}
-		val trie = new TrieImpl(null)
+		val trie = TrieImpl.newInstance
 		for (i <- receipts.indices) {
 			val key = RBACCodec.Encoder.encode(i)
 			val value = receipts(i).encode

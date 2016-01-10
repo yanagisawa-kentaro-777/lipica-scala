@@ -21,8 +21,6 @@ class PeersPool {
 	import PeersPool._
 	import scala.collection.JavaConversions._
 
-	//TODO 全体的に String はいかがなものか。
-
 	private val activePeers: mutable.Map[ImmutableBytes, Channel] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Channel])
 	private val bannedPeers: mutable.Map[Channel, BanReason] = mapAsScalaConcurrentMap(new ConcurrentHashMap[Channel, BanReason])
 	private val disconnectHits: mutable.Map[ImmutableBytes, Int] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Int])

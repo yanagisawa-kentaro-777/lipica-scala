@@ -19,10 +19,10 @@ import scala.collection.mutable
  */
 class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) extends Trie {
 
+	private[trie] def this(_db: KeyValueDataSource) = this(_db, DigestUtils.EmptyTrieHash)
+
 	import TrieImpl._
 	import org.lipicalabs.lipica.core.bytes_codec.NibbleCodec._
-
-	def this(_db: KeyValueDataSource) = this(_db, DigestUtils.EmptyTrieHash)
 
 	/**
 	 * 木構造のルート要素。
@@ -476,6 +476,10 @@ object TrieImpl {
 	private val logger = LoggerFactory.getLogger("general")
 
 	private val EMPTY_TRIE_HASH = DigestUtils.EmptyTrieHash
+
+	def newInstance: TrieImpl = new TrieImpl(null)
+
+	def newInstance(ds: KeyValueDataSource): TrieImpl = new TrieImpl(ds)
 
 	@tailrec
 	def computeHash(obj: Either[ImmutableBytes, Value]): ImmutableBytes = {

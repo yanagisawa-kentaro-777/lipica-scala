@@ -20,7 +20,7 @@ object TxTrieRootCalculator {
 		if (txs.isEmpty) {
 			return DigestUtils.EmptyTrieHash
 		}
-		val trie = new TrieImpl(null)
+		val trie = TrieImpl.newInstance
 		txs.indices.foreach {
 			i => trie.update(RBACCodec.Encoder.encode(i), txs(i).toEncodedBytes)
 		}
