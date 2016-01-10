@@ -5,13 +5,12 @@ import java.util.concurrent._
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
-import org.lipicalabs.lipica.core.net.MessageQueue
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode._
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
-import org.lipicalabs.lipica.core.net.channel.Channel
+import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.net.transport.HandshakeHelper

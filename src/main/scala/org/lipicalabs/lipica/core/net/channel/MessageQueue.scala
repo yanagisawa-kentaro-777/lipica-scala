@@ -1,10 +1,10 @@
-package org.lipicalabs.lipica.core.net
+package org.lipicalabs.lipica.core.net.channel
 
 import java.util.concurrent._
 
 import io.netty.channel.ChannelHandlerContext
 import org.lipicalabs.lipica.core.facade.manager.WorldManager
-import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, ReasonCode, Message}
+import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, Message, ReasonCode}
 import org.lipicalabs.lipica.core.net.p2p.{DisconnectMessage, PingMessage}
 import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
@@ -137,4 +137,28 @@ object MessageQueue {
 
 	private val timer = Executors.newScheduledThreadPool(8, new CountingThreadFactory("message-queue-timer"))
 
+}
+
+class MessageRoundtrip(val message: Message) {
+
+	private var _lastTimestamp = 0L
+	def lastTimestamp: Long = this._lastTimestamp
+	def saveTime(): Unit = {
+		this._lastTimestamp = System.currentTimeMillis()
+	}
+	def hasToRetry: Boolean = {
+		20000L < (System.currentTimeMillis() - this._lastTimestamp)
+	}
+
+	private var _retryTimes = 0L
+	def retryTimes: Long = this._retryTimes
+	def incrementRetryTimes(): Unit = {
+		this._retryTimes += 1
+	}
+
+	private var _answered = false
+	def isAnswered = this._answered
+	def answer(): Unit = this._answered = true
+
+	saveTime()
 }

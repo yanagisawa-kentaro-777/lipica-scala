@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.shh
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.net.MessageQueue
+import org.lipicalabs.lipica.core.net.channel.MessageQueue
 
 /**
  * Created by IntelliJ IDEA.

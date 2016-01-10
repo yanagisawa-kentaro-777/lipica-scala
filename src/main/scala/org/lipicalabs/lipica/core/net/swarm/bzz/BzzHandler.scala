@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.swarm.bzz
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import org.lipicalabs.lipica.core.net.MessageQueue
+import org.lipicalabs.lipica.core.net.channel.MessageQueue
 
 /**
  * Created by IntelliJ IDEA.
