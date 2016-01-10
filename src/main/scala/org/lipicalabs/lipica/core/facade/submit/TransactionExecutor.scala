@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.submit
+package org.lipicalabs.lipica.core.facade.submit
 
 import java.util.concurrent.{Future, Executors}
 
