@@ -66,7 +66,7 @@ class UDPListener {
 					override def initChannel(ch: NioDatagramChannel): Unit = {
 						ch.pipeline.addLast(new PacketDecoder)
 						val messageHandler = new MessageHandler(ch, nodeManager)
-						nodeManager.setMessageSender(messageHandler)
+						nodeManager.messageSender = messageHandler
 						ch.pipeline.addLast(messageHandler)
 					}
 				})

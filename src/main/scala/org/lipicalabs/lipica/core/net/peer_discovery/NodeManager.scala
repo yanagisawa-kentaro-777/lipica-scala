@@ -3,7 +3,8 @@ package org.lipicalabs.lipica.core.net.peer_discovery
 import java.net.{InetAddress, InetSocketAddress}
 import java.util
 import java.util.Comparator
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
@@ -21,25 +22,34 @@ import org.slf4j.LoggerFactory
 import scala.collection.{JavaConversions, mutable}
 
 /**
+ * ピアディスカバリーにおける
+ * 情報管理やメッセージ授受のハブになるクラスです。
+ *
+ * 自ノード全体で１インスタンスのみ生成されます。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/13 12:58
  * YANAGISAWA, Kentaro
  */
 class NodeManager(val table: NodeTable, val key: ECKey) {
+	import JavaConversions._
 	import NodeManager._
 
 	def worldManager: WorldManager = WorldManager.instance
 
 	val peerConnectionExaminer: PeerConnectionExaminer = new PeerConnectionExaminer
-	val mapDBFactory: MapDBFactory = new MapDBFactoryImpl
+	private val mapDBFactory: MapDBFactory = new MapDBFactoryImpl
 
-	private var _messageSender: MessageHandler = null
-	private val nodeHandlerMap: mutable.Map[String, NodeHandler] = new mutable.HashMap[String, NodeHandler]
+	private val messageSenderRef: AtomicReference[MessageHandler] = new AtomicReference[MessageHandler](null)
+	def messageSender_=(v: MessageHandler): Unit = this.messageSenderRef.set(v)
+	def messageSender: MessageHandler = this.messageSenderRef.get
+
+	private val nodeHandlerMap: mutable.Map[String, NodeHandler] = mapAsScalaConcurrentMap(new ConcurrentHashMap[String, NodeHandler])
 
 	val homeNode = this.table.node
-	private var _seedNodes: Seq[Node] = Seq.empty
-	def seedNodes: Seq[Node] = this._seedNodes
-	def seedNodes_=(v: Seq[Node]): Unit = this._seedNodes = v
+	private val seedNodesRef: AtomicReference[Seq[Node]] = new AtomicReference[Seq[Node]](Seq.empty)
+	def seedNodes: Seq[Node] = this.seedNodesRef.get
+	def seedNodes_=(v: Seq[Node]): Unit = this.seedNodesRef.set(v)
 
 	private val inboundOnlyFromKnownNodes: Boolean = true
 
@@ -47,15 +57,20 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 
 	private val listeners: mutable.Map[DiscoverListener, ListenerHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[DiscoverListener, ListenerHandler])
 
-	private var _db: DB = null
-	private var _nodeStatsDB: HTreeMap[Node, NodeStatistics.Persistent] = null
-	private var _isInitDone = false
+	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
+	private def db: DB = this.dbRef.get
+
+	private val nodeStatsDBRef: AtomicReference[HTreeMap[Node, NodeStatistics.Persistent]] = new AtomicReference[HTreeMap[Node, Persistent]](null)
+	private def nodeStatsDB: HTreeMap[Node, NodeStatistics.Persistent] = this.nodeStatsDBRef.get
+
+	private val isInitDoneRef = new AtomicBoolean(false)
+	def isInitDone: Boolean = this.isInitDoneRef.get
 
 	def channelActivated(): Unit = {
-		if (this._isInitDone) {
+		if (this.isInitDone) {
 			return
 		}
-		this._isInitDone = true
+		this.isInitDoneRef.set(true)
 		val executor = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("listener-processor"))
 		executor.scheduleAtFixedRate(new Runnable {
 			override def run(): Unit = {
@@ -82,15 +97,15 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	private def dbRead(): Unit = {
 		import JavaConversions._
 		try {
-			this._db = this.mapDBFactory.createTransactionalDB("network/discovery")
+			this.dbRef.set(this.mapDBFactory.createTransactionalDB("network/discovery"))
 			if (SystemProperties.CONFIG.databaseReset) {
-				this._db.delete("nodeStats")
+				this.db.delete("nodeStats")
 			}
-			this._nodeStatsDB = this._db.hashMap("nodeStats")
+			this.nodeStatsDBRef.set(this.db.hashMap("nodeStats"))
 			val comparator = new Comparator[NodeStatistics.Persistent] {
 				override def compare(o1: Persistent, o2: Persistent) = o2.reputation - o1.reputation
 			}
-			val sorted = this._nodeStatsDB.entrySet().toIndexedSeq.sortWith((e1, e2) => comparator.compare(e1.getValue, e2.getValue) < 0)
+			val sorted = this.nodeStatsDB.entrySet().toIndexedSeq.sortWith((e1, e2) => comparator.compare(e1.getValue, e2.getValue) < 0)
 			sorted.take(DbMaxLoadNodes).foreach {
 				each => getNodeHandler(each.getKey).nodeStatistics.setPersistedData(each.getValue)
 			}
@@ -99,8 +114,8 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 				ErrorLogger.logger.warn("<NodeManager> Error reading from db.")
 				logger.warn("<NodeManager> Error reading from db.")
 				try {
-					this._db.delete("nodeStats")
-					this._nodeStatsDB = this._db.hashMap("nodeStats")
+					this.db.delete("nodeStats")
+					this.nodeStatsDBRef.set(this.db.hashMap("nodeStats"))
 				} catch {
 					case ex: Exception =>
 						ErrorLogger.logger.warn("<NodeManager> Error creating db.")
@@ -112,14 +127,12 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	private def dbWrite(): Unit = {
 		this.synchronized {
 			for (handler <- this.nodeHandlerMap.values) {
-				this._nodeStatsDB.put(handler.node, handler.nodeStatistics.getPersistentData)
+				this.nodeStatsDB.put(handler.node, handler.nodeStatistics.getPersistentData)
 			}
-			this._db.commit()
-			logger.info("<NodeManager> Node stats written to db: %,d".format(this._nodeStatsDB.size))
+			this.db.commit()
+			logger.info("<NodeManager> Node stats written to db: %,d".format(this.nodeStatsDB.size))
 		}
 	}
-
-	def setMessageSender(v: MessageHandler): Unit = this._messageSender = v
 
 	private def getKey(n: Node): String = getKey(n.address)
 
@@ -179,7 +192,7 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 
 	def sendOutbound(event: DiscoveryEvent): Unit = {
 		if (this.discoveryEnabled) {
-			this._messageSender.accept(event)
+			this.messageSender.accept(event)
 		}
 	}
 

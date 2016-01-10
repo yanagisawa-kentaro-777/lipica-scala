@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery
 
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReference}
 
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.ReasonCode
@@ -17,18 +17,19 @@ class NodeStatistics(val node: Node) {
 
 	import NodeStatistics._
 
-	private var _isPredefined: Boolean = false
-	def isPredefined: Boolean = this._isPredefined
-	def setPredefined(v: Boolean): Unit = this._isPredefined = true
+	private val isPredefinedRef: AtomicBoolean = new AtomicBoolean(false)
+	def isPredefined: Boolean = this.isPredefinedRef.get
+	def setPredefined(v: Boolean): Unit = this.isPredefinedRef.set(true)
 
-	private var _savedReputation = 0
+	private val savedReputationRef = new AtomicInteger(0)
+	private def savedReputation: Int = this.savedReputationRef.get
 
 	def getPersistentData: NodeStatistics.Persistent = {
 		val result = new Persistent
-		result.reputation = getSessionFairReputation + (this._savedReputation / 2)
+		result.reputation = getSessionFairReputation + (this.savedReputation / 2)
 		result
 	}
-	def setPersistedData(persistent: NodeStatistics.Persistent): Unit = this._savedReputation = persistent.reputation
+	def setPersistedData(persistent: NodeStatistics.Persistent): Unit = this.savedReputationRef.set(persistent.reputation)
 
 	val discoverInPing = new StatHandler
 	val discoverInPong = new StatHandler
@@ -51,26 +52,30 @@ class NodeStatistics(val node: Node) {
 	def statName = "discover.nodes.%s".format(this.node.address)
 	val discoverMessageLatency: Statter = new SimpleStatter(statName + ".message.latency")
 
-	private var _clientId: String = ""
-	def clientId: String = this._clientId
-	def clientId_=(v: String): Unit = this._clientId = v
+	private val clientIdRef: AtomicReference[String] = new AtomicReference[String]("")
+	def clientId: String = this.clientIdRef.get
+	def clientId_=(v: String): Unit = this.clientIdRef.set(v)
 
-	private var _transportLastRemoteDisconnectReason: ReasonCode = null
-	private var _transportLastLocalDisconnectReason: ReasonCode = null
+	private val transportLastRemoteDisconnectReasonRef: AtomicReference[ReasonCode] = new AtomicReference[ReasonCode](null)
+	private def transportLastRemoteDisconnectReason: ReasonCode = this.transportLastRemoteDisconnectReasonRef.get
 
-	private var _disconnected: Boolean = false
+	private val transportLastLocalDisconnectReasonRef: AtomicReference[ReasonCode] = new AtomicReference[ReasonCode](null)
+	private def transportLastLocalDisconnectReason: ReasonCode = transportLastLocalDisconnectReasonRef.get
+
+	private val disconnectedRef: AtomicBoolean = new AtomicBoolean(false)
+	private def isDisconnected: Boolean = this.disconnectedRef.get
 
 	val lpcHandshake = new StatHandler
 	val lpcInbound = new StatHandler
 	val lpcOutbound = new StatHandler
 
-	private var _lpcLastInboundStatusMessage: StatusMessage = null
-	def lpcLastInboundStatusMessage: StatusMessage = this._lpcLastInboundStatusMessage
-	def lpcLastInboundStatusMessage_=(v: StatusMessage): Unit = this._lpcLastInboundStatusMessage = v
+	private val lpcLastInboundStatusMessageRef: AtomicReference[StatusMessage] = new AtomicReference[StatusMessage](null)
+	def lpcLastInboundStatusMessage: StatusMessage = this.lpcLastInboundStatusMessageRef.get
+	def lpcLastInboundStatusMessage_=(v: StatusMessage): Unit = this.lpcLastInboundStatusMessageRef.set(v)
 
-	private var _lpcTotalDifficulty: BigInt = UtilConsts.Zero
-	def lpcTotalDifficulty_=(v: BigInt): Unit = this._lpcTotalDifficulty = v
-	def lpcTotalDifficulty: BigInt = this._lpcTotalDifficulty
+	private val lpcTotalDifficultyRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
+	def lpcTotalDifficulty_=(v: BigInt): Unit = this.lpcTotalDifficultyRef.set(v)
+	def lpcTotalDifficulty: BigInt = this.lpcTotalDifficultyRef.get
 
 
 	def getSessionReputation: Int = {
@@ -87,12 +92,12 @@ class NodeStatistics(val node: Node) {
 		transportReputation += (if (transportHandshake.get > 0) 20 else 0)
 		transportReputation += (transportInMessages.get min 10) * 3
 
-		if (this._disconnected) {
-			if ((this._transportLastLocalDisconnectReason eq null) && (this._transportLastRemoteDisconnectReason eq null)) {
+		if (this.isDisconnected) {
+			if ((this.transportLastLocalDisconnectReason eq null) && (this.transportLastRemoteDisconnectReason eq null)) {
 				//無理由切断。ペナルティ。
 				transportReputation = (transportReputation * 0.3d).toInt
-			} else if (this._transportLastLocalDisconnectReason != ReasonCode.Requested) {
-				if (this._transportLastRemoteDisconnectReason == ReasonCode.TooManyPeers) {
+			} else if (this.transportLastLocalDisconnectReason != ReasonCode.Requested) {
+				if (this.transportLastRemoteDisconnectReason == ReasonCode.TooManyPeers) {
 					//このピアは人気がある。自ノードが不運であった。
 					(transportReputation * 0.8d).toInt
 				} else {
@@ -104,13 +109,13 @@ class NodeStatistics(val node: Node) {
 		discoverReputation + 100 * transportReputation
 	}
 
-	def reputation: Int = (this._savedReputation / 2) + getSessionReputation
+	def reputation: Int = (this.savedReputation / 2) + getSessionReputation
 
-	def nodeDisconnectedRemote(reason: ReasonCode): Unit = this._transportLastRemoteDisconnectReason = reason
+	def nodeDisconnectedRemote(reason: ReasonCode): Unit = this.transportLastRemoteDisconnectReasonRef.set(reason)
 
-	def nodeDisconnectedLocal(reason: ReasonCode): Unit = this._transportLastLocalDisconnectReason = reason
+	def nodeDisconnectedLocal(reason: ReasonCode): Unit = this.transportLastLocalDisconnectReasonRef.set(reason)
 
-	def disconnected(): Unit = this._disconnected = true
+	def disconnected(): Unit = this.disconnectedRef.set(true)
 
 	def lpcHandshake(message: StatusMessage): Unit = {
 		this.lpcLastInboundStatusMessage = message
