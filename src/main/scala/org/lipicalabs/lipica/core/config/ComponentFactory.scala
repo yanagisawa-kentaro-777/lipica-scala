@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
 import org.lipicalabs.lipica.core.net.transport.Node
-import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.NodeManager
 import org.lipicalabs.lipica.core.validator._
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
 import org.mapdb.{Serializer, DBMaker}

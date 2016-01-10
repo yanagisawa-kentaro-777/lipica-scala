@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.listener.LipicaListener
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.channel.{ChannelManager, Channel}
-import org.lipicalabs.lipica.core.net.transport.discover.{NodeStatistics, DiscoverListener, NodeHandler, NodeManager}
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.{NodeStatistics, DiscoverListener, NodeHandler, NodeManager}
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, UtilConsts, ImmutableBytes}
 import org.slf4j.LoggerFactory
 

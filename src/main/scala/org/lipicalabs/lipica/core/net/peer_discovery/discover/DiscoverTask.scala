@@ -1,7 +1,7 @@
-package org.lipicalabs.lipica.core.net.transport.discover
+package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
 import org.lipicalabs.lipica.core.net.transport.Node
-import org.lipicalabs.lipica.core.net.transport.discover.table.KademliaOptions
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.KademliaOptions
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

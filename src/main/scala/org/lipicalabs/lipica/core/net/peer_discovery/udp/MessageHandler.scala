@@ -6,7 +6,7 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.socket.DatagramPacket
 import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import org.lipicalabs.lipica.core.net.transport.discover.{DiscoveryEvent, NodeManager}
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.{DiscoveryEvent, NodeManager}
 import org.slf4j.LoggerFactory
 
 /**

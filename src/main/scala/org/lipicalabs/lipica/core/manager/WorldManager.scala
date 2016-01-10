@@ -14,7 +14,7 @@ import org.lipicalabs.lipica.core.net.lpc.sync.{PeersPool, SyncQueue, SyncManage
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
-import org.lipicalabs.lipica.core.net.transport.discover.NodeManager
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.NodeManager
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
 import org.slf4j.LoggerFactory

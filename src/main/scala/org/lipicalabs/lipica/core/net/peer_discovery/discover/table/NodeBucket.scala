@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.transport.discover.table
+package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 
 import org.lipicalabs.lipica.core.net.transport.Node
 

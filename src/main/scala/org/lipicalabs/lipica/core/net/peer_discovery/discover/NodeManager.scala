@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.transport.discover
+package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
 import java.net.{InetAddress, InetSocketAddress}
 import java.util
@@ -11,8 +11,8 @@ import org.lipicalabs.lipica.core.db.datasource.mapdb.{MapDBFactoryImpl, MapDBFa
 import org.lipicalabs.lipica.core.manager.WorldManager
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageHandler
 import org.lipicalabs.lipica.core.net.transport._
-import org.lipicalabs.lipica.core.net.transport.discover.NodeStatistics.Persistent
-import org.lipicalabs.lipica.core.net.transport.discover.table.NodeTable
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.NodeStatistics.Persistent
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.NodeTable
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.mapdb.{HTreeMap, DB}
 import org.slf4j.LoggerFactory

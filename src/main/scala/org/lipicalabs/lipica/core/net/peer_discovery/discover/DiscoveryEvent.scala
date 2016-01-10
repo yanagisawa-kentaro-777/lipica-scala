@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.transport.discover
+package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
 import java.net.InetSocketAddress
 

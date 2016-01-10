@@ -20,7 +20,7 @@ import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler, P2PMessageF
 import org.lipicalabs.lipica.core.net.shh.{ShhHandler, ShhMessageFactory}
 import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzHandler, BzzMessageFactory}
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
-import org.lipicalabs.lipica.core.net.transport.discover.{NodeManager, NodeStatistics}
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.{NodeManager, NodeStatistics}
 import org.lipicalabs.lipica.core.net.transport.{FrameCodec, MessageCodec, Node}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory

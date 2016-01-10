@@ -1,8 +1,8 @@
-package org.lipicalabs.lipica.core.net.transport.discover
+package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
 import java.util.concurrent.{TimeUnit, Executors}
 
-import org.lipicalabs.lipica.core.net.transport.discover.table.KademliaOptions
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.KademliaOptions
 import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 
 /**

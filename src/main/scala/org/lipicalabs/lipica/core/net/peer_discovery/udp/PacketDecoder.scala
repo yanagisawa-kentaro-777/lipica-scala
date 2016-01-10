@@ -6,7 +6,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.MessageToMessageDecoder
 import org.lipicalabs.lipica.core.net.transport.TransportMessage
-import org.lipicalabs.lipica.core.net.transport.discover.DiscoveryEvent
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryEvent
 import org.slf4j.LoggerFactory
 
 /**
