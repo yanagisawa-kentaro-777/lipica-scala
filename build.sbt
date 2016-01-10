@@ -39,10 +39,8 @@ def httpClient = "org.apache.httpcomponents" % "httpclient" % "4.5.1"
 def scalatra = "org.scalatra" %% "scalatra" % "2.4.0"
 def jettyWebApp = "org.eclipse.jetty" % "jetty-webapp" % "9.3.6.v20151106"
 
-
 def typesafeConfig = "com.typesafe" % "config" % "1.3.0"
 def commonsCli = "commons-cli" % "commons-cli" % "1.3.1"
-
 
 
 // テストでしか利用しないライブラリ。
