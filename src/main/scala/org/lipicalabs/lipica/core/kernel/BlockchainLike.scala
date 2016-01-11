@@ -5,6 +5,8 @@ import java.io.Closeable
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * 自ノードが管理するブロックチェーンのインターフェイスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/01 16:28
  * YANAGISAWA, Kentaro
