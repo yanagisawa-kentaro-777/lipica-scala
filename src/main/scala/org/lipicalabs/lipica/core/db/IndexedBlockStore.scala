@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.db
 
 import java.io._
+import java.util.concurrent.atomic.AtomicBoolean
 
 import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
@@ -371,16 +372,10 @@ object IndexedBlockStore {
 
 }
 
-class BlockInfo(private var _hash: ImmutableBytes, private var _cumulativeDifficulty: BigInt, private var _mainChain: Boolean) extends Serializable {
-
-	def hash: ImmutableBytes = this._hash
-	def hash_=(v: ImmutableBytes): Unit = this._hash = v
-
-	def cumulativeDifficulty: BigInt = this._cumulativeDifficulty
-	def cumulativeDifficulty_=(v: BigInt): Unit = this._cumulativeDifficulty = v
-
-	def mainChain: Boolean = this._mainChain
-	def mainChain_=(v: Boolean): Unit = this._mainChain = v
+class BlockInfo(val hash: ImmutableBytes, val cumulativeDifficulty: BigInt, _mainChain: Boolean) extends Serializable {
+	private val mainChainRef = new AtomicBoolean(_mainChain)
+	def mainChain: Boolean = this.mainChainRef.get
+	def mainChain_=(v: Boolean): Unit = this.mainChainRef.set(v)
 }
 
 object BlockInfoSerializer extends Serializer[Seq[BlockInfo]] {

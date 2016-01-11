@@ -18,7 +18,7 @@
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-・IndexedBlockStoreの実装がかなり遅い。70万台では、flushに10分以上かかるのが当たり前。MapDBを廃絶することが重要であると思われる。
+・IndexedBlockStoreの実装、もう少しうまく write through と read through のキャッシュを定義できないか？
 ・Validationの厳密化とインターフェイス統一。
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
