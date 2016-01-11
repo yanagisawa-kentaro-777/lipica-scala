@@ -5,7 +5,7 @@ import java.util.{Collections, Comparator}
 import java.util.concurrent._
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeHandler
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, UtilConsts}
 import org.slf4j.LoggerFactory
@@ -23,7 +23,7 @@ import scala.collection.{JavaConversions, mutable}
 class PeerConnectionExaminer {
 	import PeerConnectionExaminer._
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val connectedCandidates: mutable.Map[NodeHandler, NodeHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[NodeHandler, NodeHandler])
 

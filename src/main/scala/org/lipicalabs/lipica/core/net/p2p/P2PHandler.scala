@@ -4,7 +4,7 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent._
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
@@ -38,7 +38,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 
 	private var lastPeersSent: Set[PeerInfo] = null
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private var _channel: Channel = null
 	def channel: Channel = this._channel

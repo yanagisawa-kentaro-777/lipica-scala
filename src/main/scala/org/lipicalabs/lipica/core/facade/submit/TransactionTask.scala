@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.facade.submit
 import java.util.concurrent.Callable
 
 import org.lipicalabs.lipica.core.kernel.TransactionLike
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
  * 2015/11/30 20:47
  * YANAGISAWA, Kentaro
  */
-class TransactionTask(private val tx: TransactionLike, private val worldManager: WorldManager) extends Callable[TransactionLike] {
+class TransactionTask(private val tx: TransactionLike, private val worldManager: ComponentsMotherboard) extends Callable[TransactionLike] {
 
 	import TransactionTask._
 

@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.kernel.{Block, Blockchain, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.lpc.{LpcMessageCode, LpcVersion}
 import org.lipicalabs.lipica.core.net.lpc.message._
 import org.lipicalabs.lipica.core.sync._
@@ -23,7 +23,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	import LpcHandler._
 
-	protected def worldManager: WorldManager = WorldManager.instance
+	protected def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 	protected def blockchain: Blockchain = worldManager.blockchain
 	protected def syncQueue: SyncQueue = worldManager.syncQueue
 

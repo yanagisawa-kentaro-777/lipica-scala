@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.slf4j.LoggerFactory
@@ -28,7 +28,7 @@ class SyncQueue {
 	/**
 	 * ノード単位でグローバルなシングルトンコンポーネント類。
 	 */
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 	private def blockchain: Blockchain = worldManager.blockchain
 	private def syncManager: SyncManager = worldManager.syncManager
 	private def headerValidator: BlockHeaderValidator = worldManager.blockHeaderValidator

@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.kernel.CallTransaction
 import org.lipicalabs.lipica.core.kernel.{Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
-import org.lipicalabs.lipica.core.facade.components.{AdminInfo, WorldManager}
+import org.lipicalabs.lipica.core.facade.components.{AdminInfo, ComponentsMotherboard}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.{Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
@@ -27,7 +27,7 @@ import scala.annotation.tailrec
  */
 class LipicaImpl extends Lipica {
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 	def adminInfo: AdminInfo = worldManager.adminInfo
 	def channelManager: ChannelManager = worldManager.channelManager
 	val peerServer: PeerServer = new PeerServer

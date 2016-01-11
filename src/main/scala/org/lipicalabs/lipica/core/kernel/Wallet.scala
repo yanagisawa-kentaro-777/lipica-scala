@@ -8,7 +8,7 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.scrypt.SCrypt
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.slf4j.LoggerFactory
 
@@ -30,7 +30,7 @@ class Wallet {
 
 	private var high: Long = 0
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val listeners = new ArrayBuffer[WalletListener]
 

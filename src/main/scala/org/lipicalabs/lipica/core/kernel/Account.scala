@@ -4,7 +4,7 @@ import java.security.SecureRandom
 import java.util
 
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 
 /**
@@ -21,7 +21,7 @@ class Account {
 
 	private val _pendingTransactions = asScalaSet(java.util.Collections.synchronizedSet(new util.HashSet[TransactionLike]))
 
-	def worldManager: WorldManager = WorldManager.instance
+	def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	def init(aKey: ECKey): Unit = {
 		this._ecKey = aKey

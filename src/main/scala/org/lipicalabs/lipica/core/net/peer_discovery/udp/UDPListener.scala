@@ -8,7 +8,7 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioDatagramChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryExecutor
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
 import org.slf4j.LoggerFactory
@@ -55,7 +55,7 @@ class UDPListener {
 
 	private def bind(): Unit = {
 		val group = new NioEventLoopGroup(1, new CountingThreadFactory("udp-listener"))
-		val nodeManager = WorldManager.instance.nodeManager
+		val nodeManager = ComponentsMotherboard.instance.nodeManager
 		val discoverExecutor = new DiscoveryExecutor(nodeManager)
 		val startedRef: AtomicBoolean = new AtomicBoolean(false)
 

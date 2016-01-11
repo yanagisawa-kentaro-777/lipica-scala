@@ -8,7 +8,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.{ChannelOption, DefaultMessageSizeEstimator}
 import io.netty.handler.logging.LoggingHandler
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 class PeerServer {
 	import PeerServer._
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer(ImmutableBytes.empty)
 

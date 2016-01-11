@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.rest
 import java.text.SimpleDateFormat
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.scalatra.ScalatraServlet
 import org.scalatra._
 
@@ -15,7 +15,7 @@ import org.scalatra._
 class RestApiServlet extends ScalatraServlet {
 
 	get("/:apiVersion/node/status") {
-		val worldManager = WorldManager.instance
+		val worldManager = ComponentsMotherboard.instance
 		val startedUnixMillis = worldManager.adminInfo.startupTimeStamp
 		val startedTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z").format(startedUnixMillis)
 

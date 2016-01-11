@@ -7,7 +7,7 @@ import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel, LipicaChannelInitializer}
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc0, LpcHandler}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
@@ -27,7 +27,7 @@ class DiscoveryChannel {
 
 	private var _peerDiscoveryMode: Boolean = false
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val messageQueue: MessageQueue = new MessageQueue
 	private val p2pHandler: P2PHandler = new P2PHandler(this.messageQueue)

@@ -9,7 +9,7 @@ import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
 import io.netty.handler.codec.ByteToMessageCodec
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.{ECIESCoder, ECKey}
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.net.message.{Command, MessageFactory, Message}
@@ -62,7 +62,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _isHandshakeDone: Boolean = false
 	def isHandshakeDone: Boolean = this._isHandshakeDone
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private var _p2pMessageFactory: MessageFactory = null
 	def setP2PMessageFactory(v: MessageFactory): Unit = this._p2pMessageFactory = v

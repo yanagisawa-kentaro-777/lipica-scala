@@ -7,7 +7,7 @@ import io.netty.channel.{DefaultMessageSizeEstimator, ChannelOption, EventLoopGr
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory
 class PeerClient {
 	import PeerClient._
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	/**
 	 * 他ノードに対して接続確立を試行します。

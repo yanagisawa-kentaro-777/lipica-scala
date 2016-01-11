@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory
  * 2015/11/21 16:08
  * YANAGISAWA, Kentaro
  */
-class WorldManager extends Closeable {
+class ComponentsMotherboard extends Closeable {
 
-	import WorldManager._
+	import ComponentsMotherboard._
 
 	val blockStore: BlockStore = ComponentFactory.createBlockStore
 
@@ -147,13 +147,13 @@ class WorldManager extends Closeable {
 	}
 }
 
-object WorldManager {
+object ComponentsMotherboard {
 	private val logger = LoggerFactory.getLogger("general")
 
-	val instance: WorldManager = createWorldManager
+	val instance: ComponentsMotherboard = createWorldManager
 
-	private def createWorldManager: WorldManager = {
-		val result = new WorldManager
+	private def createWorldManager: ComponentsMotherboard = {
+		val result = new ComponentsMotherboard
 		result.init()
 		result
 	}

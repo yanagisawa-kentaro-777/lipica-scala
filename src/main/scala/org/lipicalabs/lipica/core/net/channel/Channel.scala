@@ -8,7 +8,7 @@ import io.netty.channel.{ChannelHandlerContext, ChannelPipeline}
 import io.netty.handler.timeout.ReadTimeoutHandler
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.components.WorldManager
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc, LpcAdaptor, LpcHandlerFactory}
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
 class Channel {
 	import Channel._
 
-	private def worldManager: WorldManager = WorldManager.instance
+	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 	private def nodeManager: NodeManager = worldManager.nodeManager
 
 	private val messageQueue: MessageQueue = new MessageQueue
