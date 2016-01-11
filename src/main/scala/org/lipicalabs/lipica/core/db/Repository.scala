@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.db
 
+import java.io.Closeable
+
 import org.lipicalabs.lipica.core.kernel.{Block, AccountState, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -13,7 +15,7 @@ import scala.collection.mutable
  * 2015/10/25 13:46
  * YANAGISAWA, Kentaro
  */
-trait RepositoryLike {
+trait RepositoryLike extends Closeable {
 
 	/**
 	 * アカウントを作成します。

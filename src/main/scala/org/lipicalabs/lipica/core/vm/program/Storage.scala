@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
+import java.util.concurrent.atomic.AtomicReference
+
 import org.lipicalabs.lipica.core.kernel.{AccountState, Block}
 import org.lipicalabs.lipica.core.kernel.ContractDetails
 import org.lipicalabs.lipica.core.db.RepositoryLike
@@ -17,10 +19,11 @@ import scala.collection.mutable
  */
 class Storage private(private val address: DataWord, private val repository: RepositoryLike) extends RepositoryLike with ProgramListenerAware {
 
-	private var traceListener: ProgramListener = null
+	private val traceListenerRef: AtomicReference[ProgramListener] = new AtomicReference[ProgramListener](null)
 
-	override def setTraceListener(traceListener: ProgramListener): Unit = {
-		this.traceListener = traceListener
+	def traceListener: ProgramListener = this.traceListenerRef.get
+	override def setTraceListener(listener: ProgramListener): Unit = {
+		this.traceListenerRef.set(listener)
 	}
 
 	override def createAccount(address: ImmutableBytes) = this.repository.createAccount(address)
@@ -94,6 +97,8 @@ class Storage private(private val address: DataWord, private val repository: Rep
 	private def canListenTrace(address: ImmutableBytes): Boolean = {
 		(this.address == DataWord(address)) && (traceListener != null)
 	}
+
+	override def close(): Unit = ()
 }
 
 object Storage {

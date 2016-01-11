@@ -292,7 +292,7 @@ object NodeManager {
 	private val DbMaxLoadNodes = 100
 
 	def create: NodeManager = {
-		val key = SystemProperties.CONFIG.myKey
+		val key = SystemProperties.CONFIG.privateKey
 		val homeNodeAddress = new InetSocketAddress(SystemProperties.CONFIG.externalAddress, SystemProperties.CONFIG.bindPort)
 		val homeNode = new Node(SystemProperties.CONFIG.nodeId, homeNodeAddress)
 		val table = new NodeTable(homeNode, SystemProperties.CONFIG.isPublicHomeNode)

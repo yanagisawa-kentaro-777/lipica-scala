@@ -88,7 +88,7 @@ class Channel {
 		this.messageCodec.setP2PMessageFactory(new P2PMessageFactory)
 
 		this.shhHandler.messageQueue = this.messageQueue
-		this.shhHandler.privateKey = SystemProperties.CONFIG.myKey
+		this.shhHandler.privateKey = SystemProperties.CONFIG.privateKey
 		this.messageCodec.setShhMessageFactory(new ShhMessageFactory)
 
 		this.bzzHandler.messageQueue = this.messageQueue

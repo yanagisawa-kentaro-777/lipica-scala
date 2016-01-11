@@ -22,6 +22,9 @@
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
+ECKey
+ComponentFactory
+
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
 ・expirationによるdiscardを実装する。（replay attack対策）

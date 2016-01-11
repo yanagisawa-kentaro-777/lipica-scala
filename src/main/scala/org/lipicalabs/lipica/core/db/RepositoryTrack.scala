@@ -222,6 +222,8 @@ class RepositoryTrack private[db](private val repository: RepositoryLike) extend
 		}
 	}
 
+	override def close(): Unit = ()
+
 }
 
 object RepositoryTrack {

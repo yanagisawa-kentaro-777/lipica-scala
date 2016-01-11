@@ -17,6 +17,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscov
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
+import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
 /**
@@ -140,9 +141,9 @@ class WorldManager extends Closeable {
 	override def close(): Unit = {
 		stopPeerDiscovery()
 		flush()
-		this.repository.close()
-		this.blockStore.close()
-		this.blockchain.close()
+		MiscUtils.closeIfNotNull(this.repository)
+		MiscUtils.closeIfNotNull(this.blockStore)
+		MiscUtils.closeIfNotNull(this.blockchain)
 	}
 }
 

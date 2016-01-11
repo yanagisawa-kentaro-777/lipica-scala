@@ -15,6 +15,7 @@ import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
+import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -55,7 +56,7 @@ trait SystemPropertiesLike {
 	def txOutdatedThreshold: Int
 
 	def networkId: Int
-	def myKey: ECKey
+	def privateKey: ECKey
 	def nodeId: ImmutableBytes
 	def externalAddress: String
 	def bindAddress: String
@@ -112,7 +113,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 		val version = properties.getProperty("version")
 		val modifier = properties.getProperty("modifier")
 
-		if (SystemProperties.isNullOrEmpty(modifier)) {
+		if (MiscUtils.isNullOrEmpty(modifier, trim = true)) {
 			version
 		} else {
 			version + "-" + modifier
@@ -179,7 +180,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 	 * 自ノードの秘密鍵です。
 	 */
 	@tailrec
-	override final def myKey: ECKey = {
+	override final def privateKey: ECKey = {
 		val result = this.privateKeyRef.get
 		if (result ne null) {
 			return result
@@ -193,7 +194,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 					""
 				}
 			val keyBytes =
-				if (isNullOrEmpty(hex) || (hex.length < 64)) {
+				if (MiscUtils.isNullOrEmpty(hex, trim = true) || (hex.length < 64)) {
 					//指定されていないのでランダムに生成する。
 					val random = new SecureRandom()
 					val bytes = new Array[Byte](32)
@@ -202,18 +203,17 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 				} else {
 					Hex.decodeHex(hex.toCharArray)
 				}
-			val privateKey = ECKey.fromPrivate(keyBytes).decompress
-			this.privateKeyRef.set(privateKey)
+			this.privateKeyRef.set(ECKey.fromPrivate(keyBytes).decompress)
 		}
 		//再帰的自己呼び出し。
-		this.myKey
+		this.privateKey
 	}
 
 	/**
 	 * 「ネットワーク」内における自ノードの一意識別子です。
 	 * その内容は、自ノードの秘密鍵に対応する公開鍵です。
 	 */
-	override def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
+	override def nodeId: ImmutableBytes = ImmutableBytes(privateKey.getNodeId)
 
 	/**
 	 * 他ノードに対して宣伝する、自ノードの体外部アドレスです。
@@ -222,7 +222,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 	private val externalAddressRef: AtomicReference[String] = new AtomicReference[String](null)
 	override def externalAddress: String = {
 		val result = this.externalAddressRef.get
-		if (!isNullOrEmpty(result)) {
+		if (!MiscUtils.isNullOrEmpty(result, trim = true)) {
 			result
 		} else {
 			this.synchronized {
@@ -248,7 +248,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 	private val bindAddressRef: AtomicReference[String] = new AtomicReference[String](null)
 	override def bindAddress: String = {
 		val result = this.bindAddressRef.get
-		if (!isNullOrEmpty(result)) {
+		if (!MiscUtils.isNullOrEmpty(result, trim = true)) {
 			result
 		} else {
 			this.synchronized {
@@ -260,11 +260,15 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 					} else {
 						//次善候補：外部サービスに訊いてみる。
 						val socket = new Socket("www.google.com", 80)
-						val a = socket.getLocalAddress.getHostAddress
-						if (!isNullOrEmpty(a)) {
-							a
-						} else {
-							"0.0.0.0"
+						try {
+							val address = socket.getLocalAddress.getHostAddress
+							if (!MiscUtils.isNullOrEmpty(address, trim = true)) {
+								address
+							} else {
+								"0.0.0.0"
+							}
+						} finally {
+							MiscUtils.closeIfNotNull(socket)
 						}
 					}
 				this.bindAddressRef.set(candidate)
@@ -338,7 +342,7 @@ object DummySystemProperties extends SystemPropertiesLike {
 
 	override def isPublicHomeNode: Boolean = true
 
-	override def nodeId: ImmutableBytes = ImmutableBytes(myKey.getNodeId)
+	override def nodeId: ImmutableBytes = ImmutableBytes(privateKey.getNodeId)
 
 	override def cacheFlushMemory: Double = 0.7d
 
@@ -348,7 +352,7 @@ object DummySystemProperties extends SystemPropertiesLike {
 
 	override def isSyncEnabled: Boolean = true
 
-	override def myKey: ECKey = {
+	override def privateKey: ECKey = {
 		ECKey.fromPrivate(Hex.decodeHex("a43d867f16238b897428705cec855b0c5b0ddf3319c1b18f7a00915db83155d9".toCharArray)).decompress
 	}
 
@@ -435,14 +439,6 @@ object SystemProperties {
 		}
 	}
 
-	private def isNullOrEmpty(s: String): Boolean = {
-		if (s eq null) {
-			return true
-		}
-		val trimmed = s.trim
-		trimmed.isEmpty || (trimmed.toLowerCase == "null")
-	}
-
 	private def withSystemResource[T](resourceName: String)(proc: (InputStream) => T): T = {
 		val in = ClassLoader.getSystemResourceAsStream(resourceName)
 		try {
@@ -473,7 +469,7 @@ object SystemProperties {
 				logger.warn("<SystemProperties> Failed to detect ip address by %s".format(uri))
 				None
 		} finally {
-			httpClient.close()
+			MiscUtils.closeIfNotNull(httpClient)
 		}
 	}
 

@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.kernel
 
+import java.io.Closeable
+
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -7,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/11/01 16:28
  * YANAGISAWA, Kentaro
  */
-trait Blockchain {
+trait Blockchain extends Closeable {
 
 	/**
 	 * このチェーンに対して、渡されたブロックを連結することが可能であれば連結しようとします。
