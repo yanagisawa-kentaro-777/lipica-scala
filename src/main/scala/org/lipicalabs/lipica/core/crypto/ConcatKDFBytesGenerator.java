@@ -12,8 +12,7 @@ import org.spongycastle.util.Pack;
  * Basic KDF generator for derived keys and ivs as defined by NIST SP 800-56A.
  */
 public class ConcatKDFBytesGenerator
-    implements DigestDerivationFunction
-{
+    implements DigestDerivationFunction {
     private int    counterStart;
     private Digest digest;
     private byte[] shared;
@@ -28,8 +27,7 @@ public class ConcatKDFBytesGenerator
      * @param digest
      *            the digest to be used as the source of derived keys.
      */
-    protected ConcatKDFBytesGenerator(int counterStart, Digest digest)
-    {
+    protected ConcatKDFBytesGenerator(int counterStart, Digest digest) {
         this.counterStart = counterStart;
         this.digest = digest;
     }
@@ -38,24 +36,18 @@ public class ConcatKDFBytesGenerator
         this(1, digest);
     }
 
-    public void init(DerivationParameters param)
-    {
-        if (param instanceof KDFParameters)
-        {
+    public void init(DerivationParameters param) {
+        if (param instanceof KDFParameters) {
             KDFParameters p = (KDFParameters)param;
 
             shared = p.getSharedSecret();
             iv = p.getIV();
-        }
-        else if (param instanceof ISO18033KDFParameters)
-        {
+        } else if (param instanceof ISO18033KDFParameters) {
             ISO18033KDFParameters p = (ISO18033KDFParameters)param;
 
             shared = p.getSeed();
             iv = null;
-        }
-        else
-        {
+        } else {
             throw new IllegalArgumentException("KDF parameters required for KDF2Generator");
         }
     }
@@ -78,10 +70,8 @@ public class ConcatKDFBytesGenerator
      *             if the out buffer is too small.
      */
     public int generateBytes(byte[] out, int outOff, int len) throws DataLengthException,
-            IllegalArgumentException
-    {
-        if ((out.length - len) < outOff)
-        {
+            IllegalArgumentException {
+        if ((out.length - len) < outOff) {
             throw new DataLengthException("output buffer too small");
         }
 
@@ -94,8 +84,7 @@ public class ConcatKDFBytesGenerator
         // is the digest output size in bits. We can't have an
         // array with a long index at the moment...
         //
-        if (oBytes > ((2L << 32) - 1))
-        {
+        if (oBytes > ((2L << 32) - 1)) {
             throw new IllegalArgumentException("Output length too large");
         }
 
@@ -108,31 +97,25 @@ public class ConcatKDFBytesGenerator
 
         int counterBase = counterStart & ~0xFF;
 
-        for (int i = 0; i < cThreshold; i++)
-        {
+        for (int i = 0; i < cThreshold; i++) {
             digest.update(C, 0, C.length);
             digest.update(shared, 0, shared.length);
 
-            if (iv != null)
-            {
+            if (iv != null) {
                 digest.update(iv, 0, iv.length);
             }
 
             digest.doFinal(dig, 0);
 
-            if (len > outLen)
-            {
+            if (len > outLen) {
                 System.arraycopy(dig, 0, out, outOff, outLen);
                 outOff += outLen;
                 len -= outLen;
-            }
-            else
-            {
+            } else {
                 System.arraycopy(dig, 0, out, outOff, len);
             }
 
-            if (++C[3] == 0)
-            {
+            if (++C[3] == 0) {
                 counterBase += 0x100;
                 Pack.intToBigEndian(counterBase, C, 0);
             }

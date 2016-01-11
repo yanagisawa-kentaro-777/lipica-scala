@@ -2,10 +2,7 @@ package org.lipicalabs.lipica.core.crypto.scrypt;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.System.arraycopy;

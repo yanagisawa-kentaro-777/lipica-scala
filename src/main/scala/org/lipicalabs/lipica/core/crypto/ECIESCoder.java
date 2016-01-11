@@ -46,7 +46,7 @@ public class ECIESCoder {
     public static byte[] decrypt(ECPoint ephem, BigInteger prv, byte[] IV, byte[] cipher) throws InvalidCipherTextException {
         AESFastEngine aesFastEngine = new AESFastEngine();
 
-        EthereumIESEngine iesEngine = new EthereumIESEngine(
+        IESEngine iesEngine = new IESEngine(
                 new ECDHBasicAgreement(),
                 new ConcatKDFBytesGenerator(new SHA256Digest()),
                 new HMac(new SHA256Digest()),
@@ -81,7 +81,7 @@ public class ECIESCoder {
         AsymmetricCipherKeyPair ephemPair = eGen.generateKeyPair();
         BigInteger prv = ((ECPrivateKeyParameters)ephemPair.getPrivate()).getD();
         ECPoint pub = ((ECPublicKeyParameters)ephemPair.getPublic()).getQ();
-        EthereumIESEngine iesEngine = makeIESEngine(true, toPub, prv, IV);
+        IESEngine iesEngine = makeIESEngine(true, toPub, prv, IV);
 
 
         ECKeyGenerationParameters keygenParams = new ECKeyGenerationParameters(CURVE, random);
@@ -107,10 +107,10 @@ public class ECIESCoder {
     }
 
 
-    private static EthereumIESEngine makeIESEngine(boolean isEncrypt, ECPoint pub, BigInteger prv, byte[] IV) {
+    private static IESEngine makeIESEngine(boolean isEncrypt, ECPoint pub, BigInteger prv, byte[] IV) {
         AESFastEngine aesFastEngine = new AESFastEngine();
 
-        EthereumIESEngine iesEngine = new EthereumIESEngine(
+        IESEngine iesEngine = new IESEngine(
                 new ECDHBasicAgreement(),
                 new ConcatKDFBytesGenerator(new SHA256Digest()),
                 new HMac(new SHA256Digest()),
