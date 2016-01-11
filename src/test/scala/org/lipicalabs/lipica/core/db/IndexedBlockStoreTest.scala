@@ -56,7 +56,7 @@ class IndexedBlockStoreTest extends Specification {
 		"be right" in {
 			this.blocks.size mustEqual 8004
 
-			val blockStore = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
+			val blockStore = IndexedBlockStore.createPersistent(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
 			var cumulativeDifficulty = UtilConsts.Zero
 			for (each <- this.blocks) {
 				cumulativeDifficulty += each.cumulativeDifficulty

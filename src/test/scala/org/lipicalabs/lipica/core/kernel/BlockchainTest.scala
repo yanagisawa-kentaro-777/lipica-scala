@@ -28,7 +28,7 @@ class BlockchainTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			val blockStore = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
+			val blockStore = IndexedBlockStore.createPersistent(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
 			val listener = new LipicaListenerAdaptor
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)

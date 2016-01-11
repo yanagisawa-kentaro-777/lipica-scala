@@ -20,7 +20,7 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/11/19 20:36
  * YANAGISAWA, Kentaro
  */
-class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], private val blocks: KeyValueDataSource, private val cache: IndexedBlockStore, private val indexDB: DB) extends AbstractBlockStore {
+class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockInfo]], private val blocks: KeyValueDataSource, private val cache: IndexedBlockStore, private val indexDB: DB) extends AbstractBlockStore {
 
 	import IndexedBlockStore._
 
@@ -365,9 +365,9 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 object IndexedBlockStore {
 	private val logger = LoggerFactory.getLogger("database")
 
-	def newInstance(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource, cache: IndexedBlockStore, indexDB: DB): IndexedBlockStore = new IndexedBlockStore(index, blocks, cache, indexDB)
+	def createPersistent(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource, cache: IndexedBlockStore, indexDB: DB): IndexedBlockStore = new IndexedBlockStore(index, blocks, cache, indexDB)
 
-	def newInstance(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource): IndexedBlockStore = new IndexedBlockStore(index, blocks, null, null)
+	def createCache(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource): IndexedBlockStore = new IndexedBlockStore(index, blocks, null, null)
 
 }
 

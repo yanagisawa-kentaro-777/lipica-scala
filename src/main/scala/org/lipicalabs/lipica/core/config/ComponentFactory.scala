@@ -40,8 +40,8 @@ object ComponentFactory {
 
 		val cacheDataSource = new HashMapDB
 		cacheDataSource.clearOnClose = true
-		val cache = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], cacheDataSource, null, null)
-		new IndexedBlockStore(indexMap, blocksDB, cache, indexDB)
+		val cache = IndexedBlockStore.createCache(new mutable.HashMap[Long, Seq[BlockInfo]], cacheDataSource)
+		IndexedBlockStore.createPersistent(indexMap, blocksDB, cache, indexDB)
 	}
 
 	def createRepository: Repository = {
