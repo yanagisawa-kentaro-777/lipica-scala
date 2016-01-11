@@ -8,7 +8,9 @@ import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStor
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.manager.AdminInfo
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts}
-import org.lipicalabs.lipica.core.validator._
+import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
+import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, BlockValidator, TxReceiptTrieRootCalculator, LogBloomFilterCalculator}
+import org.lipicalabs.lipica.core.validator.parent_rules.ParentBlockHeaderValidator
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
 import org.slf4j.LoggerFactory
 
@@ -36,6 +38,8 @@ class BlockchainImpl(
 	private val wallet: Wallet,
 	private val adminInfo: AdminInfo,
 	private val listener: LipicaListener,
+	private val blockValidator: BlockValidator,
+	private val blockHeaderValidator: BlockHeaderValidator,
 	private val parentHeaderValidator: ParentBlockHeaderValidator
 ) extends Blockchain {
 
@@ -474,18 +478,12 @@ class BlockchainImpl(
 			logger.info("<Blockchain> [Invalid] BAD BLOCK HEADER.")
 			return false
 		}
-		if (block.txTrieRoot != TxTrieRootCalculator.calculateTxTrieRoot(block.transactions)) {
-			logger.info("<Blockchain> [Invalid] BAD TX HASH: %s != %s".format(block.txTrieRoot, TxTrieRootCalculator.calculateTxTrieRoot(block.transactions)))
+		//ブロック本体の正当性検査。（トランザクションのハッシュ値やuncleに関する規則を調べる。）
+		if (!this.blockValidator.validate(block)) {
+			this.blockValidator.logErrors(logger)
 			return false
 		}
-		//Uncleに関する規則を遵守しているか。
-		val unclesRule = new UnclesRule
-		if (!unclesRule.validate(block)) {
-			unclesRule.errors.foreach {
-				each => logger.info("<Blockchain> [Invalid] %s".format(each))
-			}
-			return false
-		}
+
 		//Uncleのヘッダ自身および世代数の検査をする。
 		for (uncle <- block.uncles) {
 			if (!isValid(uncle)) {
@@ -508,6 +506,10 @@ class BlockchainImpl(
 	}
 
 	def isValid(header: BlockHeader): Boolean = {
+		if (!this.blockHeaderValidator.validate(header)) {
+			this.blockHeaderValidator.logErrors(logger)
+			return false
+		}
 		getParentOf(header) match {
 			case Some(parent) =>
 				if (!this.parentHeaderValidator.validate(header, parent.blockHeader)) {

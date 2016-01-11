@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.lipicalabs.lipica.core.kernel.{BlockHeader, Block}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.validator.ProofOfWorkRule
+import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
 import org.slf4j.LoggerFactory
 
 

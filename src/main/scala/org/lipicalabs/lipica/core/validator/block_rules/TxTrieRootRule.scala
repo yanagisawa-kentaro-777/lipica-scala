@@ -1,9 +1,9 @@
-package org.lipicalabs.lipica.core.validator
+package org.lipicalabs.lipica.core.validator.block_rules
 
-import org.lipicalabs.lipica.core.kernel.TransactionLike
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.trie.TrieImpl
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.kernel.{Block, TransactionLike}
+import org.lipicalabs.lipica.core.trie.TrieImpl
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -11,7 +11,23 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/28 11:27
  * YANAGISAWA, Kentaro
  */
-object TxTrieRootCalculator {
+class TxTrieRootRule extends BlockRule {
+
+	import TxTrieRootRule._
+
+	override def validate(block: Block): Boolean = {
+		errors.clear()
+		val calculated = calculateTxTrieRoot(block.transactions)
+		val ok = calculated == block.blockHeader.txTrieRoot
+		if (!ok) {
+			errors.append("BAD TX ROOT HASH %s != %s".format(calculated, block.blockHeader.txTrieRoot))
+		}
+		ok
+	}
+
+}
+
+object TxTrieRootRule {
 
 	/**
 	 * トランザクションのルートを計算する根本アルゴリズム！

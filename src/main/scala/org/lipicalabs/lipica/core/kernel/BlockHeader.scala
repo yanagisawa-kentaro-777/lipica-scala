@@ -4,7 +4,8 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.validator.{ProofOfWorkRule, DifficultyRule}
+import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
+import org.lipicalabs.lipica.core.validator.parent_rules.DifficultyRule
 
 /**
  * ブロックの主要な情報を保持するクラスです。

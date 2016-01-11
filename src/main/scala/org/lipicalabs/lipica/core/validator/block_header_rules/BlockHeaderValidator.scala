@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.validator
+package org.lipicalabs.lipica.core.validator.block_header_rules
 
 import org.lipicalabs.lipica.core.kernel.BlockHeader
 

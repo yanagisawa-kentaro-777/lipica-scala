@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.kernel.{Block, BlockHeader}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.validator.ProofOfWorkRule
+import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

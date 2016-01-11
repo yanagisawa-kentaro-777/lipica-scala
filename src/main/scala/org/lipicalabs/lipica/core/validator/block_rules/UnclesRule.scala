@@ -1,9 +1,7 @@
-package org.lipicalabs.lipica.core.validator
+package org.lipicalabs.lipica.core.validator.block_rules
 
 import org.lipicalabs.lipica.core.kernel.{Block, BlockHeader}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * Ommer (=Uncle) に関する制限や仕様です。
@@ -12,21 +10,17 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/12/28 11:31
  * YANAGISAWA, Kentaro
  */
-class UnclesRule {
+class UnclesRule extends BlockRule {
 	import UnclesRule._
 
-	private val _errors = new ArrayBuffer[String]
-
-	def errors: Seq[String] = this._errors.toSeq
-
 	def validate(block: Block): Boolean = {
-		_errors.clear()
+		this.errors.clear()
 		if (UncleNumberLimit < block.uncles.size) {
-			_errors.append("TOO MANY UNCLES: %d < %d".format(UncleNumberLimit, block.uncles.size))
+			this.errors.append("TOO MANY UNCLES: %d < %d".format(UncleNumberLimit, block.uncles.size))
 			return false
 		}
 		if (block.blockHeader.unclesHash != UnclesRule.calculateUnclesHash(block.uncles)) {
-			_errors.append("BAD UNCLE HASH: %s != %s".format(block.blockHeader.unclesHash, calculateUnclesHash(block.uncles)))
+			this.errors.append("BAD UNCLE HASH: %s != %s".format(block.blockHeader.unclesHash, calculateUnclesHash(block.uncles)))
 			return false
 		}
 		true

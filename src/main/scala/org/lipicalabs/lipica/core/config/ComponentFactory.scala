@@ -13,6 +13,9 @@ import org.lipicalabs.lipica.core.net.peer_discovery.{NodeManager, Node}
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
 import org.lipicalabs.lipica.core.validator._
+import org.lipicalabs.lipica.core.validator.block_header_rules.{BlockHeaderValidator, ProofOfWorkRule, ManaValueRule, ExtraDataRule}
+import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, TxTrieRootRule, BlockValidator}
+import org.lipicalabs.lipica.core.validator.parent_rules.{ParentNumberRule, ParentBlockHeaderValidator, DifficultyRule}
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
 import org.mapdb.{Serializer, DBMaker}
 
@@ -57,6 +60,11 @@ object ComponentFactory {
 	def createListener: CompositeLipicaListener = new CompositeLipicaListener
 
 	def createKeyValueDataSource(name: String): KeyValueDataSource = new LevelDbDataSource(name)
+
+	def createBlockValidator: BlockValidator = {
+		val rules = Seq(new TxTrieRootRule, new UnclesRule)
+		new BlockValidator(rules)
+	}
 
 	def createBlockHeaderValidator: BlockHeaderValidator = {
 		val rules = Seq(new ManaValueRule, new ExtraDataRule, new ProofOfWorkRule)

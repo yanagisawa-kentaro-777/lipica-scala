@@ -10,7 +10,7 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/11/18 22:01
  * YANAGISAWA, Kentaro
  */
-abstract class AbstractValidationRule extends ValidationRule {
+trait AbstractValidationRule extends ValidationRule {
 
 	protected val errors = new ArrayBuffer[String]
 

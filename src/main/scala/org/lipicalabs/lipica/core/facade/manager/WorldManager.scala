@@ -38,11 +38,13 @@ class WorldManager extends Closeable {
 
 	val listener: CompositeLipicaListener = ComponentFactory.createListener
 
+	val blockValidator = ComponentFactory.createBlockValidator
+
 	val blockHeaderValidator = ComponentFactory.createBlockHeaderValidator
 
 	val parentHeaderValidator = ComponentFactory.createParentHeaderValidator
 
-	val blockchain: Blockchain = new BlockchainImpl(this.blockStore, this.repository, this.wallet, this.adminInfo, this.listener, this.parentHeaderValidator)
+	val blockchain: Blockchain = new BlockchainImpl(this.blockStore, this.repository, this.wallet, this.adminInfo, this.listener, this.blockValidator, this.blockHeaderValidator, this.parentHeaderValidator)
 
 	val peerDiscovery: PeerDiscovery = ComponentFactory.createPeerDiscovery
 

@@ -4,12 +4,13 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.config.ComponentFactory
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.db.{RepositoryImpl, BlockInfo, IndexedBlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
 import org.lipicalabs.lipica.core.facade.manager.AdminInfo
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.validator.{DifficultyRule, ParentNumberRule, ParentBlockHeaderValidator}
+import org.lipicalabs.lipica.core.validator.parent_rules.{ParentNumberRule, ParentBlockHeaderValidator, DifficultyRule}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactoryImpl
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -39,7 +40,7 @@ class BlockchainTest extends Specification {
 			}
 			track.commit()
 
-			val blockchain = new BlockchainImpl(blockStore, repos, new Wallet, new AdminInfo, listener, new ParentBlockHeaderValidator(Seq(new ParentNumberRule, new DifficultyRule)))
+			val blockchain = new BlockchainImpl(blockStore, repos, new Wallet, new AdminInfo, listener, ComponentFactory.createBlockValidator, ComponentFactory.createBlockHeaderValidator, new ParentBlockHeaderValidator(Seq(new ParentNumberRule, new DifficultyRule)))
 			blockchain.programInvokeFactory = new ProgramInvokeFactoryImpl
 
 			val uri = getClass.getResource("scenario1.dmp")

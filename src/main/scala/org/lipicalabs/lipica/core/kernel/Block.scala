@@ -3,7 +3,6 @@ package org.lipicalabs.lipica.core.kernel
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
-import org.lipicalabs.lipica.core.validator.TxTrieRootCalculator
 import org.slf4j.LoggerFactory
 
 /**
@@ -269,22 +268,6 @@ object Block {
 		val blockHeader = BlockHeader.decode(items.head)
 		val transactions = items(1).items.map(each => Transaction.decode(each))
 		val uncles = items(2).items.map(BlockHeader.decode)
-
-		val calculatedTxTrieRoot = TxTrieRootCalculator.calculateTxTrieRoot(transactions)
-		if (blockHeader.txTrieRoot != calculatedTxTrieRoot) {
-			val givenTxs = items(1).items.map(_.bytes).mkString(",")
-			val rebuiltTxs = transactions.map(_.toEncodedBytes).mkString(",")
-			ErrorLogger.logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  GivenHash: %s != CalculatedHash: %s ; GivenTxs=[%s] ; RebuiltTxs=[%s]".format(
-				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs
-			))
-			logger.warn("<Block> Tx root unmatch at Block %,d! TxSize=%,d  GivenHash: %s != CalculatedHash: %s ; GivenTxs=[%s] ; RebuiltTxs=[%s]".format(
-				blockHeader.blockNumber, transactions.size, blockHeader.txTrieRoot, calculatedTxTrieRoot, givenTxs, rebuiltTxs
-			))
-		} else if (transactions.nonEmpty) {
-			if (logger.isTraceEnabled) {
-				logger.trace("<Block> Tx root matched at Block %,d. TxSize=%,d ; TxTrieRoot=%s".format(blockHeader.blockNumber, transactions.size, calculatedTxTrieRoot))
-			}
-		}
 		new PlainBlock(blockHeader, transactions, uncles)
 	}
 
