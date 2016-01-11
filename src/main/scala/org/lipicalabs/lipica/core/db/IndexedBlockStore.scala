@@ -13,6 +13,9 @@ import scala.collection.mutable.ArrayBuffer
 
 
 /**
+ * ブロック番号とブロックハッシュ値のそれぞれをキーとして
+ * ブロックを保存・探索する、中核的なデータストアクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/19 20:36
  * YANAGISAWA, Kentaro
@@ -49,17 +52,23 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 			return
 		}
 
+		var numBlocks = 0
 		val startTime = System.nanoTime
+		val temporaryMap = new mutable.HashMap[ImmutableBytes, ImmutableBytes]
 		for (key <- this.cache.blocks.keys) {
-			this.blocks.put(key, this.cache.blocks.get(key).get)
+			temporaryMap.put(key, this.cache.blocks.get(key).get)
+			numBlocks += 1
 		}
+		this.blocks.updateBatch(temporaryMap.toMap)
 		val time1 = System.nanoTime
 
+		var numIndices = 0
 		for (entry <- this.cache.index) {
 			val (number, cachedInfoSeq) = entry
 
 			val infoSeq = cachedInfoSeq ++ this.index.getOrElse(number, Seq.empty[BlockInfo])
 			this.index.put(number, infoSeq)
+			numIndices += 1
 		}
 		val time2 = System.nanoTime
 
@@ -67,8 +76,13 @@ class IndexedBlockStore(private val index: mutable.Map[Long, Seq[BlockInfo]], pr
 		this.cache.index.clear()
 		this.indexDB.commit()
 		val endTime = System.nanoTime
-		logger.info("<IndexBlockStore> Flushed block store in %,d nanos (Blocks=%,d nanos; Indices=%,d nanos; Commit=%,d nanos.".format(
-			endTime - startTime, time1 - startTime, time2 - time1, endTime - time2
+
+//		println("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos; Commit in %,d nanos.".format(
+//			endTime - startTime, numBlocks, time1 - startTime, numIndices, time2 - time1, endTime - time2
+//		))
+
+		logger.info("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos; Commit in %,d nanos.".format(
+			endTime - startTime, numBlocks, time1 - startTime, numIndices, time2 - time1, endTime - time2
 		))
 	}
 

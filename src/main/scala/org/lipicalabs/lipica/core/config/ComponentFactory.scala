@@ -38,7 +38,9 @@ object ComponentFactory {
 		val blocksDB = createKeyValueDataSource("blocks_db")
 		blocksDB.init()
 
-		val cache = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
+		val cacheDataSource = new HashMapDB
+		cacheDataSource.clearOnClose = true
+		val cache = new IndexedBlockStore(new mutable.HashMap[Long, Seq[BlockInfo]], cacheDataSource, null, null)
 		new IndexedBlockStore(indexMap, blocksDB, cache, indexDB)
 	}
 
