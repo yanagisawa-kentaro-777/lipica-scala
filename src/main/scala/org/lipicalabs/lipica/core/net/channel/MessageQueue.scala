@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.channel
 import java.util.concurrent._
 
 import io.netty.channel.ChannelHandlerContext
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, Message, ReasonCode}
 import org.lipicalabs.lipica.core.net.p2p.{DisconnectMessage, PingMessage}
 import org.lipicalabs.lipica.core.utils.CountingThreadFactory

@@ -9,7 +9,7 @@ import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
 import io.netty.handler.codec.ByteToMessageCodec
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.{ECIESCoder, ECKey}
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.net.message.{Command, MessageFactory, Message}

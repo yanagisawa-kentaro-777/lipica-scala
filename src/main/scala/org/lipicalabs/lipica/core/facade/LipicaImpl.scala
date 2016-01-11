@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.kernel.CallTransaction
 import org.lipicalabs.lipica.core.kernel.{Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
-import org.lipicalabs.lipica.core.facade.manager.{AdminInfo, WorldManager}
+import org.lipicalabs.lipica.core.facade.components.{AdminInfo, WorldManager}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.{Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager

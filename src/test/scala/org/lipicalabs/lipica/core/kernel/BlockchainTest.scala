@@ -4,11 +4,10 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.config.ComponentFactory
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.db.{RepositoryImpl, IndexedBlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
-import org.lipicalabs.lipica.core.facade.manager.AdminInfo
+import org.lipicalabs.lipica.core.facade.components.{ComponentFactory, AdminInfo}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.parent_rules.{ParentNumberRule, ParentBlockHeaderValidator, DifficultyRule}
 import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactoryImpl

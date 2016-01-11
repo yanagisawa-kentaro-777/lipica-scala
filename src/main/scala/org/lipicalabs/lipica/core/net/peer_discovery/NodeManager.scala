@@ -9,7 +9,7 @@ import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.db.datasource.mapdb.{MapDBFactory, MapDBFactoryImpl}
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeStatistics.Persistent
 import org.lipicalabs.lipica.core.net.peer_discovery.discover._
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.NodeTable

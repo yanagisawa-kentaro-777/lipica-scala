@@ -6,7 +6,7 @@ import org.lipicalabs.lipica.core.kernel.ImportResult.{ImportedBest, NoParent, I
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
-import org.lipicalabs.lipica.core.facade.manager.AdminInfo
+import org.lipicalabs.lipica.core.facade.components.AdminInfo
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, BlockValidator, TxReceiptTrieRootCalculator, LogBloomFilterCalculator}

@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.slf4j.LoggerFactory

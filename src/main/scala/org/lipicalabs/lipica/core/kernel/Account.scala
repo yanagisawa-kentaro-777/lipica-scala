@@ -4,7 +4,7 @@ import java.security.SecureRandom
 import java.util
 
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 
 /**

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.kernel.{CallTransaction, TransactionLike}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
-import org.lipicalabs.lipica.core.facade.manager.AdminInfo
+import org.lipicalabs.lipica.core.facade.components.AdminInfo
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.{Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager

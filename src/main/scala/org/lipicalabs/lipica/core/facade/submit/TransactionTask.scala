@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.facade.submit
 import java.util.concurrent.Callable
 
 import org.lipicalabs.lipica.core.kernel.TransactionLike
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 

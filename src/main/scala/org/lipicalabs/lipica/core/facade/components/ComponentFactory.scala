@@ -1,21 +1,21 @@
-package org.lipicalabs.lipica.core.config
+package org.lipicalabs.lipica.core.facade.components
 
 import java.net.URI
 
-import org.lipicalabs.lipica.core.kernel.Wallet
-import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, LevelDbDataSource}
+import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db._
+import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, LevelDbDataSource}
 import org.lipicalabs.lipica.core.facade.listener.CompositeLipicaListener
-import org.lipicalabs.lipica.core.facade.manager.AdminInfo
-import org.lipicalabs.lipica.core.sync.{PeersPool, SyncQueue, SyncManager}
+import org.lipicalabs.lipica.core.kernel.Wallet
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
-import org.lipicalabs.lipica.core.net.peer_discovery.{NodeManager, Node}
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
-import org.lipicalabs.lipica.core.validator.block_header_rules.{BlockHeaderValidator, ProofOfWorkRule, ManaValueRule, ExtraDataRule}
-import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, TxTrieRootRule, BlockValidator}
-import org.lipicalabs.lipica.core.validator.parent_rules.{ParentNumberRule, ParentBlockHeaderValidator, DifficultyRule}
-import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
+import org.lipicalabs.lipica.core.net.peer_discovery.{Node, NodeManager}
+import org.lipicalabs.lipica.core.sync.{PeersPool, SyncManager, SyncQueue}
+import org.lipicalabs.lipica.core.validator.block_header_rules.{BlockHeaderValidator, ExtraDataRule, ManaValueRule, ProofOfWorkRule}
+import org.lipicalabs.lipica.core.validator.block_rules.{BlockValidator, TxTrieRootRule, UnclesRule}
+import org.lipicalabs.lipica.core.validator.parent_rules.{DifficultyRule, ParentBlockHeaderValidator, ParentNumberRule}
+import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactory, ProgramInvokeFactoryImpl}
 
 
 /**

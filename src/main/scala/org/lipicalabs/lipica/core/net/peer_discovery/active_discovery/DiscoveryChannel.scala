@@ -7,7 +7,7 @@ import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel, LipicaChannelInitializer}
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc0, LpcHandler}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage

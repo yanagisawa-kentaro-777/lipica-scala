@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.rest
 import java.text.SimpleDateFormat
 
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.facade.manager.WorldManager
+import org.lipicalabs.lipica.core.facade.components.WorldManager
 import org.scalatra.ScalatraServlet
 import org.scalatra._
 

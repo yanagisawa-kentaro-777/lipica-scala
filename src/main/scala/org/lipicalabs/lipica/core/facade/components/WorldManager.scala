@@ -1,11 +1,11 @@
-package org.lipicalabs.lipica.core.facade.manager
+package org.lipicalabs.lipica.core.facade.components
 
 import java.io.Closeable
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.kernel._
-import org.lipicalabs.lipica.core.config.{SystemProperties, ComponentFactory}
+import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.db._
 import org.lipicalabs.lipica.core.facade.listener.{CompositeLipicaListener, LipicaListener}
