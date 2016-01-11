@@ -8,6 +8,10 @@
 
 ０、不具合
 
+40万超えたあたりから、IndexedBlockStore の flush が200秒超え。
+2016-01-11 05:31:26.839 INFO  <IndexBlockStore> Flushed block store in 220,596,452,738 nanos (12,396 blocks in 96,536,313 nanos; 12,396 indices in 45,246,830,610 nanos; Commit in 175,253,085,815 nanos. [sync-queue-000] IndexedBlockStore.scala:84
+
+
 １、既存環境との完全同期
 ・CallTransactionの変更に追随する。
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
