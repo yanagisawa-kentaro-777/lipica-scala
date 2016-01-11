@@ -1,12 +1,14 @@
 package org.lipicalabs.lipica.core.db
 
 import java.io._
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.{AtomicLong, AtomicBoolean}
 
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
-import org.mapdb.{DataIO, Serializer, DB}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -15,15 +17,52 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
  * ブロック番号とブロックハッシュ値のそれぞれをキーとして
- * ブロックを保存・探索する、中核的なデータストアクラスです。
+ * ブロックを保存・探索する、ノードの中核的なデータストアクラスです。
  *
  * Created by IntelliJ IDEA.
  * 2015/11/19 20:36
  * YANAGISAWA, Kentaro
  */
-class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockInfo]], private val blocks: KeyValueDataSource, private val cache: IndexedBlockStore, private val indexDB: DB) extends AbstractBlockStore {
+class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource, private val numberToBlocksStore: KeyValueDataSource) extends AbstractBlockStore {
 
 	import IndexedBlockStore._
+	import JavaConversions._
+
+	//TODO 永続化しなければならない。
+	private val maxBlockNumberRef = new AtomicLong(-1L)
+
+	private val hashToBlockCache = mapAsScalaMap(new ConcurrentHashMap[ImmutableBytes, ImmutableBytes])
+	private val numberToBlocksCache = mapAsScalaMap(new ConcurrentHashMap[Long, Seq[BlockInfo]])
+
+	private def readThroughByHash(hash: ImmutableBytes): Option[Block] = {
+		this.hashToBlockCache.get(hash) match {
+			case Some(encoded) =>
+				Some(Block.decode(encoded))
+			case None =>
+				this.hashToBlockStore.get(hash) match {
+					case Some(bytes) =>
+						Some(Block.decode(bytes))
+					case None =>
+						None
+				}
+		}
+	}
+
+	private def readThroughByBlockNumber(blockNumber: Long): Seq[BlockInfo] = {
+		val cached = this.numberToBlocksCache.getOrElse(blockNumber, Seq.empty)
+		val loaded = this.numberToBlocksStore.get(RBACCodec.Encoder.encode(blockNumber)).map(bytes => decodeToSeqOfBlockInfo(bytes)).getOrElse(Seq.empty)
+		cached ++ loaded
+	}
+
+	private def decodeToSeqOfBlockInfo(bytes: ImmutableBytes): Seq[BlockInfo] = {
+		val items = RBACCodec.Decoder.decode(bytes).right.get.items
+		items.map(each => BlockInfo.decode(each.items))
+	}
+
+	private def encodeToBytes(blockInfoSeq: Seq[BlockInfo]): ImmutableBytes = {
+		val seqOfBytes = blockInfoSeq.map(each => each.encode)
+		RBACCodec.Encoder.encodeSeqOfByteArrays(seqOfBytes)
+	}
 
 	/**
 	 * 最大番号のブロックを取得します。
@@ -49,66 +88,57 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 	 * ディスクに永続化します。
 	 */
 	override def flush(): Unit = {
-		if (Option(this.cache).isEmpty) {
-			return
+		this.synchronized {
+			var numBlocks = 0
+			val startTime = System.nanoTime
+			val temporaryHashToBlockMap = new mutable.HashMap[ImmutableBytes, ImmutableBytes]
+			for (entry <- this.hashToBlockCache) {
+				temporaryHashToBlockMap.put(entry._1, entry._2)
+				numBlocks += 1
+			}
+			this.hashToBlockStore.updateBatch(temporaryHashToBlockMap.toMap)
+			val time1 = System.nanoTime
+
+			var numIndices = 0
+			val temporaryNumberToBlocksMap = new mutable.HashMap[ImmutableBytes, ImmutableBytes]
+			for (number <- this.numberToBlocksCache.keys) {
+				val infoSeq = readThroughByBlockNumber(number)
+				temporaryNumberToBlocksMap.put(RBACCodec.Encoder.encode(number), encodeToBytes(infoSeq))
+				numIndices += 1
+			}
+			this.numberToBlocksStore.updateBatch(temporaryNumberToBlocksMap.toMap)
+			this.hashToBlockCache.clear()
+			this.numberToBlocksCache.clear()
+			val endTime = System.nanoTime
+
+			//		println("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos.".format(
+			//			endTime - startTime, numBlocks, time1 - startTime, numIndices, endTime - time1
+			//		))
+
+			logger.info("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos.".format(
+				endTime - startTime, numBlocks, time1 - startTime, numIndices, endTime - time1
+			))
 		}
-
-		var numBlocks = 0
-		val startTime = System.nanoTime
-		val temporaryMap = new mutable.HashMap[ImmutableBytes, ImmutableBytes]
-		for (key <- this.cache.blocks.keys) {
-			temporaryMap.put(key, this.cache.blocks.get(key).get)
-			numBlocks += 1
-		}
-		this.blocks.updateBatch(temporaryMap.toMap)
-		val time1 = System.nanoTime
-
-		var numIndices = 0
-		for (entry <- this.cache.index) {
-			val (number, cachedInfoSeq) = entry
-
-			val infoSeq = cachedInfoSeq ++ this.index.getOrElse(number, Seq.empty[BlockInfo])
-			this.index.put(number, infoSeq)
-			numIndices += 1
-		}
-		val time2 = System.nanoTime
-
-		this.cache.blocks.close()
-		this.cache.index.clear()
-		this.indexDB.commit()
-		val endTime = System.nanoTime
-
-//		println("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos; Commit in %,d nanos.".format(
-//			endTime - startTime, numBlocks, time1 - startTime, numIndices, time2 - time1, endTime - time2
-//		))
-
-		logger.info("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos; Commit in %,d nanos.".format(
-			endTime - startTime, numBlocks, time1 - startTime, numIndices, time2 - time1, endTime - time2
-		))
 	}
 
 	/**
 	 * ブロックを登録します。
 	 */
 	override def saveBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean) = {
-		if (Option(this.cache).isEmpty) {
-			addInternalBlock(block, cumulativeDifficulty, mainChain)
-		} else {
-			this.cache.saveBlock(block, cumulativeDifficulty, mainChain)
+		this.synchronized {
+			//すでに同じブロック番号の元に登録されているブロック群。
+			val blockInfoBuffer = this.numberToBlocksCache.getOrElse(block.blockNumber, Seq.empty[BlockInfo]).toBuffer
+			blockInfoBuffer.append(new BlockInfo(block.hash, cumulativeDifficulty, mainChain))
+
+			//覚える。
+			this.numberToBlocksCache.put(block.blockNumber, blockInfoBuffer.toSeq)
+			this.hashToBlockCache.put(block.hash, block.encode)
+
+			val current = this.maxBlockNumberRef.get
+			if (current < block.blockNumber) {
+				this.maxBlockNumberRef.set(block.blockNumber)
+			}
 		}
-	}
-
-	/**
-	 * ブロックを自分自身に登録します。
-	 */
-	private def addInternalBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean): Unit = {
-		//すでに同じブロック番号の元に登録されているブロック群。
-		val blockInfoBuffer = this.index.getOrElse(block.blockNumber, Seq.empty[BlockInfo]).toBuffer
-		blockInfoBuffer.append(new BlockInfo(block.hash, cumulativeDifficulty, mainChain))
-
-		//覚える。
-		this.index.put(block.blockNumber, blockInfoBuffer.toSeq)
-		this.blocks.put(block.hash, block.encode)
 	}
 
 	/**
@@ -117,135 +147,50 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 	override def getBlockHashByNumber(blockNumber: Long): Option[ImmutableBytes] = getChainBlockByNumber(blockNumber).map(_.hash)
 
 	def getBlocksByNumber(number: Long): Seq[Block] = {
-		//キャッシュ由来分。
-		val result =
-			if (Option(this.cache).isDefined) {
-				this.cache.getBlocksByNumber(number).toBuffer
-			} else {
-				new ArrayBuffer[Block]
-			}
-		//自身由来分。
-		this.index.get(number) match {
-			case Some(blockInfoSeq) =>
-				for (blockInfo <- blockInfoSeq) {
-					this.blocks.get(blockInfo.hash).foreach(encodedBytes => result.append(Block.decode(encodedBytes)))
-				}
-				result.toSeq
-			case None =>
-				result.toSeq
-		}
+		readThroughByBlockNumber(number).flatMap(blockInfo => this.readThroughByHash(blockInfo.hash))
 	}
 
 	/**
 	 * メインのチェーンから、渡された番号を持つブロックを探索して返します。
 	 */
 	override def getChainBlockByNumber(blockNumber: Long): Option[Block] = {
-		Option(this.cache).flatMap(_.getChainBlockByNumber(blockNumber)) match {
-			case Some(block) => Some(block)
-			case None =>
-				//キャッシュにない。
-				this.index.get(blockNumber) match {
-					case Some(blockInfoSeq) =>
-						for (blockInfo <- blockInfoSeq) {
-							if (blockInfo.mainChain) {
-								return Some(Block.decode(this.blocks.get(blockInfo.hash).get))
-							}
-						}
-						None
-					case None =>
-						None
-				}
-		}
+		readThroughByBlockNumber(blockNumber).find(_.mainChain).flatMap(blockInfo => this.readThroughByHash(blockInfo.hash))
 	}
 
 	/**
 	 * 渡されたハッシュ値を持つブロックを探索して返します。
 	 */
 	override def getBlockByHash(hash: ImmutableBytes): Option[Block] = {
-		Option(this.cache).flatMap(_.getBlockByHash(hash)) match {
-			case Some(block) => Some(block)
-			case None =>
-				this.blocks.get(hash) match {
-					case Some(bytes) => Option(Block.decode(bytes))
-					case None => None
-				}
-		}
+		readThroughByHash(hash)
 	}
 
 	/**
 	 * 渡されたハッシュ値を持つブロックが存在するか否かを返します。
 	 */
 	override def existsBlock(hash: ImmutableBytes): Boolean = {
-		Option(this.cache).flatMap(_.getBlockByHash(hash)) match {
-			case Some(block) => true
-			case None => this.blocks.get(hash).isDefined
-		}
+		readThroughByHash(hash).isDefined
 	}
 
 	override def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt = {
-		Option(this.cache).flatMap(_.getBlockByHash(hash)) match {
-			case Some(_) =>
-				//キャッシュにある。
-				this.cache.getTotalDifficultyForHash(hash)
-			case None =>
-				//キャッシュにない。
-				getBlockByHash(hash) match {
-					case Some(block) =>
-						val level = block.blockNumber
-						val blockInfoSeq = this.index.get(level).get
-						blockInfoSeq.find(_.hash == hash).map(_.cumulativeDifficulty).getOrElse(UtilConsts.Zero)
-					case None =>
-						UtilConsts.Zero
-				}
-		}
-	}
-
-	private def getBlockInfoSeqForLevel(level: Long): Option[Seq[BlockInfo]] = {
-		Option(this.cache).flatMap(_.index.get(level)) match {
-			case Some(seq) => Some(seq)
-			case None => this.index.get(level)
-		}
+		readThroughByHash(hash).flatMap(block => readThroughByBlockNumber(block.blockNumber).find(blockInfo => blockInfo.hash == block.hash)).map(_.cumulativeDifficulty).getOrElse(UtilConsts.Zero)
 	}
 
 	override def getTotalDifficulty: BigInt = {
-		if (Option(this.cache).isDefined) {
-			val blockInfoSeqOrNone = getBlockInfoSeqForLevel(getMaxBlockNumber)
-			if (blockInfoSeqOrNone.isDefined) {
-				val foundOrNone = blockInfoSeqOrNone.get.find(_.mainChain)
-				if (foundOrNone.isDefined) {
-					return foundOrNone.get.cumulativeDifficulty
-				}
-				var number = getMaxBlockNumber
-				while (0 <= number) {
-					number -= 1
-					getBlockInfoSeqForLevel(number).foreach {
-						eachSeq => {
-							val foundOrNone2 = eachSeq.find(_.mainChain)
-							if (foundOrNone2.isDefined) {
-								return foundOrNone2.get.cumulativeDifficulty
-							}
-						}
-					}
-				}
+		var number = getMaxBlockNumber
+		while (0 <= number) {
+			readThroughByBlockNumber(number).find(_.mainChain).foreach {
+				found => return found.cumulativeDifficulty
 			}
+			number -= 1
 		}
-		val blockInfoSeq = this.index.get(getMaxBlockNumber).get
-		blockInfoSeq.find(_.mainChain) match {
-			case Some(block) => block.cumulativeDifficulty
-			case None => UtilConsts.Zero
-		}
+		UtilConsts.Zero
 	}
 
 	/**
 	 * 最大のブロック番号を返します。
 	 */
 	override def getMaxBlockNumber: Long = {
-		val bestIndex = 0.max(this.index.size).toLong
-		if (Option(this.cache).isDefined) {
-			bestIndex + this.cache.index.size - 1L
-		} else {
-			bestIndex - 1L
-		}
+		this.maxBlockNumberRef.get
 	}
 
 	/**
@@ -253,30 +198,23 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
 	 */
 	override def getHashesEndingWith(hash: ImmutableBytes, number: Long): Seq[ImmutableBytes] = {
-		val seq =
-			if (Option(this.cache).isDefined) {
-				this.cache.getHashesEndingWith(hash, number)
-			} else {
-				Seq.empty[ImmutableBytes]
-			}
-		this.blocks.get(hash) match {
-			case Some(bytes) =>
-				val buffer = seq.toBuffer
-				var encodedBytes = bytes
+		readThroughByHash(hash) match {
+			case Some(initialBlock) =>
+				val buffer = new ArrayBuffer[ImmutableBytes]
+				var eachBlock = initialBlock
 				for (i <- 0L until number) {
-					val block = Block.decode(encodedBytes)
-					buffer.append(block.hash)
+					buffer.append(eachBlock.hash)
 					//親をたどって、後続に追加する。
-					blocks.get(block.parentHash) match {
+					readThroughByHash(eachBlock.parentHash) match {
 						case Some(b) =>
-							encodedBytes = b
+							eachBlock = b
 						case None =>
 							return buffer.toSeq
 					}
 				}
 				buffer.toSeq
 			case None =>
-				seq
+				Seq.empty
 		}
 	}
 
@@ -288,17 +226,10 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 		var i = 0
 		var shouldContinue = true
 		while ((i < aMaxBlocks) && shouldContinue) {
-			this.index.get(number + i) match {
-				case Some(blockInfoSeq) =>
-					blockInfoSeq.find(_.mainChain).foreach(b => result.append(b.hash))
-				case None =>
-					shouldContinue = false
-			}
+			val blockInfoSeq = readThroughByBlockNumber(number + i)
+			blockInfoSeq.find(_.mainChain).foreach(b => result.append(b.hash))
+			shouldContinue = blockInfoSeq.nonEmpty
 			i += 1
-		}
-		val maxBlocks = aMaxBlocks - i
-		Option(this.cache).foreach {
-			c => result.appendAll(c.getHashesStartingWith(number, maxBlocks))
 		}
 		result.toSeq
 	}
@@ -316,7 +247,7 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 		if (bestBlock.blockNumber < forkBlock.blockNumber) {
 			//フォークと見なしていた方が、より長く成長している。
 			while (bestBlock.blockNumber < currentLevel) {
-				val blockInfoSeq = getBlockInfoSeqForLevel(currentLevel).get
+				val blockInfoSeq = readThroughByBlockNumber(currentLevel)
 				getBlockInfoForHash(blockInfoSeq, forkLine.hash).foreach {
 					blockInfo => {
 						//このラインを本線にする。
@@ -331,7 +262,7 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 		var bestLine = bestBlock
 		if (forkBlock.blockNumber < bestBlock.blockNumber) {
 			while (forkBlock.blockNumber < currentLevel) {
-				val blockInfoSeq = getBlockInfoSeqForLevel(currentLevel).get
+				val blockInfoSeq = readThroughByBlockNumber(currentLevel)
 				getBlockInfoForHash(blockInfoSeq, bestLine.hash).foreach {
 					blockInfo => {
 						//このラインをフォークにする。
@@ -345,7 +276,7 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 
 		//共通の祖先に至るまで、遡って本線と分線とを付け替える。
 		while (bestLine.hash != forkLine.hash) {
-			val levelBlocks = getBlockInfoSeqForLevel(currentLevel).get
+			val levelBlocks = readThroughByBlockNumber(currentLevel)
 			getBlockInfoForHash(levelBlocks, bestLine.hash).foreach(_.mainChain = false)
 			getBlockInfoForHash(levelBlocks, forkLine.hash).foreach(_.mainChain = true)
 
@@ -358,17 +289,18 @@ class IndexedBlockStore private(private val index: mutable.Map[Long, Seq[BlockIn
 
 	private def getBlockInfoForHash(blocks: Seq[BlockInfo], hash: ImmutableBytes): Option[BlockInfo] = blocks.find(_.hash == hash)
 
-	override def load(): Unit = {
-		//
+	override def close(): Unit = {
+		this.synchronized {
+			this.hashToBlockStore.close()
+			this.numberToBlocksStore.close()
+		}
 	}
 }
 
 object IndexedBlockStore {
 	private val logger = LoggerFactory.getLogger("database")
 
-	def createPersistent(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource, cache: IndexedBlockStore, indexDB: DB): IndexedBlockStore = new IndexedBlockStore(index, blocks, cache, indexDB)
-
-	def createCache(index: mutable.Map[Long, Seq[BlockInfo]], blocks: KeyValueDataSource): IndexedBlockStore = new IndexedBlockStore(index, blocks, null, null)
+	def newInstance(hashToBlockStore: KeyValueDataSource, numberToBlocksStore: KeyValueDataSource): IndexedBlockStore = new IndexedBlockStore(hashToBlockStore, numberToBlocksStore)
 
 }
 
@@ -376,33 +308,24 @@ class BlockInfo(val hash: ImmutableBytes, val cumulativeDifficulty: BigInt, _mai
 	private val mainChainRef = new AtomicBoolean(_mainChain)
 	def mainChain: Boolean = this.mainChainRef.get
 	def mainChain_=(v: Boolean): Unit = this.mainChainRef.set(v)
+
+	def encode: ImmutableBytes = {
+		val encoder = RBACCodec.Encoder
+		val seqOfBytes = Seq(encoder.encode(hash), encoder.encode(cumulativeDifficulty), encoder.encode(mainChain))
+		encoder.encodeSeqOfByteArrays(seqOfBytes)
+	}
 }
 
-object BlockInfoSerializer extends Serializer[Seq[BlockInfo]] {
-
-	override def serialize(out: DataOutput, value: Seq[BlockInfo]): Unit = {
-		import JavaConversions._
-		val outputStream = new ByteArrayOutputStream()
-		val objectOutputStream = new ObjectOutputStream(outputStream)
-
-		objectOutputStream.writeObject(seqAsJavaList(value))
-		objectOutputStream.flush()
-		val data = outputStream.toByteArray
-		DataIO.packInt(out, data.length)
-		out.write(data)
+object BlockInfo {
+	def decode(encoded: ImmutableBytes): BlockInfo = {
+		val items = RBACCodec.Decoder.decode(encoded).right.get.items
+		decode(items)
 	}
 
-	override def deserialize(in: DataInput, available: Int): Seq[BlockInfo] = {
-		import JavaConversions._
-
-		val size = DataIO.unpackInt(in)
-		val data = new Array[Byte](size)
-		in.readFully(data)
-
-		val inputStream = new ByteArrayInputStream(data, 0, data.length)
-		val objectInputStream = new ObjectInputStream(inputStream)
-		val value = objectInputStream.readObject().asInstanceOf[java.util.List[BlockInfo]]
-		value
+	def decode(items: Seq[DecodedResult]): BlockInfo = {
+		val hash = items.head.bytes
+		val cumulativeDifficulty = items(1).asPositiveBigInt
+		val mainChain = 0 < items(2).asInt
+		new BlockInfo(hash, cumulativeDifficulty, mainChain)
 	}
-
 }

@@ -6,7 +6,7 @@ import java.nio.file.Paths
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.config.ComponentFactory
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
-import org.lipicalabs.lipica.core.db.{RepositoryImpl, BlockInfo, IndexedBlockStore}
+import org.lipicalabs.lipica.core.db.{RepositoryImpl, IndexedBlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
 import org.lipicalabs.lipica.core.facade.manager.AdminInfo
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -15,7 +15,6 @@ import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactoryImpl
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
-import scala.collection.mutable
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,7 +28,7 @@ class BlockchainTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			val blockStore = IndexedBlockStore.createPersistent(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
+			val blockStore = IndexedBlockStore.newInstance(new HashMapDB, new HashMapDB)
 			val listener = new LipicaListenerAdaptor
 			val genesis = Genesis.getInstance("genesis3.json")
 			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)

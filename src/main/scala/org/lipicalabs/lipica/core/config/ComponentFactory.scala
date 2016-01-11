@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.config
 import java.net.URI
 
 import org.lipicalabs.lipica.core.kernel.Wallet
-import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, HashMapDB, LevelDbDataSource}
+import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, LevelDbDataSource}
 import org.lipicalabs.lipica.core.db._
 import org.lipicalabs.lipica.core.facade.listener.CompositeLipicaListener
 import org.lipicalabs.lipica.core.facade.manager.AdminInfo
@@ -12,14 +12,11 @@ import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeManager, Node}
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
-import org.lipicalabs.lipica.core.validator._
 import org.lipicalabs.lipica.core.validator.block_header_rules.{BlockHeaderValidator, ProofOfWorkRule, ManaValueRule, ExtraDataRule}
 import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, TxTrieRootRule, BlockValidator}
 import org.lipicalabs.lipica.core.validator.parent_rules.{ParentNumberRule, ParentBlockHeaderValidator, DifficultyRule}
 import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
-import org.mapdb.{Serializer, DBMaker}
 
-import scala.collection.{JavaConversions, mutable}
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,22 +26,13 @@ import scala.collection.{JavaConversions, mutable}
 object ComponentFactory {
 
 	def createBlockStore: BlockStore = {
-		val databaseDir = SystemProperties.CONFIG.databaseDir
-		val blocksIndexFile = new java.io.File(databaseDir + "/blocks/index")
-		if (!blocksIndexFile.getParentFile.exists) {
-			blocksIndexFile.getParentFile.mkdirs()
-		}
-		val indexDB = DBMaker.fileDB(blocksIndexFile).closeOnJvmShutdown().make()
-		val coreMap = indexDB.hashMapCreate("index").keySerializer(Serializer.LONG).valueSerializer(BlockInfoSerializer).counterEnable.makeOrGet
-		val indexMap: mutable.Map[Long, Seq[BlockInfo]] = JavaConversions.mapAsScalaMap(coreMap.asInstanceOf[java.util.Map[Long, Seq[BlockInfo]]])
-		//println("MapSize=%,d & %,d".format(coreMap.size(), indexMap.size))
-		val blocksDB = createKeyValueDataSource("blocks_db")
-		blocksDB.init()
+		val hashToBlockDB = createKeyValueDataSource("hash2block_db")
+		hashToBlockDB.init()
 
-		val cacheDataSource = new HashMapDB
-		cacheDataSource.clearOnClose = true
-		val cache = IndexedBlockStore.createCache(new mutable.HashMap[Long, Seq[BlockInfo]], cacheDataSource)
-		IndexedBlockStore.createPersistent(indexMap, blocksDB, cache, indexDB)
+		val numberToBlocksDB = createKeyValueDataSource("number2blocks_db")
+		numberToBlocksDB.init()
+
+		IndexedBlockStore.newInstance(hashToBlockDB, numberToBlocksDB)
 	}
 
 	def createRepository: Repository = {

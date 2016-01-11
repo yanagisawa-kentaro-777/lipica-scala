@@ -22,7 +22,6 @@
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-・IndexedBlockStoreの実装、もう少しうまく write through と read through のキャッシュを定義できないか？
 ・再起動するとエラー。
 ・gracefulな終了を実現する。
 ・expirationによるdiscardを実装する。（replay attack対策）

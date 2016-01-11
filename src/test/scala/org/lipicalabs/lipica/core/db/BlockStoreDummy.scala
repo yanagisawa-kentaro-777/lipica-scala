@@ -36,12 +36,12 @@ class BlockStoreDummy extends BlockStore {
 
 	override def flush(): Unit = ()
 
-	override def load(): Unit = ()
-
 	override def getMaxBlockNumber: Long = 0
 
 	override def rebranch(forkBlock: Block): Unit = ()
 
 	override def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt = null
+
+	override def close(): Unit = ()
 
 }

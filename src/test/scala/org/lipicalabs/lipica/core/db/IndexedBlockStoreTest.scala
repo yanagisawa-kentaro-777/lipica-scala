@@ -10,7 +10,6 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -56,7 +55,7 @@ class IndexedBlockStoreTest extends Specification {
 		"be right" in {
 			this.blocks.size mustEqual 8004
 
-			val blockStore = IndexedBlockStore.createPersistent(new mutable.HashMap[Long, Seq[BlockInfo]], new HashMapDB, null, null)
+			val blockStore = IndexedBlockStore.newInstance(new HashMapDB, new HashMapDB)
 			var cumulativeDifficulty = UtilConsts.Zero
 			for (each <- this.blocks) {
 				cumulativeDifficulty += each.cumulativeDifficulty

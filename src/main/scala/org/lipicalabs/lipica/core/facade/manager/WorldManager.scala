@@ -101,9 +101,9 @@ class WorldManager extends Closeable {
 	}
 
 	def loadBlockchain(): Unit = {
-		if (!SystemProperties.CONFIG.databaseReset) {
-			this.blockStore.load()
-		}
+//		if (!SystemProperties.CONFIG.databaseReset) {
+//			this.blockStore.load()
+//		}
 
 		this.blockStore.getBestBlock match {
 			case Some(bestBlock) =>
@@ -141,6 +141,7 @@ class WorldManager extends Closeable {
 		stopPeerDiscovery()
 		flush()
 		this.repository.close()
+		this.blockStore.close()
 		this.blockchain.close()
 	}
 }

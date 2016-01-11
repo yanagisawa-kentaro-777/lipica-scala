@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.db
 
+import java.io.Closeable
+
 import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
@@ -11,7 +13,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/10/25 14:08
  * YANAGISAWA, Kentaro
  */
-trait BlockStore {
+trait BlockStore extends Closeable {
 
 	/**
 	 * ブロック番号で、ブロックハッシュを引いて返します。
@@ -82,6 +84,6 @@ trait BlockStore {
 	 */
 	def rebranch(forkBlock: Block): Unit
 
-	def load(): Unit
+	def close(): Unit
 
 }
