@@ -56,11 +56,9 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * 永続化機構のラッパー。
 	 */
-	private val cacheRef = new AtomicReference[Cache](new Cache(_db))
-	def dataStore: Cache = this.cacheRef.get
-	def dataStore_=(v: Cache): Unit = {
-		this.cacheRef.set(v)
-	}
+	private val dataStoreRef = new AtomicReference[TrieBackend](new TrieBackend(_db))
+	def dataStore: TrieBackend = this.dataStoreRef.get
+	def dataStore_=(v: TrieBackend): Unit = this.dataStoreRef.set(v)
 
 	/**
 	 * key 文字列に対応する値を取得して返します。
@@ -475,8 +473,6 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 object TrieImpl {
 	private val logger = LoggerFactory.getLogger("general")
 
-	private val EMPTY_TRIE_HASH = DigestUtils.EmptyTrieHash
-
 	def newInstance: TrieImpl = new TrieImpl(null)
 
 	def newInstance(ds: KeyValueDataSource): TrieImpl = new TrieImpl(ds)
@@ -485,10 +481,10 @@ object TrieImpl {
 	def computeHash(obj: Either[ImmutableBytes, Value]): ImmutableBytes = {
 		obj match {
 			case null =>
-				EMPTY_TRIE_HASH
+				DigestUtils.EmptyTrieHash
 			case Left(bytes) =>
 				if (bytes.isEmpty) {
-					EMPTY_TRIE_HASH
+					DigestUtils.EmptyTrieHash
 				} else {
 					//バイト配列である場合には、計算されたハッシュ値であるとみなす。
 					bytes
