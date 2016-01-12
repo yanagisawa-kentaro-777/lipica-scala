@@ -33,13 +33,6 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 	//takeLock等によってガードされている。
 	private var readHits: Int = 0
 
-//	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
-//	private def db: DB = this.dbRef.get
-
-//	//takeLock等によってガードされている。
-//	private var blocks: mutable.Map[Long, BlockWrapper] = null
-//	private var hashes: mutable.Set[ImmutableBytes] = null
-
 	private val indexRef: AtomicReference[Index] = new AtomicReference[Index](null)
 	private def index: Index = this.indexRef.get
 
@@ -59,10 +52,6 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 			override def run(): Unit = {
 				BlockQueueImpl.this.initLock.lock()
 				try {
-					//BlockQueueImpl.this.dbRef.set(BlockQueueImpl.this.mapDBFactory.createTransactionalDB(dbName))
-					//BlockQueueImpl.this.blocks = mapAsScalaMap(BlockQueueImpl.this.db.hashMapCreate(StoreName).keySerializer(Serializer.LONG).valueSerializer(Serializers.BlockWrapper).makeOrGet())
-					//BlockQueueImpl.this.hashes = asScalaSet(BlockQueueImpl.this.db.hashSetCreate(HashSetName).serializer(Serializers.ImmutableBytes).makeOrGet())
-
 					if (SystemProperties.CONFIG.databaseReset) {
 //						BlockQueueImpl.this.blocks.clear()
 //						BlockQueueImpl.this.hashes.clear()
@@ -94,6 +83,11 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 		this.blocksDataSource.put(key, value)
 	}
 
+	private def putBlocks(blockWrappers: Iterable[BlockWrapper]): Unit = {
+		val rows = blockWrappers.map(each => (RBACCodec.Encoder.encode(each.blockNumber), each.toBytes)).toMap
+		this.blocksDataSource.updateBatch(rows)
+	}
+
 	private def deleteBlock(blockNumber: Long): Unit = {
 		val key = RBACCodec.Encoder.encode(blockNumber)
 		this.blocksDataSource.delete(key)
@@ -120,14 +114,17 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 		awaitInit()
 		this.writeMutex.synchronized {
 			val numbers = new ArrayBuffer[Long](aBlocks.size)
+
 			val newHashes = new mutable.HashSet[ImmutableBytes]
+			val newBlocks = new ArrayBuffer[BlockWrapper](aBlocks.size)
 			aBlocks.withFilter(b => !this.index.contains(b.blockNumber) && !numbers.contains(b.blockNumber)).foreach {
 				block => {
-					putBlock(block)
 					numbers.append(block.blockNumber)
 					newHashes.add(block.hash)
+					newBlocks.append(block)
 				}
 			}
+			putBlocks(newBlocks)
 			putHashes(newHashes)
 
 			this.takeLock.lock()

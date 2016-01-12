@@ -26,9 +26,7 @@
 ・Repository構築時の初期化は、もっとうまく分担できるはず。
 ・LevelDBのオプションは外から渡せるようにすべきだ。
 
-・MapDBを廃絶する。
-BlockQueue、SyncQueue、NodeManager
-
+・MapDBを廃絶する。@NodeManager
 
 
 ・再起動するとエラー。
