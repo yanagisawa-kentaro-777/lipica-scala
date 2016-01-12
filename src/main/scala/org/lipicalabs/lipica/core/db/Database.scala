@@ -7,6 +7,9 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 /**
  * データベースが提供すべき機能を表す trait です。
  *
+ * 今後キャッシュやトランザクション等の機能を実装する場合には、
+ * この trait で定義することを想定しています。
+ *
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
@@ -27,6 +30,13 @@ trait Database extends Closeable {
 	 * @param value キーに対応する値。
 	 */
 	def put(key: ImmutableBytes, value: ImmutableBytes): Unit
+
+	/**
+	 * 複数の値を（できれば効率良く）一括して登録します。
+	 *
+	 * @param rows 登録対象データ。
+	 */
+	def updateBatch(rows: Map[ImmutableBytes, ImmutableBytes]): Unit
 	
 	/**
 	 * 渡されたキーに対応する値をデータベースから削除します。

@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.db
 
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.config.SystemProperties
@@ -13,6 +14,8 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.{JavaConversions, mutable}
 
 /**
+ * HashStore の実装クラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/26 19:33
  * YANAGISAWA, Kentaro
@@ -21,11 +24,16 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 
 	import HashStoreImpl._
 
-	private var db: DB = null
+	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
+	private def db: DB = this.dbRef.get
+
+	//何らかのロックによってガードされる。
 	private var hashes: mutable.Map[Long, ImmutableBytes] = null
 	private var index: mutable.Buffer[Long] = null
 
-	private var initDone: Boolean = false
+	private val initDoneRef: AtomicBoolean = new AtomicBoolean(false)
+	private def initDone: Boolean = this.initDoneRef.get
+
 	private val initLock = new ReentrantLock
 	private val init = this.initLock.newCondition
 
@@ -34,7 +42,7 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 			override def run(): Unit = {
 				initLock.lock()
 				try {
-					db = mapDBFactory.createTransactionalDB(dbName)
+					dbRef.set(mapDBFactory.createTransactionalDB(dbName))
 					hashes = JavaConversions.mapAsScalaMap(db.hashMapCreate(StoreName).keySerializer(Serializer.LONG).valueSerializer(Serializers.ImmutableBytes).makeOrGet())
 					index = new ArrayBuffer[Long]()
 					index.appendAll(hashes.keys)
@@ -43,7 +51,7 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 						hashes.clear()
 						db.commit()
 					}
-					initDone = true
+					initDoneRef.set(true)
 					init.signalAll()
 					logger.info("<HashStore> Hash store loaded, size[%d]".format(size))
 				} finally {
@@ -57,7 +65,7 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 	override def close() = {
 		awaitInit()
 		this.db.close()
-		this.initDone = false
+		this.initDoneRef.set(false)
 	}
 
 	override def add(hash: ImmutableBytes) = {

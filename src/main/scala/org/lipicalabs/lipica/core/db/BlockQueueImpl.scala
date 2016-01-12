@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.db
 
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
@@ -15,6 +16,11 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * ブロックを処理するための producer-consumer queue の実装です。
+ *
+ * ただし、ブロックを取り出す際に必ず小さい番号のブロックから順に取り出すため、
+ * 内部でソートを行っています。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/25 18:49
  * YANAGISAWA, Kentaro
@@ -24,12 +30,20 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 	import BlockQueueImpl._
 	import scala.collection.JavaConversions._
 
+	//takeLock等によってガードされている。
 	private var readHits: Int = 0
-	private var db: DB = null
+
+	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
+	private def db: DB = this.dbRef.get
+
+	//takeLock等によってガードされている。
 	private var blocks: mutable.Map[Long, BlockWrapper] = null
 	private var hashes: mutable.Set[ImmutableBytes] = null
-	private var index: Index = null
 
+	private val indexRef: AtomicReference[Index] = new AtomicReference[Index](null)
+	private def index: Index = this.indexRef.get
+
+	// initLock によってガードされている。
 	private var initDone: Boolean = false
 	private val initLock = new ReentrantLock
 	private val init = initLock.newCondition
@@ -45,7 +59,7 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 			override def run(): Unit = {
 				BlockQueueImpl.this.initLock.lock()
 				try {
-					BlockQueueImpl.this.db = BlockQueueImpl.this.mapDBFactory.createTransactionalDB(dbName)
+					BlockQueueImpl.this.dbRef.set(BlockQueueImpl.this.mapDBFactory.createTransactionalDB(dbName))
 					BlockQueueImpl.this.blocks = mapAsScalaMap(BlockQueueImpl.this.db.hashMapCreate(StoreName).keySerializer(Serializer.LONG).valueSerializer(Serializers.BlockWrapper).makeOrGet())
 					BlockQueueImpl.this.hashes = asScalaSet(BlockQueueImpl.this.db.hashSetCreate(HashSetName).serializer(Serializers.ImmutableBytes).makeOrGet())
 
@@ -55,7 +69,7 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 						BlockQueueImpl.this.db.commit()
 					}
 
-					BlockQueueImpl.this.index = new ArrayBufferIndex(BlockQueueImpl.this.blocks.keys)
+					BlockQueueImpl.this.indexRef.set(new ArrayBufferIndex(BlockQueueImpl.this.blocks.keys))
 					BlockQueueImpl.this.initDone = true
 					BlockQueueImpl.this.readHits = 0
 					BlockQueueImpl.this.init.signalAll()

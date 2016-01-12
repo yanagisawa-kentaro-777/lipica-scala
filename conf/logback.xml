@@ -145,7 +145,7 @@
 	<logger name="database" level="DEBUG" additivity="false">
 		<appender-ref ref="DATASTORE_TRACE"/>
 	</logger>
-	<logger name="discovery" level="DEBUG" additivity="false">
+	<logger name="discovery" level="INFO" additivity="false">
 		<appender-ref ref="NET_TRACE"/>
 	</logger>
 	<logger name="dump" level="DEBUG" additivity="false">
@@ -154,13 +154,13 @@
 	<logger name="execute" level="DEBUG" additivity="false">
 		<appender-ref ref="BLOCKCHAIN"/>
 	</logger>
-	<logger name="mana" level="WARN" additivity="false">
+	<logger name="mana" level="INFO" additivity="false">
 		<appender-ref ref="VM_TRACE"/>
 	</logger>
 	<logger name="mining" level="INFO" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
-	<logger name="net" level="DEBUG" additivity="false">
+	<logger name="net" level="INFO" additivity="false">
 		<appender-ref ref="NET_TRACE"/>
 	</logger>
 	<logger name="sync" level="DEBUG" additivity="false">
@@ -169,10 +169,10 @@
 	<logger name="wallet" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
-	<logger name="wire" level="DEBUG" additivity="false">
+	<logger name="wire" level="INFO" additivity="false">
 		<appender-ref ref="NET_TRACE"/>
 	</logger>
-	<logger name="vm" level="WARN" additivity="false">
+	<logger name="vm" level="INFO" additivity="false">
 		<appender-ref ref="VM_TRACE"/>
 	</logger>
 

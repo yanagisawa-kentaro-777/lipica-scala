@@ -50,22 +50,28 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	private val useExternalStorageRef: AtomicBoolean = new AtomicBoolean(false)
 	def useExternalStorage: Boolean = {
-		if (this.useExternalStorageRef.get) {
-			return true
+		this.synchronized {
+			if (this.useExternalStorageRef.get) {
+				return true
+			}
+			SystemProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size
 		}
-		SystemProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size
 	}
 	//def useExternalStorage_=(v: Boolean): Unit = this.useExternalStorageRef.set(v)
 
 	private val externalStorageDataSourceRef: AtomicReference[KeyValueDataSource] = new AtomicReference[KeyValueDataSource](null)
 	def externalStorageDataSource: KeyValueDataSource = {
-		if (this.externalStorageDataSourceRef.get eq null) {
-			this.externalStorageDataSourceRef.set(DataSourcePool.levelDbByName(dataSourceName))
+		this.synchronized {
+			if (this.externalStorageDataSourceRef.get eq null) {
+				this.externalStorageDataSourceRef.set(DataSourcePool.levelDbByName(dataSourceName))
+			}
+			this.externalStorageDataSourceRef.get
 		}
-		this.externalStorageDataSourceRef.get
 	}
 	def externalStorageDataSource_=(v: KeyValueDataSource): Unit = {
-		this.externalStorageDataSourceRef.set(v)
+		this.synchronized {
+			this.externalStorageDataSourceRef.set(v)
+		}
 	}
 
 	private def addKey(key: ImmutableBytes): Unit = this.keys.add(key)
@@ -77,25 +83,29 @@ class ContractDetailsImpl() extends ContractDetails {
 	def put(key: ImmutableBytes, value: ImmutableBytes): Unit = put(DataWord(key), DataWord(value))
 
 	override def put(key: DataWord, value: DataWord) = {
-		if (value == DataWord.Zero) {
-			this.storageTrie.delete(key.data)
-			removeKey(key.data)
-		} else {
-			val encodedValue = RBACCodec.Encoder.encode(value.getDataWithoutLeadingZeros)
-			this.storageTrie.update(key.data, encodedValue)
-			addKey(key.data)
+		this.synchronized {
+			if (value == DataWord.Zero) {
+				this.storageTrie.delete(key.data)
+				removeKey(key.data)
+			} else {
+				val encodedValue = RBACCodec.Encoder.encode(value.getDataWithoutLeadingZeros)
+				this.storageTrie.update(key.data, encodedValue)
+				addKey(key.data)
+			}
+			this.isDirty = true
+			//キーの数が上限を超えるようならば、ストレージ用の独立したデータベースを定義しなければならない。
+			this.useExternalStorageRef.set(useExternalStorage)
 		}
-		this.isDirty = true
-		//キーの数が上限を超えるようならば、ストレージ用の独立したデータベースを定義しなければならない。
-		this.useExternalStorageRef.set(useExternalStorage)
 	}
 
 	override def get(key: DataWord): Option[DataWord] = {
-		val data = this.storageTrie.get(key.data)
-		if (data.nonEmpty) {
-			Some(DataWord(RBACCodec.Decoder.decode(data).right.get.bytes))
-		} else {
-			None
+		this.synchronized {
+			val data = this.storageTrie.get(key.data)
+			if (data.nonEmpty) {
+				Some(DataWord(RBACCodec.Decoder.decode(data).right.get.bytes))
+			} else {
+				None
+			}
 		}
 	}
 
@@ -129,87 +139,97 @@ class ContractDetailsImpl() extends ContractDetails {
 	override def storageSize: Int = this.keys.size
 
 	override def syncStorage(): Unit = {
-		if (useExternalStorage) {
-			this.storageTrie.cache.setDB(externalStorageDataSource)
-			this.storageTrie.sync()
+		this.synchronized {
+			if (useExternalStorage) {
+				this.storageTrie.cache.setDB(externalStorageDataSource)
+				this.storageTrie.sync()
 
-			DataSourcePool.closeDataSource(dataSourceName)
+				DataSourcePool.closeDataSource(dataSourceName)
+			}
 		}
 	}
 
 	private def dataSourceName = "details-storage/" + address.toHexString
 
 	override def getSnapshotTo(hash: ImmutableBytes) = {
-		val keyValueDataSource = this.storageTrie.cache.dataSource
-		val snapStorage =
-			if (hash == DigestUtils.EmptyTrieHash) {
-				new SecureTrie(keyValueDataSource)
-			} else {
-				new SecureTrie(keyValueDataSource, hash)
-			}
-		snapStorage.cache = this.storageTrie.cache
+		this.synchronized {
+			val keyValueDataSource = this.storageTrie.cache.dataSource
+			val snapStorage =
+				if (hash == DigestUtils.EmptyTrieHash) {
+					new SecureTrie(keyValueDataSource)
+				} else {
+					new SecureTrie(keyValueDataSource, hash)
+				}
+			snapStorage.cache = this.storageTrie.cache
 
-		val details = ContractDetailsImpl.newInstance(this.address, snapStorage, this.code)
-		details.keysRef.set(this.keys)
-		//this.keys.foreach(details.keys.add)
-		details
+			val details = ContractDetailsImpl.newInstance(this.address, snapStorage, this.code)
+			details.keysRef.set(this.keys)
+			//this.keys.foreach(details.keys.add)
+			details
+		}
 	}
 
 	override def createClone: ContractDetails = {
-		val result = new ContractDetailsImpl
-		result.address = this.address
-		result.code = this.code
-		this.storageContent.foreach {
-			entry => result.put(entry._1, entry._2)
+		this.synchronized {
+			val result = new ContractDetailsImpl
+			result.address = this.address
+			result.code = this.code
+			this.storageContent.foreach {
+				entry => result.put(entry._1, entry._2)
+			}
+			result
 		}
-		result
 	}
 
 	override def encode: ImmutableBytes = {
-		val startTime = System.nanoTime
-		val encodedAddress = RBACCodec.Encoder.encode(this.address)
-		val encodedIsExternalStorage = RBACCodec.Encoder.encode(this.useExternalStorage)
-		val encodedStorageRoot = RBACCodec.Encoder.encode(
-			if (this.useExternalStorage) {
-				this.storageTrie.rootHash
-			} else {
-				Array.emptyByteArray
+		this.synchronized {
+			val startTime = System.nanoTime
+			val encodedAddress = RBACCodec.Encoder.encode(this.address)
+			val encodedIsExternalStorage = RBACCodec.Encoder.encode(this.useExternalStorage)
+			val encodedStorageRoot = RBACCodec.Encoder.encode(
+				if (this.useExternalStorage) {
+					this.storageTrie.rootHash
+				} else {
+					Array.emptyByteArray
+				}
+			)
+			val encodedStorage = RBACCodec.Encoder.encode(this.storageTrie.serialize)
+			val encodedCode = RBACCodec.Encoder.encode(this.code)
+			val encodedKeys = RBACCodec.Encoder.encode(this.keys.toSeq)
+
+			val result = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedIsExternalStorage, encodedStorage, encodedCode, encodedKeys, encodedStorageRoot))
+			val endTime = System.nanoTime
+
+			if (logger.isInfoEnabled) {
+				logger.info("<ContractDetails> [%s] Encoding took %,d nanos for %,d entries. (%,d bytes)".format(
+					this.address.toShortString, endTime - startTime, this.keys.size, encodedStorage.length
+				))
 			}
-		)
-		val encodedStorage = RBACCodec.Encoder.encode(this.storageTrie.serialize)
-		val encodedCode = RBACCodec.Encoder.encode(this.code)
-		val encodedKeys = RBACCodec.Encoder.encode(this.keys.toSeq)
-
-		val result = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, encodedIsExternalStorage, encodedStorage, encodedCode, encodedKeys, encodedStorageRoot))
-		val endTime = System.nanoTime
-
-		if (logger.isInfoEnabled) {
-			logger.info("<ContractDetails> [%s] Encoding took %,d nanos for %,d entries. (%,d bytes)".format(
-				this.address.toShortString, endTime - startTime, this.keys.size, encodedStorage.length
-			))
+			result
 		}
-		result
 	}
 
 	override def decode(data: ImmutableBytes) = {
-		val startTime = System.nanoTime
-		val items = RBACCodec.Decoder.decode(data).right.get.items
-		this.address = items.head.bytes
-		this.useExternalStorageRef.set(items(1).asPositiveLong > 0L)
-		this.storageTrie.deserialize(items(2).bytes)
-		this.code = items(3).bytes
-		items(4).items.foreach {
-			each => addKey(each.bytes)
-		}
-		if (useExternalStorage) {
-			this.storageTrie.root = items(5).bytes
-			this.storageTrie.cache.setDB(externalStorageDataSource)
-		}
-		val endTime = System.nanoTime
-		if (logger.isInfoEnabled) {
-			logger.info("<ContractDetails> [%s] Decoding took %,d nanos for %,d entries. (%,d bytes)".format(
-				this.address.toShortString, endTime - startTime, this.keys.size, items(2).bytes.length
-			))
+		this.synchronized {
+			val startTime = System.nanoTime
+			val items = RBACCodec.Decoder.decode(data).right.get.items
+			this.address = items.head.bytes
+			this.useExternalStorageRef.set(items(1).asPositiveLong > 0L)
+			this.storageTrie.deserialize(items(2).bytes)
+			this.code = items(3).bytes
+			items(4).items.foreach {
+				each => addKey(each.bytes)
+			}
+			if (useExternalStorage) {
+				this.storageTrie.root = items(5).bytes
+				this.storageTrie.cache.setDB(externalStorageDataSource)
+			}
+			val endTime = System.nanoTime
+			if (logger.isInfoEnabled) {
+				logger.info("<ContractDetails> [%s] Decoding took %,d nanos for %,d entries. (%,d bytes)".format(
+					this.address.toShortString, endTime - startTime, this.keys.size, items(2).bytes.length
+				))
+			}
 		}
 	}
 

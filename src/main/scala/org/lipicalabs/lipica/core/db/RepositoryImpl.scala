@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.db
 
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference, AtomicInteger}
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.kernel._
@@ -19,32 +19,44 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stateDS: KeyValueDataSource) extends Repository {
+class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSource) extends Repository {
 
 	def this() = this(new HashMapDB, new HashMapDB)
 
 	import RepositoryImpl._
 
+	_detailsDS.setName(DETAILS_DB)
+	_detailsDS.init()
 
-	detailsDS.setName(DETAILS_DB)
-	detailsDS.init()
 
+	_stateDS.setName(STATE_DB)
+	_stateDS.init()
 
-	stateDS.setName(STATE_DB)
-	stateDS.init()
+	private val detailsDSRef = new AtomicReference[KeyValueDataSource](_detailsDS)
+	def detailsDS: KeyValueDataSource = this.detailsDSRef.get
 
-	private var detailsDB = new DatabaseImpl(detailsDS)
-	private var dds = new ContractDetailsStore(this.detailsDB)
+	private val detailsDBRef = new AtomicReference[DatabaseImpl](new DatabaseImpl(detailsDS))
+	private def detailsDB: DatabaseImpl = this.detailsDBRef.get
 
-	private var stateDB = new DatabaseImpl(stateDS)
-	private var worldState = new SecureTrie(stateDB.getDB)
+	private val ddsRef = new AtomicReference[ContractDetailsStore](new ContractDetailsStore(this.detailsDB))
+	private def dds: ContractDetailsStore = this.ddsRef.get
 
-	private var _isClosed: Boolean = false
+	private val stateDSRef = new AtomicReference[KeyValueDataSource](_stateDS)
+	private def stateDS: KeyValueDataSource = this.stateDSRef.get
+
+	private val stateDBRef = new AtomicReference[DatabaseImpl](new DatabaseImpl(stateDS))
+	private def stateDB: DatabaseImpl = this.stateDBRef.get
+
+	private val worldStateRef = new AtomicReference[SecureTrie](new SecureTrie(stateDB.dataSource))
+	private def worldState: SecureTrie = this.worldStateRef.get
+
+	private val isClosedRef: AtomicBoolean = new AtomicBoolean(false)
 
 	private val lock: ReentrantLock = new ReentrantLock
 	private val accessCounter = new AtomicInteger(0)
 
-	private var isSnapshot = false
+	private val isSnapshotRef = new AtomicBoolean(false)
+	def isSnapshot: Boolean = this.isSnapshotRef.get
 
 
 	private def withLock[T](f: () => T): T = {
@@ -76,11 +88,12 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 			() => {
 				close()
 				this.detailsDS.init()
-				this.detailsDB = new DatabaseImpl(this.detailsDS)
+				this.detailsDBRef.set(new DatabaseImpl(this.detailsDS))
 
 				this.stateDS.init()
-				this.stateDB = new DatabaseImpl(this.stateDS)
-				this.worldState = new SecureTrie(this.stateDB.getDB)
+				this.stateDBRef.set(new DatabaseImpl(this.stateDS))
+
+				this.worldStateRef.set(new SecureTrie(this.stateDB.dataSource))
 			}
 		}
 	}
@@ -91,15 +104,13 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 				if (!isClosed) {
 					this.detailsDB.close()
 					this.stateDB.close()
-					this._isClosed = true
+					this.isClosedRef.set(true)
 				}
 			}
 		}
 	}
 
-	override def isClosed: Boolean = {
-		this._isClosed
-	}
+	override def isClosed: Boolean = this.isClosedRef.get
 
 	override def updateBatch(stateCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
 		if (logger.isDebugEnabled) {
@@ -353,15 +364,16 @@ class RepositoryImpl(private var detailsDS: KeyValueDataSource, private var stat
 		trie.cache = this.worldState.cache
 
 		val repo = new RepositoryImpl()
-		repo.worldState = trie
-		repo.stateDB = this.stateDB
-		repo.stateDS = this.stateDS
+		repo.worldStateRef.set(trie)
 
-		repo.detailsDB = this.detailsDB
-		repo.detailsDS = this.detailsDS
+		repo.stateDBRef.set(this.stateDB)
+		repo.stateDSRef.set(this.stateDS)
 
-		repo.dds = this.dds
-		repo.isSnapshot = true
+		repo.detailsDBRef.set(this.detailsDB)
+		repo.detailsDSRef.set(this.detailsDS)
+
+		repo.ddsRef.set(this.dds)
+		repo.isSnapshotRef.set(true)
 
 		repo
 	}

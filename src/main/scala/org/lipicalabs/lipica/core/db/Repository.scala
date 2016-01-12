@@ -9,7 +9,8 @@ import org.lipicalabs.lipica.core.vm.DataWord
 import scala.collection.mutable
 
 /**
- * データを保存するリポジトリが実装すべき trait です。
+ * 残高、コントラクトのコード、コントラクトのストレージ等、
+ * グローバルな状態を保存するクラスが実装すべき trait です。
  *
  * Created by IntelliJ IDEA.
  * 2015/10/25 13:46
@@ -117,7 +118,9 @@ trait RepositoryLike extends Closeable {
 
 }
 
-
+/**
+ * 永続化可能なRepository本体を表す trait です。
+ */
 trait Repository extends RepositoryLike {
 
 	/**
@@ -165,6 +168,10 @@ trait Repository extends RepositoryLike {
 
 }
 
+/**
+ * Repository本体に対して確定する前の読み書きを、
+ * 迅速に実行するためのバッファを表す trait です。
+ */
 trait RepositoryTrackLike extends RepositoryLike {
 
 	/**

@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.db
 
-import java.util.concurrent.ConcurrentHashMap
 
 import org.lipicalabs.lipica.core.kernel.{ContractDetailsImpl, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -13,55 +12,61 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class ContractDetailsStore(private val _db: DatabaseImpl) {
+class ContractDetailsStore(private val db: DatabaseImpl) {
 	import ContractDetailsStore._
-	import scala.collection.JavaConversions._
 
-	private val cache = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, ContractDetails])
+	//このインスタンス自体によってガードされている。
+	private val cache = new mutable.HashMap[ImmutableBytes, ContractDetails]
 	private val removes = new mutable.HashSet[ImmutableBytes]
-
-	def db: DatabaseImpl = this._db
-
+	
 	def get(key: ImmutableBytes): Option[ContractDetails] = {
-		this.cache.get(key) match {
-			case Some(details) =>
-				Some(details)
-			case _ =>
-				if (this.removes.contains(key)) {
-					return None
-				}
-				this.db.get(key) match {
-					case Some(data) =>
-						val details = ContractDetailsImpl.decode(data)
-						this.cache.put(key, details)
-						Some(details)
-					case _ =>
-						None
-				}
+		this.synchronized {
+			this.cache.get(key) match {
+				case Some(details) =>
+					Some(details)
+				case _ =>
+					if (this.removes.contains(key)) {
+						return None
+					}
+					this.db.get(key) match {
+						case Some(data) =>
+							val details = ContractDetailsImpl.decode(data)
+							this.cache.put(key, details)
+							Some(details)
+						case _ =>
+							None
+					}
+			}
 		}
 	}
 
 	def update(key: ImmutableBytes, contractDetails: ContractDetails): Unit = {
-		contractDetails.address = key
-		cache.put(key, contractDetails)
-		removes.remove(key)
+		this.synchronized {
+			contractDetails.address = key
+			cache.put(key, contractDetails)
+			removes.remove(key)
+		}
 	}
 
 	def remove(key: ImmutableBytes): Unit = {
-		this.cache.remove(key)
-		this.removes.add(key)
+		this.synchronized {
+			this.cache.remove(key)
+			this.removes.add(key)
+		}
 	}
 
 	def flush(): Unit = {
-		val numberOfKeys = cache.size
+		this.synchronized {
+			val numberOfKeys = cache.size
 
-		val start = System.nanoTime
-		val totalSize = flushInternal
-		val finish = System.nanoTime
+			val start = System.nanoTime
+			val totalSize = flushInternal
+			val finish = System.nanoTime
 
-		val flushSize = totalSize.toDouble / 1048576
-		val flushMillis = (finish - start).toDouble / 1000000
-		logger.info("<ContractDetailsStore> Flushed details in: %02.2f ms, %d keys, %02.2fMB".format(flushMillis, numberOfKeys, flushSize))
+			val flushSize = totalSize.toDouble / 1048576
+			val flushMillis = (finish - start).toDouble / 1000000
+			logger.info("<ContractDetailsStore> Flushed details in: %02.2f ms, %d keys, %02.2fMB".format(flushMillis, numberOfKeys, flushSize))
+		}
 	}
 
 	private def flushInternal: Long = {
@@ -69,15 +74,15 @@ class ContractDetailsStore(private val _db: DatabaseImpl) {
 
 		//キャッシュに保持されている情報を、DBに永続化する。
 		val batch = new mutable.HashMap[ImmutableBytes, ImmutableBytes]
-		for (entry <- cache.entrySet) {
-			val details = entry.getValue
+		for (entry <- cache) {
+			val key = entry._1
+			val details = entry._2
 			details.syncStorage()
-			val key = entry.getKey
 			val value = details.encode
 			batch.put(key, value)
 			totalSize += value.length
 		}
-		db.getDB.updateBatch(batch.toMap)
+		db.updateBatch(batch.toMap)
 
 		//削除対象を削除する。
 		for (key <- removes) {
@@ -91,7 +96,9 @@ class ContractDetailsStore(private val _db: DatabaseImpl) {
 	}
 
 	def keys: Set[ImmutableBytes] = {
-		(this.cache.keySet ++ this.db.sortedKeys.toSet).toSet
+		this.synchronized {
+			(this.cache.keySet ++ this.db.sortedKeys.toSet).toSet
+		}
 	}
 
 }

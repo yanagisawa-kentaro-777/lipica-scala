@@ -4,38 +4,47 @@ import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
+
 /**
+ * KeyValueDataStore を利用して Database インターフェイスを実装するクラスです。
  *
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class DatabaseImpl(private val keyValueDataSource: KeyValueDataSource) extends Database {
+class DatabaseImpl(val dataSource: KeyValueDataSource) extends Database {
 
 	import DatabaseImpl._
 
-	override def get(key: ImmutableBytes): Option[ImmutableBytes] = this.keyValueDataSource.get(key)
+	override def get(key: ImmutableBytes): Option[ImmutableBytes] = this.dataSource.get(key)
 
-	override def init(): Unit = this.keyValueDataSource.init()
+	override def init(): Unit = this.dataSource.init()
 
 	override def put(key: ImmutableBytes, value: ImmutableBytes): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("Putting: [%s] -> [%s]".format(key, value))
+			logger.debug("<DatabaseImpl> Putting: [%s] -> [%s]".format(key, value))
 		}
-		this.keyValueDataSource.put(key, value)
+		this.dataSource.put(key, value)
+	}
+
+	def updateBatch(rows: Map[ImmutableBytes, ImmutableBytes]): Unit = {
+		this.dataSource.updateBatch(rows)
 	}
 
 	override def delete(key: ImmutableBytes): Unit = {
 		if (logger.isDebugEnabled) {
-			logger.debug("Deleting: [%s]".format(key))
+			logger.debug("<DatabaseImpl> Deleting: [%s]".format(key))
 		}
-		this.keyValueDataSource.delete(key)
+		this.dataSource.delete(key)
 	}
 
-	override def close(): Unit = this.keyValueDataSource.close()
+	override def close(): Unit = this.dataSource.close()
 
-	def sortedKeys: Seq[ImmutableBytes] = this.keyValueDataSource.keys.toSeq.sorted
+	/**
+	 * 多くの DataSource の実装において、このメソッド呼び出しは高コストです。
+	 * みだりに呼び出さないよう注意してください。
+	 */
+	def sortedKeys: Seq[ImmutableBytes] = this.dataSource.keys.toSeq.sorted
 
-	def getDB: KeyValueDataSource = this.keyValueDataSource
 }
 
 object DatabaseImpl {
