@@ -22,8 +22,13 @@
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 ・databaseReset は効かない。
 
+・Repository構築時の初期化は、もっとうまく分担できるはず。
+・LevelDBのオプションは外から渡せるようにすべきだ。
+
 ・MapDBを廃絶する。
-BlockQueue、HashStore、SyncQueue、NodeManager
+BlockQueue、SyncQueue、NodeManager
+
+
 
 ・再起動するとエラー。
 ・アウトラインログを作る。

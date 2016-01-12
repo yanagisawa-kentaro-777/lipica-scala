@@ -243,6 +243,8 @@ object BlockQueueImpl {
 	private val StoreName: String = "blockqueue"
 	private val HashSetName: String = "hashset"
 
+	private val OneByteValue = ImmutableBytes.fromOneByte(0)
+
 	trait Index {
 		def addAll(nums: Iterable[Long]): Unit
 		def add(v: Long): Unit
@@ -344,3 +346,4 @@ object BlockQueueImpl {
 	}
 
 }
+
