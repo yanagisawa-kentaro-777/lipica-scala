@@ -1,6 +1,8 @@
 package org.lipicalabs.lipica.core.db.datasource
 
-trait DataSource {
+import java.io.Closeable
+
+trait DataSource extends Closeable {
 
 	 def setName(value: String): Unit
 
@@ -10,6 +12,6 @@ trait DataSource {
 
 	 def isAlive: Boolean
 
-	 def close(): Unit
+	 override def close(): Unit
 
  }

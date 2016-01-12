@@ -4,17 +4,14 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.util.Random
 
-import org.apache.commons.io.FileUtils
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.kernel.{BlockWrapper, Block, Genesis}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
-import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -30,7 +27,6 @@ class BlockQueueTest extends Specification {
 	private val blocks = new ArrayBuffer[Block]
 	private val hashes = new ArrayBuffer[ImmutableBytes]
 	private var cumulativeDifficulty: BigInt = UtilConsts.Zero
-	private var testDBName: String = ""
 	private val nodeId = new Array[Byte](64)
 
 	private var blockQueue: BlockQueueImpl = null
@@ -54,11 +50,11 @@ class BlockQueueTest extends Specification {
 		}
 
 		val r = BigInt(32, new Random)
-		this.testDBName = "./work/database/test_db_" + r
-		SystemProperties.CONFIG.databaseDir = this.testDBName
+//		this.testDBName = "./work/database/test_db_" + r
+//		SystemProperties.CONFIG.databaseDir = this.testDBName
 		SystemProperties.CONFIG.databaseReset = false
-		val factory = new MapDBFactoryImpl
-		this.blockQueue = new BlockQueueImpl(factory)
+
+		this.blockQueue = new BlockQueueImpl(new HashMapDB, new HashMapDB)
 		this.blockQueue.open()
 
 		val rnd = new Random
@@ -73,12 +69,12 @@ class BlockQueueTest extends Specification {
 
 	private def cleanUp(): Unit = {
 		this.blockQueue.close()
-		try {
-			Thread.sleep(100L)
-			FileUtils.forceDelete(new java.io.File(this.testDBName))
-		} catch {
-			case e: Throwable => e.printStackTrace()
-		}
+//		try {
+//			Thread.sleep(100L)
+//			FileUtils.forceDelete(new java.io.File(this.testDBName))
+//		} catch {
+//			case e: Throwable => e.printStackTrace()
+//		}
 
 	}
 

@@ -84,7 +84,13 @@ object ComponentFactory {
 		val hashStoreDB = createKeyValueDataSource("hashstore_db")
 		hashStoreDB.init()
 
-		new SyncQueue(hashStoreDB)
+		val queuedBlocksDB = createKeyValueDataSource("queued_blocks_db")
+		queuedBlocksDB.init()
+
+		val queuedHashesDB = createKeyValueDataSource("queued_hashes_db")
+		queuedHashesDB.init()
+
+		new SyncQueue(hashStoreDataSource = hashStoreDB, queuedBlocksDataSource = queuedBlocksDB, queuedHashesDataSource = queuedHashesDB)
 	}
 
 	def createPeersPool: PeersPool = {

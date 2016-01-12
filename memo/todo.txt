@@ -21,6 +21,7 @@
 ３、整備
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 ・databaseReset は効かない。
+・実用にならない clear() メソッドも消した方が良い。
 
 ・Repository構築時の初期化は、もっとうまく分担できるはず。
 ・LevelDBのオプションは外から渡せるようにすべきだ。

@@ -4,11 +4,12 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.datasource.mapdb.{Serializers, MapDBFactory}
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
-import org.mapdb.{Serializer, DB}
+import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -25,20 +26,19 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/11/25 18:49
  * YANAGISAWA, Kentaro
  */
-class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue {
+class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private val hashesDataSource: KeyValueDataSource) extends BlockQueue {
 
 	import BlockQueueImpl._
-	import scala.collection.JavaConversions._
 
 	//takeLock等によってガードされている。
 	private var readHits: Int = 0
 
-	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
-	private def db: DB = this.dbRef.get
+//	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
+//	private def db: DB = this.dbRef.get
 
-	//takeLock等によってガードされている。
-	private var blocks: mutable.Map[Long, BlockWrapper] = null
-	private var hashes: mutable.Set[ImmutableBytes] = null
+//	//takeLock等によってガードされている。
+//	private var blocks: mutable.Map[Long, BlockWrapper] = null
+//	private var hashes: mutable.Set[ImmutableBytes] = null
 
 	private val indexRef: AtomicReference[Index] = new AtomicReference[Index](null)
 	private def index: Index = this.indexRef.get
@@ -59,17 +59,17 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 			override def run(): Unit = {
 				BlockQueueImpl.this.initLock.lock()
 				try {
-					BlockQueueImpl.this.dbRef.set(BlockQueueImpl.this.mapDBFactory.createTransactionalDB(dbName))
-					BlockQueueImpl.this.blocks = mapAsScalaMap(BlockQueueImpl.this.db.hashMapCreate(StoreName).keySerializer(Serializer.LONG).valueSerializer(Serializers.BlockWrapper).makeOrGet())
-					BlockQueueImpl.this.hashes = asScalaSet(BlockQueueImpl.this.db.hashSetCreate(HashSetName).serializer(Serializers.ImmutableBytes).makeOrGet())
+					//BlockQueueImpl.this.dbRef.set(BlockQueueImpl.this.mapDBFactory.createTransactionalDB(dbName))
+					//BlockQueueImpl.this.blocks = mapAsScalaMap(BlockQueueImpl.this.db.hashMapCreate(StoreName).keySerializer(Serializer.LONG).valueSerializer(Serializers.BlockWrapper).makeOrGet())
+					//BlockQueueImpl.this.hashes = asScalaSet(BlockQueueImpl.this.db.hashSetCreate(HashSetName).serializer(Serializers.ImmutableBytes).makeOrGet())
 
 					if (SystemProperties.CONFIG.databaseReset) {
-						BlockQueueImpl.this.blocks.clear()
-						BlockQueueImpl.this.hashes.clear()
-						BlockQueueImpl.this.db.commit()
+//						BlockQueueImpl.this.blocks.clear()
+//						BlockQueueImpl.this.hashes.clear()
+//						BlockQueueImpl.this.db.commit()
 					}
 
-					BlockQueueImpl.this.indexRef.set(new ArrayBufferIndex(BlockQueueImpl.this.blocks.keys))
+					BlockQueueImpl.this.indexRef.set(new ArrayBufferIndex(BlockQueueImpl.this.blocksDataSource.keys.map(each => RBACCodec.Decoder.decode(each).right.get.asPositiveLong)))
 					BlockQueueImpl.this.initDone = true
 					BlockQueueImpl.this.readHits = 0
 					BlockQueueImpl.this.init.signalAll()
@@ -83,6 +83,39 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 		Executors.newSingleThreadExecutor(new CountingThreadFactory("block-queue")).execute(task)
 	}
 
+	private def getBlock(blockNumber: Long): Option[BlockWrapper] = {
+		val key = RBACCodec.Encoder.encode(blockNumber)
+		this.blocksDataSource.get(key).map(encoded => BlockWrapper.parse(encoded))
+	}
+
+	private def putBlock(blockWrapper: BlockWrapper): Unit = {
+		val key = RBACCodec.Encoder.encode(blockWrapper.blockNumber)
+		val value = blockWrapper.toBytes
+		this.blocksDataSource.put(key, value)
+	}
+
+	private def deleteBlock(blockNumber: Long): Unit = {
+		val key = RBACCodec.Encoder.encode(blockNumber)
+		this.blocksDataSource.delete(key)
+	}
+
+	private def existsHash(aHash: ImmutableBytes): Boolean = {
+		this.hashesDataSource.get(aHash).isDefined
+	}
+
+	private def putHash(aHash: ImmutableBytes): Unit = {
+		this.hashesDataSource.put(aHash, OneByteValue)
+	}
+
+	private def putHashes(aHashes: Iterable[ImmutableBytes]): Unit = {
+		val rows = aHashes.map(each => (each, OneByteValue)).toMap
+		this.hashesDataSource.updateBatch(rows)
+	}
+
+	private def deleteHash(aHash: ImmutableBytes): Unit = {
+		this.hashesDataSource.delete(aHash)
+	}
+
 	override def addAll(aBlocks: Iterable[BlockWrapper]): Unit = {
 		awaitInit()
 		this.writeMutex.synchronized {
@@ -90,12 +123,12 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 			val newHashes = new mutable.HashSet[ImmutableBytes]
 			aBlocks.withFilter(b => !this.index.contains(b.blockNumber) && !numbers.contains(b.blockNumber)).foreach {
 				block => {
-					this.blocks.put(block.blockNumber, block)
+					putBlock(block)
 					numbers.append(block.blockNumber)
 					newHashes.add(block.hash)
 				}
 			}
-			this.hashes.addAll(newHashes)
+			putHashes(newHashes)
 
 			this.takeLock.lock()
 			try {
@@ -105,7 +138,6 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 				this.takeLock.unlock()
 			}
 		}
-		this.db.commit()
 	}
 
 	override def add(block: BlockWrapper): Unit = {
@@ -114,8 +146,8 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 			if (this.index.contains(block.blockNumber)) {
 				return
 			}
-			this.blocks.put(block.blockNumber, block)
-			this.hashes.add(block.hash)
+			putBlock(block)
+			putHash(block.hash)
 
 			this.takeLock.lock()
 			try {
@@ -125,7 +157,6 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 				this.takeLock.unlock()
 			}
 		}
-		this.db.commit()
 	}
 
 	override def poll: Option[BlockWrapper] = {
@@ -142,7 +173,7 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 				return None
 			}
 			val idx = this.index.peek
-			this.blocks.get(idx)
+			getBlock(idx)
 		}
 	}
 
@@ -177,11 +208,10 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 	override def clear(): Unit = {
 		awaitInit()
 		this.synchronized {
-			this.blocks.clear()
-			this.hashes.clear()
+			this.blocksDataSource.keys.foreach(this.blocksDataSource.delete)
+			this.hashesDataSource.keys.foreach(this.hashesDataSource.delete)
 			this.index.clear()
 		}
-		this.db.commit()
 	}
 
 	/**
@@ -189,7 +219,7 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 	 */
 	override def excludeExisting(aHashes: Seq[ImmutableBytes]): Seq[ImmutableBytes] = {
 		awaitInit()
-		aHashes.filter(each => !this.hashes.contains(each))
+		aHashes.filter(each => !existsHash(each))
 	}
 
 	private def pollInternal: Option[BlockWrapper] = {
@@ -198,10 +228,10 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 				return None
 			}
 			val idx = this.index.poll
-			val blockOrNone = this.blocks.get(idx)
-			this.blocks.remove(idx)
+			val blockOrNone = getBlock(idx)
+			deleteBlock(idx)
 			blockOrNone.foreach {
-				block => this.hashes.remove(block.hash)
+				block => deleteHash(block.hash)
 			}
 			blockOrNone
 		}
@@ -210,16 +240,14 @@ class BlockQueueImpl(private val mapDBFactory: MapDBFactory) extends BlockQueue 
 	private def commitReading(): Unit = {
 		this.readHits += 1
 		if (ReadHitsCommitThreshold <= this.readHits) {
-			this.db.commit()
 			this.readHits = 0
 		}
 	}
 
-	private def dbName: String = "%s/%s".format(StoreName, StoreName)
-
 	override def close(): Unit = {
 		awaitInit()
-		this.db.close()
+		MiscUtils.closeIfNotNull(this.blocksDataSource)
+		MiscUtils.closeIfNotNull(this.hashesDataSource)
 		this.initDone = false
 	}
 
@@ -240,8 +268,6 @@ object BlockQueueImpl {
 
 	private val logger = LoggerFactory.getLogger("database")
 	private val ReadHitsCommitThreshold: Int = 1000
-	private val StoreName: String = "blockqueue"
-	private val HashSetName: String = "hashset"
 
 	private val OneByteValue = ImmutableBytes.fromOneByte(0)
 

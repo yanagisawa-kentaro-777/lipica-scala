@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
 import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
@@ -23,7 +22,7 @@ import org.slf4j.LoggerFactory
  * 2015/12/10 20:17
  * YANAGISAWA, Kentaro
  */
-class SyncQueue(private val hashStoreDataSource: KeyValueDataSource) {
+class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val queuedBlocksDataSource: KeyValueDataSource, private val queuedHashesDataSource: KeyValueDataSource) {
 	import SyncQueue._
 
 	/**
@@ -48,13 +47,12 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource) {
 
 	def init(): Unit = {
 		logger.info("<SyncQueue> Start loading sync queue.")
-		val mapDBFactory = new MapDBFactoryImpl
 		//HashStoreの生成および初期化を実行する。
 		val hs = new HashStoreImpl(hashStoreDataSource)
 		hs.open()
 		this.hashStoreRef.set(hs)
 		//BlockQueueの生成および初期化を実行する。
-		val bq = new BlockQueueImpl(mapDBFactory)
+		val bq = new BlockQueueImpl(blocksDataSource = queuedBlocksDataSource, hashesDataSource = queuedHashesDataSource)
 		bq.open()
 		this.blockQueueRef.set(bq)
 
