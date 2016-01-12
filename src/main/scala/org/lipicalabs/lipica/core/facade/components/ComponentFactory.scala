@@ -36,8 +36,12 @@ object ComponentFactory {
 	}
 
 	def createRepository: Repository = {
-		val detailsDS = createKeyValueDataSource("")
-		val stateDS = createKeyValueDataSource("")
+		val detailsDS = createKeyValueDataSource("contract_dtl_db")
+		detailsDS.init()
+
+		val stateDS = createKeyValueDataSource("state_db")
+		stateDS.init()
+
 		new RepositoryImpl(detailsDS, stateDS)
 	}
 

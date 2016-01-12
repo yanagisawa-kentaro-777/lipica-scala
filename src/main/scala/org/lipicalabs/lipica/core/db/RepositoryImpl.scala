@@ -21,16 +21,9 @@ import scala.collection.mutable
  */
 class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSource) extends Repository {
 
-	def this() = this(new HashMapDB, new HashMapDB)
+	protected def this() = this(new HashMapDB, new HashMapDB)
 
 	import RepositoryImpl._
-
-	_detailsDS.setName(DETAILS_DB)
-	_detailsDS.init()
-
-
-	_stateDS.setName(STATE_DB)
-	_stateDS.init()
 
 	private val detailsDSRef = new AtomicReference[KeyValueDataSource](_detailsDS)
 	def detailsDS: KeyValueDataSource = this.detailsDSRef.get
@@ -383,7 +376,5 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 }
 
 object RepositoryImpl {
-	private val DETAILS_DB: String = "details"
-	private val STATE_DB: String = "state"
 	private val logger: Logger = LoggerFactory.getLogger("database")
 }
