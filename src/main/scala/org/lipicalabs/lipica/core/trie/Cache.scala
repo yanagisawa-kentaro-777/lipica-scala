@@ -119,7 +119,7 @@ class Cache(_dataSource: KeyValueDataSource) {
 		this.isDirty = false
 	}
 
-	def setDB(aDataSource: KeyValueDataSource): Unit = {
+	def assignDataSource(aDataSource: KeyValueDataSource): Unit = {
 		if (this.dataSource eq aDataSource) {
 			return
 		}

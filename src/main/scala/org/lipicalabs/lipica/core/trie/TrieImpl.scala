@@ -57,8 +57,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 * 永続化機構のラッパー。
 	 */
 	private val cacheRef = new AtomicReference[Cache](new Cache(_db))
-	def cache: Cache = this.cacheRef.get
-	def cache_=(v: Cache): Unit = {
+	def dataStore: Cache = this.cacheRef.get
+	def dataStore_=(v: Cache): Unit = {
 		this.cacheRef.set(v)
 	}
 
@@ -335,12 +335,12 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			TrieNode.empty
 		} else {
 			//対応する値を引いて返す。
-			TrieNode(this.cache.get(node.hash).nodeValue)
+			TrieNode(this.dataStore.get(node.hash).nodeValue)
 		}
 	}
 
 	private def putToCache(node: TrieNode): TrieNode = {
-		this.cache.put(convertNodeToValue(node)) match {
+		this.dataStore.put(convertNodeToValue(node)) match {
 			case Left(v) =>
 				//値がそのままである。
 				node
@@ -351,16 +351,16 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	}
 
 	override def sync(): Unit = {
-		this.cache.commit()
+		this.dataStore.commit()
 		this.prevRootRef.set(root)
 	}
 
 	override def undo(): Unit = {
-		this.cache.undo()
+		this.dataStore.undo()
 		this.rootRef.set(prevRoot)
 	}
 
-	override def validate: Boolean = Option(this.cache.get(rootHash)).isDefined
+	override def validate: Boolean = Option(this.dataStore.get(rootHash)).isDefined
 
 	/**
 	 * このTrieに属するすべての要素を、キャッシュから削除します。
@@ -372,7 +372,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		this.scanTree(this.rootHash, collectAction)
 		val collectedHashes = collectAction.getCollectedHashes
 
-		val cachedNodes = this.cache.getNodes
+		val cachedNodes = this.dataStore.getNodes
 		val toRemoveSet = new mutable.HashSet[ImmutableBytes]
 		for (key <- cachedNodes.keySet) {
 			if (!collectedHashes.contains(key)) {
@@ -380,7 +380,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			}
 		}
 		for (key <- toRemoveSet) {
-			this.cache.delete(key)
+			this.dataStore.delete(key)
 			if (logger.isTraceEnabled) {
 				logger.trace("<TrieImpl> Garbage collected node: [%s]".format(key.toHexString))
 			}
@@ -390,15 +390,15 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	}
 
 	def copy: TrieImpl = {
-		val another = new TrieImpl(this.cache.dataSource, rootHash)
-		this.cache.getNodes.foreach {
-			each => another.cache.privatePut(each._1, each._2)
+		val another = new TrieImpl(this.dataStore.dataSource, rootHash)
+		this.dataStore.getNodes.foreach {
+			each => another.dataStore.privatePut(each._1, each._2)
 		}
 		another
 	}
 
 	private def scanTree(hash: ImmutableBytes, action: ScanAction): Unit = {
-		val node = this.cache.get(hash)
+		val node = this.dataStore.get(hash)
 		if (node.nodeValue.isSeq) {
 			val siblings = node.nodeValue.asSeq
 			if (siblings.size == TrieNode.ShortcutSize) {
@@ -431,7 +431,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 					val value = Value.fromEncodedBytes(encodedValue).decode
 					keys.copyTo(i * 32, key, 0, 32)
 
-					this.cache.put(ImmutableBytes(key), value)
+					this.dataStore.put(ImmutableBytes(key), value)
 				}}
 				this.root = TrieNode(Value.fromEncodedBytes(encodedRoot).decode)
 			case Left(e) =>
@@ -445,7 +445,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 * @return 符号化されたバイト列。
 	 */
 	def serialize: ImmutableBytes = {
-		val nodes = this.cache.getNodes
+		val nodes = this.dataStore.getNodes
 		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
 		val encodedValues = nodes.values.map(each => RBACCodec.Encoder.encode(each.nodeValue.value))
 		val encodedRoot = RBACCodec.Encoder.encode(this.root.hash)

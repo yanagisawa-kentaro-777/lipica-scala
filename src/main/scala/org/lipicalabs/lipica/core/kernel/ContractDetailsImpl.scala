@@ -141,7 +141,7 @@ class ContractDetailsImpl() extends ContractDetails {
 	override def syncStorage(): Unit = {
 		this.synchronized {
 			if (useExternalStorage) {
-				this.storageTrie.cache.setDB(externalStorageDataSource)
+				this.storageTrie.dataStore.assignDataSource(externalStorageDataSource)
 				this.storageTrie.sync()
 
 				DataSourcePool.closeDataSource(dataSourceName)
@@ -153,14 +153,14 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	override def getSnapshotTo(hash: ImmutableBytes) = {
 		this.synchronized {
-			val keyValueDataSource = this.storageTrie.cache.dataSource
+			val keyValueDataSource = this.storageTrie.dataStore.dataSource
 			val snapStorage =
 				if (hash == DigestUtils.EmptyTrieHash) {
 					new SecureTrie(keyValueDataSource)
 				} else {
 					new SecureTrie(keyValueDataSource, hash)
 				}
-			snapStorage.cache = this.storageTrie.cache
+			snapStorage.dataStore = this.storageTrie.dataStore
 
 			val details = ContractDetailsImpl.newInstance(this.address, snapStorage, this.code)
 			details.keysRef.set(this.keys)
@@ -222,7 +222,7 @@ class ContractDetailsImpl() extends ContractDetails {
 			}
 			if (useExternalStorage) {
 				this.storageTrie.root = items(5).bytes
-				this.storageTrie.cache.setDB(externalStorageDataSource)
+				this.storageTrie.dataStore.assignDataSource(externalStorageDataSource)
 			}
 			val endTime = System.nanoTime
 			if (logger.isInfoEnabled) {

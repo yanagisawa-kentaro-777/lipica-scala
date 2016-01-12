@@ -361,7 +361,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 	override def createSnapshotTo(root: ImmutableBytes): Repository = {
 		val trie = new SecureTrie(this.stateDS)
 		trie.root = root
-		trie.cache = this.worldState.cache
+		trie.dataStore = this.worldState.dataStore
 
 		val repo = new RepositoryImpl()
 		repo.worldStateRef.set(trie)

@@ -519,16 +519,16 @@ class TrieTest extends Specification {
 			val mockDb = new HashMapDB
 			val trie = new TrieImpl(mockDb)
 			trie.update("dog", LONG_STRING)
-			trie.cache.isDirty mustEqual true
+			trie.dataStore.isDirty mustEqual true
 
 			trie.sync()
-			trie.cache.isDirty mustEqual false
+			trie.dataStore.isDirty mustEqual false
 
 			trie.update("test", LONG_STRING)
-			trie.cache.isDirty mustEqual true
+			trie.dataStore.isDirty mustEqual true
 
-			trie.cache.undo()
-			trie.cache.isDirty mustEqual false
+			trie.dataStore.undo()
+			trie.dataStore.isDirty mustEqual false
 		}
 	}
 
@@ -537,10 +537,10 @@ class TrieTest extends Specification {
 			val mockDb = new HashMapDB
 			val trie = new TrieImpl(mockDb)
 			trie.update("dog", LONG_STRING)
-			trie.cache.getNodes.size mustNotEqual 0
+			trie.dataStore.getNodes.size mustNotEqual 0
 
-			trie.cache.undo()
-			trie.cache.getNodes.size mustEqual 0
+			trie.dataStore.undo()
+			trie.dataStore.getNodes.size mustEqual 0
 		}
 	}
 
