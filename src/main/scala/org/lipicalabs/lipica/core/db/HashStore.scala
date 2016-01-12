@@ -35,6 +35,4 @@ trait HashStore extends DiskStore {
 
 	def clear(): Unit
 
-	def removeAll(hashes: Iterable[ImmutableBytes]): Unit
-
 }

@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.sync
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
@@ -22,7 +23,7 @@ import org.slf4j.LoggerFactory
  * 2015/12/10 20:17
  * YANAGISAWA, Kentaro
  */
-class SyncQueue {
+class SyncQueue(private val hashStoreDataSource: KeyValueDataSource) {
 	import SyncQueue._
 
 	/**
@@ -49,7 +50,7 @@ class SyncQueue {
 		logger.info("<SyncQueue> Start loading sync queue.")
 		val mapDBFactory = new MapDBFactoryImpl
 		//HashStoreの生成および初期化を実行する。
-		val hs = new HashStoreImpl(mapDBFactory)
+		val hs = new HashStoreImpl(hashStoreDataSource)
 		hs.open()
 		this.hashStoreRef.set(hs)
 		//BlockQueueの生成および初期化を実行する。

@@ -80,7 +80,12 @@ object ComponentFactory {
 
 	def createSyncManager: SyncManager = new SyncManager
 
-	def createSyncQueue: SyncQueue = new SyncQueue
+	def createSyncQueue: SyncQueue = {
+		val hashStoreDB = createKeyValueDataSource("hashstore_db")
+		hashStoreDB.init()
+
+		new SyncQueue(hashStoreDB)
+	}
 
 	def createPeersPool: PeersPool = {
 		val result = new PeersPool

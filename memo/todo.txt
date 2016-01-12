@@ -19,13 +19,16 @@
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-・MessageCodecの方はfalseで良いだろう。（64バイト）
+・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
+・databaseReset は効かない。
+
+・MapDBを廃絶する。
+BlockQueue、HashStore、SyncQueue、NodeManager
 
 ・再起動するとエラー。
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
-・MapDBを廃絶する。
 
 ・gracefulな終了を実現する。
 ・expirationによるdiscardを実装する。（replay attack対策）

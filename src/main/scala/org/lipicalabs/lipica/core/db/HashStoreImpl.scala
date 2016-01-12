@@ -1,17 +1,17 @@
 package org.lipicalabs.lipica.core.db
 
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 import java.util.concurrent.locks.ReentrantLock
 
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.datasource.mapdb.{Serializers, MapDBFactory}
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
-import org.mapdb.{Serializer, DB}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.{JavaConversions, mutable}
+import scala.collection.mutable
 
 /**
  * HashStore の実装クラスです。
@@ -20,16 +20,14 @@ import scala.collection.{JavaConversions, mutable}
  * 2015/11/26 19:33
  * YANAGISAWA, Kentaro
  */
-class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
+class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStore {
 
 	import HashStoreImpl._
 
-	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
-	private def db: DB = this.dbRef.get
-
 	//何らかのロックによってガードされる。
-	private var hashes: mutable.Map[Long, ImmutableBytes] = null
-	private var index: mutable.Buffer[Long] = null
+	//private var hashes: mutable.Map[Long, ImmutableBytes] = null
+	private val indexRef: AtomicReference[mutable.Buffer[Long]] = new AtomicReference[mutable.Buffer[Long]](null)
+	private def index: mutable.Buffer[Long] = this.indexRef.get
 
 	private val initDoneRef: AtomicBoolean = new AtomicBoolean(false)
 	private def initDone: Boolean = this.initDoneRef.get
@@ -42,14 +40,13 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 			override def run(): Unit = {
 				initLock.lock()
 				try {
-					dbRef.set(mapDBFactory.createTransactionalDB(dbName))
-					hashes = JavaConversions.mapAsScalaMap(db.hashMapCreate(StoreName).keySerializer(Serializer.LONG).valueSerializer(Serializers.ImmutableBytes).makeOrGet())
-					index = new ArrayBuffer[Long]()
-					index.appendAll(hashes.keys)
-					sortIndex()
+					val indices = dataSource.keys.map(each => RBACCodec.Decoder.decode(each).right.get.asPositiveLong)
+					val buffer = new ArrayBuffer[Long](initialSize = indices.size)
+					buffer.appendAll(indices)
+					indexRef.set(buffer.sorted)
 					if (SystemProperties.CONFIG.databaseReset) {
-						hashes.clear()
-						db.commit()
+						//hashes.clear()
+						//db.commit()
 					}
 					initDoneRef.set(true)
 					init.signalAll()
@@ -64,36 +61,35 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 
 	override def close() = {
 		awaitInit()
-		this.db.close()
+		this.dataSource.close()
 		this.initDoneRef.set(false)
 	}
 
 	override def add(hash: ImmutableBytes) = {
 		awaitInit()
 		addInternal(first = false, hash)
-		this.db.commit()
 	}
 
 	override def addFirst(hash: ImmutableBytes) = {
 		awaitInit()
 		addInternal(first = true, hash)
-		this.db.commit()
 	}
 
 	override def addBatch(aHashes: Seq[ImmutableBytes]) = {
-		awaitInit()
-		for (hash <- aHashes) {
-			addInternal(first = false, hash)
-		}
-		this.db.commit()
+		privateAddBatch(aHashes, first = false)
 	}
 
 	override def addBatchFirst(aHashes: Seq[ImmutableBytes]) = {
+		privateAddBatch(aHashes, first = true)
+	}
+
+	private def privateAddBatch(aHashes: Seq[ImmutableBytes], first: Boolean): Unit = {
 		awaitInit()
-		for (hash <- aHashes) {
-			addInternal(first = true, hash)
+		this.synchronized {
+			val encoder = RBACCodec.Encoder
+			val batch = aHashes.map(each => (encoder.encode(createIndex(first)), each)).toMap
+			this.dataSource.updateBatch(batch)
 		}
-		this.db.commit()
 	}
 
 	override def peek: Option[ImmutableBytes] = {
@@ -102,15 +98,14 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 			if (this.index.isEmpty) {
 				return None
 			}
-			this.hashes.get(this.index.head)
+			val key = RBACCodec.Encoder.encode(this.index.head)
+			this.dataSource.get(key)
 		}
 	}
 
 	override def poll: Option[ImmutableBytes] = {
 		awaitInit()
-		val result = pollInternal
-		this.db.commit()
-		result
+		pollInternal
 	}
 
 	override def pollBatch(count: Int): Seq[ImmutableBytes] = {
@@ -125,8 +120,6 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 			each.foreach(result.append(_))
 			shouldContinue = each.isDefined
 		}
-
-		this.db.commit()
 		result.toSeq
 	}
 
@@ -139,7 +132,7 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 
 	override def keys = {
 		awaitInit()
-		this.hashes.keys.toSet
+		this.dataSource.keys.map(_.toPositiveLong)
 	}
 
 	override def size = {
@@ -147,34 +140,13 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 		this.index.size
 	}
 
-	override def removeAll(removing: Iterable[ImmutableBytes]) = {
-		awaitInit()
-		this.synchronized {
-			val targets = removing.toSet
-			val removed = this.hashes.withFilter(entry => targets.contains(entry._2)).map(entry => entry._1).toSet
-
-			this.index = this.index.filter(each => !removed.contains(each))
-			for (idx <- removed) {
-				this.hashes.remove(idx)
-			}
-		}
-		this.db.commit()
-	}
-
 	override def clear() = {
 		awaitInit()
 		this.synchronized {
 			this.index.clear()
-			this.hashes.clear()
+			//この実装は実用にはなるまい。
+			this.dataSource.keys.foreach(this.dataSource.delete)
 		}
-		this.db.commit()
-	}
-
-
-	private def dbName: String = "%s/%s".format(StoreName, StoreName)
-
-	private def sortIndex(): Unit = {
-		this.index = this.index.sorted
 	}
 
 	private def awaitInit(): Unit = {
@@ -191,7 +163,8 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 	private def addInternal(first: Boolean, hash: ImmutableBytes): Unit = {
 		this.synchronized {
 			val idx = createIndex(first)
-			this.hashes.put(idx, hash)
+			val key = RBACCodec.Encoder.encode(idx)
+			this.dataSource.put(key, hash)
 		}
 	}
 
@@ -201,8 +174,9 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 				return None
 			}
 			val idx = this.index.head
-			val result = this.hashes.get(idx)
-			this.hashes.remove(idx)
+			val key = RBACCodec.Encoder.encode(idx)
+			val result = this.dataSource.get(key)
+			this.dataSource.delete(key)
 			this.index.remove(0)
 			result
 		}
@@ -227,5 +201,4 @@ class HashStoreImpl(private val mapDBFactory: MapDBFactory) extends HashStore {
 
 object HashStoreImpl {
 	private val logger = LoggerFactory.getLogger("database")
-	private val StoreName: String = "hashstore"
 }

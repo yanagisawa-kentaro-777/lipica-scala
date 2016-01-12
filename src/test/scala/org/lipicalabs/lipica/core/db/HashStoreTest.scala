@@ -1,15 +1,11 @@
 package org.lipicalabs.lipica.core.db
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.Paths
 import java.util.Random
 
-import org.apache.commons.io.FileUtils
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.kernel.{Block, BlockWrapper, Genesis}
+import org.lipicalabs.lipica.core.db.datasource.HashMapDB
 import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.datasource.mapdb.MapDBFactoryImpl
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -27,7 +23,7 @@ class HashStoreTest extends Specification {
 
 	private val hashes = new ArrayBuffer[ImmutableBytes]
 	private var hashStore: HashStore = null
-	private var testDBName: String = ""
+	//private var testDBName: String = ""
 
 	private def init(): Unit = {
 		val rng = new Random
@@ -38,11 +34,10 @@ class HashStoreTest extends Specification {
 		}
 
 		val r = BigInt(32, new Random)
-		this.testDBName = "./work/database/test_db_" + r
-		SystemProperties.CONFIG.databaseDir = this.testDBName
+		//this.testDBName = "./work/database/test_db_" + r
+		//SystemProperties.CONFIG.databaseDir = this.testDBName
 		SystemProperties.CONFIG.databaseReset = false
-		val factory = new MapDBFactoryImpl
-		this.hashStore = new HashStoreImpl(factory)
+		this.hashStore = new HashStoreImpl(new HashMapDB)
 		this.hashStore.open()
 	}
 
@@ -53,7 +48,7 @@ class HashStoreTest extends Specification {
 			this.hashStore.close()
 			this.hashes.clear()
 			Thread.sleep(100L)
-			FileUtils.forceDelete(new java.io.File(this.testDBName))
+			//FileUtils.forceDelete(new java.io.File(this.testDBName))
 		} catch {
 			case e: Exception =>
 				e.printStackTrace()
