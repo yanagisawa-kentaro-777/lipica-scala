@@ -23,13 +23,13 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB))
+			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
 			val contractKey = ImmutableBytes.parseHexString("1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
 
-			val contractDetails = new ContractDetailsImpl
+			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
 			contractDetails.put(DataWord(key), DataWord(value))
@@ -53,13 +53,13 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (2)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB))
+			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
 			val contractKey = ImmutableBytes.parseHexString("1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
 
-			val contractDetails = new ContractDetailsImpl
+			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
 			contractDetails.put(DataWord(key), DataWord(value))
@@ -84,13 +84,13 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (3)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB))
+			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
 			val contractKey = ImmutableBytes.parseHexString("1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
 
-			val contractDetails = new ContractDetailsImpl
+			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
 			contractDetails.put(DataWord(key), DataWord(value))
@@ -118,18 +118,21 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test external storage" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB))
+			val factory = new HashMapDBFactory
+			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), factory)
 
 			val addressWithExternalStorage = randomAddress
 			val addressWithInternalStorage = randomAddress
 
 			val limit = SystemProperties.CONFIG.detailsInMemoryStorageLimit
 
-			val externalStorage = DataSourcePool.hashMapDB("details-storage/" + addressWithExternalStorage.toHexString).asInstanceOf[HashMapDB]
+			val externalStorage = factory.openDataSource(addressWithExternalStorage.toHexString).asInstanceOf[HashMapDB]
 			val internalStorage = new HashMapDB
 
 			val detailsWithExternalStorage = randomContractDetails(512, limit + 1, externalStorage)
 			val detailsWithInternalStorage = randomContractDetails(512, limit - 1, internalStorage)
+
+			detailsWithExternalStorage.storageContent.size mustEqual limit + 1
 
 			dds.update(addressWithExternalStorage, detailsWithExternalStorage)
 			dds.update(addressWithInternalStorage, detailsWithInternalStorage)
@@ -142,7 +145,7 @@ class ContractDetailsStoreTest extends Specification {
 			val loaded = dds.get(addressWithExternalStorage).get
 			loaded.storageContent.size mustEqual limit + 1
 			val encodedBytes = loaded.encode
-			val decoded = new ContractDetailsImpl
+			val decoded = ContractDetailsImpl.decode(encodedBytes, factory)
 			decoded.externalStorageDataSource = externalStorage
 			decoded.decode(encodedBytes)
 
@@ -169,7 +172,7 @@ class ContractDetailsStoreTest extends Specification {
 	}
 
 	private def randomContractDetails(codeSize: Int, storageSize: Int, storageDataSource: KeyValueDataSource): ContractDetails = {
-		val result = new ContractDetailsImpl
+		val result = new ContractDetailsImpl(new HashMapDBFactory)
 		result.code = randomBytes(codeSize)
 
 		result.externalStorageDataSource = storageDataSource

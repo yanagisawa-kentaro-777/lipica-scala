@@ -12,6 +12,8 @@ trait DataSource extends Closeable {
 
 	 def isAlive: Boolean
 
+	def deleteAll(): Unit
+
 	 override def close(): Unit
 
  }

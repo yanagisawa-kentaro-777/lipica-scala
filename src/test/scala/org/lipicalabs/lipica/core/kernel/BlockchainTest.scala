@@ -5,7 +5,7 @@ import java.nio.file.Paths
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.db.datasource.HashMapDB
-import org.lipicalabs.lipica.core.db.{RepositoryImpl, IndexedBlockStore}
+import org.lipicalabs.lipica.core.db.{HashMapDBFactory, RepositoryImpl, IndexedBlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
 import org.lipicalabs.lipica.core.facade.components.{ComponentFactory, AdminInfo}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -30,7 +30,7 @@ class BlockchainTest extends Specification {
 			val blockStore = IndexedBlockStore.newInstance(new HashMapDB, new HashMapDB)
 			val listener = new LipicaListenerAdaptor
 			val genesis = Genesis.getInstance("genesis3.json")
-			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repos = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 
 			val track = repos.startTracking
 			genesis.premine.foreach {

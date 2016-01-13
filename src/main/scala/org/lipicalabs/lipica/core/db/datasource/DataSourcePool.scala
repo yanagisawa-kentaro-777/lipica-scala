@@ -14,7 +14,8 @@ object DataSourcePool {
 	private val pool = JavaConversions.mapAsScalaConcurrentMap(new ConcurrentHashMap[String, DataSource])
 
 	def levelDbByName(name: String): KeyValueDataSource = {
-		getDataSourceFromPool(name, new LevelDbDataSource(name)).asInstanceOf[KeyValueDataSource]
+		val options = LevelDbDataSource.createDefaultOptions
+		getDataSourceFromPool(name, new LevelDbDataSource(name, options)).asInstanceOf[KeyValueDataSource]
 	}
 
 	def hashMapDB(name: String): KeyValueDataSource = {

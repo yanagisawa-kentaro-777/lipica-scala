@@ -53,9 +53,8 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 				BlockQueueImpl.this.initLock.lock()
 				try {
 					if (SystemProperties.CONFIG.databaseReset) {
-//						BlockQueueImpl.this.blocks.clear()
-//						BlockQueueImpl.this.hashes.clear()
-//						BlockQueueImpl.this.db.commit()
+						blocksDataSource.deleteAll()
+						hashesDataSource.deleteAll()
 					}
 
 					BlockQueueImpl.this.indexRef.set(new ArrayBufferIndex(BlockQueueImpl.this.blocksDataSource.keys.map(each => RBACCodec.Decoder.decode(each).right.get.asPositiveLong)))
@@ -205,8 +204,8 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 	override def clear(): Unit = {
 		awaitInit()
 		this.synchronized {
-			this.blocksDataSource.keys.foreach(this.blocksDataSource.delete)
-			this.hashesDataSource.keys.foreach(this.hashesDataSource.delete)
+			this.blocksDataSource.deleteAll()
+			this.hashesDataSource.deleteAll()
 			this.index.clear()
 		}
 	}

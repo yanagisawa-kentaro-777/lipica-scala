@@ -2,9 +2,10 @@ package org.lipicalabs.lipica.core.net.peer_discovery
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReference}
 
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.message.ReasonCode
-import org.lipicalabs.lipica.core.utils.UtilConsts
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 
 /**
  * 自ノードの、外部ノードとの通信に関する統計情報を保持するクラスです。
@@ -135,7 +136,20 @@ object NodeStatistics {
 	val ReputationPredefined: Int = 1000500
 
 	class Persistent extends Serializable {
-		var reputation: Int = 0
+		private val reputationRef = new AtomicInteger(0)
+		def reputation: Int = this.reputationRef.get
+		def reputation_=(v: Int): Unit = this.reputationRef.set(v)
+
+		def encode: ImmutableBytes = RBACCodec.Encoder.encode(this.reputation)
+	}
+
+	object Persistent {
+		def decode(encodedBytes: ImmutableBytes): Persistent = {
+			val value = RBACCodec.Decoder.decode(encodedBytes).right.get.asInt
+			val result = new Persistent
+			result.reputationRef.set(value)
+			result
+		}
 	}
 }
 

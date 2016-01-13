@@ -18,8 +18,8 @@ trait AbstractValidationRule extends ValidationRule {
 
 	def logErrors(logger: Logger): Unit = {
 		for (each <- this.errors) {
-			ErrorLogger.logger.warn("<Validator> [%s] %s".format(getEntityClass, each))
-			logger.warn("<Validator> [%s] %s".format(getEntityClass, each))
+			ErrorLogger.logger.warn("<Validator> [%s] %s".format(getEntityClass.getSimpleName, each))
+			logger.warn("<Validator> [%s] %s".format(getEntityClass.getSimpleName, each))
 		}
 	}
 

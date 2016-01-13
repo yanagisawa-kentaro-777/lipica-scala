@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.db
 
-
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSourceFactory
 import org.lipicalabs.lipica.core.kernel.{ContractDetailsImpl, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
@@ -12,7 +12,7 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class ContractDetailsStore(private val db: DatabaseImpl) {
+class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceFactory: KeyValueDataSourceFactory) {
 	import ContractDetailsStore._
 
 	//このインスタンス自体によってガードされている。
@@ -30,7 +30,7 @@ class ContractDetailsStore(private val db: DatabaseImpl) {
 					}
 					this.db.get(key) match {
 						case Some(data) =>
-							val details = ContractDetailsImpl.decode(data)
+							val details = ContractDetailsImpl.decode(data, dataSourceFactory)
 							this.cache.put(key, details)
 							Some(details)
 						case _ =>

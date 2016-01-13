@@ -24,8 +24,6 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 
 	import HashStoreImpl._
 
-	//何らかのロックによってガードされる。
-	//private var hashes: mutable.Map[Long, ImmutableBytes] = null
 	private val indexRef: AtomicReference[mutable.Buffer[Long]] = new AtomicReference[mutable.Buffer[Long]](null)
 	private def index: mutable.Buffer[Long] = this.indexRef.get
 
@@ -45,8 +43,7 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 					buffer.appendAll(indices)
 					indexRef.set(buffer.sorted)
 					if (SystemProperties.CONFIG.databaseReset) {
-						//hashes.clear()
-						//db.commit()
+						dataSource.deleteAll()
 					}
 					initDoneRef.set(true)
 					init.signalAll()
@@ -144,8 +141,7 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 		awaitInit()
 		this.synchronized {
 			this.index.clear()
-			//この実装は実用にはなるまい。
-			this.dataSource.keys.foreach(this.dataSource.delete)
+			this.dataSource.deleteAll()
 		}
 	}
 

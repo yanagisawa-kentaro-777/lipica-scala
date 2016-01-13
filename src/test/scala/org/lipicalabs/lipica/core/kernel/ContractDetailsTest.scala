@@ -4,6 +4,7 @@ import java.util.Random
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.db.HashMapDBFactory
 import org.lipicalabs.lipica.core.db.datasource.{HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -41,13 +42,13 @@ class ContractDetailsTest extends Specification {
 			val key_2 = ImmutableBytes.parseHexString("222222")
 			val val_2 = ImmutableBytes.parseHexString("bbbbbb")
 
-			val contractDetails = new ContractDetailsImpl
+			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
 			contractDetails.code = code
 			contractDetails.put(DataWord(key_1), DataWord(val_1))
 			contractDetails.put(DataWord(key_2), DataWord(val_2))
 
 			val encoded = contractDetails.encode
-			val decodedDetails = ContractDetailsImpl.decode(encoded)
+			val decodedDetails = ContractDetailsImpl.decode(encoded, new HashMapDBFactory)
 
 			code.toHexString mustEqual decodedDetails.code.toHexString
 			val_1.toHexString mustEqual decodedDetails.get(DataWord(key_1)).get.getDataWithoutLeadingZeros.toHexString
@@ -102,7 +103,7 @@ class ContractDetailsTest extends Specification {
 			val key_13 = ImmutableBytes.parseHexString("ac33ff75c19e70fe83507db0d683fd3465c996598dc972688b7ace676c89077b")
 			val val_13 = ImmutableBytes.parseHexString("0000000000000000000000000c6686f3d6ee27e285f2de7b68e8db25cf1b1063")
 
-			val contractDetails = new ContractDetailsImpl
+			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
 			contractDetails.code = code
 			contractDetails.address = address
 			contractDetails.put(key_0, val_0)
@@ -121,7 +122,7 @@ class ContractDetailsTest extends Specification {
 			contractDetails.put(key_13, val_13)
 
 			val encodedBytes = contractDetails.encode
-			val decodedDetails = ContractDetailsImpl.decode(encodedBytes)
+			val decodedDetails = ContractDetailsImpl.decode(encodedBytes, new HashMapDBFactory)
 
 			code.toHexString mustEqual decodedDetails.code.toHexString
 			address.toHexString mustEqual decodedDetails.address.toHexString
@@ -150,7 +151,7 @@ class ContractDetailsTest extends Specification {
 			val elements = new mutable.HashMap[DataWord, DataWord]
 			val externalStorage = new HashMapDB
 
-			val original = new ContractDetailsImpl
+			val original = new ContractDetailsImpl(new HashMapDBFactory)
 			original.externalStorageDataSource = externalStorage
 			original.address = address
 			original.code = code
@@ -166,7 +167,7 @@ class ContractDetailsTest extends Specification {
 			original.syncStorage()
 
 			val encodedBytes = original.encode
-			val decodedDetails = new ContractDetailsImpl
+			val decodedDetails = new ContractDetailsImpl(new HashMapDBFactory)
 			decodedDetails.externalStorageDataSource = externalStorage
 			decodedDetails.decode(encodedBytes)
 
@@ -192,7 +193,7 @@ class ContractDetailsTest extends Specification {
 			val elements = new mutable.HashMap[DataWord, DataWord]
 			val externalStorage = new HashMapDB
 
-			val original = new ContractDetailsImpl
+			val original = new ContractDetailsImpl(new HashMapDBFactory)
 			original.externalStorageDataSource = externalStorage
 			original.address = address
 			original.code = code
@@ -239,7 +240,7 @@ class ContractDetailsTest extends Specification {
 	}
 
 	private def deserialize(encodedBytes: ImmutableBytes, externalStorage: KeyValueDataSource): ContractDetails = {
-		val result = new ContractDetailsImpl
+		val result = new ContractDetailsImpl(new HashMapDBFactory)
 		result.externalStorageDataSource = externalStorage
 		result.decode(encodedBytes)
 		result

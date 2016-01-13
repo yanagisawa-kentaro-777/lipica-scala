@@ -3,7 +3,6 @@ package org.lipicalabs.lipica.core.db.datasource
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
-import org.iq80.leveldb
 import org.iq80.leveldb.{CompressionType, DB, Options}
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
@@ -16,7 +15,7 @@ import scala.collection.mutable
  * 2015/11/18 12:07
  * YANAGISAWA, Kentaro
  */
-class LevelDbDataSource(_name: String) extends KeyValueDataSource {
+class LevelDbDataSource(_name: String, private val options: Options) extends KeyValueDataSource {
 	import LevelDbDataSource._
 
 	private val nameRef: AtomicReference[String] = new AtomicReference[String](_name)
@@ -35,15 +34,6 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 			return
 		}
 		try {
-			val options = new Options
-			options.createIfMissing(true)
-			options.compressionType(CompressionType.NONE)
-			options.blockSize(10 * 1024 * 1024)
-			options.writeBufferSize(10 * 1024 * 1024)
-			options.cacheSize(0)
-			options.paranoidChecks(true)
-			options.verifyChecksums(true)
-
 			if (logger.isDebugEnabled) {
 				logger.debug("<LevelDBDS> Opening database: %s".format(this.name))
 			}
@@ -68,7 +58,7 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 			logger.debug("<LevelDBDS> Destroying database at %s".format(path))
 		}
 		try {
-			org.fusesource.leveldbjni.JniDBFactory.factory.destroy(path.toFile, new leveldb.Options)
+			org.fusesource.leveldbjni.JniDBFactory.factory.destroy(path.toFile, options)
 		} catch {
 			case e: Exception =>
 				ErrorLogger.logger.warn("<LevelDBDS>", e)
@@ -122,6 +112,10 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 		result.toSet
 	}
 
+	override def deleteAll(): Unit = {
+		this.keys.foreach(this.delete)
+	}
+
 	private def updateBatchInternal(rows: Map[ImmutableBytes, ImmutableBytes]): Unit = {
 		val batch = this.db.createWriteBatch()
 		try {
@@ -155,4 +149,16 @@ class LevelDbDataSource(_name: String) extends KeyValueDataSource {
 
 object LevelDbDataSource {
 	private val logger = LoggerFactory.getLogger("database")
+
+	def createDefaultOptions: Options = {
+		val options = new Options
+		options.createIfMissing(true)
+		options.compressionType(CompressionType.NONE)
+		options.blockSize(10 * 1024 * 1024)
+		options.writeBufferSize(10 * 1024 * 1024)
+		options.cacheSize(0)
+		options.paranoidChecks(true)
+		options.verifyChecksums(true)
+		options
+	}
 }

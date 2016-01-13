@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.db.datasource.{DataSourcePool, KeyValueDataSource}
+import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSourceFactory, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -22,7 +22,7 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class ContractDetailsImpl() extends ContractDetails {
+class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFactory) extends ContractDetails {
 
 	import ContractDetailsImpl._
 
@@ -63,7 +63,7 @@ class ContractDetailsImpl() extends ContractDetails {
 	def externalStorageDataSource: KeyValueDataSource = {
 		this.synchronized {
 			if (this.externalStorageDataSourceRef.get eq null) {
-				this.externalStorageDataSourceRef.set(DataSourcePool.levelDbByName(dataSourceName))
+				this.externalStorageDataSourceRef.set(dataSourceFactory.openDataSource(this.address.toHexString))
 			}
 			this.externalStorageDataSourceRef.get
 		}
@@ -144,12 +144,10 @@ class ContractDetailsImpl() extends ContractDetails {
 				this.storageTrie.dataStore.assignDataSource(externalStorageDataSource)
 				this.storageTrie.sync()
 
-				DataSourcePool.closeDataSource(dataSourceName)
+				this.dataSourceFactory.closeDataSource(this.address.toHexString)
 			}
 		}
 	}
-
-	private def dataSourceName = "details-storage/" + address.toHexString
 
 	override def getSnapshotTo(hash: ImmutableBytes) = {
 		this.synchronized {
@@ -162,7 +160,7 @@ class ContractDetailsImpl() extends ContractDetails {
 				}
 			snapStorage.dataStore = this.storageTrie.dataStore
 
-			val details = ContractDetailsImpl.newInstance(this.address, snapStorage, this.code)
+			val details = ContractDetailsImpl.newInstance(this.address, snapStorage, this.code, this.dataSourceFactory)
 			details.keysRef.set(this.keys)
 			//this.keys.foreach(details.keys.add)
 			details
@@ -171,7 +169,7 @@ class ContractDetailsImpl() extends ContractDetails {
 
 	override def createClone: ContractDetails = {
 		this.synchronized {
-			val result = new ContractDetailsImpl
+			val result = new ContractDetailsImpl(this.dataSourceFactory)
 			result.address = this.address
 			result.code = this.code
 			this.storageContent.foreach {
@@ -243,14 +241,14 @@ object ContractDetailsImpl {
 
 	private val logger = LoggerFactory.getLogger("database")
 
-	def decode(bytes: ImmutableBytes): ContractDetailsImpl = {
-		val result = new ContractDetailsImpl
+	def decode(bytes: ImmutableBytes, dataSourceFactory: KeyValueDataSourceFactory): ContractDetailsImpl = {
+		val result = new ContractDetailsImpl(dataSourceFactory)
 		result.decode(bytes)
 		result
 	}
 
-	def newInstance(address: ImmutableBytes, trie: SecureTrie, code: ImmutableBytes): ContractDetailsImpl = {
-		val result = new ContractDetailsImpl
+	def newInstance(address: ImmutableBytes, trie: SecureTrie, code: ImmutableBytes, dataSourceFactory: KeyValueDataSourceFactory): ContractDetailsImpl = {
+		val result = new ContractDetailsImpl(dataSourceFactory)
 		result.address = address
 		result.storageTrieRef.set(trie)
 		result.code = code

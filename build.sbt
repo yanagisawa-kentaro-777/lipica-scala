@@ -27,8 +27,6 @@ def leveldbIF = "org.iq80.leveldb" % "leveldb" % "0.7"
 def leveldbJNI = "org.fusesource.leveldbjni" % "leveldbjni" % "1.8"
 def leveldbJNIAll = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
-def mapdb = "org.mapdb" % "mapdb" % "2.0-beta10"
-
 def jacksonCore = "com.fasterxml.jackson.core" % "jackson-core" % "2.6.3"
 def jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % "1.9.13"
 
@@ -66,7 +64,6 @@ lazy val root =
 				leveldbIF,
 				leveldbJNI,
 				leveldbJNIAll,
-				mapdb,
 				nettyAll,
 				httpClient,
 				slf4j,

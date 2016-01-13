@@ -4,7 +4,7 @@ import java.net.URI
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.db._
-import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSource, LevelDbDataSource}
+import org.lipicalabs.lipica.core.db.datasource.{DataSourcePool, KeyValueDataSourceFactory, KeyValueDataSource, LevelDbDataSource}
 import org.lipicalabs.lipica.core.facade.listener.CompositeLipicaListener
 import org.lipicalabs.lipica.core.kernel.Wallet
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
@@ -19,30 +19,33 @@ import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactory, Progr
 
 
 /**
+ * ノードの動作において重要なコンポーネントであるクラスのインスタンスを、
+ * 生成し初期化して返すためのオブジェクトです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/25 15:08
  * YANAGISAWA, Kentaro
  */
 object ComponentFactory {
 
+	class LevelDBDataSourceFactory(override val categoryName: String) extends KeyValueDataSourceFactory {
+		private def dataSourceName(givenName: String) = "%s/%s".format(this.categoryName, givenName)
+
+		override def openDataSource(name: String) = DataSourcePool.levelDbByName(dataSourceName(name))
+
+		override def closeDataSource(name: String) = DataSourcePool.closeDataSource(dataSourceName(name))
+	}
+
 	def createBlockStore: BlockStore = {
-		val hashToBlockDB = createKeyValueDataSource("hash2block_db")
-		hashToBlockDB.init()
-
-		val numberToBlocksDB = createKeyValueDataSource("number2blocks_db")
-		numberToBlocksDB.init()
-
+		val hashToBlockDB = openKeyValueDataSource("hash2block_db")
+		val numberToBlocksDB = openKeyValueDataSource("number2blocks_db")
 		IndexedBlockStore.newInstance(hashToBlockDB, numberToBlocksDB)
 	}
 
 	def createRepository: Repository = {
-		val detailsDS = createKeyValueDataSource("contract_dtl_db")
-		detailsDS.init()
-
-		val stateDS = createKeyValueDataSource("state_db")
-		stateDS.init()
-
-		new RepositoryImpl(detailsDS, stateDS)
+		val contractDS = openKeyValueDataSource("contract_dtl_db")
+		val stateDS = openKeyValueDataSource("state_db")
+		new RepositoryImpl(contractDS, stateDS, new LevelDBDataSourceFactory("contract_dtl_storage"))
 	}
 
 	def createWallet: Wallet = new Wallet
@@ -50,8 +53,6 @@ object ComponentFactory {
 	def createAdminInfo: AdminInfo = new AdminInfo
 
 	def createListener: CompositeLipicaListener = new CompositeLipicaListener
-
-	def createKeyValueDataSource(name: String): KeyValueDataSource = new LevelDbDataSource(name)
 
 	def createBlockValidator: BlockValidator = {
 		val rules = Seq(new TxTrieRootRule, new UnclesRule)
@@ -77,7 +78,8 @@ object ComponentFactory {
 	def createPeerDiscovery: PeerDiscovery = new PeerDiscovery
 
 	def createNodeManager: NodeManager = {
-		val result = NodeManager.create
+		val dataSource = openKeyValueDataSource("nodestats_db")
+		val result = NodeManager.create(dataSource)
 		result.seedNodes = SystemProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => Node(uri))
 		result
 	}
@@ -85,15 +87,9 @@ object ComponentFactory {
 	def createSyncManager: SyncManager = new SyncManager
 
 	def createSyncQueue: SyncQueue = {
-		val hashStoreDB = createKeyValueDataSource("hashstore_db")
-		hashStoreDB.init()
-
-		val queuedBlocksDB = createKeyValueDataSource("queued_blocks_db")
-		queuedBlocksDB.init()
-
-		val queuedHashesDB = createKeyValueDataSource("queued_hashes_db")
-		queuedHashesDB.init()
-
+		val hashStoreDB = openKeyValueDataSource("hashstore_db")
+		val queuedBlocksDB = openKeyValueDataSource("queued_blocks_db")
+		val queuedHashesDB = openKeyValueDataSource("queued_hashes_db")
 		new SyncQueue(hashStoreDataSource = hashStoreDB, queuedBlocksDataSource = queuedBlocksDB, queuedHashesDataSource = queuedHashesDB)
 	}
 
@@ -107,4 +103,10 @@ object ComponentFactory {
 
 	def createProgramInvokeFactory: ProgramInvokeFactory = new ProgramInvokeFactoryImpl
 
+	private def openKeyValueDataSource(name: String): KeyValueDataSource = {
+		val options = LevelDbDataSource.createDefaultOptions
+		val result = new LevelDbDataSource(name, options)
+		result.init()
+		result
+	}
 }

@@ -5,7 +5,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.db.datasource.{HashMapDB, KeyValueDataSource}
+import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSourceFactory, HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -19,9 +19,9 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSource) extends Repository {
+class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSource, private val dataSourceFactory: KeyValueDataSourceFactory) extends Repository {
 
-	protected def this() = this(new HashMapDB, new HashMapDB)
+	protected def this(dataSourceFactory: KeyValueDataSourceFactory) = this(new HashMapDB, new HashMapDB, dataSourceFactory)
 
 	import RepositoryImpl._
 
@@ -31,7 +31,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 	private val detailsDBRef = new AtomicReference[DatabaseImpl](new DatabaseImpl(detailsDS))
 	private def detailsDB: DatabaseImpl = this.detailsDBRef.get
 
-	private val ddsRef = new AtomicReference[ContractDetailsStore](new ContractDetailsStore(this.detailsDB))
+	private val ddsRef = new AtomicReference[ContractDetailsStore](new ContractDetailsStore(this.detailsDB, this.dataSourceFactory))
 	private def dds: ContractDetailsStore = this.ddsRef.get
 
 	private val stateDSRef = new AtomicReference[KeyValueDataSource](_stateDS)
@@ -120,7 +120,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 				logger.debug("<RepositoryImpl> Updating: [%s]".format(hash.toHexString))
 				val contractDetailsCache = contractDetails.asInstanceOf[ContractDetailsCacheImpl]
 				if (contractDetailsCache.originalContract eq null) {
-					contractDetailsCache.originalContract = new ContractDetailsImpl
+					contractDetailsCache.originalContract = new ContractDetailsImpl(this.dataSourceFactory)
 					contractDetailsCache.originalContract.address = hash
 					contractDetailsCache.commit()
 				}
@@ -335,7 +335,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 	override def createAccount(address: ImmutableBytes): AccountState = {
 		val account = new AccountState()
 		updateAccountState(address, account)
-		updateContractDetails(address, new ContractDetailsImpl())
+		updateContractDetails(address, new ContractDetailsImpl(this.dataSourceFactory))
 		account
 	}
 
@@ -356,7 +356,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		trie.root = root
 		trie.dataStore = this.worldState.dataStore
 
-		val repo = new RepositoryImpl()
+		val repo = new RepositoryImpl(this.dataSourceFactory)
 		repo.worldStateRef.set(trie)
 
 		repo.stateDBRef.set(this.stateDB)

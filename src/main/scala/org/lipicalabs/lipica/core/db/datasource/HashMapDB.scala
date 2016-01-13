@@ -43,6 +43,10 @@ class HashMapDB extends KeyValueDataSource {
 		//
 	}
 
+	override def deleteAll(): Unit = {
+		this.storage.clear()
+	}
+
 	override def getName: String = {
 		"in-memory"
 	}

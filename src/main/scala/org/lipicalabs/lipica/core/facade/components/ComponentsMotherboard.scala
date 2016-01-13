@@ -21,6 +21,9 @@ import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
 /**
+ * 自ノード全体においてシングルトンな、
+ * 重要なコンポーネントのインスタンスを保持する配線基板のようなクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/21 16:08
  * YANAGISAWA, Kentaro

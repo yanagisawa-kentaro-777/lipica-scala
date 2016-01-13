@@ -61,6 +61,11 @@ object Node {
 		}
 	}
 
+	def decode(encodedBytes: ImmutableBytes): Node = {
+		val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
+		decode(decodedResult)
+	}
+
 	def decode(decodedResult: DecodedResult): Node = {
 		val items = decodedResult.items
 		val address =

@@ -12,7 +12,7 @@ import scala.collection.mutable
  * @since 2015/11/03
  * @author YANAGISAWA, Kentaro
  */
-class RepositoryDummy extends RepositoryImpl {
+class RepositoryDummy extends RepositoryImpl(new HashMapDBFactory) {
 
 	private val worldState = new mutable.HashMap[ImmutableBytes, AccountState]
 	private val detailsDB = new mutable.HashMap[ImmutableBytes, ContractDetails]
@@ -107,7 +107,7 @@ class RepositoryDummy extends RepositoryImpl {
 	override def createAccount(address: ImmutableBytes) = {
 		val account = new AccountState()
 		this.worldState.put(address, account)
-		this.detailsDB.put(address, new ContractDetailsImpl())
+		this.detailsDB.put(address, new ContractDetailsImpl(new HashMapDBFactory))
 		account
 	}
 
@@ -119,7 +119,7 @@ class RepositoryDummy extends RepositoryImpl {
 	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
 		val account: AccountState = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
 		cacheAccounts.put(address, account)
-		val details: ContractDetails = getContractDetails(address).map(_.createClone).getOrElse(new ContractDetailsImpl())
+		val details: ContractDetails = getContractDetails(address).map(_.createClone).getOrElse(new ContractDetailsImpl(new HashMapDBFactory))
 		cacheDetails.put(address, details)
 	}
 

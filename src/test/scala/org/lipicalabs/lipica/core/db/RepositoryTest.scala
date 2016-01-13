@@ -19,7 +19,7 @@ class RepositoryTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -39,7 +39,7 @@ class RepositoryTest extends Specification {
 
 	"test (2)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -57,7 +57,7 @@ class RepositoryTest extends Specification {
 
 	"test (3)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -78,7 +78,7 @@ class RepositoryTest extends Specification {
 
 	"test (4)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -104,7 +104,7 @@ class RepositoryTest extends Specification {
 
 	"test (5)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -134,7 +134,7 @@ class RepositoryTest extends Specification {
 
 	"test (6)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -164,7 +164,7 @@ class RepositoryTest extends Specification {
 
 	"test (7)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -192,7 +192,7 @@ class RepositoryTest extends Specification {
 
 	"test (8)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -220,7 +220,7 @@ class RepositoryTest extends Specification {
 
 	"test (9)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -254,7 +254,7 @@ class RepositoryTest extends Specification {
 
 	"test (10)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -288,7 +288,7 @@ class RepositoryTest extends Specification {
 
 	"test (11)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -319,7 +319,7 @@ class RepositoryTest extends Specification {
 
 	"test (12)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
@@ -352,7 +352,7 @@ class RepositoryTest extends Specification {
 
 	"test (14)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -384,7 +384,7 @@ class RepositoryTest extends Specification {
 
 	"test (15)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -416,7 +416,7 @@ class RepositoryTest extends Specification {
 
 	"test (16)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -470,7 +470,7 @@ class RepositoryTest extends Specification {
 
 	"test (17)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -496,7 +496,7 @@ class RepositoryTest extends Specification {
 
 	"test (18)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -525,7 +525,7 @@ class RepositoryTest extends Specification {
 
 	"test (19)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
@@ -573,7 +573,7 @@ class RepositoryTest extends Specification {
 
 	"test (20)" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val root = repository.rootHash
 
@@ -639,7 +639,7 @@ class RepositoryTest extends Specification {
 
 	"manage accounts by track" should {
 		"be right" in {
-			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB)
+			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val track = repository.startTracking
 				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")

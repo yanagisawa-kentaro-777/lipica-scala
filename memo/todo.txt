@@ -20,20 +20,14 @@
 
 ３、整備
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
-・databaseReset は効かない。
-・実用にならない clear() メソッドも消した方が良い。
 
-・LevelDBのオプションは外から渡せるようにすべきだ。
-
-・MapDBを廃絶する。@NodeManager
-
-
-・再起動するとエラー。
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
 
-・gracefulな終了を実現する。
+・スレッド類のgracefulな終了を実現する。
+・永続化されたデータのプロセス引継ぎを実現する。
+
 ・expirationによるdiscardを実装する。（replay attack対策）
 ・ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 ・スレッドセイフティ

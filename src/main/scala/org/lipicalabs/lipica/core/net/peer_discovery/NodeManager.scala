@@ -8,7 +8,7 @@ import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 
 import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.db.datasource.mapdb.{MapDBFactory, MapDBFactoryImpl}
+import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeStatistics.Persistent
 import org.lipicalabs.lipica.core.net.peer_discovery.discover._
@@ -16,9 +16,9 @@ import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.NodeTable
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PingMessage, PongMessage}
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageHandler
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
-import org.mapdb.{DB, HTreeMap}
 import org.slf4j.LoggerFactory
 
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.{JavaConversions, mutable}
 
 /**
@@ -31,14 +31,13 @@ import scala.collection.{JavaConversions, mutable}
  * 2015/12/13 12:58
  * YANAGISAWA, Kentaro
  */
-class NodeManager(val table: NodeTable, val key: ECKey) {
+class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValueDataSource) {
 	import JavaConversions._
 	import NodeManager._
 
 	def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	val peerConnectionExaminer: PeerConnectionExaminer = new PeerConnectionExaminer
-	private val mapDBFactory: MapDBFactory = new MapDBFactoryImpl
 
 	private val messageSenderRef: AtomicReference[MessageHandler] = new AtomicReference[MessageHandler](null)
 	def messageSender_=(v: MessageHandler): Unit = this.messageSenderRef.set(v)
@@ -57,11 +56,11 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 
 	private val listeners: mutable.Map[DiscoverListener, ListenerHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[DiscoverListener, ListenerHandler])
 
-	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
-	private def db: DB = this.dbRef.get
-
-	private val nodeStatsDBRef: AtomicReference[HTreeMap[Node, NodeStatistics.Persistent]] = new AtomicReference[HTreeMap[Node, Persistent]](null)
-	private def nodeStatsDB: HTreeMap[Node, NodeStatistics.Persistent] = this.nodeStatsDBRef.get
+//	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
+//	private def db: DB = this.dbRef.get
+//
+//	private val nodeStatsDBRef: AtomicReference[HTreeMap[Node, NodeStatistics.Persistent]] = new AtomicReference[HTreeMap[Node, Persistent]](null)
+//	private def nodeStatsDB: HTreeMap[Node, NodeStatistics.Persistent] = this.nodeStatsDBRef.get
 
 	private val isInitDoneRef = new AtomicBoolean(false)
 	def isInitDone: Boolean = this.isInitDoneRef.get
@@ -95,42 +94,47 @@ class NodeManager(val table: NodeTable, val key: ECKey) {
 	}
 
 	private def dbRead(): Unit = {
-		import JavaConversions._
 		try {
-			this.dbRef.set(this.mapDBFactory.createTransactionalDB("network/discovery"))
 			if (SystemProperties.CONFIG.databaseReset) {
-				this.db.delete("nodeStats")
+				this.dataSource.deleteAll()
 			}
-			this.nodeStatsDBRef.set(this.db.hashMap("nodeStats"))
 			val comparator = new Comparator[NodeStatistics.Persistent] {
 				override def compare(o1: Persistent, o2: Persistent) = o2.reputation - o1.reputation
 			}
-			val sorted = this.nodeStatsDB.entrySet().toIndexedSeq.sortWith((e1, e2) => comparator.compare(e1.getValue, e2.getValue) < 0)
-			sorted.take(DbMaxLoadNodes).foreach {
-				each => getNodeHandler(each.getKey).nodeStatistics.setPersistedData(each.getValue)
+			val loaded = this.dataSource.keys.flatMap(key => this.dataSource.get(key).map(value => (Node.decode(key), Persistent.decode(value))))
+			//評判が高い順にソートする。
+			val sorted = loaded.toSeq.sortWith((e1, e2) => comparator.compare(e1._2, e2._2) < 0)
+			val (taken, dropped) = sorted.splitAt(DbMaxLoadNodes)
+			//評判が高いものを大事にする。
+			taken.foreach {
+				each => getNodeHandler(each._1).nodeStatistics.setPersistedData(each._2)
 			}
+			//評判が低いものを消す。
+			dropped.foreach(entry => this.dataSource.delete(entry._1.toEncodedBytes))
 		} catch {
 			case e: Exception =>
-				ErrorLogger.logger.warn("<NodeManager> Error reading from db.")
-				logger.warn("<NodeManager> Error reading from db.")
+				ErrorLogger.logger.warn("<NodeManager> Error reading from data source.")
+				logger.warn("<NodeManager> Error reading from data source.")
 				try {
-					this.db.delete("nodeStats")
-					this.nodeStatsDBRef.set(this.db.hashMap("nodeStats"))
+					this.dataSource.deleteAll()
 				} catch {
 					case ex: Exception =>
-						ErrorLogger.logger.warn("<NodeManager> Error creating db.")
-						logger.warn("<NodeManager> Error creating db.")
+						ErrorLogger.logger.warn("<NodeManager> Error deleting data source.")
+						logger.warn("<NodeManager> Error creating deleting data source.")
 				}
 		}
 	}
 
 	private def dbWrite(): Unit = {
 		this.synchronized {
+			val rows = new ArrayBuffer[(ImmutableBytes, ImmutableBytes)](this.nodeHandlerMap.size)
 			for (handler <- this.nodeHandlerMap.values) {
-				this.nodeStatsDB.put(handler.node, handler.nodeStatistics.getPersistentData)
+				val key = handler.node.toEncodedBytes
+				val value = handler.nodeStatistics.getPersistentData.encode
+				rows.append((key, value))
 			}
-			this.db.commit()
-			logger.info("<NodeManager> Node stats written to db: %,d".format(this.nodeStatsDB.size))
+			this.dataSource.updateBatch(rows.toMap)
+			logger.info("<NodeManager> Node stats written to data source: %,d".format(rows.size))
 		}
 	}
 
@@ -291,12 +295,12 @@ object NodeManager {
 	private val DbCommitRate = 10000L
 	private val DbMaxLoadNodes = 100
 
-	def create: NodeManager = {
+	def create(dataSource: KeyValueDataSource): NodeManager = {
 		val key = SystemProperties.CONFIG.privateKey
 		val homeNodeAddress = new InetSocketAddress(SystemProperties.CONFIG.externalAddress, SystemProperties.CONFIG.bindPort)
 		val homeNode = new Node(SystemProperties.CONFIG.nodeId, homeNodeAddress)
 		val table = new NodeTable(homeNode, SystemProperties.CONFIG.isPublicHomeNode)
-		new NodeManager(table, key)
+		new NodeManager(table, key, dataSource)
 	}
 
 
