@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.validator.block_rules
 
-import org.lipicalabs.lipica.core.kernel.{Bloom, TransactionReceipt}
+import org.lipicalabs.lipica.core.kernel.{BloomFilter, TransactionReceipt}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 object LogBloomFilterCalculator {
 	def calculateLogBloomFilter(receipts: Seq[TransactionReceipt]): ImmutableBytes = {
-		var result = Bloom()
+		var result = BloomFilter()
 		for (receipt <- receipts) {
 			result = result | receipt.bloomFilter
 		}

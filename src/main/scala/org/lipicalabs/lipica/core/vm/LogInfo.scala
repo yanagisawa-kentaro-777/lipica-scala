@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
-import org.lipicalabs.lipica.core.kernel.Bloom
+import org.lipicalabs.lipica.core.kernel.BloomFilter
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
@@ -20,10 +20,10 @@ case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: Immutab
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedAddress, RBACCodec.Encoder.encodeSeqOfByteArrays(encodedTopics), encodedData))
 	}
 
-	def createBloomFilter: Bloom = {
-		var result = Bloom.create(address.digest256)
+	def createBloomFilter: BloomFilter = {
+		var result = BloomFilter.createFromDigest(address.digest256)
 		for (eachTopic <- this.topics) {
-			result = result | Bloom.create(eachTopic.computeDigest256OfData)
+			result = result | BloomFilter.createFromDigest(eachTopic.computeDigest256OfData)
 		}
 		result
 	}

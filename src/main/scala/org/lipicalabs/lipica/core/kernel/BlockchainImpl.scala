@@ -412,7 +412,7 @@ class BlockchainImpl(
 
 			this.track.commit()
 			val accumUsedManaBytes = ImmutableBytes.asUnsignedByteArray(BigInt(cumulativeManaUsed))
-			val receipt = TransactionReceipt(this.repository.rootHash, accumUsedManaBytes, Bloom(), executor.logs)
+			val receipt = TransactionReceipt(this.repository.rootHash, accumUsedManaBytes, BloomFilter(), executor.logs)
 			receipt.transaction = tx
 			receipt.manaUsedForTx = manaUsedForTx
 

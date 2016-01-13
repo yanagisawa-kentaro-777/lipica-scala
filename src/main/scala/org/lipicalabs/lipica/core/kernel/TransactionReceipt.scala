@@ -16,7 +16,7 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/11/22 13:02
  * YANAGISAWA, Kentaro
  */
-class TransactionReceipt private(private var _bloomFilter: Bloom, logs: Seq[LogInfo]) {
+class TransactionReceipt private(private var _bloomFilter: BloomFilter, logs: Seq[LogInfo]) {
 
 	private val logsBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
 
@@ -38,7 +38,7 @@ class TransactionReceipt private(private var _bloomFilter: Bloom, logs: Seq[LogI
 	def setCumulativeMana(v: Long): Unit = this.cumulativeMana = ImmutableBytes.asUnsignedByteArray(BigInt(v))
 
 
-	def bloomFilter: Bloom = this._bloomFilter
+	def bloomFilter: BloomFilter = this._bloomFilter
 	def logsAsSeq: Seq[LogInfo] = this.logsBuffer.toSeq
 
 	def setLogs(seq: Seq[LogInfo]): Unit = {
@@ -73,7 +73,7 @@ class TransactionReceipt private(private var _bloomFilter: Bloom, logs: Seq[LogI
 
 object TransactionReceipt {
 
-	def apply(postTxState: ImmutableBytes, cumulativeMana: ImmutableBytes, bloom: Bloom, logs: Seq[LogInfo]): TransactionReceipt = {
+	def apply(postTxState: ImmutableBytes, cumulativeMana: ImmutableBytes, bloom: BloomFilter, logs: Seq[LogInfo]): TransactionReceipt = {
 		val result = new TransactionReceipt(bloom, logs)
 		result.postTxState = postTxState
 		result.cumulativeMana = cumulativeMana
@@ -87,7 +87,7 @@ object TransactionReceipt {
 		val bloom = items(2).bytes
 		val logs = items(3).items.map(each => LogInfo.decode(each.items))
 
-		val result = new TransactionReceipt(Bloom(bloom.toByteArray), logs.toBuffer)
+		val result = new TransactionReceipt(BloomFilter(bloom.toByteArray), logs.toBuffer)
 		result.postTxState = postTxState
 		result.cumulativeMana = cumulativeMana
 		result
