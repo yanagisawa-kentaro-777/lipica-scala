@@ -325,7 +325,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	 * 通常のコールは、自身の状態を更新するコントラクトを呼び出します。
 	 * ステートレスコールは、別のコントラクトに属するコールを、呼び出し元の文脈において呼び出します。
 	 */
-	def callToAddress(message: MessageCall): Unit = {
+	def invokeContractCode(message: MessageCall): Unit = {
 		if (getCallDepth == MaxDepth) {
 			//スタックオーバーフロー。
 			stackPushZero()
@@ -338,13 +338,15 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		val senderAddress = this.getOwnerAddress.last20Bytes
 		val codeAddress = message.codeAddress.last20Bytes
 		val contextAddress =
-			if (message.msgType == MessageType.Stateless) {
+			if (message.isStateless) {
+				//呼び出し元の文脈を維持。
 				senderAddress
 			} else {
+				//呼び出されるコードのアドレス。
 				codeAddress
 			}
 		if (logger.isInfoEnabled) {
-			logger.info("Call for existing contract: address: [%s], outDataOffset: [%s], outDataSize[%s]".format(contextAddress.toHexString, message.outDataOffset, message.outDataSize))
+			logger.info("Call for existing contract: Stateless=%s, Address=[%s], OutDataOffset=[%s], OutDataSize=[%s]".format(message.isStateless, contextAddress.toHexString, message.outDataOffset, message.outDataSize))
 		}
 		val track = this.storage.startTracking
 		//手数料。
@@ -373,7 +375,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 				val localResult = program.result
 
 				this.trace.mergeToThis(program.trace)
-				this.result.mergeToThis(localResult)
+				this.result.mergeToThis(localResult, message.isStateless)
 
 				if (localResult.exception ne null) {
 					//エラーが発生した。
@@ -419,7 +421,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	/**
 	 * 実装済みのコントラクトを実行します。
 	 */
-	def callToPrecompiledAddress(message: MessageCall, contract: PrecompiledContract): Unit = {
+	def invokePrecompiledContractCode(message: MessageCall, contract: PrecompiledContract): Unit = {
 		if (getCallDepth == MaxDepth) {
 			//スタックの深さが限界。
 			stackPushZero()
@@ -431,7 +433,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		val senderAddress = this.getOwnerAddress.last20Bytes
 		val codeAddress = message.codeAddress.last20Bytes
 		val contextAddress =
-			if (message.msgType == MessageType.Stateless) {
+			if (message.isStateless) {
 				senderAddress
 			} else {
 				codeAddress

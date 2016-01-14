@@ -11,6 +11,8 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
  */
 class BloomFilter private(private val data: Array[Byte]) {
 
+	import BloomFilter._
+
 	/**
 	 * この BloomFilter を表すバイト列を返します。
 	 */
@@ -28,14 +30,6 @@ class BloomFilter private(private val data: Array[Byte]) {
 	}
 
 	override def toString: String = Hex.encodeHexString(this.data)
-
-	private def get(array: Array[Byte], idx: Int): Byte = {
-		if (idx < array.length) {
-			array(idx)
-		} else {
-			0
-		}
-	}
 
 }
 
@@ -76,6 +70,14 @@ object BloomFilter {
 		//println("%d %d %d".format(mov1, mov2, mov3))
 
 		BloomFilter.apply(data)
+	}
+
+	private def get(array: Array[Byte], idx: Int): Byte = {
+		if (idx < array.length) {
+			array(idx)
+		} else {
+			0
+		}
 	}
 
 }

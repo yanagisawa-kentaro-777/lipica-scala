@@ -47,7 +47,7 @@ class ProgramResultTest extends Specification {
 			result.logsAsSeq.size mustEqual 2
 
 			val result2 = ProgramResult.createEmpty
-			result2.mergeToThis(result)
+			result2.mergeToThis(result, mergeLogs = true)
 			result.deletedAccounts.size mustEqual 1
 			result.logsAsSeq.size mustEqual 2
 			result2.futureRefund mustEqual 6

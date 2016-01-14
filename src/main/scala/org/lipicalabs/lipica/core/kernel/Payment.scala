@@ -34,7 +34,7 @@ object Payment {
 	def reward(repository: RepositoryLike, coinbase: ImmutableBytes, value: BigInt, reason: Reason): Unit = {
 		repository.addBalance(coinbase, value)
 		if (logger.isDebugEnabled) {
-			logger.debug("<Payment> Rewarded %,d by %s (%s).".format(value, coinbase.toShortString, reason))
+			logger.debug("<Payment> Rewarded %,d to %s (%s).".format(value, coinbase.toShortString, reason))
 		}
 	}
 

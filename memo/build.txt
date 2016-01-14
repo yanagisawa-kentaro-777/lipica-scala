@@ -8,4 +8,9 @@ https://coveralls.io/
 
 sbt root/clean root/coverage root/test coveralls
 
+
+//to make separate jars
 sbt clean pack
+
+//to make a fat jar
+sbt clean assembly

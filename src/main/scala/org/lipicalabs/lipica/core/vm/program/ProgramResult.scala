@@ -105,10 +105,13 @@ class ProgramResult {
 		this._internalTransactions.foreach(_.reject())
 	}
 
-	def mergeToThis(another: ProgramResult): Unit = {
+	def mergeToThis(another: ProgramResult, mergeLogs: Boolean): Unit = {
 		addInternalTransactions(another.internalTransactions)
 		addDeletedAccounts(another.deletedAccounts)
-		addLogs(another.logsAsSeq)
+		//ログは呼び出し元の文脈に足さないのが正解のようだ。
+		if (mergeLogs) {
+			addLogs(another.logsAsSeq)
+		}
 		addFutureRefund(another.futureRefund)
 	}
 

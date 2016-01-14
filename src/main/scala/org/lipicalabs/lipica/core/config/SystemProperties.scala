@@ -107,7 +107,7 @@ class SystemProperties(val config: Config) extends SystemPropertiesLike {
 
 	override def moduleVersion: String = {
 		val properties = new Properties()
-		withSystemResource[Unit]("version.properties") {
+		withSystemResource[Unit]("lipica_version.properties") {
 			in => properties.load(in)
 		}
 		val version = properties.getProperty("version")

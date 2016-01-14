@@ -241,7 +241,7 @@ class PlainBlock private[kernel](override val blockHeader: BlockHeader, override
 		result.toString()
 	}
 
-	override def shortHash: String = this.hash.toHexString.substring(0, 6)
+	override def shortHash: String = this.hash.toShortString
 
 }
 

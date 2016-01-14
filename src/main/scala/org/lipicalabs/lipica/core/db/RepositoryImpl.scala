@@ -131,18 +131,18 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 				}
 				updateAccountState(hash, accountState)
 				if (logger.isDebugEnabled) {
-					logger.debug("<RepositoryImpl> Update: [%s], nonce: [%s], balance: [%,d], storage: [%s]".format(
-						hash.toHexString, accountState.nonce, accountState.balance, contractDetails.storageContent
+					logger.debug("<RepositoryImpl> Update: Key=%s, Nonce=%,d; Balance=%,d, StorageSize=%,d".format(
+						hash.toShortString, accountState.nonce, accountState.balance, contractDetails.storageSize
 					))
 				}
 			} else {
-				logger.debug("<RepositoryImpl> Passing: [%s]".format(hash.toHexString))
+				logger.debug("<RepositoryImpl> Passing: [%s]".format(hash.toShortString))
 			}
 		}
 		stateCache.clear()
 		detailsCache.clear()
 		if (logger.isDebugEnabled) {
-			logger.debug("<RepositoryImpl> Updated batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
+			logger.debug("<RepositoryImpl> Updated batch: Accounts=%,d; ContractDetails=%,d".format(stateCache.size, detailsCache.size))
 		}
 	}
 

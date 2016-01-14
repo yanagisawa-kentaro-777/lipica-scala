@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 
 import org.lipicalabs.lipica.core.kernel.ImportResult.{ImportedBest, NoParent, InvalidBlock, ConsensusBreak}
 import org.lipicalabs.lipica.core.config.SystemProperties
@@ -34,7 +34,7 @@ import scala.collection.mutable.ArrayBuffer
  */
 class BlockchainImpl(
 	private val blockStore: BlockStore,
-	private var _repository: Repository,
+	_repository: Repository,
 	private val wallet: Wallet,
 	private val adminInfo: AdminInfo,
 	private val listener: LipicaListener,
@@ -45,41 +45,41 @@ class BlockchainImpl(
 
 	import BlockchainImpl._
 
-	private val _pendingTransactions = new mutable.HashSet[PendingTransaction]
+	private val pendingTransactionSet = new mutable.HashSet[PendingTransaction]
 
 	private var track: RepositoryTrackLike = null
 
-	private var _bestBlock: Block = null
-	override def bestBlock: Block = this._bestBlock
+	private val bestBlockRef: AtomicReference[Block] = new AtomicReference[Block](null)
+	override def bestBlock: Block = this.bestBlockRef.get
 	override def bestBlock_=(block: Block): Unit = {
-		this._bestBlock = block
+		this.bestBlockRef.set(block)
 	}
 
-	private var _totalDifficulty: BigInt = UtilConsts.Zero
-	override def totalDifficulty: BigInt = this._totalDifficulty
-	override def totalDifficulty_=(v: BigInt): Unit = this._totalDifficulty = v
+	private val totalDifficultyRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
+	override def totalDifficulty: BigInt = this.totalDifficultyRef.get
+	override def totalDifficulty_=(v: BigInt): Unit = this.totalDifficultyRef.set(v)
 
-	private val _altChains: mutable.Buffer[Chain] = new ArrayBuffer[Chain]
-	override def altChains: Iterable[Chain] = this._altChains.toIterable
+	private val altChainsBuffer: mutable.Buffer[Chain] = new ArrayBuffer[Chain]
+	override def altChains: Iterable[Chain] = this.altChainsBuffer.toIterable
 
-	private val _garbage: mutable.Buffer[Block] = new ArrayBuffer[Block]
-	override def garbage: Iterable[Block] = this._garbage.toIterable
+	private val repositoryRef: AtomicReference[Repository] = new AtomicReference[Repository](_repository)
+	def repository: Repository = this.repositoryRef.get
+	def repository_=(v: Repository): Unit = this.repositoryRef.set(v)
 
-	def repository: Repository = this._repository
-	def repository_=(v: Repository): Unit = this._repository = v
+	private val programInvokeFactoryRef: AtomicReference[ProgramInvokeFactory] = new AtomicReference[ProgramInvokeFactory](null)
+	def programInvokeFactory: ProgramInvokeFactory = this.programInvokeFactoryRef.get
+	def programInvokeFactory_=(v: ProgramInvokeFactory): Unit = this.programInvokeFactoryRef.set(v)
 
-	private var _programInvokeFactory: ProgramInvokeFactory = null
-	def programInvokeFactory: ProgramInvokeFactory = this._programInvokeFactory
-	def programInvokeFactory_=(v: ProgramInvokeFactory): Unit = this._programInvokeFactory = v
-
-	private var _exitOn = Long.MaxValue
-	override def exitOn: Long = this._exitOn
-	override def exitOn_=(v: Long): Unit = this._exitOn = v
+	private val exitOnRef: AtomicLong = new AtomicLong(Long.MaxValue)
+	override def exitOn: Long = this.exitOnRef.get
+	override def exitOn_=(v: Long): Unit = this.exitOnRef.set(v)
 
 	private val processingBlockRef: AtomicReference[Block] = new AtomicReference[Block](null)
 
+	private val isForkRef: AtomicBoolean = new AtomicBoolean(false)
+	private def isFork: Boolean = this.isForkRef.get
+
 	var byTest: Boolean = false
-	private var fork: Boolean = false
 
 	/**
 	 * このブロックチェーンにおける最新ブロックのダイジェスト値を返します。
@@ -203,13 +203,13 @@ class BlockchainImpl(
 		this.bestBlock = this.blockStore.getBlockByHash(block.parentHash).get
 		this.totalDifficulty = this.blockStore.getTotalDifficultyForHash(block.parentHash)
 		this.repository = this.repository.createSnapshotTo(this.bestBlock.stateRoot)
-		this.fork = true
+		this.isForkRef.set(true)
 		val result =
 			try {
 				//共通祖先に、渡されたブロックを追加する。
 				append(block)
 			} finally {
-				this.fork = false
+				this.isForkRef.set(false)
 			}
 		if (result != ImportedBest) {
 			return result
@@ -391,17 +391,17 @@ class BlockchainImpl(
 				logger.debug("<Blockchain> Executing %s".format(tx.summaryString))
 			}
 
-			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this._programInvokeFactory, block, this.listener, cumulativeManaUsed)
+			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this.programInvokeFactory, block, this.listener, cumulativeManaUsed)
 			executor.init()
 			executor.execute()
 			executor.go()
 			executor.finalization()
 
-			//CPUの貧弱な環境において、トランザクションの実行にばかり夢中になっていると
-			//ping通信などを怠ってしまう可能性があるため、
-			//トランザクションとトランザクションの間で、明示的に他のスレッドに譲る。
-			//トランザクションの中身が重い場合には、さらにVM内でも同様の謙譲がある。
-			Thread.`yield`()
+			if (logger.isDebugEnabled) {
+				logger.debug("<Blockchain> Executed tx %s".format(tx.hash.toShortString))
+			}
+
+			//Thread.`yield`()
 
 			val manaUsedForTx = executor.manaUsed
 			cumulativeManaUsed += manaUsedForTx
@@ -411,8 +411,13 @@ class BlockchainImpl(
 			}
 
 			this.track.commit()
+
+			if (logger.isDebugEnabled) {
+				logger.debug("<Blockchain> Committed tx %s".format(tx.hash.toShortString))
+			}
+
 			val accumUsedManaBytes = ImmutableBytes.asUnsignedByteArray(BigInt(cumulativeManaUsed))
-			val receipt = TransactionReceipt(this.repository.rootHash, accumUsedManaBytes, BloomFilter(), executor.logs)
+			val receipt = TransactionReceipt(this.repository.rootHash, accumUsedManaBytes, executor.logs)
 			receipt.transaction = tx
 			receipt.manaUsedForTx = manaUsedForTx
 
@@ -469,8 +474,8 @@ class BlockchainImpl(
 		}
 
 		if (block.isGenesis) {
-			if (logger.isDebugEnabled) {
-				logger.debug("<Blockchain> [Valid] Genesis block.")
+			if (logger.isTraceEnabled) {
+				logger.trace("<Blockchain> [Valid] Genesis block.")
 			}
 			return true
 		}
@@ -499,8 +504,8 @@ class BlockchainImpl(
 				return false
 			}
 		}
-		if (logger.isDebugEnabled) {
-			logger.debug("<Blockchain> [Valid] %s".format(block.summaryString(short = true)))
+		if (logger.isTraceEnabled) {
+			logger.trace("<Blockchain> [Valid] %s".format(block.summaryString(short = true)))
 		}
 		true
 	}
@@ -529,14 +534,14 @@ class BlockchainImpl(
 	override def close() = ()
 
 	override def updateTotalDifficulty(block: Block) = {
-		this._totalDifficulty += block.difficultyAsBigInt
+		this.totalDifficultyRef.set(this.totalDifficulty + block.difficultyAsBigInt)
 		if (logger.isDebugEnabled) {
-			logger.debug("<Blockchain> Total difficulty is updated to %,d".format(this._totalDifficulty))
+			logger.debug("<Blockchain> Total difficulty is updated to %,d".format(this.totalDifficulty))
 		}
 	}
 
 	override protected def storeBlock(block: Block, receipts: Seq[TransactionReceipt]): Unit = {
-		if (this.fork) {
+		if (this.isFork) {
 			this.blockStore.saveBlock(block, this.totalDifficulty, mainChain = false)
 		} else {
 			this.blockStore.saveBlock(block, this.totalDifficulty, mainChain = true)
@@ -559,11 +564,15 @@ class BlockchainImpl(
 				case Some(account) =>
 					val currentNonce = account.nonce
 					if (currentNonce == txNonce) {
-						this._pendingTransactions.add(PendingTransaction(tx, bestBlockNumber))
+						this.pendingTransactionSet.synchronized {
+							this.pendingTransactionSet.add(PendingTransaction(tx, bestBlockNumber))
+						}
 					}
 				case _ =>
 					if (txNonce == UtilConsts.Zero) {
-						this._pendingTransactions.add(PendingTransaction(tx, bestBlockNumber))
+						this.pendingTransactionSet.synchronized {
+							this.pendingTransactionSet.add(PendingTransaction(tx, bestBlockNumber))
+						}
 					}
 			}
 		}
@@ -571,18 +580,20 @@ class BlockchainImpl(
 
 	override def clearPendingTransactions(receivedTransactions: Iterable[TransactionLike]) = {
 		for (tx <- receivedTransactions) {
-			if (logger.isDebugEnabled) {
-				logger.debug("<BlockChainImpl> Clear tx: hash=%s".format(tx.hash.toShortString))
+			if (logger.isTraceEnabled) {
+				logger.trace("<BlockChainImpl> Clear tx: hash=%s".format(tx.hash.toShortString))
 			}
-			this._pendingTransactions.remove(PendingTransaction(tx, 0))
+			pendingTransactionSet.synchronized {
+				this.pendingTransactionSet.remove(PendingTransaction(tx, 0))
+			}
 		}
 	}
 
 	private def clearOutdatedTransactions(blockNumber: Long): Unit = {
 		val outdated = new ArrayBuffer[PendingTransaction]
 		val transactions = new ArrayBuffer[TransactionLike]
-		this._pendingTransactions.synchronized {
-			for (tx <- this._pendingTransactions) {
+		this.pendingTransactionSet.synchronized {
+			for (tx <- this.pendingTransactionSet) {
 				if (SystemProperties.CONFIG.txOutdatedThreshold < blockNumber - tx.blockNumer) {
 					if (logger.isDebugEnabled) {
 						logger.debug("<BlockChainImpl> Deleting outdated tx: hash=%s".format(tx.hash.toShortString))
@@ -591,16 +602,18 @@ class BlockchainImpl(
 					transactions.append(tx.transaction)
 				}
 			}
+			if (outdated.isEmpty) {
+				return
+			}
+			outdated.foreach(each => this.pendingTransactionSet.remove(each))
 		}
-		if (outdated.isEmpty) {
-			return
-		}
-		outdated.foreach(each => this._pendingTransactions.remove(each))
 		this.wallet.removeTransactions(transactions)
 	}
 
 	override def pendingTransactions: Set[TransactionLike] = {
-		this._pendingTransactions.map(_.transaction).toSet
+		this.pendingTransactionSet.synchronized {
+			this.pendingTransactionSet.map(_.transaction).toSet
+		}
 	}
 
 	def startTracking(): Unit = {

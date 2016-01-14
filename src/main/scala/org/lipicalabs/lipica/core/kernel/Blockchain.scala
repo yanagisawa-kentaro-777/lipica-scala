@@ -86,8 +86,6 @@ trait Blockchain extends Closeable {
 
 	def altChains: Iterable[Chain]
 
-	def garbage: Iterable[Block]
-
 	def pendingTransactions: Set[TransactionLike]
 
 	def addPendingTransactions(transactions: Set[TransactionLike]): Unit

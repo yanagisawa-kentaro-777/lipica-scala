@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.vm.DataWord
 trait ProgramInvoke {
 
 	/**
-	 * 現在実行中アカウントのアドレス。
+	 * 現在実行中コードのアドレス。
 	 */
 	def getOwnerAddress: DataWord
 
@@ -22,7 +22,7 @@ trait ProgramInvoke {
 	def getOriginAddress: DataWord
 
 	/**
-	 * この実行に直接関与しているアカウントのアドレス。
+	 * この処理を直接実行したアドレス。
 	 */
 	def getCallerAddress: DataWord
 

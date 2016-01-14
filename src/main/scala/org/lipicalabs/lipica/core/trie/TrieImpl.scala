@@ -471,7 +471,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 }
 
 object TrieImpl {
-	private val logger = LoggerFactory.getLogger("general")
+	private val logger = LoggerFactory.getLogger("trie")
 
 	def newInstance: TrieImpl = new TrieImpl(null)
 

@@ -232,7 +232,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 	}
 
 	override def toString: String = {
-		"Address: %s; Code: %s; Storage: %s".format(this.address.toHexString, this.code.toHexString, storageContent.toString())
+		"Address: %s; Code: %s; StorageSize: %,d".format(this.address.toHexString, this.code.toHexString, storageSize)
 	}
 
 }

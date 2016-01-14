@@ -92,11 +92,10 @@ class VM {
 				logger.info(logString.format("[%5s]".format(program.getPC), "%-12s".format(op.name), program.getMana.longValue, program.getCallDepth, hint))
 			}
 			vmCounter += 1
-			if ((vmCounter % 10) == 0) {
-				//CPUの貧弱な環境において、トランザクションの実行にばかり夢中になっていると
-				//ping通信などを怠ってしまう可能性があるため、明示的に他のスレッドに譲る。
-				Thread.`yield`()
-			}
+
+//			if ((vmCounter % 10) == 0) {
+//				Thread.`yield`()
+//			}
 		} catch {
 			case e: RuntimeException =>
 				if (logger.isInfoEnabled) {
@@ -604,14 +603,14 @@ class VM {
 			case Log0 | Log1 | Log2 | Log3 | Log4 =>
 				val address = program.getOwnerAddress
 				val memStart = stack.pop
-				val memOffset = stack.pop
+				val memSize = stack.pop
 				val nTopics = op.opcode - OpCode.Log0.opcode
-				val topics = new ArrayBuffer[DataWord]
+				val topics = new ArrayBuffer[DataWord](nTopics)
 				(0 until nTopics).foreach {
 					_ => topics.append(stack.pop)
 				}
-				val data = program.memoryChunk(memStart.intValue, memOffset.intValue)
-				val logInfo = new LogInfo(address.last20Bytes, topics, data)
+				val data = program.memoryChunk(memStart.intValue, memSize.intValue)
+				val logInfo = new LogInfo(address.last20Bytes, topics.toSeq, data)
 				if (logger.isInfoEnabled) {
 					hint = logInfo.toString
 				}
@@ -749,9 +748,9 @@ class VM {
 				)
 				PrecompiledContracts.getContractForAddress(codeAddress) match {
 					case Some(contract) =>
-						program.callToPrecompiledAddress(message, contract)
+						program.invokePrecompiledContractCode(message, contract)
 					case _ =>
-						program.callToAddress(message)
+						program.invokeContractCode(message)
 				}
 				program.step()
 			case Return =>

@@ -18,7 +18,9 @@ object MessageType {
  */
 class MessageCall private(val msgType: MessageType, val mana: DataWord, val codeAddress: DataWord, val endowment: DataWord,
                           val inDataOffset: DataWord, val inDataSize: DataWord, val outDataOffset: DataWord, val outDataSize: DataWord) {
-	//
+	def isStateless: Boolean = {
+		this.msgType == MessageType.Stateless
+	}
 }
 
 object MessageCall {

@@ -135,8 +135,8 @@ class TransactionExecutor(
 					contract.execute(this.tx.data)
 				}
 			case None =>
-				if (logger.isDebugEnabled) {
-					logger.debug("<TxExecutor> User defined contract invocation? [%s]".format(targetAddress))
+				if (logger.isTraceEnabled) {
+					logger.trace("<TxExecutor> User defined contract invocation? [%s]".format(targetAddress))
 				}
 				this.track.getCode(targetAddress) match {
 					case Some(code) =>
@@ -236,8 +236,9 @@ class TransactionExecutor(
 			this.tx.senderAddress, payback, summary.manaLeftOver, summary.manaRefund, this.endMana)
 		)
 		//採掘報酬。
-		Payment.txFee(this.track, this.coinbase, summary.calculateFee, Payment.TxFee)
-		logger.info("<TxExecutor> Payed fee to miner: %s, fee: %,d".format(this.coinbase, summary.calculateFee))
+		val txFee = summary.calculateFee
+		Payment.txFee(this.track, this.coinbase, txFee, Payment.TxFee)
+		logger.info("<TxExecutor> Payed fee to Miner[%s]; Fee=[%,d]; Block=[%,d]; Tx=[%s]".format(this.coinbase.toShortString, txFee, currentBlock.blockNumber, tx.hash.toShortString))
 
 		Option(this.result).foreach {
 			r => {

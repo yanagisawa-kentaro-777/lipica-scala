@@ -9,6 +9,8 @@
 ０、不具合
 2016-01-11 14:41:05.696 WARN  <Blockchain> RECEIPT HASH UNMATCH [668910]
 
+24GByteでもあまる。次は20GByteぐらいで行こう。
+
 １、既存環境との完全同期
 ・CallTransactionの変更に追随する。
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
@@ -21,9 +23,18 @@
 ３、整備
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
+//・メモリとGC
+//・ステップカウント
+//・storageContentをデバッグ出力している箇所が見るに耐えない。
+//・yieldいらない。
+//・多数のJARファイルは、ディスクリプタ数の面で非常に不利。
+
+
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
+
+・ProgramInvokeといった名前はやめた方が良い。
 
 ・スレッド類のgracefulな終了を実現する。
 ・永続化されたデータのプロセス引継ぎを実現する。
@@ -32,7 +43,6 @@
 ・ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 ・スレッドセイフティ
 
-・多数のJARファイルは、ディスクリプタ数の面で非常に不利。
 ・nullを排除する。
 ・ImmutableBytes#toByteArray を排除する。
 

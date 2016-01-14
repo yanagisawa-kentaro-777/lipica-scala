@@ -116,4 +116,15 @@ sequential
 			bytes2 mustEqual ImmutableBytes(Array[Byte](3, 2, 1, 0))
 		}
 	}
+
+	"short string" should {
+		"be right" in {
+			val bytes1 = ImmutableBytes(Array[Byte](0, 1, 2, 3))
+			val bytes2 = ImmutableBytes(Array[Byte](0, 1, 2, 3, 4))
+
+			bytes1.toShortString mustEqual "00010203"
+			bytes2.toShortString mustEqual "00010203..."
+		}
+	}
+
 }

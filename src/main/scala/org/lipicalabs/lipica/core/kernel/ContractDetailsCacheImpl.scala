@@ -156,7 +156,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 
 	override def getSnapshotTo(v: ImmutableBytes) = throw new UnsupportedOperationException
 
-	override def toString: String = "Code: %s, Storage: %s".format(this.code.toHexString, this.storageContent.toString())
+	override def toString: String = "Code: %s, StorageSize: %,d".format(this.code.toHexString, this.storageSize)
 
 	def commit(): Unit = {
 		this.synchronized {

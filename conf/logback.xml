@@ -6,20 +6,6 @@
 			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
 		</encoder>
 	</appender>
-	<appender name="ROOT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>./work/logs/misc.log</File>
-		<Append>true</Append>
-		<encoder>
-			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg [%thread] %file:%line %n</pattern>
-		</encoder>
-		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-			<maxIndex>10</maxIndex>
-			<FileNamePattern>./work/logs/misc%i.log</FileNamePattern>
-		</rollingPolicy>
-		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-			<MaxFileSize>10MB</MaxFileSize>
-		</triggeringPolicy>
-	</appender>
 	<appender name="EXT_LIB" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<File>./work/logs/ext_lib.log</File>
 		<Append>true</Append>
@@ -111,11 +97,11 @@
 			<pattern>%msg %n</pattern>
 		</encoder>
 		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-			<maxIndex>1000</maxIndex>
+			<maxIndex>21</maxIndex>
 			<FileNamePattern>./work/logs/blocks_rec%i.log</FileNamePattern>
 		</rollingPolicy>
 		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-			<MaxFileSize>100MB</MaxFileSize>
+			<MaxFileSize>150MB</MaxFileSize>
 		</triggeringPolicy>
 	</appender>
 	<appender name="ERRORS" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -165,6 +151,9 @@
 	</logger>
 	<logger name="sync" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
+	</logger>
+	<logger name="trie" level="INFO" additivity="false">
+		<appender-ref ref="DATASTORE_TRACE"/>
 	</logger>
 	<logger name="wallet" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>

@@ -22,11 +22,11 @@ class TransactionReceiptTest extends Specification {
 			val originalTx = Transaction.decode(ImmutableBytes.parseHexString("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3"))
 
 			val log = LogInfo(ImmutableBytes.create(20), Seq(DataWord.apply(7777)), ImmutableBytes.parseHexString("8888"))
-			val receipt = TransactionReceipt(ImmutableBytes.parseHexString("1112"), ImmutableBytes.asUnsignedByteArray(BigInt(998)), BloomFilter(), Seq.empty)
+			val receipt = TransactionReceipt(ImmutableBytes.parseHexString("1112"), ImmutableBytes.asUnsignedByteArray(BigInt(998)), Seq(log))
 			receipt.transaction = originalTx
-			receipt.setCumulativeMana(999)
+			receipt.cumulativeMana = ImmutableBytes.asUnsignedByteArray(BigInt(999))
 			receipt.postTxState = ImmutableBytes.parseHexString("1111")
-			receipt.setLogs(Seq(log))
+			//receipt.setLogs(Seq(log))
 
 			val encoded = receipt.encode
 			val rebuilt = TransactionReceipt.decode(encoded)
@@ -45,10 +45,10 @@ class TransactionReceiptTest extends Specification {
 
 			rebuilt.cumulativeMana.toPositiveLong mustEqual 999L
 			rebuilt.postTxState mustEqual ImmutableBytes.parseHexString("1111")
-			rebuilt.logsAsSeq.size mustEqual 1
-			rebuilt.logsAsSeq.head.topics.size mustEqual 1
-			rebuilt.logsAsSeq.head.topics.head mustEqual DataWord(7777)
-			rebuilt.logsAsSeq.head.data mustEqual ImmutableBytes.parseHexString("8888")
+			rebuilt.logs.size mustEqual 1
+			rebuilt.logs.head.topics.size mustEqual 1
+			rebuilt.logs.head.topics.head mustEqual DataWord(7777)
+			rebuilt.logs.head.data mustEqual ImmutableBytes.parseHexString("8888")
 		}
 	}
 

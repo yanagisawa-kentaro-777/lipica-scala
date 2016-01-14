@@ -75,10 +75,37 @@ class RestApiServlet extends ScalatraServlet {
 		Ok(body)
 	}
 
-	get("/:apiVersion/node/threads") {
+	get("/:apiVersion/node/status/threads") {
 		val threads = Utils.allThreads.toSeq.sortWith((t1, t2) => t1.getName.compareTo(t2.getName) < 0)
 		val body = "Number of threads: %,d\n\n%s\n\n".format(threads.size, threads.map(_.getName).mkString("\n"))
 		status = 200
 		Ok(body)
 	}
+
+	get("/:apiVersion/node/status/memory") {
+		val body = renderMemoryInfo
+		status = 200
+		Ok(body)
+	}
+
+	get("/:apiVersion/node/status/memory/gc") {
+		val runtime = Runtime.getRuntime
+		runtime.gc()
+
+		val body = renderMemoryInfo
+		status = 200
+		Ok(body)
+	}
+
+	private def renderMemoryInfo: String = {
+		val runtime = Runtime.getRuntime
+		val totalMemory = runtime.totalMemory
+		val usedMemory = totalMemory - runtime.freeMemory
+		val maxMemory = runtime.totalMemory
+
+		"Used memory\t%,d bytes\nTotal memory\t%,d bytes\nMax memory\t%,d bytes\n\n".format(
+			usedMemory, totalMemory, maxMemory
+		)
+	}
+
 }
