@@ -16,7 +16,7 @@ import org.lipicalabs.lipica.core.net.endpoint.PeerServer
 import org.lipicalabs.lipica.core.facade.submit.{TransactionExecutor, TransactionTask}
 import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
-import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
+import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 
 import scala.annotation.tailrec
 
@@ -31,7 +31,7 @@ class LipicaImpl extends Lipica {
 	def adminInfo: AdminInfo = worldManager.adminInfo
 	def channelManager: ChannelManager = worldManager.channelManager
 	val peerServer: PeerServer = new PeerServer
-	def programInvokeFactory: ProgramInvokeFactory = worldManager.programInvokeFactory
+	def programInvokeFactory: ProgramContextFactory = worldManager.programInvokeFactory
 
 	private val manaPriceTracker = new ManaPriceTracker
 

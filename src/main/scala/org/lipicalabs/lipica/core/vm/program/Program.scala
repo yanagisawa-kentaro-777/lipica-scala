@@ -6,7 +6,7 @@ import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
-import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactory, ProgramInvokeFactoryImpl, ProgramInvoke}
+import org.lipicalabs.lipica.core.vm.program.context.{ProgramContextFactory, ProgramContextFactoryImpl, ProgramContext}
 import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAware
 import org.slf4j.LoggerFactory
 
@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke, private val transaction: TransactionLike) {
+class Program(private val ops: ImmutableBytes, private val invoke: ProgramContext, private val transaction: TransactionLike) {
 
-	def this(_ops: ImmutableBytes, _invoke: ProgramInvoke) = this(_ops, _invoke, null)
+	def this(_ops: ImmutableBytes, _invoke: ProgramContext) = this(_ops, _invoke, null)
 
 	import Program._
 
@@ -36,7 +36,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 	val result = new ProgramResult
 	val trace = new ProgramTrace(invoke)
 
-	private val programInvokeFactory: ProgramInvokeFactory = new ProgramInvokeFactoryImpl
+	private val programInvokeFactory: ProgramContextFactory = new ProgramContextFactoryImpl
 
 	/**
 	 * JUMPDEST命令がある箇所の索引。
@@ -262,7 +262,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 		val newBalance = Payment.transfer(track, senderAddress, newAddress, endowment, Payment.ContractCreationTx)
 		//実行する。
 		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
-		val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore)
+		val programInvoke: ProgramContext = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore)
 
 		val programResult =
 			if (programCode.nonEmpty) {
@@ -367,7 +367,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramInvoke
 
 		val programResultOption =
 			if (programCode.nonEmpty) {
-				val programInvoke: ProgramInvoke = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.blockStore)
+				val programInvoke: ProgramContext = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.blockStore)
 
 				val vm = new VM
 				val program = new Program(programCode, programInvoke, internalTx)

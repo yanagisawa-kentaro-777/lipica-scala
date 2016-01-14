@@ -1,16 +1,18 @@
-package org.lipicalabs.lipica.core.vm.program.invoke
+package org.lipicalabs.lipica.core.vm.program.context
 
 import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
+ * ProgramContext の実装クラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/10/31 10:54
  * YANAGISAWA, Kentaro
  */
-class ProgramInvokeImpl private(
-	//トランザクションに関する情報。
+class ProgramContextImpl private(
+	//トランザクションもしくはコントラクトに関する情報。
 	private val address: DataWord,
 	private val origin: DataWord,
 	private val caller: DataWord,
@@ -31,7 +33,7 @@ class ProgramInvokeImpl private(
 	private val callDepth: Int,
 	override val blockStore: BlockStore,
 	override val byTransaction: Boolean
-) extends ProgramInvoke {
+) extends ProgramContext {
 
 	/** ADDRESS op. */
 	override def getOwnerAddress = this.address
@@ -131,7 +133,7 @@ class ProgramInvokeImpl private(
 
 	override def equals(o: Any): Boolean = {
 		try {
-			o.asInstanceOf[ProgramInvokeImpl].toString == this.toString
+			o.asInstanceOf[ProgramContextImpl].toString == this.toString
 		} catch {
 			case any: Throwable => false
 		}
@@ -139,7 +141,7 @@ class ProgramInvokeImpl private(
 
 }
 
-object ProgramInvokeImpl {
+object ProgramContextImpl {
 
 	def apply(
 		address: DataWord,
@@ -159,8 +161,8 @@ object ProgramInvokeImpl {
 		repository: RepositoryLike,
 		callDepth: Int,
 		blockStore: BlockStore
-	): ProgramInvokeImpl = {
-		new ProgramInvokeImpl(
+	): ProgramContextImpl = {
+		new ProgramContextImpl(
 			address = address, origin = origin, caller = caller, balance = balance, manaPrice = manaPrice, mana = mana, callValue = callValue, messageData = messageData,
 			parentHash = parentHash, coinbase = coinbase, timestamp = timestamp, blockNumber = blockNumber, difficulty = difficulty, blockManaLimit = blockManaLimit,
 			repository = repository, callDepth = callDepth, blockStore = blockStore, byTransaction = false
@@ -184,8 +186,8 @@ object ProgramInvokeImpl {
 		blockManaLimit: ImmutableBytes,
 		repository: RepositoryLike,
 		blockStore: BlockStore
-	): ProgramInvokeImpl = {
-		new ProgramInvokeImpl(
+	): ProgramContextImpl = {
+		new ProgramContextImpl(
 			address = DataWord(address), origin = DataWord(origin), caller = DataWord(caller),
 			balance = DataWord(balance), manaPrice = DataWord(manaPrice), mana = DataWord(mana),
 			callValue = DataWord(callValue), messageData = messageData,

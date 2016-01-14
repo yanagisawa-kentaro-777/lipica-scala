@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.lipicalabs.lipica.core.vm.program.Program.IllegalOperationException
-import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeMockImpl
+import org.lipicalabs.lipica.core.vm.program.context.ProgramContextMockImpl
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 import org.specs2.specification.BeforeExample
@@ -19,13 +19,13 @@ import org.specs2.specification.BeforeExample
 class VMTest2 extends Specification with BeforeExample {
 	sequential
 
-	private var invoke = new ProgramInvokeMockImpl(null)
+	private var invoke = new ProgramContextMockImpl(null)
 
 	override def before: scala.Any = {
 		val ownerAddress = ImmutableBytes.parseHexString("77045E71A7A2C50903D88E564CD72FAB11E82051")
 		val msgData = ImmutableBytes.parseHexString("00000000000000000000000000000000000000000000000000000000000000A1" + "00000000000000000000000000000000000000000000000000000000000000B1")
 
-		invoke = new ProgramInvokeMockImpl(msgData)
+		invoke = new ProgramContextMockImpl(msgData)
 		invoke.setOwnerAddress(ownerAddress)
 
 		invoke.getRepository.createAccount(ownerAddress)

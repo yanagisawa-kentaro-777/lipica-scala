@@ -16,7 +16,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactoryImpl, ProgramInvokeFactory}
+import org.lipicalabs.lipica.core.vm.program.context.{ProgramContextFactoryImpl, ProgramContextFactory}
 import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
@@ -64,7 +64,7 @@ class ComponentsMotherboard extends Closeable {
 
 	val udpListener: UDPListener = ComponentFactory.createUDPListener
 
-	val programInvokeFactory: ProgramInvokeFactory = ComponentFactory.createProgramInvokeFactory
+	val programInvokeFactory: ProgramContextFactory = ComponentFactory.createProgramInvokeFactory
 
 	val blockLoader: BlockLoader = new BlockLoader
 
@@ -88,7 +88,7 @@ class ComponentsMotherboard extends Closeable {
 
 	def init(): Unit = {
 		this.blockchain.asInstanceOf[BlockchainImpl].programInvokeFactory = this.programInvokeFactory
-		this.programInvokeFactory.asInstanceOf[ProgramInvokeFactoryImpl].blockchain = this.blockchain
+		this.programInvokeFactory.asInstanceOf[ProgramContextFactoryImpl].blockchain = this.blockchain
 
 		val coinbaseAddress = DigestUtils.digest256(SystemProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
 		this.wallet.importKey(ImmutableBytes(coinbaseAddress))

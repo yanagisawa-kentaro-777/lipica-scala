@@ -15,7 +15,7 @@ import org.lipicalabs.lipica.core.sync.{PeersPool, SyncManager, SyncQueue}
 import org.lipicalabs.lipica.core.validator.block_header_rules.{BlockHeaderValidator, ExtraDataRule, ManaValueRule, ProofOfWorkRule}
 import org.lipicalabs.lipica.core.validator.block_rules.{BlockValidator, TxTrieRootRule, UnclesRule}
 import org.lipicalabs.lipica.core.validator.parent_rules.{DifficultyRule, ParentBlockHeaderValidator, ParentNumberRule}
-import org.lipicalabs.lipica.core.vm.program.invoke.{ProgramInvokeFactory, ProgramInvokeFactoryImpl}
+import org.lipicalabs.lipica.core.vm.program.context.{ProgramContextFactory, ProgramContextFactoryImpl}
 
 
 /**
@@ -101,7 +101,7 @@ object ComponentFactory {
 
 	def createUDPListener: UDPListener = new UDPListener
 
-	def createProgramInvokeFactory: ProgramInvokeFactory = new ProgramInvokeFactoryImpl
+	def createProgramInvokeFactory: ProgramContextFactory = new ProgramContextFactoryImpl
 
 	private def openKeyValueDataSource(name: String): KeyValueDataSource = {
 		val options = LevelDbDataSource.createDefaultOptions

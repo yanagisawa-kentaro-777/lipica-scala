@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.vm.program.invoke
+package org.lipicalabs.lipica.core.vm.program.context
 
 import org.lipicalabs.lipica.core.kernel.{Blockchain, Block, TransactionLike}
 import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory
  * 2015/11/01 16:27
  * YANAGISAWA, Kentaro
  */
-class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
+class ProgramContextFactoryImpl extends ProgramContextFactory {
 
-	import ProgramInvokeFactoryImpl._
+	import ProgramContextFactoryImpl._
 
 	private var _blockchain: Blockchain = null
 	def blockchain: Blockchain = this._blockchain
@@ -43,7 +43,7 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val difficulty = block.difficulty
 		val blockManaLimit = block.manaLimit
 
-		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, blockStore)
+		val result = ProgramContextImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, blockStore)
 		logger.info("Top level call: %s".format(result))
 		result
 	}
@@ -66,13 +66,13 @@ class ProgramInvokeFactoryImpl extends ProgramInvokeFactory {
 		val difficulty = program.getDifficulty
 		val blockManaLimit = program.getBlockManaLimit
 
-		val result = ProgramInvokeImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, parentHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDepth + 1, blockStore)
+		val result = ProgramContextImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, parentHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, program.getCallDepth + 1, blockStore)
 		logger.info("Internal call: %s".format(result))
 		result
 	}
 
 }
 
-object ProgramInvokeFactoryImpl {
+object ProgramContextFactoryImpl {
 	private val logger = LoggerFactory.getLogger("vm")
 }

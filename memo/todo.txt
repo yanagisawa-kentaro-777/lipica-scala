@@ -23,12 +23,7 @@
 ３、整備
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
-//・メモリとGC
-//・ステップカウント
-//・storageContentをデバッグ出力している箇所が見るに耐えない。
-//・yieldいらない。
-//・多数のJARファイルは、ディスクリプタ数の面で非常に不利。
-
+・context の属性名称を確認する。
 
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）

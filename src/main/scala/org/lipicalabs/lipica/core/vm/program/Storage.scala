@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.kernel.ContractDetails
 import org.lipicalabs.lipica.core.db.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
-import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
+import org.lipicalabs.lipica.core.vm.program.context.ProgramContext
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
 import scala.collection.mutable
@@ -103,7 +103,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 object Storage {
 
-	def apply(programInvoke: ProgramInvoke): Storage = {
+	def apply(programInvoke: ProgramContext): Storage = {
 		new Storage(programInvoke.getOwnerAddress, programInvoke.getRepository)
 	}
 }

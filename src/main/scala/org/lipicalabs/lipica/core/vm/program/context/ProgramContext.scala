@@ -1,15 +1,17 @@
-package org.lipicalabs.lipica.core.vm.program.invoke
+package org.lipicalabs.lipica.core.vm.program.context
 
 import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
+ * あるコードが実行される文脈・環境を表す trait です。
+ *
  * Created by IntelliJ IDEA.
  * 2015/10/25 14:10
  * YANAGISAWA, Kentaro
  */
-trait ProgramInvoke {
+trait ProgramContext {
 
 	/**
 	 * 現在実行中コードのアドレス。

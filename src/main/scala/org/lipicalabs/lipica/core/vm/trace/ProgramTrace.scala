@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.config.SystemProperties
 import org.lipicalabs.lipica.core.kernel.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
-import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvoke
+import org.lipicalabs.lipica.core.vm.program.context.ProgramContext
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -15,7 +15,7 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/11/01 11:55
  * YANAGISAWA, Kentaro
  */
-class ProgramTrace(programInvoke: ProgramInvoke) {
+class ProgramTrace(programInvoke: ProgramContext) {
 
 	import ProgramTrace._
 
@@ -90,7 +90,7 @@ class ProgramTrace(programInvoke: ProgramInvoke) {
 		this.ops ++= another.ops
 	}
 
-	private def getContractDetails(programInvoke: ProgramInvoke): Option[ContractDetails] = {
+	private def getContractDetails(programInvoke: ProgramContext): Option[ContractDetails] = {
 		val repository = programInvoke.getRepository
 		//TODO repository が RepositoryTrack だったら、本体を引き寄せること。
 

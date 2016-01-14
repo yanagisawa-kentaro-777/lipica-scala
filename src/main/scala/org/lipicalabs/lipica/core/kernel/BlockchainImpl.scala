@@ -11,7 +11,7 @@ import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, BlockValidator, TxReceiptTrieRootCalculator, LogBloomFilterCalculator}
 import org.lipicalabs.lipica.core.validator.parent_rules.ParentBlockHeaderValidator
-import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
+import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -66,9 +66,9 @@ class BlockchainImpl(
 	def repository: Repository = this.repositoryRef.get
 	def repository_=(v: Repository): Unit = this.repositoryRef.set(v)
 
-	private val programInvokeFactoryRef: AtomicReference[ProgramInvokeFactory] = new AtomicReference[ProgramInvokeFactory](null)
-	def programInvokeFactory: ProgramInvokeFactory = this.programInvokeFactoryRef.get
-	def programInvokeFactory_=(v: ProgramInvokeFactory): Unit = this.programInvokeFactoryRef.set(v)
+	private val programInvokeFactoryRef: AtomicReference[ProgramContextFactory] = new AtomicReference[ProgramContextFactory](null)
+	def programInvokeFactory: ProgramContextFactory = this.programInvokeFactoryRef.get
+	def programInvokeFactory_=(v: ProgramContextFactory): Unit = this.programInvokeFactoryRef.set(v)
 
 	private val exitOnRef: AtomicLong = new AtomicLong(Long.MaxValue)
 	override def exitOn: Long = this.exitOnRef.get

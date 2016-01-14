@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm._
 import org.lipicalabs.lipica.core.vm.program.Program.ProgramException
 import org.lipicalabs.lipica.core.vm.program.{ProgramResult, Program}
-import org.lipicalabs.lipica.core.vm.program.invoke.ProgramInvokeFactory
+import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 import org.slf4j.LoggerFactory
 
 /**
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
  */
 class TransactionExecutor(
 	private val tx: TransactionLike, private val coinbase: ImmutableBytes, private val track: RepositoryLike,
-	private val blockStore: BlockStore, private val programInvokeFactory: ProgramInvokeFactory,
+	private val blockStore: BlockStore, private val programInvokeFactory: ProgramContextFactory,
 	private val currentBlock: Block, private val listener: LipicaListener, private val manaUsedInTheBlock: Long
 ) {
 	import TransactionExecutor._
