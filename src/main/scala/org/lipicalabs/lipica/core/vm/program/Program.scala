@@ -375,7 +375,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 				val localResult = program.result
 
 				this.trace.mergeToThis(program.trace)
-				this.result.mergeToThis(localResult, message.isStateless)
+				this.result.mergeToThis(localResult, mergeLogs = true)//TODO 仕様不明。
 
 				if (localResult.exception ne null) {
 					//エラーが発生した。
