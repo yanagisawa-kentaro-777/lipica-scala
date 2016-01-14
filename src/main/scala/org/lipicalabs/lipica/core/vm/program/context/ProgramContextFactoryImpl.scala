@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm.program.context
 import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.kernel.{Blockchain, Block, TransactionLike}
-import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
+import org.lipicalabs.lipica.core.datastore.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.Program

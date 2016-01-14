@@ -4,7 +4,7 @@ import java.net.{InetSocketAddress, InetAddress, URI, UnknownHostException}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.net.p2p.Peer
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
@@ -37,14 +37,14 @@ class PeerDiscovery {
 		this.rejectionHandler = new RejectionLogger
 		this.threadFactory = new CountingThreadFactory("peer-discovery-worker")
 		this.executorPool = new ThreadPoolExecutor(
-			SystemProperties.CONFIG.peerDiscoveryWorkers, SystemProperties.CONFIG.peerDiscoveryWorkers, 10, TimeUnit.SECONDS,
+			NodeProperties.CONFIG.peerDiscoveryWorkers, NodeProperties.CONFIG.peerDiscoveryWorkers, 10, TimeUnit.SECONDS,
 			new ArrayBlockingQueue[Runnable](1000), this.threadFactory, this.rejectionHandler
 		)
 		this.monitor = new PeerMonitorTask(this.executorPool, 1, this)
 		val monitorExecutor = Executors.newSingleThreadExecutor(new CountingThreadFactory("peer-discovery-monitor"))
 		monitorExecutor.execute(this.monitor)
 
-		val peerDataSeq = parsePeerDiscoveryAddresses(SystemProperties.CONFIG.seedNodes)
+		val peerDataSeq = parsePeerDiscoveryAddresses(NodeProperties.CONFIG.seedNodes)
 		addPeers(peerDataSeq)
 
 		this.peers.foreach(each => startWorker(each))

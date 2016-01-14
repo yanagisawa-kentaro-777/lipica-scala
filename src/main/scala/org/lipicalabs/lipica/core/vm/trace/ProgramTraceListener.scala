@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.trace
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAdaptor
@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAdaptor
  */
 class ProgramTraceListener extends ProgramListenerAdaptor {
 
-	private val enabled: Boolean = SystemProperties.CONFIG.vmTrace
+	private val enabled: Boolean = NodeProperties.CONFIG.vmTrace
 	private var actions = OpActions.create
 
 	override def onMemoryExtend(delta: Int): Unit = {

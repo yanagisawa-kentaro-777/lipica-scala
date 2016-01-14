@@ -3,9 +3,9 @@ package org.lipicalabs.lipica.core.kernel
 import java.util.Random
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.HashMapDBFactory
-import org.lipicalabs.lipica.core.db.datasource.{HashMapDB, KeyValueDataSource}
+import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.datastore.HashMapDBFactory
+import org.lipicalabs.lipica.core.datastore.datasource.{HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
@@ -156,7 +156,7 @@ class ContractDetailsTest extends Specification {
 			original.address = address
 			original.code = code
 
-			(0 until SystemProperties.CONFIG.detailsInMemoryStorageLimit + 10).foreach {
+			(0 until NodeProperties.CONFIG.detailsInMemoryStorageLimit + 10).foreach {
 				_ => {
 					val key = randomWord
 					val value = randomWord
@@ -198,7 +198,7 @@ class ContractDetailsTest extends Specification {
 			original.address = address
 			original.code = code
 
-			(0 until SystemProperties.CONFIG.detailsInMemoryStorageLimit - 1).foreach {
+			(0 until NodeProperties.CONFIG.detailsInMemoryStorageLimit - 1).foreach {
 				_ => {
 					val key = randomWord
 					val value = randomWord

@@ -4,7 +4,7 @@ import java.util
 import java.util.{Collections, Comparator}
 import java.util.concurrent._
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeHandler
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, UtilConsts}
@@ -89,9 +89,9 @@ class PeerConnectionExaminer {
 object PeerConnectionExaminer {
 	private val logger = LoggerFactory.getLogger("discovery")
 
-	private val ConnectThreads = SystemProperties.CONFIG.peerDiscoveryWorkers
-	private val ReconnectPeriod = SystemProperties.CONFIG.peerDiscoveryTouchSeconds * 1000L
-	private val ReconnectMaxPeers = SystemProperties.CONFIG.peerDiscoveryTouchMaxNodes
+	private val ConnectThreads = NodeProperties.CONFIG.peerDiscoveryWorkers
+	private val ReconnectPeriod = NodeProperties.CONFIG.peerDiscoveryTouchSeconds * 1000L
+	private val ReconnectMaxPeers = NodeProperties.CONFIG.peerDiscoveryTouchMaxNodes
 
 
 	class MutablePriorityQueue[T, C <: T](val comparator: Comparator[C]) extends LinkedBlockingDeque[T] {

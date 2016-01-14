@@ -2,9 +2,9 @@ package org.lipicalabs.lipica.core.facade.components
 
 import java.net.URI
 
-import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db._
-import org.lipicalabs.lipica.core.db.datasource.{DataSourcePool, KeyValueDataSourceFactory, KeyValueDataSource, LevelDbDataSource}
+import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.datastore._
+import org.lipicalabs.lipica.core.datastore.datasource.{DataSourcePool, KeyValueDataSourceFactory, KeyValueDataSource, LevelDbDataSource}
 import org.lipicalabs.lipica.core.facade.listener.CompositeLipicaListener
 import org.lipicalabs.lipica.core.kernel.Wallet
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
@@ -80,7 +80,7 @@ object ComponentFactory {
 	def createNodeManager: NodeManager = {
 		val dataSource = openKeyValueDataSource("nodestats_db")
 		val result = NodeManager.create(dataSource)
-		result.seedNodes = SystemProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => Node(uri))
+		result.seedNodes = NodeProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => Node(uri))
 		result
 	}
 

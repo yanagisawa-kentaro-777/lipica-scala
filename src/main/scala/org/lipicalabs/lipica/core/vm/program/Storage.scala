@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.kernel.{AccountState, Block}
 import org.lipicalabs.lipica.core.kernel.ContractDetails
-import org.lipicalabs.lipica.core.db.RepositoryLike
+import org.lipicalabs.lipica.core.datastore.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContext

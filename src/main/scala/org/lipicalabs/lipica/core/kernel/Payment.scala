@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.db.RepositoryLike
+import org.lipicalabs.lipica.core.datastore.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 

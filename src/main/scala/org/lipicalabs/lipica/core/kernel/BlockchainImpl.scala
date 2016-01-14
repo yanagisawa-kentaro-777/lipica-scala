@@ -3,8 +3,8 @@ package org.lipicalabs.lipica.core.kernel
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 
 import org.lipicalabs.lipica.core.kernel.ImportResult.{ImportedBest, NoParent, InvalidBlock, ConsensusBreak}
-import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.{RepositoryTrackLike, Repository, BlockStore}
+import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.datastore.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.components.AdminInfo
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts}
@@ -243,7 +243,7 @@ class BlockchainImpl(
 	 * ブロックを、再生可能な状態で記録します。
 	 */
 	private def recordBlock(block: Block): Unit = {
-		if (!SystemProperties.CONFIG.recordBlocks) {
+		if (!NodeProperties.CONFIG.recordBlocks) {
 			return
 		}
 		if (this.bestBlock.isGenesis) {
@@ -300,7 +300,7 @@ class BlockchainImpl(
 		track.commit()
 
 		//状態の整合性を検査する。
-		if (!SystemProperties.CONFIG.blockchainOnly) {
+		if (!NodeProperties.CONFIG.blockchainOnly) {
 			if (block.stateRoot != this.repository.rootHash) {
 				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.rootHash)
 				logger.warn(message)
@@ -348,7 +348,7 @@ class BlockchainImpl(
 	}
 
 	private def processBlock(block: Block): Seq[TransactionReceipt] = {
-		if (!block.isGenesis && !SystemProperties.CONFIG.blockchainOnly) {
+		if (!block.isGenesis && !NodeProperties.CONFIG.blockchainOnly) {
 			this.wallet.addTransactions(block.transactions)
 			val result = applyBlock(block)
 			this.wallet.processBlock(block)
@@ -367,7 +367,7 @@ class BlockchainImpl(
 		} else {
 			if (logger.isDebugEnabled) {
 				logger.info("<Blockchain> Skipping block processing: %s (Genesis? %s, BlockchainOnly? %s).".format(
-					block.summaryString(short = true), block.isGenesis, SystemProperties.CONFIG.blockchainOnly)
+					block.summaryString(short = true), block.isGenesis, NodeProperties.CONFIG.blockchainOnly)
 				)
 			}
 			Seq.empty
@@ -452,10 +452,10 @@ class BlockchainImpl(
 	}
 
 	private def needsFlushing(block: Block): Boolean = {
-		if (0d < SystemProperties.CONFIG.cacheFlushMemory) {
-			needsFlushingByMemory(SystemProperties.CONFIG.cacheFlushMemory)
-		} else if (0 < SystemProperties.CONFIG.cacheFlushBlocks) {
-			(block.blockNumber % SystemProperties.CONFIG.cacheFlushBlocks) == 0
+		if (0d < NodeProperties.CONFIG.cacheFlushMemory) {
+			needsFlushingByMemory(NodeProperties.CONFIG.cacheFlushMemory)
+		} else if (0 < NodeProperties.CONFIG.cacheFlushBlocks) {
+			(block.blockNumber % NodeProperties.CONFIG.cacheFlushBlocks) == 0
 		} else {
 			needsFlushingByMemory(0.7d)
 		}
@@ -594,7 +594,7 @@ class BlockchainImpl(
 		val transactions = new ArrayBuffer[TransactionLike]
 		this.pendingTransactionSet.synchronized {
 			for (tx <- this.pendingTransactionSet) {
-				if (SystemProperties.CONFIG.txOutdatedThreshold < blockNumber - tx.blockNumer) {
+				if (NodeProperties.CONFIG.txOutdatedThreshold < blockNumber - tx.blockNumer) {
 					if (logger.isDebugEnabled) {
 						logger.debug("<BlockChainImpl> Deleting outdated tx: hash=%s".format(tx.hash.toShortString))
 					}

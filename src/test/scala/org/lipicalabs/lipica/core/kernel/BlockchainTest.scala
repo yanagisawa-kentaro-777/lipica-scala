@@ -4,8 +4,8 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.db.datasource.HashMapDB
-import org.lipicalabs.lipica.core.db.{HashMapDBFactory, RepositoryImpl, IndexedBlockStore}
+import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
+import org.lipicalabs.lipica.core.datastore.{HashMapDBFactory, RepositoryImpl, IndexedBlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
 import org.lipicalabs.lipica.core.facade.components.{ComponentFactory, AdminInfo}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes

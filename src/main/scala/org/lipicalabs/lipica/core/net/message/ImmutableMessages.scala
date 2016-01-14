@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.message
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.p2p._
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -18,7 +18,7 @@ object ImmutableMessages {
 	val DisconnectMessage: DisconnectMessage = new DisconnectMessage(ReasonCode.Requested)
 
 	def createHelloMessage(peerId: String): HelloMessage = {
-		createHelloMessage(peerId, SystemProperties.CONFIG.bindPort)
+		createHelloMessage(peerId, NodeProperties.CONFIG.bindPort)
 	}
 
 	def createHelloMessage(peerId: String, listenPort: Int): HelloMessage = {
@@ -28,7 +28,7 @@ object ImmutableMessages {
 	}
 
 	private def buildHelloAnnouncement: String = {
-		val version = SystemProperties.CONFIG.moduleVersion
+		val version = NodeProperties.CONFIG.moduleVersion
 		val osName = System.getProperty("os.name").trim
 		val system =
 			if (osName.contains(" ")) {
@@ -38,7 +38,7 @@ object ImmutableMessages {
 			} else {
 				osName
 			}
-		val helloPhrase = SystemProperties.CONFIG.helloPhrase
+		val helloPhrase = NodeProperties.CONFIG.helloPhrase
 		String.format("Lipica/%s/%s/%s/Scala".format(version, helloPhrase, system))
 	}
 

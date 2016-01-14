@@ -7,7 +7,7 @@ import com.google.common.io.ByteStreams
 import io.netty.buffer.ByteBuf
 import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
 import io.netty.handler.codec.ByteToMessageCodec
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.crypto.{ECIESCoder, ECKey}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
@@ -36,7 +36,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _frameCodec: FrameCodec = null
 	def frameCodec: FrameCodec = this._frameCodec
 
-	private var _myKey = SystemProperties.CONFIG.privateKey
+	private var _myKey = NodeProperties.CONFIG.privateKey
 	def myKey: ECKey = this._myKey
 
 	private var _nodeId: ImmutableBytes = null

@@ -7,7 +7,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.{ChannelOption, DefaultMessageSizeEstimator}
 import io.netty.handler.logging.LoggingHandler
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
@@ -40,12 +40,12 @@ class PeerServer {
 
 			b.option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.valueOf(true))
 			b.option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT)
-			b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf(SystemProperties.CONFIG.connectionTimeoutMillis))
+			b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf(NodeProperties.CONFIG.connectionTimeoutMillis))
 
 			b.handler(new LoggingHandler)
 			b.childHandler(this.channelInitializer)
 
-			logger.info("<PeerServer> [%s] Listening for incoming connections on %s".format(SystemProperties.CONFIG.nodeId, address))
+			logger.info("<PeerServer> [%s] Listening for incoming connections on %s".format(NodeProperties.CONFIG.nodeId, address))
 			val f = b.bind(address).sync()
 			f.channel.closeFuture.sync()
 

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.{RepositoryLike, RepositoryTrackLike, BlockStore}
+import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.datastore.{RepositoryLike, RepositoryTrackLike, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
@@ -247,7 +247,7 @@ class TransactionExecutor(
 			}
 		}
 		this.listener.onTransactionExecuted(summary)
-		if (SystemProperties.CONFIG.vmTrace) {
+		if (NodeProperties.CONFIG.vmTrace) {
 			val trace = this.program.trace.result(this.result.hReturn).error(this.result.exception).toString
 			saveProgramTrace(this.tx.hash.toHexString, trace)
 			this.listener.onVMTraceCreated(this.tx.hash.toHexString, trace)

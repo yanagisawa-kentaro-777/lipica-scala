@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.lpc.handler
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.net.lpc.V0
 import org.lipicalabs.lipica.core.net.lpc.message.{BlockHashesMessage, GetBlockHashesByNumberMessage}
 import org.lipicalabs.lipica.core.sync.SyncStateName.DoneHashRetrieving
@@ -60,7 +60,7 @@ class Lpc0 extends LpcHandler(V0) {
 	}
 
 	override protected def processGetBlockHashesByNumber(message: GetBlockHashesByNumberMessage): Unit = {
-		val hashes = this.blockchain.getSeqOfHashesStartingFromBlock(message.blockNumber, message.maxBlocks min SystemProperties.CONFIG.maxHashesAsk)
+		val hashes = this.blockchain.getSeqOfHashesStartingFromBlock(message.blockNumber, message.maxBlocks min NodeProperties.CONFIG.maxHashesAsk)
 		sendMessage(BlockHashesMessage(hashes))
 	}
 

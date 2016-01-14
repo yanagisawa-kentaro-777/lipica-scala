@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.facade
 
-import org.lipicalabs.lipica.core.db.Repository
+import org.lipicalabs.lipica.core.datastore.Repository
 
 /**
  *

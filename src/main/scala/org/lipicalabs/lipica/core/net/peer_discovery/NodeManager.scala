@@ -6,9 +6,9 @@ import java.util.Comparator
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
+import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeStatistics.Persistent
 import org.lipicalabs.lipica.core.net.peer_discovery.discover._
@@ -52,7 +52,7 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 
 	private val inboundOnlyFromKnownNodes: Boolean = true
 
-	private val discoveryEnabled = SystemProperties.CONFIG.peerDiscoveryEnabled
+	private val discoveryEnabled = NodeProperties.CONFIG.peerDiscoveryEnabled
 
 	private val listeners: mutable.Map[DiscoverListener, ListenerHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[DiscoverListener, ListenerHandler])
 
@@ -88,14 +88,14 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 		for (node <- this.seedNodes) {
 			getNodeHandler(node)
 		}
-		for (node <- SystemProperties.CONFIG.activePeers) {
+		for (node <- NodeProperties.CONFIG.activePeers) {
 			getNodeHandler(node).nodeStatistics.setPredefined(true)
 		}
 	}
 
 	private def dbRead(): Unit = {
 		try {
-			if (SystemProperties.CONFIG.databaseReset) {
+			if (NodeProperties.CONFIG.databaseReset) {
 				this.dataSource.deleteAll()
 			}
 			val comparator = new Comparator[NodeStatistics.Persistent] {
@@ -289,17 +289,17 @@ object NodeManager {
 	private val logger = LoggerFactory.getLogger("discovery")
 
 	private val DummyStat = new NodeStatistics(new Node(ImmutableBytes.empty, new InetSocketAddress(InetAddress.getByAddress(new Array[Byte](4)), 0)))
-	private val Persist: Boolean = SystemProperties.CONFIG.peerDiscoveryPersist
+	private val Persist: Boolean = NodeProperties.CONFIG.peerDiscoveryPersist
 
 	private val ListenerRefreshRate = 1000L
 	private val DbCommitRate = 10000L
 	private val DbMaxLoadNodes = 100
 
 	def create(dataSource: KeyValueDataSource): NodeManager = {
-		val key = SystemProperties.CONFIG.privateKey
-		val homeNodeAddress = new InetSocketAddress(SystemProperties.CONFIG.externalAddress, SystemProperties.CONFIG.bindPort)
-		val homeNode = new Node(SystemProperties.CONFIG.nodeId, homeNodeAddress)
-		val table = new NodeTable(homeNode, SystemProperties.CONFIG.isPublicHomeNode)
+		val key = NodeProperties.CONFIG.privateKey
+		val homeNodeAddress = new InetSocketAddress(NodeProperties.CONFIG.externalAddress, NodeProperties.CONFIG.bindPort)
+		val homeNode = new Node(NodeProperties.CONFIG.nodeId, homeNodeAddress)
+		val table = new NodeTable(homeNode, NodeProperties.CONFIG.isPublicHomeNode)
 		new NodeManager(table, key, dataSource)
 	}
 

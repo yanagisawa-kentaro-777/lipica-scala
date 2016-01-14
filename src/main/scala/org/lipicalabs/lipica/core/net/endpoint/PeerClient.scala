@@ -6,7 +6,7 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.channel.{DefaultMessageSizeEstimator, ChannelOption, EventLoopGroup}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
@@ -44,7 +44,7 @@ class PeerClient {
 			val b = (new Bootstrap).group(workerGroup).channel(classOf[NioSocketChannel]).
 				option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE).
 				option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT).
-				option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Integer.valueOf(SystemProperties.CONFIG.connectionTimeoutMillis)).
+				option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Integer.valueOf(NodeProperties.CONFIG.connectionTimeoutMillis)).
 				remoteAddress(address).
 				handler(channelInitializer)
 			//クライアントとして接続する。

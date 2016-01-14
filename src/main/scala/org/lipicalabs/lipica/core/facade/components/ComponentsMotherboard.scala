@@ -5,9 +5,9 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.kernel._
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.db._
+import org.lipicalabs.lipica.core.datastore._
 import org.lipicalabs.lipica.core.facade.listener.{CompositeLipicaListener, LipicaListener}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.sync.{PeersPool, SyncQueue, SyncManager}
@@ -90,7 +90,7 @@ class ComponentsMotherboard extends Closeable {
 		this.blockchain.asInstanceOf[BlockchainImpl].programContextFactory = this.programContextFactory
 		this.programContextFactory.asInstanceOf[ProgramContextFactoryImpl].blockchain = this.blockchain
 
-		val coinbaseAddress = DigestUtils.digest256(SystemProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
+		val coinbaseAddress = DigestUtils.digest256(NodeProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
 		this.wallet.importKey(ImmutableBytes(coinbaseAddress))
 
 		//データベースからブロックを読み込む。

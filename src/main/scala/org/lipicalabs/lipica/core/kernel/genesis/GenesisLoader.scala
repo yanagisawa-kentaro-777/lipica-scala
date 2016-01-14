@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel.genesis
 import com.google.common.io.ByteStreams
 import org.codehaus.jackson.map.ObjectMapper
 import org.lipicalabs.lipica.core.kernel.{Genesis, AccountState, BlockHeader}
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts, JsonUtils}
 
@@ -15,7 +15,7 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts, JsonUtils}
 object GenesisLoader {
 
 	def loadGenesisBlock: Genesis = {
-		loadGenesisBlock(SystemProperties.CONFIG.genesisResourceName)
+		loadGenesisBlock(NodeProperties.CONFIG.genesisResourceName)
 	}
 
 	def loadGenesisBlock(genesisFileName: String): Genesis = {

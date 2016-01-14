@@ -3,10 +3,10 @@ package org.lipicalabs.lipica.core.sync
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
-import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
+import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel._
-import org.lipicalabs.lipica.core.config.SystemProperties
-import org.lipicalabs.lipica.core.db.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
+import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.datastore.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
@@ -227,7 +227,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * 設定によって決められた個数のハッシュ値を、
 	 * ブロック取得のために払い出します。
 	 */
-	def pollHashes: Seq[ImmutableBytes] = this.hashStore.pollBatch(SystemProperties.CONFIG.maxBlocksAsk)
+	def pollHashes: Seq[ImmutableBytes] = this.hashStore.pollBatch(NodeProperties.CONFIG.maxBlocksAsk)
 
 	def logHashQueueSize(): Unit = logger.info("<SyncQueue> Block hashes list size = %,d".format(this.hashStore.size))
 

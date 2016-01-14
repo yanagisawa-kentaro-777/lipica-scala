@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.db.{BlockInfo, IndexedBlockStore, RepositoryImpl}
+import org.lipicalabs.lipica.core.datastore.{BlockInfo, IndexedBlockStore, RepositoryImpl}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

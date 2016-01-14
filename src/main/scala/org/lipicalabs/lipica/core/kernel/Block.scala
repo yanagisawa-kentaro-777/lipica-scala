@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
@@ -249,7 +249,7 @@ object Block {
 	private[kernel] val logger = LoggerFactory.getLogger("general")
 
 	val BlockReward =
-		if (SystemProperties.CONFIG.isFrontier) {
+		if (NodeProperties.CONFIG.isFrontier) {
 			BigInt("5000000000000000000")
 		} else {
 			BigInt("1500000000000000000")

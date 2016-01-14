@@ -2,9 +2,9 @@ package org.lipicalabs.lipica.core.kernel
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.db.datasource.{KeyValueDataSourceFactory, KeyValueDataSource}
+import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -54,7 +54,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 			if (this.useExternalStorageRef.get) {
 				return true
 			}
-			SystemProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size
+			NodeProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size
 		}
 	}
 	//def useExternalStorage_=(v: Boolean): Unit = this.useExternalStorageRef.set(v)

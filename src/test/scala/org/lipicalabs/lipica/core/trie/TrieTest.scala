@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.db.datasource.HashMapDB
+import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification

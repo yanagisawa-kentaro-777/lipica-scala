@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.OpCode._
 import org.lipicalabs.lipica.core.vm.program.{MessageType, MessageCall, Program}
@@ -36,7 +36,7 @@ class VM {
 	}
 
 	def step(program: Program): Unit = {
-		if (SystemProperties.CONFIG.vmTrace) {
+		if (NodeProperties.CONFIG.vmTrace) {
 			program.saveOpTrace()
 		}
 		try {
@@ -79,7 +79,7 @@ class VM {
 				program.spendMana(copyMana, op.name + " (copy usage)")
 			}
 			//詳細デバッグ出力。
-			if (program.getBlockNumber.longValue == SystemProperties.CONFIG.dumpBlock) {
+			if (program.getBlockNumber.longValue == NodeProperties.CONFIG.dumpBlock) {
 				dumpLine(op, manaBefore, manaCost, memWords, program)
 			}
 

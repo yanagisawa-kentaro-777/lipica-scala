@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.utils
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,6 +14,6 @@ object UtilConsts {
 
 	val MinimumDifficulty = BigInt(131072)
 	val DifficultyBoundDivisor: BigInt = BigInt(2048)
-	val DurationLimit = if (SystemProperties.CONFIG.isFrontier) 13 else 8
+	val DurationLimit = if (NodeProperties.CONFIG.isFrontier) 13 else 8
 	val ExpDifficultyPeriod: Int = 100000
 }

@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.kernel.{Block, Blockchain, TransactionLike}
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.lpc.{LpcMessageCode, LpcVersion}
 import org.lipicalabs.lipica.core.net.lpc.message._
@@ -64,7 +64,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	override def lastHashToAsk = this._lastHashToAsk
 	override def lastHashToAsk_=(v: ImmutableBytes) = this._lastHashToAsk = v
 
-	protected var _maxHashesAsk = SystemProperties.CONFIG.maxHashesAsk
+	protected var _maxHashesAsk = NodeProperties.CONFIG.maxHashesAsk
 	override def maxHashesAsk = this._maxHashesAsk
 	override def maxHashesAsk_=(v: Int) = this._maxHashesAsk = v
 
@@ -148,7 +148,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			ctx.pipeline().remove(this)
 			return
 		}
-		if (message.networkId != SystemProperties.CONFIG.networkId) {
+		if (message.networkId != NodeProperties.CONFIG.networkId) {
 			this.lpcState = LpcState.Failed
 			disconnect(ReasonCode.NullIdentity)
 			return
@@ -170,7 +170,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	protected def sendStatus(): Unit = {
 		val protocolVersion = this.version.code
-		val newtworkId = SystemProperties.CONFIG.networkId
+		val newtworkId = NodeProperties.CONFIG.networkId
 		val totalDifficulty = this.blockchain.totalDifficulty
 		val bestHash = this.blockchain.bestBlockHash
 		val message = StatusMessage(protocolVersion, newtworkId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, Blockchain.GenesisHash)
@@ -218,7 +218,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	 * 他ノードからの GetBlockHashes メッセージを処理します。
 	 */
 	protected def processGetBlockHashes(message: GetBlockHashesMessage): Unit = {
-		val hashes = this.blockchain.getSeqOfHashesEndingWith(message.bestHash, message.maxBlocks max SystemProperties.CONFIG.maxHashesAsk)
+		val hashes = this.blockchain.getSeqOfHashesEndingWith(message.bestHash, message.maxBlocks max NodeProperties.CONFIG.maxHashesAsk)
 		sendMessage(BlockHashesMessage(hashes))
 	}
 

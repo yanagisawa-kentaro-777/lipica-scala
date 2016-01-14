@@ -7,7 +7,7 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioDatagramChannel
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryExecutor
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
@@ -26,13 +26,13 @@ class UDPListener {
 
 	import UDPListener._
 
-	private val address: String = SystemProperties.CONFIG.bindAddress
-	private val port: Int = SystemProperties.CONFIG.bindPort
+	private val address: String = NodeProperties.CONFIG.bindAddress
+	private val port: Int = NodeProperties.CONFIG.bindPort
 
 	private val executor = Executors.newSingleThreadExecutor(new CountingThreadFactory("udp-starter"))
 
 	def start(): Boolean = {
-		if (SystemProperties.CONFIG.peerDiscoveryEnabled) {
+		if (NodeProperties.CONFIG.peerDiscoveryEnabled) {
 			val task = new Runnable {
 				override def run(): Unit = {
 					try {

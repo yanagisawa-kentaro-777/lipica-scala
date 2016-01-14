@@ -8,7 +8,7 @@ import java.util.Scanner
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.kernel.ImportResult.{Exists, ImportedBest}
 import org.lipicalabs.lipica.core.kernel.{Block, Blockchain}
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
@@ -26,7 +26,7 @@ class BlockLoader {
 	 * ブロック情報を読み取って、渡されたチェーンに連結します。
 	 */
 	def loadBlocks(chain: Blockchain): Unit = {
-		val path = SystemProperties.CONFIG.srcBlocksDir
+		val path = NodeProperties.CONFIG.srcBlocksDir
 		if (path.isEmpty) {
 			return
 		}

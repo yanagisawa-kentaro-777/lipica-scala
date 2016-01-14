@@ -6,7 +6,7 @@ import java.util.concurrent.{Future, Executors}
 
 import org.lipicalabs.lipica.core.kernel.CallTransaction
 import org.lipicalabs.lipica.core.kernel.{Transaction, TransactionLike}
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
 import org.lipicalabs.lipica.core.facade.components.{AdminInfo, ComponentsMotherboard}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
@@ -36,9 +36,9 @@ class LipicaImpl extends Lipica {
 	private val manaPriceTracker = new ManaPriceTracker
 
 	override def init(): Unit = {
-		val bindPort = SystemProperties.CONFIG.bindPort
+		val bindPort = NodeProperties.CONFIG.bindPort
 		if (0 < bindPort) {
-			val bindAddress = SystemProperties.CONFIG.bindAddress
+			val bindAddress = NodeProperties.CONFIG.bindAddress
 			val socketAddress = new InetSocketAddress(bindAddress, bindPort)
 			Executors.newSingleThreadExecutor(new CountingThreadFactory("front-server")).submit(new Runnable {
 				override def run(): Unit = {

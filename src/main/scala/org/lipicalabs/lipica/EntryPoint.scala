@@ -3,7 +3,7 @@ package org.lipicalabs.lipica
 import java.net.InetSocketAddress
 import java.nio.file.Paths
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.rest.RestApiServer
 import org.slf4j.LoggerFactory
@@ -18,7 +18,7 @@ object EntryPoint {
 
 	def main(args: Array[String]): Unit = {
 		val configFilePath = args(0).trim
-		SystemProperties.loadFromFile(Paths.get(configFilePath))
+		NodeProperties.loadFromFile(Paths.get(configFilePath))
 
 		val lipica = Lipica.create
 
@@ -32,7 +32,7 @@ object EntryPoint {
 
 		//lipica.startPeerDiscovery()
 
-		val config = SystemProperties.CONFIG
+		val config = NodeProperties.CONFIG
 		if (config.restApiEnabled) {
 			val webBindAddress = new InetSocketAddress(config.restApiBindAddress, config.restApiBindPort)
 			RestApiServer.startup(webBindAddress)

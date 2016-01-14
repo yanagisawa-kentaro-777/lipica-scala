@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.trie
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.db.datasource.KeyValueDataSource
+import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**

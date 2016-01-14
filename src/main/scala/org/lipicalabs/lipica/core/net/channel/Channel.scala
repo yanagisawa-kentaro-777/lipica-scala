@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference
 import io.netty.channel.{ChannelHandlerContext, ChannelPipeline}
 import io.netty.handler.timeout.ReadTimeoutHandler
 import org.lipicalabs.lipica.core.kernel.TransactionLike
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
@@ -72,7 +72,7 @@ class Channel {
 	def isDiscoveryMode: Boolean = this._discoveryMode
 
 	def init(pipeline: ChannelPipeline, remoteNodeId: ImmutableBytes, aDiscoveryMode: Boolean): Unit = {
-		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(SystemProperties.CONFIG.readTimeoutMillis, TimeUnit.MILLISECONDS))
+		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(NodeProperties.CONFIG.readTimeoutMillis, TimeUnit.MILLISECONDS))
 		pipeline.addLast("initiator", messageCodec.initiator)
 		pipeline.addLast("messageCodec", messageCodec)
 
@@ -88,7 +88,7 @@ class Channel {
 		this.messageCodec.setP2PMessageFactory(new P2PMessageFactory)
 
 		this.shhHandler.messageQueue = this.messageQueue
-		this.shhHandler.privateKey = SystemProperties.CONFIG.privateKey
+		this.shhHandler.privateKey = NodeProperties.CONFIG.privateKey
 		this.messageCodec.setShhMessageFactory(new ShhMessageFactory)
 
 		this.bzzHandler.messageQueue = this.messageQueue

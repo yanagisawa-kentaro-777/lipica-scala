@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
 import org.lipicalabs.lipica.core.kernel.{Blockchain, BlockWrapper}
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.{ChannelManager, Channel}
@@ -68,7 +68,7 @@ class SyncManager {
 		val task = new Runnable {
 			override def run(): Unit = {
 				queue.init()
-				if (!SystemProperties.CONFIG.isSyncEnabled) {
+				if (!NodeProperties.CONFIG.isSyncEnabled) {
 					logger.info("<SyncManager> SyncManager: OFF.")
 					return
 				}
@@ -94,7 +94,7 @@ class SyncManager {
 						}
 					}, WorkerTimeout, WorkerTimeout, TimeUnit.MILLISECONDS
 				)
-				SystemProperties.CONFIG.activePeers.foreach(each => pool.connect(each))
+				NodeProperties.CONFIG.activePeers.foreach(each => pool.connect(each))
 				if (logger.isInfoEnabled) {
 					startLogWorker()
 				}
@@ -104,7 +104,7 @@ class SyncManager {
 	}
 
 	def addPeer(peer: Channel): Unit = {
-		if (!SystemProperties.CONFIG.isSyncEnabled) {
+		if (!NodeProperties.CONFIG.isSyncEnabled) {
 			return
 		}
 		if (logger.isTraceEnabled) {
@@ -336,7 +336,7 @@ class SyncManager {
 	}
 
 	private def fillUpPeersPool(): Unit = {
-		val lackSize = SystemProperties.CONFIG.syncPeersCount - this.pool.activeCount
+		val lackSize = NodeProperties.CONFIG.syncPeersCount - this.pool.activeCount
 		if (lackSize <= 0) {
 			return
 		}

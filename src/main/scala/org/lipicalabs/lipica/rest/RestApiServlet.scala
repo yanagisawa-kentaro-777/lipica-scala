@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.rest
 
 import java.text.SimpleDateFormat
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.scalatra.ScalatraServlet
 import org.scalatra._
@@ -39,9 +39,9 @@ class RestApiServlet extends ScalatraServlet {
 				"Active Peers:%,d\n%s\n\n" + "Banned Peers:%,d\n%s\n\n" + "Pending Peers:%,d\n\n" +
 				"NumNodeHandlers:%,d\nNumNodesInTable:%,d\n\n" +
 				"Threads: %,d\n\n").format(
-			SystemProperties.CONFIG.nodeId,
-			SystemProperties.CONFIG.externalAddress,
-			SystemProperties.CONFIG.bindAddress,
+			NodeProperties.CONFIG.nodeId,
+			NodeProperties.CONFIG.externalAddress,
+			NodeProperties.CONFIG.bindAddress,
 			startedTime,
 
 			bestBlock.blockNumber, bestBlock.hash.toShortString,

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.trace
 
-import org.lipicalabs.lipica.core.config.SystemProperties
+import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.kernel.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
@@ -38,12 +38,12 @@ class ProgramTrace(private val programContext: ProgramContext) {
 	private var storageSize: Int = 0
 	private var contractAddress: String = null
 
-	if (SystemProperties.CONFIG.vmTrace && (programContext ne null)) {
+	if (NodeProperties.CONFIG.vmTrace && (programContext ne null)) {
 		this.contractAddress = programContext.getOwnerAddress.last20Bytes.toHexString
 		getContractDetails(programContext) match {
 			case Some(contractDetails) =>
 				this.storageSize = contractDetails.storageSize
-				if (this.storageSize <= SystemProperties.CONFIG.vmTraceInitStorageLimit) {
+				if (this.storageSize <= NodeProperties.CONFIG.vmTraceInitStorageLimit) {
 					this.fullStorage = true
 					val address = programContext.getOwnerAddress.last20Bytes.toHexString
 					contractDetails.storageContent.foreach { entry => {
