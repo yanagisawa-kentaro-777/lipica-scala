@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-class Program(private val ops: ImmutableBytes, private val invoke: ProgramContext, private val transaction: TransactionLike) {
+class Program(private val ops: ImmutableBytes, private val context: ProgramContext, private val transaction: TransactionLike) {
 
-	def this(_ops: ImmutableBytes, _invoke: ProgramContext) = this(_ops, _invoke, null)
+	def this(_ops: ImmutableBytes, _context: ProgramContext) = this(_ops, _context, null)
 
 	import Program._
 
@@ -31,12 +31,12 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 
 	private val memory = setupProgramListener(new Memory)
 	val stack = setupProgramListener(new Stack)
-	val storage = setupProgramListener(Storage(invoke))
+	val storage = setupProgramListener(Storage(context))
 
 	val result = new ProgramResult
-	val trace = new ProgramTrace(invoke)
+	val trace = new ProgramTrace(context)
 
-	private val programInvokeFactory: ProgramContextFactory = new ProgramContextFactoryImpl
+	private val programContextFactory: ProgramContextFactory = new ProgramContextFactoryImpl
 
 	/**
 	 * JUMPDEST命令がある箇所の索引。
@@ -58,7 +58,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 		traceListenerAware
 	}
 
-	def getCallDepth: Int = this.invoke.getCallDepth
+	def getCallDepth: Int = this.context.getCallDepth
 
 	private def addInternalTx(nonce: ImmutableBytes, manaLimit: DataWord, senderAddress: ImmutableBytes, receiveAddress: ImmutableBytes, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
 		if (this.transaction ne null) {
@@ -262,12 +262,12 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 		val newBalance = Payment.transfer(track, senderAddress, newAddress, endowment, Payment.ContractCreationTx)
 		//実行する。
 		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
-		val programInvoke: ProgramContext = this.programInvokeFactory.createProgramInvoke(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.invoke.blockStore)
+		val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.context.blockStore)
 
 		val programResult =
 			if (programCode.nonEmpty) {
 				val vm = new VM
-				val program = new Program(programCode, programInvoke, internalTx)
+				val program = new Program(programCode, programContext, internalTx)
 				vm.play(program)
 				val localResult = program.result
 				this.result.addInternalTransactions(result.internalTransactions)
@@ -292,7 +292,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 		//コントラクトを保存する。
 		val contractCode = programResult.hReturn
 		val storageCost = contractCode.length * ManaCost.CreateData
-		val afterSpend = programInvoke.getMana.longValue - storageCost - programResult.manaUsed
+		val afterSpend = programContext.getMana.longValue - storageCost - programResult.manaUsed
 		if (afterSpend < 0L) {
 			//残金不足。
 			track.saveCode(newAddress, ImmutableBytes.empty)
@@ -367,10 +367,10 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 
 		val programResultOption =
 			if (programCode.nonEmpty) {
-				val programInvoke: ProgramContext = this.programInvokeFactory.createProgramInvoke(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.invoke.blockStore)
+				val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.context.blockStore)
 
 				val vm = new VM
-				val program = new Program(programCode, programInvoke, internalTx)
+				val program = new Program(programCode, programContext, internalTx)
 				vm.play(program)
 				val localResult = program.result
 
@@ -473,7 +473,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 
 	def spendMana(manaValue: Long, cause: String): Unit = {
 		if (manaLogger.isInfoEnabled) {
-			manaLogger.info("[%s] Spent for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+			manaLogger.info("[%s] Spent for cause: [%s], mana: [%,d]".format(context.hashCode, cause, manaValue))
 		}
 		if ((getMana.longValue - manaValue) < 0) {
 			throw Exception.notEnoughSpendingMana(cause, manaValue, this)
@@ -485,7 +485,7 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 	}
 	def refundMana(manaValue: Long, cause: String): Unit = {
 		if (manaLogger.isInfoEnabled) {
-			manaLogger.info("[%s] Refund for cause: [%s], mana: [%,d]".format(invoke.hashCode, cause, manaValue))
+			manaLogger.info("[%s] Refund for cause: [%s], mana: [%,d]".format(context.hashCode, cause, manaValue))
 		}
 		this.result.refundMana(manaValue)
 	}
@@ -503,15 +503,15 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 	 * あるアドレスに結び付けられたコードをロードして返します。
 	 */
 	def getCodeAt(address: DataWord): Option[ImmutableBytes] = {
-		this.invoke.getRepository.getCode(address.last20Bytes)
+		this.context.getRepository.getCode(address.last20Bytes)
 	}
 
-	def getOwnerAddress: DataWord = this.invoke.getOwnerAddress
+	def getOwnerAddress: DataWord = this.context.getOwnerAddress
 
 	def getBlockHash(index: Int): DataWord = {
 		if ((index < this.getBlockNumber.longValue) && (256.max(this.getBlockNumber.intValue) - 256 <= index)) {
 			//最近256ブロック内である。
-			this.invoke.blockStore.getBlockHashByNumber(index, getParentHash.data).map(DataWord(_)).getOrElse(DataWord.Zero)
+			this.context.blockStore.getBlockHashByNumber(index, getParentHash.data).map(DataWord(_)).getOrElse(DataWord.Zero)
 		} else {
 			//古すぎるか未知。
 			DataWord.Zero
@@ -523,23 +523,23 @@ class Program(private val ops: ImmutableBytes, private val invoke: ProgramContex
 		DataWord(ImmutableBytes.asSignedByteArray(balance))
 	}
 
-	def getOriginAddress = this.invoke.getOriginAddress
-	def getCallerAddress = this.invoke.getCallerAddress
-	def getManaPrice = this.invoke.getMinManaPrice
+	def getOriginAddress = this.context.getOriginAddress
+	def getCallerAddress = this.context.getCallerAddress
+	def getManaPrice = this.context.getMinManaPrice
 	def getMana = {
-		val remaining = invoke.getMana.longValue - this.result.manaUsed
+		val remaining = context.getMana.longValue - this.result.manaUsed
 		DataWord(remaining)
 	}
-	def getCallValue = this.invoke.getCallValue
-	def getDataSize = this.invoke.getDataSize
-	def getDataValue(index: DataWord) = this.invoke.getDataValue(index)
-	def getDataCopy(offset: DataWord, length: DataWord): ImmutableBytes = this.invoke.getDataCopy(offset, length)
-	def getParentHash = this.invoke.getParentHash
-	def getCoinbase = this.invoke.getCoinbase
-	def getTimestamp = this.invoke.getTimestamp
-	def getBlockNumber = this.invoke.getBlockNumber
-	def getDifficulty = this.invoke.getDifficulty
-	def getBlockManaLimit = this.invoke.getBlockManaLimit
+	def getCallValue = this.context.getCallValue
+	def getDataSize = this.context.getDataSize
+	def getDataValue(index: DataWord) = this.context.getDataValue(index)
+	def getDataCopy(offset: DataWord, length: DataWord): ImmutableBytes = this.context.getDataCopy(offset, length)
+	def getParentHash = this.context.getParentHash
+	def getCoinbase = this.context.getCoinbase
+	def getTimestamp = this.context.getTimestamp
+	def getBlockNumber = this.context.getBlockNumber
+	def getDifficulty = this.context.getDifficulty
+	def getBlockManaLimit = this.context.getBlockManaLimit
 
 	def setRuntimeFailure(e: RuntimeException): Unit = {
 		this.result.exception = e
@@ -668,7 +668,7 @@ object Program {
 		}
 
 		def notEnoughSpendingMana(cause: String, manaValue: Long, program: Program): OutOfManaException = {
-			new OutOfManaException("Not enough mana for '%s' cause spending: invokeMana[%d], mana[%d], usedMana[%d];".format(cause, program.invoke.getMana.longValue, manaValue, program.result.manaUsed))
+			new OutOfManaException("Not enough mana for '%s' cause spending: invokeMana[%d], mana[%d], usedMana[%d];".format(cause, program.context.getMana.longValue, manaValue, program.result.manaUsed))
 		}
 
 		def notEnoughOpMana(op: OpCode, opMana: BigInt, programMana: BigInt): OutOfManaException = {

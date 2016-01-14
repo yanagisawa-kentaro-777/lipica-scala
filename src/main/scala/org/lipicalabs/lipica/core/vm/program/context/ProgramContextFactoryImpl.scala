@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program.context
 
+import java.util.concurrent.atomic.AtomicReference
+
 import org.lipicalabs.lipica.core.kernel.{Blockchain, Block, TransactionLike}
 import org.lipicalabs.lipica.core.db.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
@@ -16,14 +18,12 @@ class ProgramContextFactoryImpl extends ProgramContextFactory {
 
 	import ProgramContextFactoryImpl._
 
-	private var _blockchain: Blockchain = null
-	def blockchain: Blockchain = this._blockchain
-	def blockchain_=(v: Blockchain): Unit = {
-		this._blockchain = v
-	}
+	private val blockchainRef: AtomicReference[Blockchain] = new AtomicReference[Blockchain](null)
+	def blockchain: Blockchain = this.blockchainRef.get
+	def blockchain_=(v: Blockchain): Unit = this.blockchainRef.set(v)
 
-	override def createProgramInvoke(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore) = {
-		val lastBlock = this._blockchain.bestBlock
+	override def createProgramContext(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore) = {
+		val lastBlock = this.blockchain.bestBlock
 
 		//受信者もしくはコントラクトのアドレス。
 		val address = if (tx.isContractCreation) tx.contractAddress.get else tx.receiverAddress
@@ -48,7 +48,7 @@ class ProgramContextFactoryImpl extends ProgramContextFactory {
 		result
 	}
 
-	override def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore) = {
+	override def createProgramContext(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore) = {
 		val address = toAddress
 		val origin = program.getOriginAddress
 		val caller = program.getOwnerAddress

@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
  */
 class TransactionExecutor(
 	private val tx: TransactionLike, private val coinbase: ImmutableBytes, private val track: RepositoryLike,
-	private val blockStore: BlockStore, private val programInvokeFactory: ProgramContextFactory,
+	private val blockStore: BlockStore, private val programContextFactory: ProgramContextFactory,
 	private val currentBlock: Block, private val listener: LipicaListener, private val manaUsedInTheBlock: Long
 ) {
 	import TransactionExecutor._
@@ -98,9 +98,9 @@ class TransactionExecutor(
 			this.endMana = this.tx.manaLimit.toPositiveBigInt.longValue() - this.basicTxCost
 			this.cacheTrack.createAccount(newContractAddress)
 		} else {
-			val invoke = this.programInvokeFactory.createProgramInvoke(tx, currentBlock, cacheTrack, blockStore)
+			val context = this.programContextFactory.createProgramContext(tx, currentBlock, cacheTrack, blockStore)
 			this.vm = new VM
-			this.program = new Program(this.tx.data, invoke, this.tx)
+			this.program = new Program(this.tx.data, context, this.tx)
 
 			this.program.storage.getContractDetails(newContractAddress).foreach {
 				contractDetails => {
@@ -143,9 +143,9 @@ class TransactionExecutor(
 						if (logger.isDebugEnabled) {
 							logger.debug("<TxExecutor> Contract loaded: [%s]=[%,d bytes]".format(targetAddress, code.length))
 						}
-						val invoke = this.programInvokeFactory.createProgramInvoke(this.tx, this.currentBlock, this.cacheTrack, this.blockStore)
+						val context = this.programContextFactory.createProgramContext(this.tx, this.currentBlock, this.cacheTrack, this.blockStore)
 						this.vm = new VM
-						this.program = new Program(code, invoke, this.tx)
+						this.program = new Program(code, context, this.tx)
 					case None =>
 						if (logger.isTraceEnabled) {
 							logger.trace("<TxExecutor> Normal tx.")

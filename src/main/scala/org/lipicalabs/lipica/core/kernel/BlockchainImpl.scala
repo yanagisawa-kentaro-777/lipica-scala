@@ -66,9 +66,9 @@ class BlockchainImpl(
 	def repository: Repository = this.repositoryRef.get
 	def repository_=(v: Repository): Unit = this.repositoryRef.set(v)
 
-	private val programInvokeFactoryRef: AtomicReference[ProgramContextFactory] = new AtomicReference[ProgramContextFactory](null)
-	def programInvokeFactory: ProgramContextFactory = this.programInvokeFactoryRef.get
-	def programInvokeFactory_=(v: ProgramContextFactory): Unit = this.programInvokeFactoryRef.set(v)
+	private val programContextFactoryRef: AtomicReference[ProgramContextFactory] = new AtomicReference[ProgramContextFactory](null)
+	def programContextFactory: ProgramContextFactory = this.programContextFactoryRef.get
+	def programContextFactory_=(v: ProgramContextFactory): Unit = this.programContextFactoryRef.set(v)
 
 	private val exitOnRef: AtomicLong = new AtomicLong(Long.MaxValue)
 	override def exitOn: Long = this.exitOnRef.get
@@ -391,7 +391,7 @@ class BlockchainImpl(
 				logger.debug("<Blockchain> Executing %s".format(tx.summaryString))
 			}
 
-			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this.programInvokeFactory, block, this.listener, cumulativeManaUsed)
+			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this.programContextFactory, block, this.listener, cumulativeManaUsed)
 			executor.init()
 			executor.execute()
 			executor.go()

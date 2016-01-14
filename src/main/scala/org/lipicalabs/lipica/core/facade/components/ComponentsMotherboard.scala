@@ -64,7 +64,7 @@ class ComponentsMotherboard extends Closeable {
 
 	val udpListener: UDPListener = ComponentFactory.createUDPListener
 
-	val programInvokeFactory: ProgramContextFactory = ComponentFactory.createProgramInvokeFactory
+	val programContextFactory: ProgramContextFactory = ComponentFactory.createProgramContextFactory
 
 	val blockLoader: BlockLoader = new BlockLoader
 
@@ -87,8 +87,8 @@ class ComponentsMotherboard extends Closeable {
 
 
 	def init(): Unit = {
-		this.blockchain.asInstanceOf[BlockchainImpl].programInvokeFactory = this.programInvokeFactory
-		this.programInvokeFactory.asInstanceOf[ProgramContextFactoryImpl].blockchain = this.blockchain
+		this.blockchain.asInstanceOf[BlockchainImpl].programContextFactory = this.programContextFactory
+		this.programContextFactory.asInstanceOf[ProgramContextFactoryImpl].blockchain = this.blockchain
 
 		val coinbaseAddress = DigestUtils.digest256(SystemProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
 		this.wallet.importKey(ImmutableBytes(coinbaseAddress))

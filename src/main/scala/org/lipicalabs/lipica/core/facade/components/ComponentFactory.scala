@@ -101,7 +101,7 @@ object ComponentFactory {
 
 	def createUDPListener: UDPListener = new UDPListener
 
-	def createProgramInvokeFactory: ProgramContextFactory = new ProgramContextFactoryImpl
+	def createProgramContextFactory: ProgramContextFactory = new ProgramContextFactoryImpl
 
 	private def openKeyValueDataSource(name: String): KeyValueDataSource = {
 		val options = LevelDbDataSource.createDefaultOptions

@@ -15,7 +15,7 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/11/01 11:55
  * YANAGISAWA, Kentaro
  */
-class ProgramTrace(programInvoke: ProgramContext) {
+class ProgramTrace(private val programContext: ProgramContext) {
 
 	import ProgramTrace._
 
@@ -38,14 +38,14 @@ class ProgramTrace(programInvoke: ProgramContext) {
 	private var storageSize: Int = 0
 	private var contractAddress: String = null
 
-	if (SystemProperties.CONFIG.vmTrace && (programInvoke ne null)) {
-		this.contractAddress = programInvoke.getOwnerAddress.last20Bytes.toHexString
-		getContractDetails(programInvoke) match {
+	if (SystemProperties.CONFIG.vmTrace && (programContext ne null)) {
+		this.contractAddress = programContext.getOwnerAddress.last20Bytes.toHexString
+		getContractDetails(programContext) match {
 			case Some(contractDetails) =>
 				this.storageSize = contractDetails.storageSize
 				if (this.storageSize <= SystemProperties.CONFIG.vmTraceInitStorageLimit) {
 					this.fullStorage = true
-					val address = programInvoke.getOwnerAddress.last20Bytes.toHexString
+					val address = programContext.getOwnerAddress.last20Bytes.toHexString
 					contractDetails.storageContent.foreach { entry => {
 						val (key, value) = entry
 						if ((key eq null) || (value eq null)) {
@@ -90,11 +90,11 @@ class ProgramTrace(programInvoke: ProgramContext) {
 		this.ops ++= another.ops
 	}
 
-	private def getContractDetails(programInvoke: ProgramContext): Option[ContractDetails] = {
-		val repository = programInvoke.getRepository
+	private def getContractDetails(programContext: ProgramContext): Option[ContractDetails] = {
+		val repository = programContext.getRepository
 		//TODO repository が RepositoryTrack だったら、本体を引き寄せること。
 
-		val address = programInvoke.getOwnerAddress.last20Bytes
+		val address = programContext.getOwnerAddress.last20Bytes
 		repository.getContractDetails(address)
 	}
 

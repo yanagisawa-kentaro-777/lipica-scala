@@ -39,7 +39,7 @@ class BlockchainTest extends Specification {
 			track.commit()
 
 			val blockchain = new BlockchainImpl(blockStore, repos, new Wallet, new AdminInfo, listener, ComponentFactory.createBlockValidator, ComponentFactory.createBlockHeaderValidator, new ParentBlockHeaderValidator(Seq(new ParentNumberRule, new DifficultyRule)))
-			blockchain.programInvokeFactory = new ProgramContextFactoryImpl
+			blockchain.programContextFactory = new ProgramContextFactoryImpl
 
 			val uri = getClass.getResource("scenario1.dmp")
 			val lines = java.nio.file.Files.readAllLines(Paths.get(uri.toURI), StandardCharsets.UTF_8)

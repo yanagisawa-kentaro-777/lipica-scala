@@ -24,12 +24,14 @@
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
 ・context の属性名称を確認する。
+・SystemProperties -> NodeProperties
+・Valueを廃絶したい。
+
+・ProgramTrace に未実装箇所。
 
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
-
-・ProgramInvokeといった名前はやめた方が良い。
 
 ・スレッド類のgracefulな終了を実現する。
 ・永続化されたデータのプロセス引継ぎを実現する。

@@ -15,8 +15,8 @@ import org.lipicalabs.lipica.core.vm.program.Program
  */
 trait ProgramContextFactory {
 
-	def createProgramInvoke(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore): ProgramContext
+	def createProgramContext(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore): ProgramContext
 
-	def createProgramInvoke(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore): ProgramContext
+	def createProgramContext(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore): ProgramContext
 
 }

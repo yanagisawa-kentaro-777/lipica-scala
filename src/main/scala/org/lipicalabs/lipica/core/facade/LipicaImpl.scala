@@ -31,7 +31,7 @@ class LipicaImpl extends Lipica {
 	def adminInfo: AdminInfo = worldManager.adminInfo
 	def channelManager: ChannelManager = worldManager.channelManager
 	val peerServer: PeerServer = new PeerServer
-	def programInvokeFactory: ProgramContextFactory = worldManager.programInvokeFactory
+	def programContextFactory: ProgramContextFactory = worldManager.programContextFactory
 
 	private val manaPriceTracker = new ManaPriceTracker
 
@@ -92,7 +92,7 @@ class LipicaImpl extends Lipica {
 
 		val bestBlock = worldManager.blockchain.bestBlock
 		val executor = new org.lipicalabs.lipica.core.kernel.TransactionExecutor(
-			tx, bestBlock.coinbase, worldManager.repository, worldManager.blockStore, programInvokeFactory, bestBlock, new LipicaListenerAdaptor, 0
+			tx, bestBlock.coinbase, worldManager.repository, worldManager.blockStore, programContextFactory, bestBlock, new LipicaListenerAdaptor, 0
 		)
 		executor.localCall = true
 

@@ -103,7 +103,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 object Storage {
 
-	def apply(programInvoke: ProgramContext): Storage = {
-		new Storage(programInvoke.getOwnerAddress, programInvoke.getRepository)
+	def apply(context: ProgramContext): Storage = {
+		new Storage(context.getOwnerAddress, context.getRepository)
 	}
 }
