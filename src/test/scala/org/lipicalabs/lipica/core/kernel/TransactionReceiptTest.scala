@@ -22,10 +22,10 @@ class TransactionReceiptTest extends Specification {
 			val originalTx = Transaction.decode(ImmutableBytes.parseHexString("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3"))
 
 			val log = LogInfo(ImmutableBytes.create(20), Seq(DataWord.apply(7777)), ImmutableBytes.parseHexString("8888"))
-			val receipt = TransactionReceipt(ImmutableBytes.parseHexString("1112"), ImmutableBytes.asUnsignedByteArray(BigInt(998)), Seq(log))
+			val receipt = TransactionReceipt(Seq(log), ImmutableBytes.asUnsignedByteArray(BigInt(999)), ImmutableBytes.parseHexString("1111"))
 			receipt.transaction = originalTx
-			receipt.cumulativeMana = ImmutableBytes.asUnsignedByteArray(BigInt(999))
-			receipt.postTxState = ImmutableBytes.parseHexString("1111")
+			//receipt.cumulativeMana = ImmutableBytes.asUnsignedByteArray(BigInt(999))
+			//receipt.postTxState = ImmutableBytes.parseHexString("1111")
 			//receipt.setLogs(Seq(log))
 
 			val encoded = receipt.encode

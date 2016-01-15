@@ -14,6 +14,7 @@ import org.lipicalabs.lipica.core.validator.parent_rules.ParentBlockHeaderValida
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -284,20 +285,14 @@ class BlockchainImpl(
 		if (logger.isTraceEnabled) {
 			logger.trace("<Blockchain> Current coinbase balance: %,d".format(this.repository.getBalance(block.coinbase).getOrElse(UtilConsts.Zero)))
 		}
-
-		val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
-		if (block.receiptsRoot != calculatedReceiptsHash) {
-			ErrorLogger.logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
-			logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
-			//return ConsensusBreak
+		val receiptsOk = validateTxReceipts(block, receipts, filtered = false)
+		if (receiptsOk) {
+			track.commit()
+		} else {
+			//receiptが不可だった。
+			track.rollback()
+			return ConsensusBreak
 		}
-		val calculatedLogBloomHash = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
-		if (block.logsBloom != calculatedLogBloomHash) {
-			ErrorLogger.logger.warn("<Blockchain> LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
-			logger.warn("<Blockchain> LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
-			//return ConsensusBreak
-		}
-		track.commit()
 
 		//状態の整合性を検査する。
 		if (!NodeProperties.CONFIG.blockchainOnly) {
@@ -328,6 +323,37 @@ class BlockchainImpl(
 			logger.debug("<Blockchain> The block is successfully appended: %s. Chain size is now %,d.".format(block.summaryString(short = true), this.size))
 		}
 		ImportedBest
+	}
+
+	@tailrec
+	private def validateTxReceipts(block: Block, receipts: Seq[TransactionReceipt], filtered: Boolean): Boolean = {
+		val calculatedLogBloomHash = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
+		if (block.logsBloom != calculatedLogBloomHash) {
+			//Bloom Filterが合致しなかった。
+			if (!filtered) {
+				//外部のログを排除して、もう一度試行する。
+				ErrorLogger.logger.warn("<Blockchain> ORIGINAL LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
+				logger.warn("<Blockchain> ORIGINAL LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
+				validateTxReceipts(block, receipts.map(_.excludeAlienLogs), filtered = true)
+			} else {
+				//Bloom Filterが合わなければ、TransactionReceiptが合うことはない。よってこれ以上は試行する必要もない。
+				ErrorLogger.logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
+				logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedLogBloomHash, block.encode))
+				false
+			}
+		} else {
+			//Bloom Filterが合致した。
+			val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
+			if (block.receiptsRoot != calculatedReceiptsHash) {
+				//Receiptが合致しなかった。原因はBloomFilterでないわけだから、深刻な自体。。
+				ErrorLogger.logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
+				logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
+				false
+			} else {
+				//Receiptが合致した。
+				true
+			}
+		}
 	}
 
 	private def flushAndGc(): Unit = {
@@ -417,7 +443,7 @@ class BlockchainImpl(
 			}
 
 			val accumUsedManaBytes = ImmutableBytes.asUnsignedByteArray(BigInt(cumulativeManaUsed))
-			val receipt = TransactionReceipt(this.repository.rootHash, accumUsedManaBytes, executor.logs)
+			val receipt = TransactionReceipt(executor.logs, accumUsedManaBytes, this.repository.rootHash)
 			receipt.transaction = tx
 			receipt.manaUsedForTx = manaUsedForTx
 

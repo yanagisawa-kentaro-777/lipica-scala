@@ -6,9 +6,6 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.LogInfo
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
-
 /**
  * トランザクション実行後の情報の組み合わせクラスです。
  *
@@ -16,26 +13,15 @@ import scala.collection.mutable.ArrayBuffer
  * 2015/11/22 13:02
  * YANAGISAWA, Kentaro
  */
-class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomFilter) {
-
-	private val logsBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
+class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomFilter, val cumulativeMana: ImmutableBytes, val postTxState: ImmutableBytes) {
 
 	private val transactionRef: AtomicReference[TransactionLike] = new AtomicReference[TransactionLike](null)
 	def transaction: TransactionLike = this.transactionRef.get
 	def transaction_=(v: TransactionLike): Unit = this.transactionRef.set(v)
 
-	private val postTxStateRef: AtomicReference[ImmutableBytes] = new AtomicReference[ImmutableBytes](ImmutableBytes.empty)
-	def postTxState: ImmutableBytes = this.postTxStateRef.get
-	def postTxState_=(v: ImmutableBytes): Unit = this.postTxStateRef.set(v)
-
 	private val manaUsedForTxRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
 	def manaUsedForTx: BigInt = this.manaUsedForTxRef.get()
 	def manaUsedForTx_=(v: BigInt): Unit = this.manaUsedForTxRef.set(v)
-
-	private val cumulativeManaRef: AtomicReference[ImmutableBytes] = new AtomicReference[ImmutableBytes](ImmutableBytes.empty)
-	def cumulativeMana: ImmutableBytes = this.cumulativeManaRef.get
-	def cumulativeMana_=(v: ImmutableBytes): Unit = this.cumulativeManaRef.set(v)
-	//def setCumulativeMana(v: Long): Unit = this.cumulativeMana = ImmutableBytes.asUnsignedByteArray(BigInt(v))
 
 	def encode: ImmutableBytes = {
 		val encodedPostTxState = RBACCodec.Encoder.encode(this.postTxState)
@@ -46,9 +32,27 @@ class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomF
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedPostTxState, encodedCumulativeMana, encodedBloom, encodedLogInfoSeq))
 	}
 
+	/**
+	 * このトランザクションの実行者自身が出力したのでないログを
+	 * 排除した TransactionReceipt のインスタンスを生成して返します。
+	 *
+	 * Call や CallCode に伴うログ出力の扱いが不明であるため、それに対処するためのメソッドです。
+	 */
+	def excludeAlienLogs: TransactionReceipt = {
+		val tx = this.transaction
+		if (tx eq null) {
+			return this
+		}
+		val filteredLogs = this.logs.filter(each => each.address == tx.senderAddress)
+		val result = TransactionReceipt.apply(filteredLogs, this.cumulativeMana, this.postTxState)
+		result.transaction = tx
+		result.manaUsedForTx = this.manaUsedForTx
+		result
+	}
+
 	override def toString: String = {
-		"TxReceipt[PostTxState=%s, CumulativeMana=%s, BloomFilter=%s, LogsSize=%,d]".format(
-			this.postTxState.toHexString, this.cumulativeMana.toHexString, this.bloomFilter.toString, this.logsBuffer.size
+		"TxReceipt[Tx=%s, PostTxState=%s, CumulativeMana=%s, BloomFilter=%s, LogsSize=%,d]".format(
+			this.transaction.hash, this.postTxState.toHexString, this.cumulativeMana.toHexString, this.bloomFilter.toString, this.logs.size
 		)
 	}
 
@@ -56,11 +60,8 @@ class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomF
 
 object TransactionReceipt {
 
-	def apply(postTxState: ImmutableBytes, cumulativeMana: ImmutableBytes, logs: Seq[LogInfo]): TransactionReceipt = {
-		val result = new TransactionReceipt(logs, buildBloomFilter(logs))
-		result.postTxState = postTxState
-		result.cumulativeMana = cumulativeMana
-		result
+	def apply(logs: Seq[LogInfo], cumulativeMana: ImmutableBytes, postTxState: ImmutableBytes): TransactionReceipt = {
+		new TransactionReceipt(logs, buildBloomFilter(logs), cumulativeMana, postTxState)
 	}
 
 	def decode(encodedBytes: ImmutableBytes): TransactionReceipt = {
@@ -70,10 +71,7 @@ object TransactionReceipt {
 		val bloomFilterBytes = items(2).bytes
 		val logs = items(3).items.map(each => LogInfo.decode(each.items))
 
-		val result = new TransactionReceipt(logs.toBuffer, BloomFilter(bloomFilterBytes.toByteArray))
-		result.postTxState = postTxState
-		result.cumulativeMana = cumulativeMana
-		result
+		new TransactionReceipt(logs.toBuffer, BloomFilter(bloomFilterBytes.toByteArray), cumulativeMana, postTxState)
 	}
 
 	private def buildBloomFilter(logsSeq: Seq[LogInfo]): BloomFilter = {

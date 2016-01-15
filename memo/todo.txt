@@ -12,6 +12,8 @@
 24GByteでもあまる。次は20GByteぐらいで行こう。
 
 １、既存環境との完全同期
+・60万番台とか、かなり遅い。
+
 ・CallTransactionの変更に追随する。
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
 ・Active Peerについて考えなおす。
@@ -29,6 +31,8 @@
 ・ContractDetailsCacheImplとか、どうにかならないのか。
 
 ・ProgramTrace に未実装箇所。
+
+・Digest、Addressなどの型。
 
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
