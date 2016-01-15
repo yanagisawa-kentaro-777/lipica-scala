@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.utils.{DigestValue, UtilConsts}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.utils.UtilConsts
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable

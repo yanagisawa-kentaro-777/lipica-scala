@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.trie
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.utils._
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, EmptyDigest, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.slf4j.LoggerFactory
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec

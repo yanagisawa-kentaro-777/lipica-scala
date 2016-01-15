@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.datastore
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{ContractDetailsImpl, ContractDetails, Block, AccountState}
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable

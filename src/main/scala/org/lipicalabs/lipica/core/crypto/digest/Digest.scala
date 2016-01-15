@@ -1,4 +1,6 @@
-package org.lipicalabs.lipica.core.utils
+package org.lipicalabs.lipica.core.crypto.digest
+
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * ダイジェスト値を表す trait です。
@@ -55,6 +57,9 @@ object DigestValue {
 		}
 	}
 
+	/**
+	 * テスト用、デバッグ用のメソッドです。
+	 */
 	def apply(aBytes: ImmutableBytes): DigestValue = {
 		new DigestValue {
 			override val bytes = aBytes
@@ -73,19 +78,47 @@ object EmptyDigest extends DigestValue {
 class Digest256 private(override val bytes: ImmutableBytes) extends DigestValue
 
 object Digest256 {
+
+	private val NumberOfBytes = 32
+
 	def apply(bytes: ImmutableBytes): Digest256 = {
-		if (bytes.length != 32) {
+		if (bytes.length != NumberOfBytes) {
 			//256ビットでないものは受け入れない。
-			throw new IllegalArgumentException("%,d != %,d".format(bytes.length, 32))
+			throw new IllegalArgumentException("%,d != %,d".format(bytes.length, NumberOfBytes))
 		}
 		new Digest256(bytes)
 	}
 
 	def apply(bytes: Array[Byte]): Digest256 = {
-		if (bytes.length != 32) {
+		if (bytes.length != NumberOfBytes) {
 			//256ビットでないものは受け入れない。
-			throw new IllegalArgumentException("%,d != %,d".format(bytes.length, 32))
+			throw new IllegalArgumentException("%,d != %,d".format(bytes.length, NumberOfBytes))
 		}
 		new Digest256(ImmutableBytes(bytes))
+	}
+}
+
+/**
+ * 512ビットダイジェスト値を表すクラスです。
+ */
+class Digest512 private(override val bytes: ImmutableBytes) extends DigestValue
+
+object Digest512 {
+	private val NumberOfBytes = 64
+
+	def apply(bytes: ImmutableBytes): Digest512 = {
+		if (bytes.length != NumberOfBytes) {
+			//512ビットでないものは受け入れない。
+			throw new IllegalArgumentException("%,d != %,d".format(bytes.length, NumberOfBytes))
+		}
+		new Digest512(bytes)
+	}
+
+	def apply(bytes: Array[Byte]): Digest512 = {
+		if (bytes.length != NumberOfBytes) {
+			//512ビットでないものは受け入れない。
+			throw new IllegalArgumentException("%,d != %,d".format(bytes.length, NumberOfBytes))
+		}
+		new Digest512(ImmutableBytes(bytes))
 	}
 }

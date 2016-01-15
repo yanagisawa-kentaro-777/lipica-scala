@@ -1,8 +1,8 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.kernel.{Payment, TransactionLike}
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.{Digest256, UtilConsts, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestUtils}
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}

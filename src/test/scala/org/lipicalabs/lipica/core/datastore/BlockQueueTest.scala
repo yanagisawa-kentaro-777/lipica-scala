@@ -5,10 +5,11 @@ import java.nio.file.Paths
 import java.util.Random
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{BlockWrapper, Block, Genesis}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

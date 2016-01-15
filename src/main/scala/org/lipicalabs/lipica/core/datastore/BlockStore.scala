@@ -2,8 +2,9 @@ package org.lipicalabs.lipica.core.datastore
 
 import java.io.Closeable
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.Block
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * ブロックの保存および取得を行うための

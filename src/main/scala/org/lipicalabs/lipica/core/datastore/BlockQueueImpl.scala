@@ -5,10 +5,11 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.utils.{DigestValue, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 

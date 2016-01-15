@@ -1,8 +1,7 @@
 package org.lipicalabs.lipica.core.datastore
 
 import org.lipicalabs.lipica.core.kernel.Block
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue}
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue, DigestUtils}
 
 /**
  *

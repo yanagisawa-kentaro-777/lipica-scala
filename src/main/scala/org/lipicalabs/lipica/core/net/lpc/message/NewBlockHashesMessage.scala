@@ -1,8 +1,9 @@
 package org.lipicalabs.lipica.core.net.lpc.message
 
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Created by IntelliJ IDEA.

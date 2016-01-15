@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.vm.program.context
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, BlockStore}
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**

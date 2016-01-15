@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.kernel
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.{DataWord, LogInfo}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner

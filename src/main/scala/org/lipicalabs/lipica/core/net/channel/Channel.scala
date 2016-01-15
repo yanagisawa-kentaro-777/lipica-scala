@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import io.netty.channel.{ChannelHandlerContext, ChannelPipeline}
 import io.netty.handler.timeout.ReadTimeoutHandler
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
@@ -21,7 +22,7 @@ import org.lipicalabs.lipica.core.net.shh.{ShhHandler, ShhMessageFactory}
 import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzHandler, BzzMessageFactory}
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
 import org.lipicalabs.lipica.core.net.transport.{FrameCodec, MessageCodec}
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**

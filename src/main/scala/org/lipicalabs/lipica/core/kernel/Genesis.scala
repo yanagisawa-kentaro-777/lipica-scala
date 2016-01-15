@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.kernel
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.genesis.GenesisLoader
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Created by IntelliJ IDEA.

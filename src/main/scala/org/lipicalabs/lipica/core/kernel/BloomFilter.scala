@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.kernel
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 
 /**
  * バイト配列を利用してビットの並びを表現するデータ構造の実装です。

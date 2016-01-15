@@ -3,11 +3,11 @@ package org.lipicalabs.lipica.core.kernel
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.LoggerFactory
 

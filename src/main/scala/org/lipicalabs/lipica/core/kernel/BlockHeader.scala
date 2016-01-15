@@ -1,9 +1,9 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, EmptyDigest, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.{Digest256, EmptyDigest, DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
 import org.lipicalabs.lipica.core.validator.parent_rules.DifficultyRule
 
@@ -160,6 +160,7 @@ class BlockHeader {
 
 	/**
 	 * Powの中心アルゴリズム！
+	 * この値が PoW Boundary を下回っている必要があります。
 	 */
 	def calculateProofOfWorkValue: ImmutableBytes = {
 		//リトルエンディアンに変換する。
@@ -167,7 +168,7 @@ class BlockHeader {
 		val hashWithoutNonce = this.encode(withNonce = false).digest256
 		val seed = hashWithoutNonce.bytes ++ revertedNonce
 		val seedHash = seed.digest512
-		val concat = seedHash ++ this.mixHash.bytes
+		val concat = seedHash.bytes ++ this.mixHash.bytes
 
 		concat.digest256.bytes
 	}

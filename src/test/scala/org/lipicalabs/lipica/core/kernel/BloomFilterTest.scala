@@ -2,8 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.Digest256
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestUtils}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

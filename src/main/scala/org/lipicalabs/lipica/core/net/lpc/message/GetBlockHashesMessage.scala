@@ -1,9 +1,10 @@
 package org.lipicalabs.lipica.core.net.lpc.message
 
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.net.message.ParsedMessage
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * 指定するハッシュ値の直前N個のハッシュ値を送るよう要求するメッセージです。

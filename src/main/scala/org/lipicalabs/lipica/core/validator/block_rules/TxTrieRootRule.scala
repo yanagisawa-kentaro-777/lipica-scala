@@ -1,10 +1,10 @@
 package org.lipicalabs.lipica.core.validator.block_rules
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.kernel.{Block, TransactionLike}
 import org.lipicalabs.lipica.core.trie.TrieImpl
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Created by IntelliJ IDEA.

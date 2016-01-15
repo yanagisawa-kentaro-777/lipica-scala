@@ -2,8 +2,9 @@ package org.lipicalabs.lipica.core.datastore
 
 import java.io.Closeable
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Block, AccountState, ContractDetails}
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable

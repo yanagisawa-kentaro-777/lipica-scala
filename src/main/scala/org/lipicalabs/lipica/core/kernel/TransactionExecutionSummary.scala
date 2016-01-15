@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.utils.{DigestValue, UtilConsts}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.utils.UtilConsts
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.InternalTransaction
 

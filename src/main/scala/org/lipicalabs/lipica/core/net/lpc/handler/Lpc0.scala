@@ -1,10 +1,11 @@
 package org.lipicalabs.lipica.core.net.lpc.handler
 
 import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.net.lpc.V0
 import org.lipicalabs.lipica.core.net.lpc.message.{BlockHashesMessage, GetBlockHashesByNumberMessage}
 import org.lipicalabs.lipica.core.sync.SyncStateName.DoneHashRetrieving
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**

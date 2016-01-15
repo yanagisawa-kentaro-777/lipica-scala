@@ -3,7 +3,8 @@ package org.lipicalabs.lipica.core.kernel
 import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.LogInfo
 
 /**

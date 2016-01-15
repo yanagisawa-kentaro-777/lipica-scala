@@ -4,10 +4,10 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference, AtomicIntege
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.kernel._
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.{LoggerFactory, Logger}
 

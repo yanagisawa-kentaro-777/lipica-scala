@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.trie
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * 通常の Trie と SecureTrie とを組にして保持し各種操作を行うTrieの実装です。

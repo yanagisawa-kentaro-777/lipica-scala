@@ -5,7 +5,7 @@ import java.nio.charset.Charset
 import java.util.Random
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{Digest512, Digest256, DigestUtils}
 import org.spongycastle.util.Arrays
 
 /**
@@ -85,7 +85,8 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 	def reverse: ImmutableBytes = ImmutableBytes(Arrays.reverse(this.bytes))
 
 	def digest256: Digest256 = Digest256(new ImmutableBytes(DigestUtils.digest256(this.bytes)))
-	def digest512: ImmutableBytes = new ImmutableBytes(DigestUtils.digest512(this.bytes))
+	def digest512: Digest512 = Digest512(new ImmutableBytes(DigestUtils.digest512(this.bytes)))
+
 	def sha2_256: ImmutableBytes = new ImmutableBytes(DigestUtils.sha2_256(this.bytes))
 	def ripemd160(newLength: Int): ImmutableBytes = {
 		val newData = DigestUtils.ripemd160(this.bytes)

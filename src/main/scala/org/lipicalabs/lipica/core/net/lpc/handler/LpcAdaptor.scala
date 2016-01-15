@@ -1,9 +1,9 @@
 package org.lipicalabs.lipica.core.net.lpc.handler
 
+import org.lipicalabs.lipica.core.crypto.digest.{EmptyDigest, DigestValue}
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.net.lpc.V0
 import org.lipicalabs.lipica.core.sync.{SyncStateName, SyncStatistics}
-import org.lipicalabs.lipica.core.utils.{DigestValue, EmptyDigest}
 
 /**
  * Created by IntelliJ IDEA.

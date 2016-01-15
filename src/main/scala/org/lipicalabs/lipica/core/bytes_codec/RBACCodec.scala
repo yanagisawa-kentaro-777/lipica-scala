@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.bytes_codec
 import java.io.PrintStream
 import java.nio.charset.StandardCharsets
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.utils._
 
 import scala.annotation.tailrec

@@ -2,12 +2,13 @@ package org.lipicalabs.lipica.core.kernel
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.ImportResult.{ImportedBest, NoParent, InvalidBlock, ConsensusBreak}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.components.AdminInfo
-import org.lipicalabs.lipica.core.utils.{DigestValue, ErrorLogger, ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, BlockValidator, TxReceiptTrieRootCalculator, LogBloomFilterCalculator}
 import org.lipicalabs.lipica.core.validator.parent_rules.ParentBlockHeaderValidator

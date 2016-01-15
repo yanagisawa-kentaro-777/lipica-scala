@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.datastore
 
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * ブロックのダイジェスト値を永続化して記録するクラスが実装すべき trait です。

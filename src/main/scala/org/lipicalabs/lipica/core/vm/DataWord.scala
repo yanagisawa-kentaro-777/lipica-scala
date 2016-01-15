@@ -3,7 +3,8 @@ package org.lipicalabs.lipica.core.vm
 import java.nio.ByteBuffer
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.utils.{DigestValue, UtilConsts, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 
 /**
  * Lipica の VM における１ワードである

@@ -4,11 +4,12 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.crypto.digest.{EmptyDigest, DigestValue}
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
 import org.lipicalabs.lipica.core.datastore.{HashMapDBFactory, RepositoryImpl, IndexedBlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
 import org.lipicalabs.lipica.core.facade.components.{ComponentFactory, AdminInfo}
-import org.lipicalabs.lipica.core.utils.{DigestValue, EmptyDigest, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.parent_rules.{ParentNumberRule, ParentBlockHeaderValidator, DifficultyRule}
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactoryImpl
 import org.specs2.mutable.Specification

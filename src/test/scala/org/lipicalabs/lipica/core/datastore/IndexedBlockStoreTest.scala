@@ -4,9 +4,10 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Genesis, Block}
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

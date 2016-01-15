@@ -6,9 +6,10 @@ import java.util.concurrent.atomic.{AtomicLong, AtomicBoolean}
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
 import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}

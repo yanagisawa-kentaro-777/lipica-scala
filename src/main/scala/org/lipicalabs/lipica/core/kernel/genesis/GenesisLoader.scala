@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.kernel.genesis
 
 import com.google.common.io.ByteStreams
 import org.codehaus.jackson.map.ObjectMapper
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
 import org.lipicalabs.lipica.core.kernel.{Genesis, AccountState, BlockHeader}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.trie.SecureTrie

@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.net.lpc.handler
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Block, Blockchain, TransactionLike}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
@@ -9,7 +10,7 @@ import org.lipicalabs.lipica.core.net.lpc.message._
 import org.lipicalabs.lipica.core.sync._
 import org.lipicalabs.lipica.core.net.message.ReasonCode
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
-import org.lipicalabs.lipica.core.utils.{DigestValue, ErrorLogger, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}

@@ -1,8 +1,8 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 
 /**
  * あるアカウントの残高等の情報を表現するクラス。

@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.commons.codec.binary.Hex
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 
 import scala.annotation.tailrec
 

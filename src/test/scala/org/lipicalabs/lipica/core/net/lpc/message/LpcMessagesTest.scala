@@ -2,8 +2,9 @@ package org.lipicalabs.lipica.core.net.lpc.message
 
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

@@ -1,8 +1,9 @@
 package org.lipicalabs.lipica.core.vm.program
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**

@@ -3,9 +3,9 @@ package org.lipicalabs.lipica.core.datastore
 import java.util.Random
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 

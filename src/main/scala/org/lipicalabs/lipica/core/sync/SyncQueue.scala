@@ -3,12 +3,13 @@ package org.lipicalabs.lipica.core.sync
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
-import org.lipicalabs.lipica.core.utils.{DigestValue, ErrorLogger, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.slf4j.LoggerFactory
 

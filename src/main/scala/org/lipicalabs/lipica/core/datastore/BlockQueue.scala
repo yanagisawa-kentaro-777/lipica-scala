@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.datastore
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
-import org.lipicalabs.lipica.core.utils.DigestValue
 
 /**
  * Created by IntelliJ IDEA.

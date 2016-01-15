@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.trie
 
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, Value}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, Value}
 
 
 /**

@@ -5,10 +5,10 @@ import java.security.SignatureException
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.ManaCost
 import org.slf4j.LoggerFactory
 

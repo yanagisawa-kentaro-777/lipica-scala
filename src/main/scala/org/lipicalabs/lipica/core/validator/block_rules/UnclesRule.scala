@@ -1,7 +1,8 @@
 package org.lipicalabs.lipica.core.validator.block_rules
 
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Block, BlockHeader}
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * Ommer (=Uncle) に関する制限や仕様です。

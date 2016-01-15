@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.utils._
 import org.slf4j.LoggerFactory

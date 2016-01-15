@@ -1,8 +1,8 @@
 package org.lipicalabs.lipica.core.trie
 
-import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
  * 常にキーをSHA3ダイジェスト値に変換して
