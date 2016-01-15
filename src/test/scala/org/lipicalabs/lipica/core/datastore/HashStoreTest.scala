@@ -4,7 +4,7 @@ import java.util.Random
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
-import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
+import org.lipicalabs.lipica.core.datastore.datasource.InMemoryDataSource
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -37,7 +37,7 @@ class HashStoreTest extends Specification {
 		//this.testDBName = "./work/database/test_db_" + r
 		//SystemProperties.CONFIG.databaseDir = this.testDBName
 		NodeProperties.CONFIG.databaseReset = false
-		this.hashStore = new HashStoreImpl(new HashMapDB)
+		this.hashStore = new HashStoreImpl(new InMemoryDataSource)
 		this.hashStore.open()
 	}
 

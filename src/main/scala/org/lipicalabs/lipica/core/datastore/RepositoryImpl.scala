@@ -5,7 +5,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
-import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, HashMapDB, KeyValueDataSource}
+import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, InMemoryDataSource, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -21,7 +21,7 @@ import scala.collection.mutable
  */
 class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSource, private val dataSourceFactory: KeyValueDataSourceFactory) extends Repository {
 
-	protected def this(dataSourceFactory: KeyValueDataSourceFactory) = this(new HashMapDB, new HashMapDB, dataSourceFactory)
+	protected def this(dataSourceFactory: KeyValueDataSourceFactory) = this(new InMemoryDataSource, new InMemoryDataSource, dataSourceFactory)
 
 	import RepositoryImpl._
 

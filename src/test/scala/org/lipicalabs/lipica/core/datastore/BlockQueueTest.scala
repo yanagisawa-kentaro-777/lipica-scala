@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{BlockWrapper, Block, Genesis}
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
+import org.lipicalabs.lipica.core.datastore.datasource.InMemoryDataSource
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -55,7 +55,7 @@ class BlockQueueTest extends Specification {
 //		SystemProperties.CONFIG.databaseDir = this.testDBName
 		NodeProperties.CONFIG.databaseReset = false
 
-		this.blockQueue = new BlockQueueImpl(new HashMapDB, new HashMapDB)
+		this.blockQueue = new BlockQueueImpl(new InMemoryDataSource, new InMemoryDataSource)
 		this.blockQueue.open()
 
 		val rnd = new Random

@@ -6,7 +6,7 @@ import java.nio.file.Paths
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Genesis, Block}
-import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
+import org.lipicalabs.lipica.core.datastore.datasource.InMemoryDataSource
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -56,7 +56,7 @@ class IndexedBlockStoreTest extends Specification {
 		"be right" in {
 			this.blocks.size mustEqual 8004
 
-			val blockStore = IndexedBlockStore.newInstance(new HashMapDB, new HashMapDB)
+			val blockStore = IndexedBlockStore.newInstance(new InMemoryDataSource, new InMemoryDataSource)
 			var cumulativeDifficulty = UtilConsts.Zero
 			for (each <- this.blocks) {
 				cumulativeDifficulty += each.cumulativeDifficulty

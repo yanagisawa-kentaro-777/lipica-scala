@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.datastore
 
-import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSource, HashMapDB, KeyValueDataSourceFactory}
+import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSource, InMemoryDataSource, KeyValueDataSourceFactory}
 
 import scala.collection.mutable
 
@@ -9,9 +9,9 @@ import scala.collection.mutable
  * 2016/01/13 16:19
  * YANAGISAWA, Kentaro
  */
-class HashMapDBFactory extends KeyValueDataSourceFactory {
+class InMemoryDataSourceFactory extends KeyValueDataSourceFactory {
 
-	private val map = new mutable.HashMap[String, HashMapDB]
+	private val map = new mutable.HashMap[String, InMemoryDataSource]
 
 	private def dataSourceName(givenName: String) = "%s/%s".format(this.categoryName, givenName)
 
@@ -22,7 +22,7 @@ class HashMapDBFactory extends KeyValueDataSourceFactory {
 		this.map.get(dsName) match {
 			case Some(db) => db
 			case None =>
-				val result = new HashMapDB
+				val result = new InMemoryDataSource
 				result.name = dsName
 				this.map.put(dsName, result)
 				result

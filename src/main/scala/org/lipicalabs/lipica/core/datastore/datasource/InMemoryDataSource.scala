@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
-class HashMapDB extends KeyValueDataSource {
+class InMemoryDataSource extends KeyValueDataSource {
 	import scala.collection.JavaConversions._
 
 	private[datasource] val storage = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, ImmutableBytes])

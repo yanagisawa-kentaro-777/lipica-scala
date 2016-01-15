@@ -19,7 +19,7 @@ object DataSourcePool {
 	}
 
 	def hashMapDB(name: String): KeyValueDataSource = {
-		getDataSourceFromPool(name, new HashMapDB).asInstanceOf[KeyValueDataSource]
+		getDataSourceFromPool(name, new InMemoryDataSource).asInstanceOf[KeyValueDataSource]
 	}
 
 	def closeDataSource(name: String): Unit = {
@@ -27,7 +27,7 @@ object DataSourcePool {
 			ds => {
 				ds.synchronized {
 					ds match {
-						case hashMapDB: HashMapDB => this.pool.put(name, hashMapDB)
+						case hashMapDB: InMemoryDataSource => this.pool.put(name, hashMapDB)
 						case _ => ds.close()
 					}
 				}

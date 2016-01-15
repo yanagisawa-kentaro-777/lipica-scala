@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.datastore
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.kernel.{Address160, Address, ContractDetails, ContractDetailsImpl}
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSource, HashMapDB}
+import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSource, InMemoryDataSource}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
@@ -22,13 +22,13 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new HashMapDB, new HashMapDBFactory)
+			val dds = new ContractDetailsStore(new InMemoryDataSource, new InMemoryDataSourceFactory)
 			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
 
-			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
+			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
 			contractDetails.put(DataWord(key), DataWord(value))
@@ -52,13 +52,13 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (2)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new HashMapDB, new HashMapDBFactory)
+			val dds = new ContractDetailsStore(new InMemoryDataSource, new InMemoryDataSourceFactory)
 			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
 
-			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
+			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
 			contractDetails.put(DataWord(key), DataWord(value))
@@ -83,13 +83,13 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (3)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new HashMapDB, new HashMapDBFactory)
+			val dds = new ContractDetailsStore(new InMemoryDataSource, new InMemoryDataSourceFactory)
 			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
 
-			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
+			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
 			contractDetails.put(DataWord(key), DataWord(value))
@@ -117,16 +117,16 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test external storage" should {
 		"be right" in {
-			val factory = new HashMapDBFactory
-			val dds = new ContractDetailsStore(new HashMapDB, factory)
+			val factory = new InMemoryDataSourceFactory
+			val dds = new ContractDetailsStore(new InMemoryDataSource, factory)
 
 			val addressWithExternalStorage = randomAddress
 			val addressWithInternalStorage = randomAddress
 
 			val limit = NodeProperties.CONFIG.detailsInMemoryStorageLimit
 
-			val externalStorage = factory.openDataSource(addressWithExternalStorage.toHexString).asInstanceOf[HashMapDB]
-			val internalStorage = new HashMapDB
+			val externalStorage = factory.openDataSource(addressWithExternalStorage.toHexString).asInstanceOf[InMemoryDataSource]
+			val internalStorage = new InMemoryDataSource
 
 			val detailsWithExternalStorage = randomContractDetails(512, limit + 1, externalStorage)
 			val detailsWithInternalStorage = randomContractDetails(512, limit - 1, internalStorage)
@@ -171,7 +171,7 @@ class ContractDetailsStoreTest extends Specification {
 	}
 
 	private def randomContractDetails(codeSize: Int, storageSize: Int, storageDataSource: KeyValueDataSource): ContractDetails = {
-		val result = new ContractDetailsImpl(new HashMapDBFactory)
+		val result = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 		result.code = randomBytes(codeSize)
 
 		result.externalStorageDataSource = storageDataSource

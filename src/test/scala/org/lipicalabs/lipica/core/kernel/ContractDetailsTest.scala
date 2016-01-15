@@ -4,8 +4,8 @@ import java.util.Random
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.datastore.HashMapDBFactory
-import org.lipicalabs.lipica.core.datastore.datasource.{HashMapDB, KeyValueDataSource}
+import org.lipicalabs.lipica.core.datastore.InMemoryDataSourceFactory
+import org.lipicalabs.lipica.core.datastore.datasource.{InMemoryDataSource, KeyValueDataSource}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
@@ -42,14 +42,14 @@ class ContractDetailsTest extends Specification {
 			val key_2 = ImmutableBytes.parseHexString("222222")
 			val val_2 = ImmutableBytes.parseHexString("bbbbbb")
 
-			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
+			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = Address160(ImmutableBytes.createRandom(new Random(), 20))
 			contractDetails.code = code
 			contractDetails.put(DataWord(key_1), DataWord(val_1))
 			contractDetails.put(DataWord(key_2), DataWord(val_2))
 
 			val encoded = contractDetails.encode
-			val decodedDetails = ContractDetailsImpl.decode(encoded, new HashMapDBFactory)
+			val decodedDetails = ContractDetailsImpl.decode(encoded, new InMemoryDataSourceFactory)
 
 			code.toHexString mustEqual decodedDetails.code.toHexString
 			val_1.toHexString mustEqual decodedDetails.get(DataWord(key_1)).get.getDataWithoutLeadingZeros.toHexString
@@ -104,7 +104,7 @@ class ContractDetailsTest extends Specification {
 			val key_13 = ImmutableBytes.parseHexString("ac33ff75c19e70fe83507db0d683fd3465c996598dc972688b7ace676c89077b")
 			val val_13 = ImmutableBytes.parseHexString("0000000000000000000000000c6686f3d6ee27e285f2de7b68e8db25cf1b1063")
 
-			val contractDetails = new ContractDetailsImpl(new HashMapDBFactory)
+			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.code = code
 			contractDetails.address = address
 			contractDetails.put(key_0, val_0)
@@ -123,7 +123,7 @@ class ContractDetailsTest extends Specification {
 			contractDetails.put(key_13, val_13)
 
 			val encodedBytes = contractDetails.encode
-			val decodedDetails = ContractDetailsImpl.decode(encodedBytes, new HashMapDBFactory)
+			val decodedDetails = ContractDetailsImpl.decode(encodedBytes, new InMemoryDataSourceFactory)
 
 			code.toHexString mustEqual decodedDetails.code.toHexString
 			address.toHexString mustEqual decodedDetails.address.toHexString
@@ -150,9 +150,9 @@ class ContractDetailsTest extends Specification {
 			val code = randomBytes(512)
 
 			val elements = new mutable.HashMap[DataWord, DataWord]
-			val externalStorage = new HashMapDB
+			val externalStorage = new InMemoryDataSource
 
-			val original = new ContractDetailsImpl(new HashMapDBFactory)
+			val original = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			original.externalStorageDataSource = externalStorage
 			original.address = address
 			original.code = code
@@ -168,7 +168,7 @@ class ContractDetailsTest extends Specification {
 			original.syncStorage()
 
 			val encodedBytes = original.encode
-			val decodedDetails = new ContractDetailsImpl(new HashMapDBFactory)
+			val decodedDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			decodedDetails.externalStorageDataSource = externalStorage
 			decodedDetails.decode(encodedBytes)
 
@@ -192,9 +192,9 @@ class ContractDetailsTest extends Specification {
 			val code = randomBytes(512)
 
 			val elements = new mutable.HashMap[DataWord, DataWord]
-			val externalStorage = new HashMapDB
+			val externalStorage = new InMemoryDataSource
 
-			val original = new ContractDetailsImpl(new HashMapDBFactory)
+			val original = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			original.externalStorageDataSource = externalStorage
 			original.address = address
 			original.code = code
@@ -241,7 +241,7 @@ class ContractDetailsTest extends Specification {
 	}
 
 	private def deserialize(encodedBytes: ImmutableBytes, externalStorage: KeyValueDataSource): ContractDetails = {
-		val result = new ContractDetailsImpl(new HashMapDBFactory)
+		val result = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 		result.externalStorageDataSource = externalStorage
 		result.decode(encodedBytes)
 		result

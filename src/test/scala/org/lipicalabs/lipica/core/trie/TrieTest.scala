@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
+import org.lipicalabs.lipica.core.datastore.datasource.InMemoryDataSource
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
@@ -22,7 +22,7 @@ import scala.collection.JavaConversions
 class TrieTest extends Specification {
 	sequential
 
-	val mockDb = new HashMapDB
+	val mockDb = new InMemoryDataSource
 
 	val LONG_STRING = "1234567890abcdefghijklmnopqrstuvwxxzABCEFGHIJKLMNOPQRSTUVWXYZ"
 	val EMPTY_ROOT_HASH = RBACCodec.Encoder.encode(ImmutableBytes.empty).digest256
@@ -321,7 +321,7 @@ class TrieTest extends Specification {
 			Hex.encodeHexString(trie.rootHash.toByteArray) mustEqual ROOT_HASH_BEFORE
 
 			val serialized = trie.serialize
-			val newTrie = new TrieImpl(new HashMapDB)
+			val newTrie = new TrieImpl(new InMemoryDataSource)
 			new String(newTrie.get("cat").toByteArray) mustEqual ""
 			new String(newTrie.get("ca").toByteArray) mustEqual ""
 			new String(newTrie.get("doge").toByteArray) mustEqual ""
@@ -427,7 +427,7 @@ class TrieTest extends Specification {
 
 	"values (4)" should {
 		"be right" in {
-			val trie = new TrieImpl(new HashMapDB)
+			val trie = new TrieImpl(new InMemoryDataSource)
 			trie.update("do", "verb")
 			trie.update("ether", "wookiedoo")
 			trie.update("horse", "stallion")
@@ -442,7 +442,7 @@ class TrieTest extends Specification {
 
 	"values (4-1)" should {
 		"be right" in {
-			val trie = new SecureTrie(new HashMapDB)
+			val trie = new SecureTrie(new InMemoryDataSource)
 			trie.update("do", "verb")
 			trie.update("ether", "wookiedoo")
 			trie.update("horse", "stallion")
@@ -504,7 +504,7 @@ class TrieTest extends Specification {
 
 	"sync" should {
 		"be right" in {
-			val mockDb = new HashMapDB
+			val mockDb = new InMemoryDataSource
 			val trie = new TrieImpl(mockDb)
 			trie.update("dog", LONG_STRING)
 			mockDb.getAddedItems mustEqual 0
@@ -516,7 +516,7 @@ class TrieTest extends Specification {
 
 	"dirty tracking" should {
 		"be right" in {
-			val mockDb = new HashMapDB
+			val mockDb = new InMemoryDataSource
 			val trie = new TrieImpl(mockDb)
 			trie.update("dog", LONG_STRING)
 			trie.dataStore.isDirty mustEqual true
@@ -534,7 +534,7 @@ class TrieTest extends Specification {
 
 	"reset" should {
 		"be right" in {
-			val mockDb = new HashMapDB
+			val mockDb = new InMemoryDataSource
 			val trie = new TrieImpl(mockDb)
 			trie.update("dog", LONG_STRING)
 			trie.dataStore.getNodes.size mustNotEqual 0
@@ -546,7 +546,7 @@ class TrieTest extends Specification {
 
 	"undo" should {
 		"be right" in {
-			val mockDb = new HashMapDB
+			val mockDb = new InMemoryDataSource
 			val trie = new TrieImpl(mockDb)
 			val dump0 = trie.dumpToString
 
@@ -571,7 +571,7 @@ class TrieTest extends Specification {
 
 	"copy" should {
 		"be right" in {
-			val mockDb = new HashMapDB
+			val mockDb = new InMemoryDataSource
 			val trie1 = new TrieImpl(mockDb)
 			trie1.update("doe", "reindeer")
 			val trie2 = trie1.copy
@@ -584,8 +584,8 @@ class TrieTest extends Specification {
 
 	"fat trie" should {
 		"be right" in {
-			val mockDb = new HashMapDB
-			val mockDb2 = new HashMapDB
+			val mockDb = new InMemoryDataSource
+			val mockDb2 = new InMemoryDataSource
 			val fatTrie = new FatTrie(mockDb, mockDb2)
 
 			val k1 = "do".getBytes
@@ -633,7 +633,7 @@ class TrieTest extends Specification {
 			val randomWords = randomDictionary.split(",").map(_.trim).toIndexedSeq
 			println("Random words = %,d".format(randomWords.size))
 			val testerMap = JavaConversions.mapAsScalaMap(new java.util.TreeMap[String, String])
-			val mockDb = new HashMapDB
+			val mockDb = new InMemoryDataSource
 			val trie = new TrieImpl(mockDb)
 
 			val seed = System.currentTimeMillis//1449322958431L//
