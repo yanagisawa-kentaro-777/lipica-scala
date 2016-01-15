@@ -1,6 +1,9 @@
 package org.lipicalabs.lipica.core.vm.trace
 
+import java.util.concurrent.atomic.AtomicReference
+
 import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.datastore.{RepositoryTrackLike, Repository}
 import org.lipicalabs.lipica.core.kernel.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
@@ -21,17 +24,13 @@ class ProgramTrace(private val programContext: ProgramContext) {
 
 	private val ops = new ArrayBuffer[Op]
 
-	private var _result: String = null
-	def result: String = _result
-	def result_=(value: String): Unit = {
-	  _result = value
-	}
+	private val resultRef: AtomicReference[String] = new AtomicReference[String](null)
+	def result: String = resultRef.get
+	def result_=(value: String): Unit = resultRef.set(value)
 
-	private var _error: String = null
-	def error: String = _error
-	def error_=(value: String): Unit = {
-	  _error = value
-	}
+	private val errorRef: AtomicReference[String] = new AtomicReference[String](null)
+	def error: String = errorRef.get
+	def error_=(value: String): Unit = errorRef.set(value)
 
 	private val initStorage: mutable.Map[String, String] = new mutable.HashMap[String, String]
 	private var fullStorage: Boolean = false
@@ -91,9 +90,10 @@ class ProgramTrace(private val programContext: ProgramContext) {
 	}
 
 	private def getContractDetails(programContext: ProgramContext): Option[ContractDetails] = {
-		val repository = programContext.getRepository
-		//TODO repository が RepositoryTrack だったら、本体を引き寄せること。
-
+		val repository = programContext.getRepository match {
+			case track: RepositoryTrackLike => track.originalRepository
+			case repos: Repository => repos
+		}
 		val address = programContext.getOwnerAddress.last20Bytes
 		repository.getContractDetails(address)
 	}

@@ -12,7 +12,7 @@
 24GByteでもあまる。次は20GByteぐらいで行こう。
 
 １、既存環境との完全同期
-・60万番台とか、かなり遅い。
+・60万番台とか、かなり遅い。そしてCPU使用が低調である。
 
 ・CallTransactionの変更に追随する。
 ・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
@@ -29,8 +29,6 @@
 ・Database -> DataStore として、DataSourceは表に出さないように役割分担をする。
 ・Valueを廃絶したい。
 ・ContractDetailsCacheImplとか、どうにかならないのか。
-
-・ProgramTrace に未実装箇所。
 
 ・Digest、Addressなどの型。
 
