@@ -19,28 +19,22 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSource, private val dataSourceFactory: KeyValueDataSourceFactory) extends Repository {
+class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSource, private val dataSourceFactory: KeyValueDataSourceFactory) extends Repository {
 
 	protected def this(dataSourceFactory: KeyValueDataSourceFactory) = this(new HashMapDB, new HashMapDB, dataSourceFactory)
 
 	import RepositoryImpl._
 
-	private val detailsDSRef = new AtomicReference[KeyValueDataSource](_detailsDS)
-	def detailsDS: KeyValueDataSource = this.detailsDSRef.get
+	private val contractDSRef = new AtomicReference[KeyValueDataSource](_contractDS)
+	def contractDS: KeyValueDataSource = this.contractDSRef.get
 
-	private val detailsDBRef = new AtomicReference[DatabaseImpl](new DatabaseImpl(detailsDS))
-	private def detailsDB: DatabaseImpl = this.detailsDBRef.get
-
-	private val ddsRef = new AtomicReference[ContractDetailsStore](new ContractDetailsStore(this.detailsDB, this.dataSourceFactory))
+	private val ddsRef = new AtomicReference[ContractDetailsStore](new ContractDetailsStore(this.contractDS, this.dataSourceFactory))
 	private def dds: ContractDetailsStore = this.ddsRef.get
 
 	private val stateDSRef = new AtomicReference[KeyValueDataSource](_stateDS)
 	private def stateDS: KeyValueDataSource = this.stateDSRef.get
 
-	private val stateDBRef = new AtomicReference[DatabaseImpl](new DatabaseImpl(stateDS))
-	private def stateDB: DatabaseImpl = this.stateDBRef.get
-
-	private val worldStateRef = new AtomicReference[SecureTrie](new SecureTrie(stateDB.dataSource))
+	private val worldStateRef = new AtomicReference[SecureTrie](new SecureTrie(stateDS))
 	private def worldState: SecureTrie = this.worldStateRef.get
 
 	private val isClosedRef: AtomicBoolean = new AtomicBoolean(false)
@@ -80,13 +74,9 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		withLock {
 			() => {
 				close()
-				this.detailsDS.init()
-				this.detailsDBRef.set(new DatabaseImpl(this.detailsDS))
-
+				this.contractDS.init()
 				this.stateDS.init()
-				this.stateDBRef.set(new DatabaseImpl(this.stateDS))
-
-				this.worldStateRef.set(new SecureTrie(this.stateDB.dataSource))
+				this.worldStateRef.set(new SecureTrie(this.stateDS))
 			}
 		}
 	}
@@ -95,8 +85,8 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		withLock {
 			() => {
 				if (!isClosed) {
-					this.detailsDB.close()
-					this.stateDB.close()
+					this.contractDS.close()
+					this.stateDS.close()
 					this.isClosedRef.set(true)
 				}
 			}
@@ -356,19 +346,13 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		trie.root = root
 		trie.dataStore = this.worldState.dataStore
 
-		val repo = new RepositoryImpl(this.dataSourceFactory)
-		repo.worldStateRef.set(trie)
-
-		repo.stateDBRef.set(this.stateDB)
-		repo.stateDSRef.set(this.stateDS)
-
-		repo.detailsDBRef.set(this.detailsDB)
-		repo.detailsDSRef.set(this.detailsDS)
-
-		repo.ddsRef.set(this.dds)
-		repo.isSnapshotRef.set(true)
-
-		repo
+		val result = new RepositoryImpl(this.dataSourceFactory)
+		result.worldStateRef.set(trie)
+		result.stateDSRef.set(this.stateDS)
+		result.contractDSRef.set(this.contractDS)
+		result.ddsRef.set(this.dds)
+		result.isSnapshotRef.set(true)
+		result
 	}
 
 	override def rootHash: DigestValue = this.worldState.rootHash

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.datastore
 
-import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSourceFactory
+import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSource, KeyValueDataSourceFactory}
 import org.lipicalabs.lipica.core.kernel.{Address160, Address, ContractDetailsImpl, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
@@ -12,7 +12,7 @@ import scala.collection.mutable
  * @since 2015/11/08
  * @author YANAGISAWA, Kentaro
  */
-class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceFactory: KeyValueDataSourceFactory) {
+class ContractDetailsStore(private val contractsDataSource: KeyValueDataSource, private val dataSourceFactory: KeyValueDataSourceFactory) {
 	import ContractDetailsStore._
 
 	//このインスタンス自体によってガードされている。
@@ -28,7 +28,7 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 					if (this.removes.contains(key)) {
 						return None
 					}
-					this.db.get(key.bytes) match {
+					this.contractsDataSource.get(key.bytes) match {
 						case Some(data) =>
 							val details = ContractDetailsImpl.decode(data, dataSourceFactory)
 							this.cache.put(key, details)
@@ -82,11 +82,11 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 			batch.put(key.bytes, value)
 			totalSize += value.length
 		}
-		db.updateBatch(batch.toMap)
+		contractsDataSource.updateBatch(batch.toMap)
 
 		//削除対象を削除する。
 		for (key <- removes) {
-			db.delete(key.bytes)
+			contractsDataSource.delete(key.bytes)
 		}
 
 		cache.clear()
@@ -97,7 +97,7 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 
 	def keys: Set[Address] = {
 		this.synchronized {
-			(this.cache.keySet ++ this.db.sortedKeys.map(each => Address160(each)).toSet).toSet
+			(this.cache.keySet ++ this.contractsDataSource.keys.toSeq.map(each => Address160(each)).toSet).toSet
 		}
 	}
 

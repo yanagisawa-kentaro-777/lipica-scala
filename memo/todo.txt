@@ -24,7 +24,6 @@
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
 ・context の属性名称を確認する。
-・Database -> DataStore として、DataSourceは表に出さないように役割分担をする。
 ・Valueを廃絶したい。
 ・ContractDetailsCacheImplとか、どうにかならないのか。
 

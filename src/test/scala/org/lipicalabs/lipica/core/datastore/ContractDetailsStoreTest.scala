@@ -16,14 +16,13 @@ import scala.util.Random
  * 2015/11/21
  * YANAGISAWA, Kentaro
  */
-
 @RunWith(classOf[JUnitRunner])
 class ContractDetailsStoreTest extends Specification {
 	sequential
 
 	"test (1)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
+			val dds = new ContractDetailsStore(new HashMapDB, new HashMapDBFactory)
 			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
@@ -53,7 +52,7 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (2)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
+			val dds = new ContractDetailsStore(new HashMapDB, new HashMapDBFactory)
 			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
@@ -84,7 +83,7 @@ class ContractDetailsStoreTest extends Specification {
 
 	"test (3)" should {
 		"be right" in {
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
+			val dds = new ContractDetailsStore(new HashMapDB, new HashMapDBFactory)
 			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
@@ -119,7 +118,7 @@ class ContractDetailsStoreTest extends Specification {
 	"test external storage" should {
 		"be right" in {
 			val factory = new HashMapDBFactory
-			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), factory)
+			val dds = new ContractDetailsStore(new HashMapDB, factory)
 
 			val addressWithExternalStorage = randomAddress
 			val addressWithInternalStorage = randomAddress
