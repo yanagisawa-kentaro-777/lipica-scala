@@ -196,5 +196,5 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 }
 
 object HashStoreImpl {
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("datastore")
 }

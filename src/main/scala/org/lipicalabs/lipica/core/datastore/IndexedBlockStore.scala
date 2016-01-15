@@ -298,7 +298,7 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 }
 
 object IndexedBlockStore {
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("datastore")
 
 	def newInstance(hashToBlockStore: KeyValueDataSource, numberToBlocksStore: KeyValueDataSource): IndexedBlockStore = new IndexedBlockStore(hashToBlockStore, numberToBlocksStore)
 

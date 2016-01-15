@@ -239,7 +239,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 
 object ContractDetailsImpl {
 
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("datastore")
 
 	def decode(bytes: ImmutableBytes, dataSourceFactory: KeyValueDataSourceFactory): ContractDetailsImpl = {
 		val result = new ContractDetailsImpl(dataSourceFactory)

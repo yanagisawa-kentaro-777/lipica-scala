@@ -148,7 +148,7 @@ class LevelDbDataSource(_name: String, private val options: Options) extends Key
 }
 
 object LevelDbDataSource {
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("datastore")
 
 	def createDefaultOptions: Options = {
 		val options = new Options

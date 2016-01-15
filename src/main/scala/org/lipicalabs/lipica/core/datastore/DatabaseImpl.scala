@@ -48,5 +48,5 @@ class DatabaseImpl(val dataSource: KeyValueDataSource) extends Database {
 }
 
 object DatabaseImpl {
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("datastore")
 }

@@ -262,7 +262,7 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 
 object BlockQueueImpl {
 
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("datastore")
 	private val ReadHitsCommitThreshold: Int = 1000
 
 	private val OneByteValue = ImmutableBytes.fromOneByte(0)

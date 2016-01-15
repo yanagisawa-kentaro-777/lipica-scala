@@ -128,7 +128,7 @@
 	<logger name="blocks_record" level="INFO" additivity="false">
 		<appender-ref ref="BLOCKS_RECORD"/>
 	</logger>
-	<logger name="database" level="DEBUG" additivity="false">
+	<logger name="datastore" level="DEBUG" additivity="false">
 		<appender-ref ref="DATASTORE_TRACE"/>
 	</logger>
 	<logger name="discovery" level="INFO" additivity="false">
@@ -148,6 +148,9 @@
 	</logger>
 	<logger name="net" level="INFO" additivity="false">
 		<appender-ref ref="NET_TRACE"/>
+	</logger>
+	<logger name="repository" level="INFO" additivity="false">
+		<appender-ref ref="DATASTORE_TRACE"/>
 	</logger>
 	<logger name="sync" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>

@@ -376,5 +376,5 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 }
 
 object RepositoryImpl {
-	private val logger: Logger = LoggerFactory.getLogger("database")
+	private val logger: Logger = LoggerFactory.getLogger("repository")
 }

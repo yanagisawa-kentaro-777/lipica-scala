@@ -227,5 +227,5 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 }
 
 object RepositoryTrack {
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("repository")
 }

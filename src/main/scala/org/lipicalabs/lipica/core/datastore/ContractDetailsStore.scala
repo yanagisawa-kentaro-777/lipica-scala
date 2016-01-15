@@ -104,5 +104,5 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 }
 
 object ContractDetailsStore {
-	private val logger = LoggerFactory.getLogger("database")
+	private val logger = LoggerFactory.getLogger("datastore")
 }
