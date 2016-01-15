@@ -23,7 +23,7 @@ class HashMapDBFactory extends KeyValueDataSourceFactory {
 			case Some(db) => db
 			case None =>
 				val result = new HashMapDB
-				result.setName(dsName)
+				result.name = dsName
 				this.map.put(dsName, result)
 				result
 		}

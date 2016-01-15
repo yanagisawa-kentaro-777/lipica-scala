@@ -19,9 +19,8 @@ class LevelDbDataSource(_name: String, private val options: Options) extends Key
 	import LevelDbDataSource._
 
 	private val nameRef: AtomicReference[String] = new AtomicReference[String](_name)
-	private def name = this.nameRef.get
-	override def setName(v: String): Unit = this.nameRef.set(v)
-	override def getName: String = this.nameRef.get
+	override def name_=(v: String): Unit = this.nameRef.set(v)
+	override def name: String = this.nameRef.get
 
 	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
 	private def db: DB = this.dbRef.get
@@ -92,9 +91,8 @@ class LevelDbDataSource(_name: String, private val options: Options) extends Key
 		}
 	}
 
-	override def put(key: ImmutableBytes, value: ImmutableBytes): Option[ImmutableBytes] = {
+	override def put(key: ImmutableBytes, value: ImmutableBytes): Unit = {
 		this.db.put(key.toByteArray, value.toByteArray)
-		Option(value)
 	}
 
 	override def delete(key: ImmutableBytes): Unit = {

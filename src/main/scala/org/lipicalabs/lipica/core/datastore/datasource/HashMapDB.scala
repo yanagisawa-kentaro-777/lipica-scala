@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.datastore.datasource
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
@@ -25,7 +25,7 @@ class HashMapDB extends KeyValueDataSource {
 		storage.get(arg0)
 	}
 
-	override def put(key: ImmutableBytes, value: ImmutableBytes): Option[ImmutableBytes] = {
+	override def put(key: ImmutableBytes, value: ImmutableBytes): Unit = {
 		storage.put(key, value)
 	}
 
@@ -39,16 +39,12 @@ class HashMapDB extends KeyValueDataSource {
 
 	override def isAlive: Boolean = true
 
-	override def setName(name: String): Unit = {
-		//
-	}
+	private val nameRef: AtomicReference[String] = new AtomicReference[String]("in-memory")
+	override def name: String = this.nameRef.get
+	override def name_=(v: String): Unit = this.nameRef.set(v)
 
 	override def deleteAll(): Unit = {
 		this.storage.clear()
-	}
-
-	override def getName: String = {
-		"in-memory"
 	}
 
 	override def keys: Set[ImmutableBytes] = {

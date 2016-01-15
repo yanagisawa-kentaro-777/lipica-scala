@@ -2,18 +2,19 @@ package org.lipicalabs.lipica.core.datastore.datasource
 
 import java.io.Closeable
 
+/**
+ * データの永続化を行う機構が実装すべき trait です。
+ */
 trait DataSource extends Closeable {
 
-	 def setName(value: String): Unit
+	def name: String
 
-	 def getName: String
+	def name_=(value: String): Unit
 
-	 def init(): Unit
+	def init(): Unit
 
-	 def isAlive: Boolean
+	def isAlive: Boolean
 
-	def deleteAll(): Unit
+	override def close(): Unit
 
-	 override def close(): Unit
-
- }
+}

@@ -36,7 +36,7 @@ object DataSourcePool {
 	}
 
 	private def getDataSourceFromPool(name: String, dataSource: DataSource): DataSource = {
-		dataSource.setName(name)
+		dataSource.name = name
 		val result =
 			this.pool.putIfAbsent(name, dataSource) match {
 				case Some(ds) => ds

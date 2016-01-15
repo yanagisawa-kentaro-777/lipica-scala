@@ -108,7 +108,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		this.nodes.clear()
 
 		val finish = System.nanoTime
-		logger.info("<Cache> Flushed '%s' in: %,d nanos, %d nodes, %02.2fMB".format(dataSource.getName, finish - start, batch.size, totalBytes.toDouble / 1048576))
+		logger.info("<Cache> Flushed '%s' in: %,d nanos, %d nodes, %02.2fMB".format(dataSource.name, finish - start, batch.size, totalBytes.toDouble / 1048576))
 	}
 
 	def undo(): Unit = {
