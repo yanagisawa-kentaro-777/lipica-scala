@@ -111,14 +111,7 @@ class TransactionExecutor(
 			}
 		}
 		val endowment = this.tx.value.toPositiveBigInt
-		if (endowment != UtilConsts.Zero) {
-			//支払う。
-			Payment.transfer(this.cacheTrack, this.tx.senderAddress, newContractAddress, endowment, Payment.ContractCreationTx)
-		} else {
-			if (logger.isDebugEnabled) {
-				logger.debug("<TxExecutor> Endowment is zero: %s -> %s".format(tx.senderAddress.toShortString, newContractAddress.toShortString))
-			}
-		}
+		Payment.transfer(this.cacheTrack, this.tx.senderAddress, newContractAddress, endowment, Payment.ContractCreationTx)
 	}
 
 	private def call(): Unit = {
@@ -162,14 +155,7 @@ class TransactionExecutor(
 		}
 
 		val endowment = this.tx.value.toPositiveBigInt
-		if (endowment != UtilConsts.Zero) {
-			//支払う。
-			Payment.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment, Payment.TxSettlement)
-		} else {
-			if (logger.isDebugEnabled) {
-				logger.debug("<TxExecutor> Endowment is zero: %s -> %s".format(tx.senderAddress.toShortString, targetAddress.toShortString))
-			}
-		}
+		Payment.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment, Payment.TxSettlement)
 	}
 
 	def go(): Unit = {
