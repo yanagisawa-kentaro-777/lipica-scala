@@ -19,7 +19,6 @@ class TransactionExecutionSummary private (
 	val manaRefund: BigInt,
 	val deletedAccounts: Iterable[DataWord],
 	val internalTransactions: Seq[InternalTransaction],
-	val storageDiff: Map[DataWord, DataWord],
 	val failed: Boolean
 ) {
 	private def calculateCost(mana: BigInt): BigInt = this.manaPrice * mana
@@ -70,12 +69,6 @@ object TransactionExecutionSummary {
 			this
 		}
 
-		private var storageDiff: Map[DataWord, DataWord] = Map.empty
-		def storageDiff(v: Map[DataWord, DataWord]): Builder = {
-			this.storageDiff = v
-			this
-		}
-
 		private var failed: Boolean = false
 		def markAsFailed: Builder = {
 			this.failed = true
@@ -93,7 +86,6 @@ object TransactionExecutionSummary {
 				manaRefund = this.manaRefund,
 				deletedAccounts = this.deletedAccounts,
 				internalTransactions = this.internalTransactions,
-				storageDiff = this.storageDiff,
 				failed = this.failed
 			)
 			if (result.failed) {

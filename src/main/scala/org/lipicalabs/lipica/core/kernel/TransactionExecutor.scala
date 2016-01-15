@@ -167,7 +167,7 @@ class TransactionExecutor(
 			Payment.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment, Payment.TxSettlement)
 		} else {
 			if (logger.isDebugEnabled) {
-				logger.debug("<TxExecutor> Endowment is zero: %s -> %s".format(tx.senderAddress.toShortString, newContractAddress.toShortString))
+				logger.debug("<TxExecutor> Endowment is zero: %s -> %s".format(tx.senderAddress.toShortString, targetAddress.toShortString))
 			}
 		}
 	}
@@ -235,8 +235,7 @@ class TransactionExecutor(
 
 			summaryBuilder.manaUsed(BigInt(this.result.manaUsed)).manaRefund(BigInt(manaRefund)).
 				deletedAccounts(this.result.deletedAccounts).
-				internalTransactions(this.result.internalTransactions).
-				storageDiff(this.track.getContractDetails(address).get.storageContent)
+				internalTransactions(this.result.internalTransactions)
 			if (this.result.exception ne null) {
 				summaryBuilder.markAsFailed
 			}
