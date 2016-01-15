@@ -69,7 +69,7 @@ object PrecompiledContracts {
 
 	object ECRecover extends PrecompiledContract {
 		override def manaForData(data: ImmutableBytes): Long = 3000
-		override def execute(data: ImmutableBytes):ImmutableBytes = {
+		override def execute(data: ImmutableBytes): ImmutableBytes = {
 			val h = new Array[Byte](32)
 			val v = new Array[Byte](32)
 			val r = new Array[Byte](32)
@@ -84,7 +84,7 @@ object PrecompiledContracts {
 				val signature = ECDSASignature.fromComponents(r, s, v(31))
 				val key = ECKey.signatureToKey(h, signature.toBase64)
 				val addr = key.getAddress
-				ImmutableBytes.expand(addr, 0, addr.length, DataWord.NUM_BYTES)
+				ImmutableBytes.expand(addr.toByteArray, 0, addr.length, DataWord.NUM_BYTES)
 			} catch {
 				case any: Throwable => ImmutableBytes.empty
 			}

@@ -5,8 +5,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.{Future, Executors}
 
 import org.lipicalabs.lipica.core.crypto.digest.Digest256
-import org.lipicalabs.lipica.core.kernel.CallTransaction
-import org.lipicalabs.lipica.core.kernel.{Transaction, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.{Address160, CallTransaction, Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
 import org.lipicalabs.lipica.core.facade.components.{AdminInfo, ComponentsMotherboard}
@@ -133,7 +132,7 @@ class LipicaImpl extends Lipica {
 		val manaBytes = ImmutableBytes.asUnsignedByteArray(mana)
 		val valueBytes = ImmutableBytes.asUnsignedByteArray(value)
 
-		Transaction(nonceBytes, manaPriceBytes, manaBytes, ImmutableBytes(receiveAddress), valueBytes, ImmutableBytes(data))
+		Transaction(nonceBytes, manaPriceBytes, manaBytes, Address160(receiveAddress), valueBytes, ImmutableBytes(data))
 	}
 
 	override def submitTransaction(tx: TransactionLike): Future[TransactionLike] = {

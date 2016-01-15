@@ -27,7 +27,7 @@ class Wallet {
 
 	private val walletTransactions = JavaConversions.mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, WalletTransaction])
 
-	private val rows = new mutable.HashMap[ImmutableBytes, Account]
+	private val rows = new mutable.HashMap[Address, Account]
 
 	private var high: Long = 0
 
@@ -38,7 +38,7 @@ class Wallet {
 	def addNewAccount(): Unit = {
 		val account = new Account
 		account.init()
-		val address = ImmutableBytes(account.ecKey.getAddress)
+		val address = account.ecKey.getAddress
 		this.rows.put(address, account)
 		notifyListeners()
 	}
@@ -46,7 +46,7 @@ class Wallet {
 	def importKey(privateKey: ImmutableBytes): Unit = {
 		val account = new Account
 		account.init(ECKey.fromPrivate(privateKey.toPositiveBigInt.bigInteger))
-		val address = ImmutableBytes(account.ecKey.getAddress)
+		val address = account.ecKey.getAddress
 		this.rows.put(address, account)
 		notifyListeners()
 	}

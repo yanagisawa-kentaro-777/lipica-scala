@@ -35,9 +35,9 @@ class BlockHeader {
 	 * このブロックのマイニング成功時に、すべての報酬が送られる先の
 	 * 160ビットアドレス。
 	 */
-	private var _coinbase: ImmutableBytes = ImmutableBytes.empty
-	def coinbase: ImmutableBytes = this._coinbase
-	def coinbase_=(v: ImmutableBytes): Unit = this._coinbase = v
+	private var _coinbase: Address = EmptyAddress
+	def coinbase: Address = this._coinbase
+	def coinbase_=(v: Address): Unit = this._coinbase = v
 
 	/**
 	 * すべてのトランザクションが実行された後の、
@@ -210,7 +210,7 @@ object BlockHeader {
 		val result = new BlockHeader
 		result.parentHash = Digest256(decodedResult.items.head.bytes)
 		result.unclesHash = Digest256(decodedResult.items(1).bytes)
-		result.coinbase = decodedResult.items(2).bytes
+		result.coinbase = Address160(decodedResult.items(2).bytes)
 		result.stateRoot = Digest256(decodedResult.items(3).bytes)
 		result.txTrieRoot = Digest256(decodedResult.items(4).bytes)
 		result.receiptTrieRoot = Digest256(decodedResult.items(5).bytes)

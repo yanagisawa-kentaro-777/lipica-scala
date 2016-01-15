@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.kernel.EmptyAddress
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.{LogInfo, DataWord}
 import org.specs2.mutable.Specification
@@ -42,8 +43,8 @@ class ProgramResultTest extends Specification {
 
 			result.addDeletedAccount(DataWord.Zero)
 			result.deletedAccounts.size mustEqual 1
-			result.addLog(new LogInfo(ImmutableBytes.empty, Seq.empty, ImmutableBytes.empty))
-			result.addLog(new LogInfo(ImmutableBytes.empty, Seq.empty, ImmutableBytes.empty))
+			result.addLog(new LogInfo(EmptyAddress, Seq.empty, ImmutableBytes.empty))
+			result.addLog(new LogInfo(EmptyAddress, Seq.empty, ImmutableBytes.empty))
 			result.logsAsSeq.size mustEqual 2
 
 			val result2 = ProgramResult.createEmpty

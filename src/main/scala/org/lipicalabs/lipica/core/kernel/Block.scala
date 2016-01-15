@@ -34,7 +34,7 @@ trait Block {
 	/**
 	 * このブロックの採掘に成功した場合の報酬が送られるアドレス。
 	 */
-	def coinbase: ImmutableBytes
+	def coinbase: Address
 
 	/**
 	 * このブロックに含まれるすべてのトランザクションの

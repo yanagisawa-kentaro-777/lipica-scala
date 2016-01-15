@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
 import org.lipicalabs.lipica.core.datastore.RepositoryLike
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -19,7 +18,7 @@ object Payment {
 	 * 支払い元から支払い先に資金を移動します。
 	 * @return 支払先の実行後残高。
 	 */
-	def transfer(repository: RepositoryLike, fromAddress: ImmutableBytes, toAddress: ImmutableBytes, value: BigInt, reason: Reason): BigInt = {
+	def transfer(repository: RepositoryLike, fromAddress: Address, toAddress: Address, value: BigInt, reason: Reason): BigInt = {
 		repository.addBalance(fromAddress, -value)
 		val result = repository.addBalance(toAddress, value)
 		if (logger.isDebugEnabled) {
@@ -31,7 +30,7 @@ object Payment {
 	/**
 	 * 支払い元なしに、通貨を生成して採掘者に支払います。
 	 */
-	def reward(repository: RepositoryLike, coinbase: ImmutableBytes, value: BigInt, reason: Reason): Unit = {
+	def reward(repository: RepositoryLike, coinbase: Address, value: BigInt, reason: Reason): Unit = {
 		repository.addBalance(coinbase, value)
 		if (logger.isDebugEnabled) {
 			logger.debug("<Payment> Rewarded %,d to %s (%s).".format(value, coinbase.toShortString, reason))
@@ -41,7 +40,7 @@ object Payment {
 	/**
 	 * トランザクション手数料の支払いに関連する資金移動を実行します。
 	 */
-	def txFee(repository: RepositoryLike, address: ImmutableBytes, value: BigInt, reason: Reason): Unit = {
+	def txFee(repository: RepositoryLike, address: Address, value: BigInt, reason: Reason): Unit = {
 		repository.addBalance(address, value)
 		if (logger.isDebugEnabled) {
 			logger.debug("<Payment> Tx fee %,d to %s (%s).".format(value, address.toShortString, reason))

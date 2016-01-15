@@ -105,38 +105,38 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 
 	override def isClosed: Boolean = this.isClosedRef.get
 
-	override def updateBatch(stateCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
+	override def updateBatch(stateCache: mutable.Map[Address, AccountState], detailsCache: mutable.Map[Address, ContractDetails]): Unit = {
 		if (logger.isDebugEnabled) {
 			logger.debug("<RepositoryImpl> Updating batch: accounts: %,d; contractDetails: %,d".format(stateCache.size, detailsCache.size))
 		}
 		for (eachEntry <- stateCache) {
-			val (hash, accountState) = eachEntry
-			var contractDetails = detailsCache.get(hash).get
+			val (address, accountState) = eachEntry
+			var contractDetails = detailsCache.get(address).get
 
 			if (accountState.isDeleted) {
-				delete(hash)
-				logger.debug("<RepositoryImpl> Deleted: [%s]".format(hash.toHexString))
+				delete(address)
+				logger.debug("<RepositoryImpl> Deleted: [%s]".format(address.toHexString))
 			} else if (contractDetails.isDirty) {
-				logger.debug("<RepositoryImpl> Updating: [%s]".format(hash.toHexString))
+				logger.debug("<RepositoryImpl> Updating: [%s]".format(address.toHexString))
 				val contractDetailsCache = contractDetails.asInstanceOf[ContractDetailsCacheImpl]
 				if (contractDetailsCache.originalContract eq null) {
 					contractDetailsCache.originalContract = new ContractDetailsImpl(this.dataSourceFactory)
-					contractDetailsCache.originalContract.address = hash
+					contractDetailsCache.originalContract.address = address
 					contractDetailsCache.commit()
 				}
 				contractDetails = contractDetailsCache.originalContract
-				updateContractDetails(hash, contractDetails)
+				updateContractDetails(address, contractDetails)
 				if (accountState.codeHash != DigestUtils.EmptyTrieHash) {
 					accountState.storageRoot = contractDetails.storageRoot
 				}
-				updateAccountState(hash, accountState)
+				updateAccountState(address, accountState)
 				if (logger.isDebugEnabled) {
 					logger.debug("<RepositoryImpl> Update: Key=%s, Nonce=%,d; Balance=%,d, StorageSize=%,d".format(
-						hash.toShortString, accountState.nonce, accountState.balance, contractDetails.storageSize
+						address.toShortString, accountState.nonce, accountState.balance, contractDetails.storageSize
 					))
 				}
 			} else {
-				logger.debug("<RepositoryImpl> Passing: [%s]".format(hash.toShortString))
+				logger.debug("<RepositoryImpl> Passing: [%s]".format(address.toShortString))
 			}
 		}
 		stateCache.clear()
@@ -190,7 +190,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		//TODO 未実装。
 	}
 
-	override def getAccountKeys: Set[ImmutableBytes] = {
+	override def getAccountKeys: Set[Address] = {
 		withAccessCounting {
 			() => {
 				this.dds.keys.filter(existsAccount)
@@ -198,15 +198,15 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		}
 	}
 
-	private def loadAccountStateOrCreateNew (address : ImmutableBytes): AccountState = {
+	private def loadAccountStateOrCreateNew (address : Address): AccountState = {
 		getAccountState(address).getOrElse(createAccount(address))
 	}
 
-	private def updateAccountState(address: ImmutableBytes, account: AccountState): Unit = {
+	private def updateAccountState(address: Address, account: AccountState): Unit = {
 		withAccessCounting {
 			() => {
 				val encoded = account.encode
-				this.worldState.update(address, encoded)
+				this.worldState.update(address.bytes, encoded)
 				if (logger.isTraceEnabled) {
 					logger.trace("<RepositoryImpl> Updated account %s -> %s".format(address, encoded))
 				}
@@ -214,26 +214,26 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		}
 	}
 
-	override def addBalance(address: ImmutableBytes, value: BigInt): BigInt = {
+	override def addBalance(address: Address, value: BigInt): BigInt = {
 		val account = loadAccountStateOrCreateNew(address)
 		val result = account.addToBalance(value)
 		updateAccountState(address, account)
 		result
 	}
 
-	override def getBalance(address: ImmutableBytes): Option[BigInt] = {
+	override def getBalance(address: Address): Option[BigInt] = {
 		getAccountState(address).map(_.balance)
 	}
 
-	override def getStorageValue(address: ImmutableBytes, key: DataWord): Option[DataWord] = {
+	override def getStorageValue(address: Address, key: DataWord): Option[DataWord] = {
 		getContractDetails(address).flatMap(_.get(key))
 	}
 
-	override def getStorageContent(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
+	override def getStorageContent(address: Address, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
 		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 
-	private def updateContractDetails(address: ImmutableBytes, details: ContractDetails): Unit = {
+	private def updateContractDetails(address: Address, details: ContractDetails): Unit = {
 		withAccessCounting {
 			() => {
 				this.dds.update(address, details)
@@ -241,7 +241,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		}
 	}
 
-	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord): Unit = {
+	override def addStorageRow(address: Address, key: DataWord, value: DataWord): Unit = {
 		val details = getContractDetails(address).getOrElse {
 			createAccount(address)
 			getContractDetails(address).get
@@ -250,7 +250,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		updateContractDetails(address, details)
 	}
 
-	override def getCode(address: ImmutableBytes): Option[ImmutableBytes] = {
+	override def getCode(address: Address): Option[ImmutableBytes] = {
 		getAccountState(address) match {
 			case Some(account) =>
 				val codeHash = account.codeHash
@@ -263,7 +263,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		}
 	}
 
-	override def saveCode(address: ImmutableBytes, code: ImmutableBytes): Unit = {
+	override def saveCode(address: Address, code: ImmutableBytes): Unit = {
 		val details = getContractDetails(address).getOrElse {
 			createAccount(address)
 			getContractDetails(address).get
@@ -276,31 +276,31 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		updateAccountState(address, account)
 	}
 
-	override def getNonce(address: ImmutableBytes): BigInt = loadAccountStateOrCreateNew(address).nonce
+	override def getNonce(address: Address): BigInt = loadAccountStateOrCreateNew(address).nonce
 
-	override def increaseNonce(address: ImmutableBytes): BigInt = {
+	override def increaseNonce(address: Address): BigInt = {
 		val account = loadAccountStateOrCreateNew(address)
 		account.incrementNonce()
 		updateAccountState(address, account)
 		account.nonce
 	}
 
-	def setNonce(address: ImmutableBytes, nonce: BigInt): BigInt = {
+	def setNonce(address: Address, nonce: BigInt): BigInt = {
 		val account = loadAccountStateOrCreateNew(address)
 		account.nonce = nonce
 		updateAccountState(address, account)
 		account.nonce
 	}
 
-	override def delete(address: ImmutableBytes): Unit = {
+	override def delete(address: Address): Unit = {
 		withAccessCounting {
 			() => {
-				this.worldState.delete(address)
+				this.worldState.delete(address.bytes)
 			}
 		}
 	}
 
-	override def getContractDetails(address: ImmutableBytes): Option[ContractDetails] = {
+	override def getContractDetails(address: Address): Option[ContractDetails] = {
 		withAccessCounting {
 			() => {
 				val storageRoot = getAccountState(address).map(_.storageRoot).getOrElse(DigestUtils.EmptyTrieHash)
@@ -316,10 +316,10 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		}
 	}
 
-	override def getAccountState(address: ImmutableBytes): Option[AccountState] = {
+	override def getAccountState(address: Address): Option[AccountState] = {
 		withAccessCounting {
 			() => {
-				val bytes = this.worldState.get(address)
+				val bytes = this.worldState.get(address.bytes)
 				if (bytes.nonEmpty) {
 					Some(AccountState.decode(bytes))
 				} else {
@@ -332,18 +332,18 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		}
 	}
 
-	override def createAccount(address: ImmutableBytes): AccountState = {
+	override def createAccount(address: Address): AccountState = {
 		val account = new AccountState()
 		updateAccountState(address, account)
 		updateContractDetails(address, new ContractDetailsImpl(this.dataSourceFactory))
 		account
 	}
 
-	override def existsAccount(address: ImmutableBytes): Boolean = getAccountState(address).nonEmpty
+	override def existsAccount(address: Address): Boolean = getAccountState(address).nonEmpty
 
 
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
+	override def loadAccount(address: Address, cacheAccounts: mutable.Map[Address, AccountState], cacheDetails: mutable.Map[Address, ContractDetails]): Unit = {
 		val account = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
 		cacheAccounts.put(address, account)
 

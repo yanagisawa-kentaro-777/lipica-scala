@@ -22,7 +22,7 @@ class CryptoTest extends Specification {
 			val privateKey = new BigInteger("cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8", 16)
 			val addr = ECKey.fromPrivate(privateKey).getAddress
 			val expected = "89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
-			Hex.encodeHexString(addr) mustEqual expected
+			addr.toHexString mustEqual expected
 		}
 	}
 
@@ -30,7 +30,7 @@ class CryptoTest extends Specification {
 		"be right" in {
 			val key = ECKey.fromPrivate(Hex.decodeHex("a4627abc2a3c25315bff732cb22bc128f203912dd2a840f31e66efb27a47d2b1".toCharArray))
 
-			val address = Hex.encodeHexString(key.getAddress)
+			val address = key.getAddress.toHexString
 			val publicKey = Hex.encodeHexString(key.getPubKeyPoint.getXCoord.getEncoded) + Hex.encodeHexString(key.getPubKeyPoint.getYCoord.getEncoded)
 
 			address mustEqual "47d8cb63a7965d98b547b9f0333a654b60ffa190"

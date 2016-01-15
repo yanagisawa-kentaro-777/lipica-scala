@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.datastore
 
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSourceFactory
-import org.lipicalabs.lipica.core.kernel.{ContractDetailsImpl, ContractDetails}
+import org.lipicalabs.lipica.core.kernel.{Address160, Address, ContractDetailsImpl, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
@@ -16,10 +16,10 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 	import ContractDetailsStore._
 
 	//このインスタンス自体によってガードされている。
-	private val cache = new mutable.HashMap[ImmutableBytes, ContractDetails]
-	private val removes = new mutable.HashSet[ImmutableBytes]
+	private val cache = new mutable.HashMap[Address, ContractDetails]
+	private val removes = new mutable.HashSet[Address]
 	
-	def get(key: ImmutableBytes): Option[ContractDetails] = {
+	def get(key: Address): Option[ContractDetails] = {
 		this.synchronized {
 			this.cache.get(key) match {
 				case Some(details) =>
@@ -28,7 +28,7 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 					if (this.removes.contains(key)) {
 						return None
 					}
-					this.db.get(key) match {
+					this.db.get(key.bytes) match {
 						case Some(data) =>
 							val details = ContractDetailsImpl.decode(data, dataSourceFactory)
 							this.cache.put(key, details)
@@ -40,7 +40,7 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 		}
 	}
 
-	def update(key: ImmutableBytes, contractDetails: ContractDetails): Unit = {
+	def update(key: Address, contractDetails: ContractDetails): Unit = {
 		this.synchronized {
 			contractDetails.address = key
 			cache.put(key, contractDetails)
@@ -48,7 +48,7 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 		}
 	}
 
-	def remove(key: ImmutableBytes): Unit = {
+	def remove(key: Address): Unit = {
 		this.synchronized {
 			this.cache.remove(key)
 			this.removes.add(key)
@@ -79,14 +79,14 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 			val details = entry._2
 			details.syncStorage()
 			val value = details.encode
-			batch.put(key, value)
+			batch.put(key.bytes, value)
 			totalSize += value.length
 		}
 		db.updateBatch(batch.toMap)
 
 		//削除対象を削除する。
 		for (key <- removes) {
-			db.delete(key)
+			db.delete(key.bytes)
 		}
 
 		cache.clear()
@@ -95,9 +95,9 @@ class ContractDetailsStore(private val db: DatabaseImpl, private val dataSourceF
 		totalSize
 	}
 
-	def keys: Set[ImmutableBytes] = {
+	def keys: Set[Address] = {
 		this.synchronized {
-			(this.cache.keySet ++ this.db.sortedKeys.toSet).toSet
+			(this.cache.keySet ++ this.db.sortedKeys.map(each => Address160(each)).toSet).toSet
 		}
 	}
 

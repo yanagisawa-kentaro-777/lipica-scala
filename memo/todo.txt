@@ -28,8 +28,6 @@
 ・Valueを廃絶したい。
 ・ContractDetailsCacheImplとか、どうにかならないのか。
 
-・Digest、Addressなどの型。
-
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）

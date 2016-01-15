@@ -2,8 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import java.util.concurrent.atomic.AtomicReference
 
-import org.lipicalabs.lipica.core.kernel.{AccountState, Block}
-import org.lipicalabs.lipica.core.kernel.ContractDetails
+import org.lipicalabs.lipica.core.kernel.{Address, AccountState, Block, ContractDetails}
 import org.lipicalabs.lipica.core.datastore.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
@@ -26,43 +25,43 @@ class Storage private(private val address: DataWord, private val repository: Rep
 		this.traceListenerRef.set(listener)
 	}
 
-	override def createAccount(address: ImmutableBytes) = this.repository.createAccount(address)
+	override def createAccount(address: Address) = this.repository.createAccount(address)
 
-	override def existsAccount(address: ImmutableBytes) = this.repository.existsAccount(address)
+	override def existsAccount(address: Address) = this.repository.existsAccount(address)
 
-	override def getAccountState(address: ImmutableBytes) = this.repository.getAccountState(address)
+	override def getAccountState(address: Address) = this.repository.getAccountState(address)
 
-	override def delete(address: ImmutableBytes) = {
+	override def delete(address: Address) = {
 		if (canListenTrace(address)) {
 			this.traceListener.onStorageClear()
 		}
 		this.repository.delete(address)
 	}
 
-	override def increaseNonce(address: ImmutableBytes) = this.repository.increaseNonce(address)
+	override def increaseNonce(address: Address) = this.repository.increaseNonce(address)
 
-	override def getNonce(address: ImmutableBytes) = this.repository.getNonce(address)
+	override def getNonce(address: Address) = this.repository.getNonce(address)
 
-	override def getContractDetails(address: ImmutableBytes) = this.repository.getContractDetails(address)
+	override def getContractDetails(address: Address) = this.repository.getContractDetails(address)
 
-	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = this.repository.saveCode(address, code)
+	override def saveCode(address: Address, code: ImmutableBytes) = this.repository.saveCode(address, code)
 
-	override def getCode(address: ImmutableBytes) = this.repository.getCode(address)
+	override def getCode(address: Address) = this.repository.getCode(address)
 
-	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord) = {
+	override def addStorageRow(address: Address, key: DataWord, value: DataWord) = {
 		if (canListenTrace(address)) {
 			this.traceListener.onStoragePut(key, value)
 		}
 		this.repository.addStorageRow(address, key, value)
 	}
 
-	override def getStorageValue(address: ImmutableBytes, key: DataWord) = this.repository.getStorageValue(address, key)
+	override def getStorageValue(address: Address, key: DataWord) = this.repository.getStorageValue(address, key)
 
-	override def getStorageContent(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = this.repository.getStorageContent(address, keys)
+	override def getStorageContent(address: Address, keys: Iterable[DataWord]): Map[DataWord, DataWord] = this.repository.getStorageContent(address, keys)
 
-	override def getBalance(address: ImmutableBytes) = this.repository.getBalance(address)
+	override def getBalance(address: Address) = this.repository.getBalance(address)
 
-	override def addBalance(address: ImmutableBytes, value: BigInt) = this.repository.addBalance(address, value)
+	override def addBalance(address: Address, value: BigInt) = this.repository.addBalance(address, value)
 
 	override def getAccountKeys = this.repository.getAccountKeys
 
@@ -72,7 +71,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def startTracking = this.repository.startTracking
 
-	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit  = {
+	override def updateBatch(accountStates: mutable.Map[Address, AccountState], contractDetails: mutable.Map[Address, ContractDetails]): Unit  = {
 		for (each <- contractDetails) {
 			val (address, details) = each
 			if (!canListenTrace(address)) {
@@ -90,12 +89,12 @@ class Storage private(private val address: DataWord, private val repository: Rep
 		this.repository.updateBatch(accountStates, contractDetails)
 	}
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]): Unit = {
+	override def loadAccount(address: Address, cacheAccounts: mutable.Map[Address, AccountState], cacheDetails: mutable.Map[Address, ContractDetails]): Unit = {
 		this.repository.loadAccount(address, cacheAccounts, cacheDetails)
 	}
 
-	private def canListenTrace(address: ImmutableBytes): Boolean = {
-		(this.address == DataWord(address)) && (traceListener != null)
+	private def canListenTrace(address: Address): Boolean = {
+		(this.address == DataWord(address.bytes)) && (traceListener != null)
 	}
 
 	override def close(): Unit = ()

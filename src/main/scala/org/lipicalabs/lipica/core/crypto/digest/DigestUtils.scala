@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.crypto.digest
 import java.security.MessageDigest
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.kernel.{Address160, Address}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.spongycastle.crypto.Digest
 import org.spongycastle.crypto.digests.{KeccakDigest, RIPEMD160Digest}
@@ -64,10 +65,10 @@ object DigestUtils {
 		calculateDigest(digest, data)
 	}
 
-	def computeNewAddress(address: ImmutableBytes, nonce: ImmutableBytes): ImmutableBytes = {
+	def computeNewAddress(address: Address, nonce: ImmutableBytes): Address = {
 		val encodedSender = RBACCodec.Encoder.encode(address)
 		val encodedNonce = RBACCodec.Encoder.encode(nonce.toPositiveBigInt)
-		digest256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray)
+		Address160(digest256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray))
 	}
 
 	def doSum(mac: KeccakDigest, out: Array[Byte]): Unit = {

@@ -16,6 +16,8 @@ package org.lipicalabs.lipica.core.crypto;
  */
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils;
+import org.lipicalabs.lipica.core.kernel.Address;
+import org.lipicalabs.lipica.core.kernel.Address160;
 import org.lipicalabs.lipica.core.utils.ByteUtils;
 import org.spongycastle.asn1.sec.SECNamedCurves;
 import org.spongycastle.asn1.x9.X9ECParameters;
@@ -197,12 +199,12 @@ public class ECKey implements Serializable {
      *
      * @return -
      */
-    public byte[] getAddress() {
+    public Address getAddress() {
         if (pubKeyHash == null) {
             byte[] pubBytes = this.pub.getEncoded(false);
             pubKeyHash = DigestUtils.digest256omit12Bytes(Arrays.copyOfRange(pubBytes, 1, pubBytes.length));
         }
-        return pubKeyHash;
+        return Address160.apply(pubKeyHash);
     }
 
     /**

@@ -17,7 +17,7 @@ class Account {
 	import scala.collection.JavaConversions._
 
 	private var _ecKey: ECKey = null
-	private var _address: ImmutableBytes = ImmutableBytes.empty
+	private var _address: Address = EmptyAddress
 
 	private val _pendingTransactions = asScalaSet(java.util.Collections.synchronizedSet(new util.HashSet[TransactionLike]))
 
@@ -25,15 +25,15 @@ class Account {
 
 	def init(aKey: ECKey): Unit = {
 		this._ecKey = aKey
-		this._address = ImmutableBytes(this._ecKey.getAddress)
+		this._address = this._ecKey.getAddress
 	}
 
 	def init(): Unit = {
 		init(new ECKey(new SecureRandom))
 	}
 
-	def address: ImmutableBytes = this._address
-	def address_=(v: ImmutableBytes): Unit = this._address = v
+	def address: Address = this._address
+	def address_=(v: Address): Unit = this._address = v
 
 	def ecKey: ECKey = this._ecKey
 

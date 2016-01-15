@@ -104,9 +104,9 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 		}
 	}
 
-	override def address: ImmutableBytes = Option(this.originalContract).map(_.address).getOrElse(ImmutableBytes.empty)
+	override def address: Address = Option(this.originalContract).map(_.address).getOrElse(EmptyAddress)
 
-	override def address_=(v: ImmutableBytes) = Option(this.originalContract).foreach(_.address = v)
+	override def address_=(v: Address) = Option(this.originalContract).foreach(_.address = v)
 
 	override def createClone: ContractDetails = {
 		this.synchronized {

@@ -1,7 +1,9 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.junit.runner.RunWith
+import org.lipicalabs.lipica.core.kernel
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.vm.OpCode.Address
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.lipicalabs.lipica.core.vm.program.Program.BadJumpDestinationException
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextMockImpl
@@ -678,7 +680,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 3).foreach {
 				_ => vm.step(program)
 			}
-			val value = program.storage.getStorageValue(invoke.getOwnerAddress.getDataWithoutLeadingZeros, DataWord(expectedKey)).get
+			val value = program.storage.getStorageValue(kernel.Address(invoke.getOwnerAddress.getDataWithoutLeadingZeros), DataWord(expectedKey)).get
 			value.data.toHexString mustEqual expectedValue
 		}
 	}
@@ -764,7 +766,7 @@ class VMTest extends Specification with BeforeExample {
 
 				program.isStopped mustEqual true
 				val key = DataWord(ImmutableBytes.parseHexString(s_expected_key))
-				val value = program.storage.getStorageValue(program.getOwnerAddress.data, key).get
+				val value = program.storage.getStorageValue(kernel.Address(program.getOwnerAddress.data), key).get
 				value.data.toHexString mustEqual s_expected_val
 				ko
 			} catch {

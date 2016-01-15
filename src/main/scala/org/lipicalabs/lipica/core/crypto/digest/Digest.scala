@@ -5,6 +5,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 /**
  * ダイジェスト値を表す trait です。
  *
+ * ImmutableBytes の薄いラッパーです。
+ *
  * Created by IntelliJ IDEA.
  * 2016/01/15 15:47
  * YANAGISAWA, Kentaro

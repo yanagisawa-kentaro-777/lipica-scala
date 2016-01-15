@@ -26,7 +26,7 @@ class DataWordTest extends Specification {
 			val word = DataWord((0 until 32).map(_.toByte).toArray)
 			word.data.length mustEqual 32
 
-			val bytes = word.last20Bytes
+			val bytes = word.last20Bytes.bytes
 			bytes.length mustEqual 20
 			bytes(0) mustEqual (32 - 20)
 			bytes(19) mustEqual 31

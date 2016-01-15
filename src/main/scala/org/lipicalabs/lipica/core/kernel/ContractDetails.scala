@@ -17,12 +17,12 @@ trait ContractDetails {
 	/**
 	 * アドレスを取得します。
 	 */
-	def address: ImmutableBytes
+	def address: Address
 
 	/**
 	 * アドレスを設定します。
 	 */
-	def address_=(v: ImmutableBytes): Unit
+	def address_=(v: Address): Unit
 
 	/**
 	 * コードを取得します。

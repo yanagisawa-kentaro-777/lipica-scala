@@ -26,7 +26,7 @@ class TransactionTest extends Specification {
 	private val testNonce: ImmutableBytes = ImmutableBytes.parseHexString("")
 	private val testManaPrice: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(1000000000000L))
 	private val testManaLimit: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(10000))
-	private val testReceiveAddress: ImmutableBytes = ImmutableBytes.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
+	private val testReceiveAddress: Address = Address.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
 	private val testValue: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(10000000000000000L))
 	private val testData: ImmutableBytes = ImmutableBytes.parseHexString("")
 	private val testInit: ImmutableBytes = ImmutableBytes.parseHexString("")
@@ -107,7 +107,7 @@ class TransactionTest extends Specification {
 			val nonce = ImmutableBytes.asUnsignedByteArray(BigInt(0))
 			val manaPrice = ImmutableBytes.parseHexString("e8d4a51000")
 			val mana = ImmutableBytes.parseHexString("2710")
-			val receiveAddress = ImmutableBytes.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
+			val receiveAddress = Address.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
 			val value = ImmutableBytes.parseHexString("2386f26fc10000")
 			val data = ImmutableBytes.empty
 
@@ -205,7 +205,7 @@ class TransactionTest extends Specification {
 		"be right" in {
 			val hex = "f86480850dc04240c38255f0944e567864ec2efad2a2186806b9afeef0caf9a42780001ba0de60d4a5bbef1926bb9c92e2d7e77731f728f2b1b1ed6c855f0194161ab78786a04e2c63234d8bbb822addc1f8a9054774cd8fc829aaaa998edaf2d682ef255832"
 			val tx = Transaction.decode(ImmutableBytes.parseHexString(hex))
-			tx.senderAddress mustEqual ImmutableBytes.parseHexString("4e567864ec2efad2a2186806b9afeef0caf9a427")
+			tx.senderAddress mustEqual Address.parseHexString("4e567864ec2efad2a2186806b9afeef0caf9a427")
 		}
 	}
 

@@ -26,9 +26,9 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 
 	import ContractDetailsImpl._
 
-	private val addressRef: AtomicReference[ImmutableBytes] = new AtomicReference[ImmutableBytes](ImmutableBytes.empty)
-	override def address: ImmutableBytes = this.addressRef.get
-	override def address_=(v: ImmutableBytes) = this.addressRef.set(v)
+	private val addressRef: AtomicReference[Address] = new AtomicReference[Address](EmptyAddress)
+	override def address: Address = this.addressRef.get
+	override def address_=(v: Address) = this.addressRef.set(v)
 
 	private val codeRef: AtomicReference[ImmutableBytes] = new AtomicReference[ImmutableBytes](ImmutableBytes.empty)
 	override def code = this.codeRef.get
@@ -211,7 +211,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 		this.synchronized {
 			val startTime = System.nanoTime
 			val items = RBACCodec.Decoder.decode(data).right.get.items
-			this.address = items.head.bytes
+			this.address = Address160(items.head.bytes)
 			this.useExternalStorageRef.set(items(1).asPositiveLong > 0L)
 			this.storageTrie.deserialize(items(2).bytes)
 			this.code = items(3).bytes
@@ -247,7 +247,7 @@ object ContractDetailsImpl {
 		result
 	}
 
-	def newInstance(address: ImmutableBytes, trie: SecureTrie, code: ImmutableBytes, dataSourceFactory: KeyValueDataSourceFactory): ContractDetailsImpl = {
+	def newInstance(address: Address, trie: SecureTrie, code: ImmutableBytes, dataSourceFactory: KeyValueDataSourceFactory): ContractDetailsImpl = {
 		val result = new ContractDetailsImpl(dataSourceFactory)
 		result.address = address
 		result.storageTrieRef.set(trie)

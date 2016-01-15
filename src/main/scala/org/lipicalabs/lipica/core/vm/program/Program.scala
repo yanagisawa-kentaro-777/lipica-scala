@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.kernel.{Payment, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.{EmptyAddress, Address, Payment, TransactionLike}
 import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestUtils}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
@@ -60,7 +60,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 
 	def getCallDepth: Int = this.context.getCallDepth
 
-	private def addInternalTx(nonce: ImmutableBytes, manaLimit: DataWord, senderAddress: ImmutableBytes, receiveAddress: ImmutableBytes, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
+	private def addInternalTx(nonce: ImmutableBytes, manaLimit: DataWord, senderAddress: Address, receiveAddress: Address, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
 		if (this.transaction ne null) {
 			val senderNonce =
 				if (nonce.isEmpty) {
@@ -261,8 +261,8 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 		//移動を実行する。
 		val newBalance = Payment.transfer(track, senderAddress, newAddress, endowment, Payment.ContractCreationTx)
 		//実行する。
-		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, ImmutableBytes.empty, endowment, programCode, "create")
-		val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(newAddress), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.context.blockStore)
+		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, EmptyAddress, endowment, programCode, "create")
+		val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(newAddress.bytes), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.context.blockStore)
 
 		val programResult =
 			if (programCode.nonEmpty) {
@@ -307,7 +307,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 		this.result.addLogs(programResult.logsAsSeq)
 
 		//生成されたアドレスを、スタックにプッシュする。
-		stackPush(DataWord(newAddress))
+		stackPush(DataWord(newAddress.bytes))
 
 		//残金をリファンドする。
 		val refundMana = manaLimit.longValue - programResult.manaUsed
@@ -367,7 +367,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 
 		val programResultOption =
 			if (programCode.nonEmpty) {
-				val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(contextAddress), message.endowment, message.mana, contextBalance, data, track, this.context.blockStore)
+				val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(contextAddress.bytes), message.endowment, message.mana, contextBalance, data, track, this.context.blockStore)
 
 				val vm = new VM
 				val program = new Program(programCode, programContext, internalTx)

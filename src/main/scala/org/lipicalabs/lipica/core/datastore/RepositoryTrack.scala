@@ -20,10 +20,10 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 
 	import RepositoryTrack._
 
-	private val cacheAccounts = new mutable.HashMap[ImmutableBytes, AccountState]
-	private val cacheDetails = new mutable.HashMap[ImmutableBytes, ContractDetails]
+	private val cacheAccounts = new mutable.HashMap[Address, AccountState]
+	private val cacheDetails = new mutable.HashMap[Address, ContractDetails]
 
-	override def createAccount(address: ImmutableBytes) = {
+	override def createAccount(address: Address) = {
 		if (logger.isTraceEnabled) {
 			logger.trace("<RepositoryTrack> Creating account: [%s]".format(address))
 		}
@@ -37,7 +37,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		accountState
 	}
 
-	override def getAccountState(address: ImmutableBytes) = {
+	override def getAccountState(address: Address) = {
 		this.cacheAccounts.get(address) match {
 			case Some(account) =>
 				if (logger.isTraceEnabled) {
@@ -54,14 +54,14 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 	}
 
-	override def existsAccount(address: ImmutableBytes) = {
+	override def existsAccount(address: Address) = {
 		this.cacheAccounts.get(address) match {
 			case Some(account) => !account.isDeleted
 			case _ => this.repository.existsAccount(address)
 		}
 	}
 
-	override def getContractDetails(address: ImmutableBytes) = {
+	override def getContractDetails(address: Address) = {
 		this.cacheDetails.get(address) match {
 			case Some(details) => Some(details)
 			case _ =>
@@ -70,7 +70,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 	}
 
-	override def loadAccount(address: ImmutableBytes, aCacheAccounts: mutable.Map[ImmutableBytes, AccountState], aCacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+	override def loadAccount(address: Address, aCacheAccounts: mutable.Map[Address, AccountState], aCacheDetails: mutable.Map[Address, ContractDetails]) = {
 		val (account, details) =
 			this.cacheAccounts.get(address) match {
 				case Some(accountState) =>
@@ -84,7 +84,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		aCacheDetails.put(address, new ContractDetailsCacheImpl(details))
 	}
 
-	override def delete(address: ImmutableBytes) = {
+	override def delete(address: Address) = {
 		if (logger.isTraceEnabled) {
 			logger.trace("<RepositoryTrack> Delete account: [%s]".format(address.toHexString))
 		}
@@ -92,7 +92,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		getContractDetails(address).foreach(_.isDeleted = true)
 	}
 
-	override def increaseNonce(address: ImmutableBytes) = {
+	override def increaseNonce(address: Address) = {
 		val accountState = getAccountState(address).getOrElse(createAccount(address))
 		getContractDetails(address).foreach(_.isDirty = true)
 
@@ -104,7 +104,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		accountState.nonce
 	}
 
-	def setNonce(address: ImmutableBytes, v: BigInt): BigInt = {
+	def setNonce(address: Address, v: BigInt): BigInt = {
 		val accountState = getAccountState(address).getOrElse(createAccount(address))
 		getContractDetails(address).foreach(_.isDirty = true)
 
@@ -116,11 +116,11 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		accountState.nonce
 	}
 
-	override def getNonce(address: ImmutableBytes) = getAccountState(address).map(_.nonce).getOrElse(UtilConsts.Zero)
+	override def getNonce(address: Address) = getAccountState(address).map(_.nonce).getOrElse(UtilConsts.Zero)
 
-	override def getBalance(address: ImmutableBytes) = getAccountState(address).map(_.balance)
+	override def getBalance(address: Address) = getAccountState(address).map(_.balance)
 
-	override def addBalance(address: ImmutableBytes, value: BigInt) = {
+	override def addBalance(address: Address, value: BigInt) = {
 		val account = getAccountState(address).getOrElse(createAccount(address))
 		if (logger.isDebugEnabled) {
 			logger.debug("<RepositoryTrack> Adding to balance: [%s] Balance: [%,d], Delta: [%,d]".format(address, account.balance, value))
@@ -133,7 +133,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		newBalance
 	}
 
-	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = {
+	override def saveCode(address: Address, code: ImmutableBytes) = {
 		if (logger.isDebugEnabled) {
 			logger.debug("<RepositoryTrack> Saving code. Address: [%s], Code: [%s]".format(address.toHexString, code.toHexString))
 		}
@@ -146,7 +146,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		getAccountState(address).foreach(_.codeHash = code.digest256)
 	}
 
-	override def getCode(address: ImmutableBytes): Option[ImmutableBytes] = {
+	override def getCode(address: Address): Option[ImmutableBytes] = {
 		if (!existsAccount(address)) {
 			None
 		} else if (getAccountState(address).get.codeHash == DigestUtils.EmptyDataHash) {
@@ -156,14 +156,14 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 	}
 
-	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord) = {
+	override def addStorageRow(address: Address, key: DataWord, value: DataWord) = {
 		if (logger.isTraceEnabled) {
 			logger.trace("<RepositoryTrack> Add storage row. Address: [%s], Key: [%s], Value: [%s]".format(address.toHexString, key.toHexString, value.toHexString))
 		}
 		getContractDetails(address).foreach(_.put(key, value))
 	}
 
-	override def getStorageValue(address: ImmutableBytes, key: DataWord) = getContractDetails(address).flatMap(_.get(key))
+	override def getStorageValue(address: Address, key: DataWord) = getContractDetails(address).flatMap(_.get(key))
 
 	override def getAccountKeys = throw new UnsupportedOperationException
 
@@ -196,7 +196,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 	}
 
-	override def updateBatch(accountStates: mutable.Map[ImmutableBytes, AccountState], contractDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+	override def updateBatch(accountStates: mutable.Map[Address, AccountState], contractDetails: mutable.Map[Address, ContractDetails]) = {
 		for (each <- accountStates) {
 			this.cacheAccounts.put(each._1, each._2)
 		}
@@ -211,7 +211,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 	}
 
-	override def getStorageContent(address: ImmutableBytes, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
+	override def getStorageContent(address: Address, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
 		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 

@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.Digest256
+import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
@@ -24,8 +25,8 @@ class InternalTransactionTest extends Specification {
 			val nonce = ImmutableBytes(Array[Byte](0, 1, 2, 3, 4, 5, 6, 7))
 			val manaPrice = DataWord(12L)
 			val manaLimit = DataWord(100L)
-			val senderAddress = ImmutableBytes(Array[Byte](7, 8, 9, 10))
-			val receiverAddress = ImmutableBytes(Array[Byte](12, 13, 14, 15))
+			val senderAddress = Address(Array[Byte](7, 8, 9, 10))
+			val receiverAddress = Address(Array[Byte](12, 13, 14, 15))
 			val value = ImmutableBytes(Array[Byte](20, 21, 22, 23))
 			val data = ImmutableBytes.empty
 

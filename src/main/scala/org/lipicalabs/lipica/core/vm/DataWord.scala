@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.kernel.{Address160, Address}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 
 /**
@@ -20,8 +21,8 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	/**
 	 * 末尾20バイトを返します。
 	 */
-	def last20Bytes: ImmutableBytes = {
-		this.data.copyOfRange(NUM_BYTES - 20, data.length)
+	def last20Bytes: Address = {
+		Address160(this.data.copyOfRange(NUM_BYTES - 20, data.length))
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.kernel.Address160
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.OpCode._
 import org.lipicalabs.lipica.core.vm.program.{MessageType, MessageCall, Program}

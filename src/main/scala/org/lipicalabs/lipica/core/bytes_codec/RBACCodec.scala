@@ -4,6 +4,7 @@ import java.io.PrintStream
 import java.nio.charset.StandardCharsets
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils._
 
 import scala.annotation.tailrec
@@ -234,7 +235,8 @@ object RBACCodec {
 				case v: ImmutableBytes => v
 				case v: Array[Byte] => ImmutableBytes(v)
 				case d: DigestValue => d.bytes
-				case v: String => ImmutableBytes(v.getBytes(StandardCharsets.UTF_8))
+				case a: Address => a.bytes
+				case s: String => ImmutableBytes(s.getBytes(StandardCharsets.UTF_8))
 				case v: Long =>
 					if (v == 0L) {
 						ImmutableBytes.empty

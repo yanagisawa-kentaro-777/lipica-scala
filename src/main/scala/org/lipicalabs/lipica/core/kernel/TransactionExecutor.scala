@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
  * YANAGISAWA, Kentaro
  */
 class TransactionExecutor(
-	private val tx: TransactionLike, private val coinbase: ImmutableBytes, private val track: RepositoryLike,
+	private val tx: TransactionLike, private val coinbase: Address, private val track: RepositoryLike,
 	private val blockStore: BlockStore, private val programContextFactory: ProgramContextFactory,
 	private val currentBlock: Block, private val listener: LipicaListener, private val manaUsedInTheBlock: Long
 ) {
@@ -119,7 +119,7 @@ class TransactionExecutor(
 			return
 		}
 		val targetAddress = this.tx.receiverAddress
-		this.precompiledContract = PrecompiledContracts.getContractForAddress(DataWord(targetAddress))
+		this.precompiledContract = PrecompiledContracts.getContractForAddress(DataWord(targetAddress.bytes))
 		this.precompiledContract match {
 			case Some(contract) =>
 				if (logger.isDebugEnabled) {

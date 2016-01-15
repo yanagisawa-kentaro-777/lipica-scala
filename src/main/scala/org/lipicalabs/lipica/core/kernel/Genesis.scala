@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/11/21 11:56
  * YANAGISAWA, Kentaro
  */
-class Genesis private[kernel](_header: BlockHeader, val premine: Map[ImmutableBytes, AccountState]) extends PlainBlock(_header, Seq.empty[TransactionLike], Seq.empty[BlockHeader]) {
+class Genesis private[kernel](_header: BlockHeader, val premine: Map[Address, AccountState]) extends PlainBlock(_header, Seq.empty[TransactionLike], Seq.empty[BlockHeader]) {
 	//
 }
 

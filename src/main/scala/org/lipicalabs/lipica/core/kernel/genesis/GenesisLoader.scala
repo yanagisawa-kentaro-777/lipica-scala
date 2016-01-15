@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel.genesis
 import com.google.common.io.ByteStreams
 import org.codehaus.jackson.map.ObjectMapper
 import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
-import org.lipicalabs.lipica.core.kernel.{Genesis, AccountState, BlockHeader}
+import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils._
@@ -39,7 +39,7 @@ object GenesisLoader {
 		blockHeader.nonce = JsonUtils.parseHexStringToImmutableBytes(genesisJson.nonce)
 		blockHeader.difficulty = JsonUtils.parseHexStringToImmutableBytes(genesisJson.difficulty)
 		blockHeader.mixHash = Digest256(JsonUtils.parseHexStringToImmutableBytes(genesisJson.mixhash))
-		blockHeader.coinbase = JsonUtils.parseHexStringToImmutableBytes(genesisJson.coinbase)
+		blockHeader.coinbase = Address160(JsonUtils.parseHexStringToImmutableBytes(genesisJson.coinbase))
 		blockHeader.timestamp = JsonUtils.parseHexStringToLong(genesisJson.timestamp)
 		blockHeader.parentHash = Digest256(JsonUtils.parseHexStringToImmutableBytes(genesisJson.parentHash))
 		blockHeader.extraData = JsonUtils.parseHexStringToImmutableBytes(genesisJson.extraData)
@@ -47,10 +47,10 @@ object GenesisLoader {
 		blockHeader.logsBloom = ImmutableBytes.create(256)
 
 		import scala.collection.JavaConversions._
-		val premine = genesisJson.getAlloc.map {
+		val premine: Map[Address, AccountState] = genesisJson.getAlloc.map {
 			entry => {
 				val (addressString, balanceString) = entry
-				val address = JsonUtils.parseHexStringToImmutableBytes(addressString)
+				val address = Address160(JsonUtils.parseHexStringToImmutableBytes(addressString))
 				val accountState = new AccountState(UtilConsts.Zero, BigInt(balanceString.getBalance))
 				(address, accountState)
 			}
@@ -58,10 +58,10 @@ object GenesisLoader {
 		new Genesis(blockHeader, premine)
 	}
 
-	private def calculateRootHash(premine: Map[ImmutableBytes, AccountState]): DigestValue = {
+	private def calculateRootHash(premine: Map[Address, AccountState]): DigestValue = {
 		val trie = SecureTrie.newInstance
 		for (entry <- premine) {
-			trie.update(entry._1, entry._2.encode)
+			trie.update(entry._1.bytes, entry._2.encode)
 		}
 		trie.rootHash
 	}

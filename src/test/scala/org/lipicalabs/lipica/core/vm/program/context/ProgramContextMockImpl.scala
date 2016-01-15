@@ -3,6 +3,7 @@ package org.lipicalabs.lipica.core.vm.program.context
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datastore.{Repository, RepositoryDummy, BlockStoreDummy, BlockStore}
+import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
@@ -14,8 +15,8 @@ import org.lipicalabs.lipica.core.vm.DataWord
 class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends ProgramContext {
 
 	private var repository: Repository = new RepositoryDummy
-	private var ownerAddress = ImmutableBytes.parseHexString("cd2a3d9f938e13cd947ec05abc7fe734df8dd826")
-	private val contractAddress = ImmutableBytes.parseHexString("471fd3ad3e9eeadeec4608b92d16ce6b500704cc")
+	private var ownerAddress = Address.parseHexString("cd2a3d9f938e13cd947ec05abc7fe734df8dd826")
+	private val contractAddress = Address.parseHexString("471fd3ad3e9eeadeec4608b92d16ce6b500704cc")
 	private var manaLimit: Long = 1000000
 
 	this.repository.createAccount(this.ownerAddress)
@@ -23,7 +24,7 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 	this.repository.saveCode(contractAddress, ImmutableBytes.parseHexString("385E60076000396000605f556014600054601e60" + "205463abcddcba6040545b51602001600a525451" + "6040016014525451606001601e52545160800160" + "28525460a052546016604860003960166000f260" + "00603f556103e75660005460005360200235"))
 
 	override def getOwnerAddress: DataWord = {
-		DataWord(ownerAddress)
+		DataWord(ownerAddress.bytes)
 	}
 
 	override def getBalance: DataWord = {
@@ -34,13 +35,13 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 	override def getOriginAddress: DataWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("horse".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
-		DataWord(addr)
+		DataWord(addr.bytes)
 	}
 
 	override def getCallerAddress: DataWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("monkey".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
-		DataWord(addr)
+		DataWord(addr.bytes)
 	}
 
 	override def getMinManaPrice: DataWord = {
@@ -122,7 +123,7 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 		this.manaLimit = v
 	}
 
-	def setOwnerAddress(ownerAddress: ImmutableBytes) {
+	def setOwnerAddress(ownerAddress: Address) {
 		this.ownerAddress = ownerAddress
 	}
 

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.kernel.AccountState
+import org.lipicalabs.lipica.core.kernel.{Address, AccountState}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextMockImpl
@@ -45,8 +45,8 @@ class VMTest3 extends Specification with BeforeExample {
 			val value1 = DataWord(3)
 
 			// Set contract into Database
-			val callerAddr = ImmutableBytes.parseHexString("cd2a3d9f938e13cd947ec05abc7fe734df8dd826")
-			val contractAddr = ImmutableBytes.parseHexString("77045e71a7a2c50903d88e564cd72fab11e82051")
+			val callerAddr = Address.parseHexString("cd2a3d9f938e13cd947ec05abc7fe734df8dd826")
+			val contractAddr = Address.parseHexString("77045e71a7a2c50903d88e564cd72fab11e82051")
 			val code = ImmutableBytes.parseHexString("6103e75460005260006000511115630000004c576001600051036103e755600060006000600060007377045e71a7a2c50903d88e564cd72fab11e820516008600a5a0402f1630000004c00565b00")
 
 			val codeKey = code.digest256

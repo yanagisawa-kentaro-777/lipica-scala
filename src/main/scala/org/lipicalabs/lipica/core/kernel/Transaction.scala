@@ -34,7 +34,7 @@ trait TransactionLike {
 	/**
 	 * 送信者のアドレス。
 	 */
-	def senderAddress: ImmutableBytes
+	def senderAddress: Address
 
 	/**
 	 * メッセージコールにおいては、受信者が受け取る金額。
@@ -45,7 +45,7 @@ trait TransactionLike {
 	/**
 	 *  受信者のアドレス。
 	 */
-	def receiverAddress: ImmutableBytes
+	def receiverAddress: Address
 
 	/**
 	 * マナ１単位を調達するのに必要な金額。
@@ -111,7 +111,7 @@ trait TransactionLike {
 	 * そのコントラクト用のアドレスを生成して返します。
 	 * メッセージコール用のトランザクションだった場合、Noneを返します。
 	 */
-	def contractAddress: Option[ImmutableBytes] = {
+	def contractAddress: Option[Address] = {
 		if (!isContractCreation) return None
 		Some(DigestUtils.computeNewAddress(this.senderAddress, this.nonce))
 	}
@@ -189,7 +189,7 @@ trait TransactionLike {
 class UnsignedTransaction(
 	override val nonce: ImmutableBytes,
 	override val value: ImmutableBytes,
-	override val receiverAddress: ImmutableBytes,
+	override val receiverAddress: Address,
 	override val manaPrice: ImmutableBytes,
 	override val manaLimit: ImmutableBytes,
 	override val data: ImmutableBytes
@@ -213,18 +213,18 @@ class UnsignedTransaction(
 		this.encodedRaw
 	}
 
-	private var _sendAddress: ImmutableBytes = null
-	override def senderAddress: ImmutableBytes = {
+	private var _sendAddress: Address = null
+	override def senderAddress: Address = {
 		try {
 			if (this._sendAddress eq null) {
 				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
-				this._sendAddress = ImmutableBytes(key.getAddress)
+				this._sendAddress = key.getAddress
 			}
 			this._sendAddress
 		} catch {
 			case e: SignatureException =>
 				logger.error(e.getMessage, e)
-				ImmutableBytes.empty
+				EmptyAddress
 		}
 	}
 
@@ -242,7 +242,7 @@ class UnsignedTransaction(
 class SignedTransaction(
 	override val nonce: ImmutableBytes,
 	override val value: ImmutableBytes,
-	override val receiverAddress: ImmutableBytes,
+	override val receiverAddress: Address,
 	override val manaPrice: ImmutableBytes,
 	override val manaLimit: ImmutableBytes,
 	override val data: ImmutableBytes,
@@ -270,18 +270,18 @@ class SignedTransaction(
 		this.encodedRaw
 	}
 
-	private var _sendAddress: ImmutableBytes = null
-	override def senderAddress: ImmutableBytes = {
+	private var _sendAddress: Address = null
+	override def senderAddress: Address = {
 		try {
 			if (this._sendAddress eq null) {
 				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
-				this._sendAddress = ImmutableBytes(key.getAddress)
+				this._sendAddress = key.getAddress
 			}
 			this._sendAddress
 		} catch {
 			case e: SignatureException =>
 				logger.error(e.getMessage, e)
-				ImmutableBytes.empty
+				EmptyAddress
 		}
 	}
 }
@@ -298,7 +298,13 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 			val nonce = items.head.bytes
 			val manaPrice = items(1).bytes
 			val manaLimit = items(2).bytes
-			val receiveAddress = items(3).bytes
+			val receiveAddress =
+				if (items(3).bytes.isEmpty) {
+					//コントラクトの生成。
+					EmptyAddress
+				} else {
+					Address160(items(3).bytes)
+				}
 			val value = items(4).bytes
 			val data = items(5).bytes
 			val sixthElem = items(6).bytes
@@ -336,11 +342,11 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 
 	override def nonce: ImmutableBytes = parse.nonce
 
-	override def senderAddress: ImmutableBytes = parse.senderAddress
+	override def senderAddress: Address = parse.senderAddress
 
 	override def value: ImmutableBytes = parse.value
 
-	override def receiverAddress: ImmutableBytes = parse.receiverAddress
+	override def receiverAddress: Address = parse.receiverAddress
 
 	override def manaPrice: ImmutableBytes = parse.manaPrice
 
@@ -367,18 +373,18 @@ object Transaction {
 		decode(RBACCodec.Decoder.decode(rawData).right.get)
 	}
 
-	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes): TransactionLike = {
+	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: Address, value: ImmutableBytes, data: ImmutableBytes): TransactionLike = {
 		new UnsignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data)
 	}
 
-	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: ImmutableBytes, value: ImmutableBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
+	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: Address, value: ImmutableBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
 		val signature: ECKey.ECDSASignature = new ECKey.ECDSASignature(r.toSignedBigInteger, s.toSignedBigInteger)
 		signature.v = v
 		new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 	}
 
 	def create(to: String, amount: BigInt, nonce: BigInt, manaPrice: BigInt, manaLimit: BigInt): TransactionLike = {
-		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), ImmutableBytes.asUnsignedByteArray(manaPrice), ImmutableBytes.asUnsignedByteArray(manaLimit), ImmutableBytes.parseHexString(to), ImmutableBytes.asUnsignedByteArray(amount), ImmutableBytes.empty)
+		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), ImmutableBytes.asUnsignedByteArray(manaPrice), ImmutableBytes.asUnsignedByteArray(manaLimit), Address160.parseHexString(to), ImmutableBytes.asUnsignedByteArray(amount), ImmutableBytes.empty)
 	}
 
 	def createDefault(to: String, amount: BigInteger, nonce: BigInteger): TransactionLike = {

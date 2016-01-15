@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
-import org.lipicalabs.lipica.core.kernel.BloomFilter
+import org.lipicalabs.lipica.core.kernel.{Address160, Address, BloomFilter}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: ImmutableBytes) {
+case class LogInfo(address: Address, topics: Seq[DataWord], data: ImmutableBytes) {
 
 	def encode: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
@@ -21,7 +21,7 @@ case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: Immutab
 	}
 
 	def createBloomFilter: BloomFilter = {
-		var result = BloomFilter.createFromDigest(address.digest256)
+		var result = BloomFilter.createFromDigest(address.bytes.digest256)
 		for (eachTopic <- this.topics) {
 			result = result | BloomFilter.createFromDigest(eachTopic.computeDigest256OfData)
 		}
@@ -44,7 +44,7 @@ case class LogInfo(address: ImmutableBytes, topics: Seq[DataWord], data: Immutab
 object LogInfo {
 
 	def decode(items: Seq[DecodedResult]): LogInfo = {
-		val address = items.head.bytes
+		val address = Address160(items.head.bytes)
 		val topics = items(1).items.map(each => DataWord(each.bytes))
 		val data = items(2).bytes
 		LogInfo(address, topics, data)

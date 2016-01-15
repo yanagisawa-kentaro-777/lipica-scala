@@ -2,6 +2,7 @@ package org.lipicalabs.lipica.core.datastore
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
+import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
@@ -21,8 +22,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				repository.increaseNonce(cow)
 				repository.increaseNonce(horse)
@@ -41,8 +42,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				repository.addBalance(cow, BigInt(10))
 				repository.addBalance(horse, UtilConsts.One)
@@ -59,8 +60,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowCode = ImmutableBytes.parseHexString("A1A2A3")
 				val horseCode = ImmutableBytes.parseHexString("B1B2B3")
@@ -81,8 +82,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowKey = ImmutableBytes.parseHexString("A1A2A3")
 				val cowValue = ImmutableBytes.parseHexString("A4A5A6")
@@ -107,8 +108,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				(0 until 10).foreach {
 					_ => track.increaseNonce(cow)
@@ -137,8 +138,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				(0 until 10).foreach {
 					_ => track.increaseNonce(cow)
@@ -167,8 +168,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				track.addBalance(cow, BigInt(10))
 				track.addBalance(horse, BigInt(1))
@@ -195,8 +196,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				track.addBalance(cow, BigInt(10))
 				track.addBalance(horse, BigInt(1))
@@ -223,8 +224,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowKey = ImmutableBytes.parseHexString("A1A2A3")
 				val cowValue = ImmutableBytes.parseHexString("A4A5A6")
@@ -257,8 +258,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowKey = ImmutableBytes.parseHexString("A1A2A3")
 				val cowValue = ImmutableBytes.parseHexString("A4A5A6")
@@ -291,8 +292,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowCode = ImmutableBytes.parseHexString("A1A2A3")
 				val horseCode = ImmutableBytes.parseHexString("B1B2B3")
@@ -322,8 +323,8 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			val track = repository.startTracking
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowCode = ImmutableBytes.parseHexString("A1A2A3")
 				val horseCode = ImmutableBytes.parseHexString("B1B2B3")
@@ -354,8 +355,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val track1 = repository.startTracking
 				track1.addBalance(cow, BigInt(10))
@@ -386,8 +387,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val track1 = repository.startTracking
 				track1.addBalance(cow, BigInt(10))
@@ -418,8 +419,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowKey1 = ImmutableBytes("key-c-1".getBytes)
 				val cowValue1 = ImmutableBytes("val-c-1".getBytes)
@@ -472,8 +473,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowKey1 = ImmutableBytes("key-c-1".getBytes)
 				val cowValue1 = ImmutableBytes("val-c-1".getBytes)
@@ -498,10 +499,10 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
-				val pig = ImmutableBytes.parseHexString("F0B8C9D84DD2B877E0B952130B73E218106FEC04")
-				val precompiled = ImmutableBytes.parseHexString("0000000000000000000000000000000000000002")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val pig = Address.parseHexString("F0B8C9D84DD2B877E0B952130B73E218106FEC04")
+				val precompiled = Address.parseHexString("0000000000000000000000000000000000000002")
 
 				val track = repository.startTracking
 
@@ -527,8 +528,8 @@ class RepositoryTest extends Specification {
 		"be right" in {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowKey1 = DataWord(ImmutableBytes("ck1".getBytes))
 				val cowVal1 = DataWord(ImmutableBytes("cv1".getBytes))
@@ -577,8 +578,8 @@ class RepositoryTest extends Specification {
 			try {
 				val root = repository.rootHash
 
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
-				val horse = ImmutableBytes.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				val cowKey1 = DataWord(ImmutableBytes("ck1".getBytes))
 				val cowKey2 = DataWord(ImmutableBytes("ck2".getBytes))
@@ -642,7 +643,7 @@ class RepositoryTest extends Specification {
 			val repository = new RepositoryImpl(new HashMapDB, new HashMapDB, new HashMapDBFactory)
 			try {
 				val track = repository.startTracking
-				val cow = ImmutableBytes.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
+				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 
 				track.existsAccount(cow) mustEqual false
 				track.createAccount(cow)

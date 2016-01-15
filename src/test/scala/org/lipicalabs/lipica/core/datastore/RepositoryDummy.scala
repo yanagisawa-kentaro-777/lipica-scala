@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.datastore
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
-import org.lipicalabs.lipica.core.kernel.{ContractDetailsImpl, ContractDetails, Block, AccountState}
+import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 
@@ -15,8 +15,8 @@ import scala.collection.mutable
  */
 class RepositoryDummy extends RepositoryImpl(new HashMapDBFactory) {
 
-	private val worldState = new mutable.HashMap[ImmutableBytes, AccountState]
-	private val detailsDB = new mutable.HashMap[ImmutableBytes, ContractDetails]
+	private val worldState = new mutable.HashMap[Address, AccountState]
+	private val detailsDB = new mutable.HashMap[Address, ContractDetails]
 
 	override def reset() = {
 		this.worldState.clear()
@@ -40,22 +40,22 @@ class RepositoryDummy extends RepositoryImpl(new HashMapDBFactory) {
 
 	override def getAccountKeys = this.worldState.keySet.toSet
 
-	override def addBalance(address: ImmutableBytes, value: BigInt) = {
+	override def addBalance(address: Address, value: BigInt) = {
 		val account = getAccountState(address).getOrElse(createAccount(address))
 		val result = account.addToBalance(value)
 		worldState.put(address, account)
 		result
 	}
 
-	override def getBalance(address: ImmutableBytes) = {
+	override def getBalance(address: Address) = {
 		getAccountState(address).map(_.balance)
 	}
 
-	override def getStorageValue(address: ImmutableBytes, key: DataWord) = {
+	override def getStorageValue(address: Address, key: DataWord) = {
 		getContractDetails(address).flatMap(_.get(key))
 	}
 
-	override def addStorageRow(address: ImmutableBytes, key: DataWord, value: DataWord) = {
+	override def addStorageRow(address: Address, key: DataWord, value: DataWord) = {
 		val details = getContractDetails(address).getOrElse {
 			createAccount(address)
 			getContractDetails(address).get
@@ -65,11 +65,11 @@ class RepositoryDummy extends RepositoryImpl(new HashMapDBFactory) {
 		detailsDB.put(address, details)
 	}
 
-	override def getCode(address: ImmutableBytes) = {
+	override def getCode(address: Address) = {
 		getContractDetails(address).map(_.code)
 	}
 
-	override def saveCode(address: ImmutableBytes, code: ImmutableBytes) = {
+	override def saveCode(address: Address, code: ImmutableBytes) = {
 		val details = getContractDetails(address).getOrElse {
 			createAccount(address)
 			getContractDetails(address).get
@@ -77,54 +77,54 @@ class RepositoryDummy extends RepositoryImpl(new HashMapDBFactory) {
 		details.code = code
 	}
 
-	override def getNonce(address: ImmutableBytes) = {
+	override def getNonce(address: Address) = {
 		getAccountState(address).getOrElse(createAccount(address)).nonce
 	}
 
-	override def increaseNonce(address: ImmutableBytes) = {
+	override def increaseNonce(address: Address) = {
 		val account = getAccountState(address).getOrElse(createAccount(address))
 		account.incrementNonce()
 		this.worldState.put(address, account)
 		account.nonce
 	}
 
-	override def setNonce(address: ImmutableBytes, value: BigInt) = {
+	override def setNonce(address: Address, value: BigInt) = {
 		val account = getAccountState(address).getOrElse(createAccount(address))
 		account.nonce = value
 		this.worldState.put(address, account)
 		account.nonce
 	}
 
-	override def delete(address: ImmutableBytes) = {
+	override def delete(address: Address) = {
 		this.worldState.remove(address)
 		this.detailsDB.remove(address)
 	}
 
-	override def getContractDetails(address: ImmutableBytes) = this.detailsDB.get(address)
+	override def getContractDetails(address: Address) = this.detailsDB.get(address)
 
-	override def getAccountState(address: ImmutableBytes) = this.worldState.get(address)
+	override def getAccountState(address: Address) = this.worldState.get(address)
 
 
-	override def createAccount(address: ImmutableBytes) = {
+	override def createAccount(address: Address) = {
 		val account = new AccountState()
 		this.worldState.put(address, account)
 		this.detailsDB.put(address, new ContractDetailsImpl(new HashMapDBFactory))
 		account
 	}
 
-	override def existsAccount(address: ImmutableBytes) = getAccountState(address).isDefined
+	override def existsAccount(address: Address) = getAccountState(address).isDefined
 
 
 	override def rootHash = throw new UnsupportedOperationException
 
-	override def loadAccount(address: ImmutableBytes, cacheAccounts: mutable.Map[ImmutableBytes, AccountState], cacheDetails: mutable.Map[ImmutableBytes, ContractDetails]) = {
+	override def loadAccount(address: Address, cacheAccounts: mutable.Map[Address, AccountState], cacheDetails: mutable.Map[Address, ContractDetails]) = {
 		val account: AccountState = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
 		cacheAccounts.put(address, account)
 		val details: ContractDetails = getContractDetails(address).map(_.createClone).getOrElse(new ContractDetailsImpl(new HashMapDBFactory))
 		cacheDetails.put(address, details)
 	}
 
-	override def updateBatch(accountCache: mutable.Map[ImmutableBytes, AccountState], detailsCache: mutable.Map[ImmutableBytes, ContractDetails]) = {
+	override def updateBatch(accountCache: mutable.Map[Address, AccountState], detailsCache: mutable.Map[Address, ContractDetails]) = {
 		for (entry <- accountCache) {
 			val (hash, accountState) = entry
 			val contractDetails = detailsCache.get(hash).get

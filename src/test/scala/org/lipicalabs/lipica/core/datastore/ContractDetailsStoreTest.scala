@@ -1,9 +1,9 @@
 package org.lipicalabs.lipica.core.datastore
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.kernel.{ContractDetails, ContractDetailsImpl}
+import org.lipicalabs.lipica.core.kernel.{Address160, Address, ContractDetails, ContractDetailsImpl}
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.datastore.datasource.{DataSourcePool, KeyValueDataSource, HashMapDB}
+import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSource, HashMapDB}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
@@ -24,7 +24,7 @@ class ContractDetailsStoreTest extends Specification {
 	"test (1)" should {
 		"be right" in {
 			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
-			val contractKey = ImmutableBytes.parseHexString("1a2b")
+			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
@@ -54,7 +54,7 @@ class ContractDetailsStoreTest extends Specification {
 	"test (2)" should {
 		"be right" in {
 			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
-			val contractKey = ImmutableBytes.parseHexString("1a2b")
+			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
@@ -85,7 +85,7 @@ class ContractDetailsStoreTest extends Specification {
 	"test (3)" should {
 		"be right" in {
 			val dds = new ContractDetailsStore(new DatabaseImpl(new HashMapDB), new HashMapDBFactory)
-			val contractKey = ImmutableBytes.parseHexString("1a2b")
+			val contractKey = Address.parseHexString("1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b1a2b")
 			val code = ImmutableBytes.parseHexString("60606060")
 			val key = ImmutableBytes.parseHexString("11")
 			val value = ImmutableBytes.parseHexString("aa")
@@ -167,8 +167,8 @@ class ContractDetailsStoreTest extends Specification {
 		DataWord(randomBytes(32))
 	}
 
-	private def randomAddress: ImmutableBytes = {
-		randomBytes(20)
+	private def randomAddress: Address = {
+		Address160(randomBytes(20))
 	}
 
 	private def randomContractDetails(codeSize: Int, storageSize: Int, storageDataSource: KeyValueDataSource): ContractDetails = {

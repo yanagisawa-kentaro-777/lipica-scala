@@ -20,7 +20,7 @@ object CallTransaction {
 			nonce = ByteUtils.toByteArrayWithNoLeadingZeros(nonce),
 			manaPrice = ByteUtils.toByteArrayWithNoLeadingZeros(manaPrice),
 			manaLimit = ByteUtils.toByteArrayWithNoLeadingZeros(manaLimit),
-			receiveAddress = ImmutableBytes.parseHexString(toAddress),
+			receiveAddress = Address160.parseHexString(toAddress),
 			value = ByteUtils.toByteArrayWithNoLeadingZeros(value),
 			data = data
 		)
