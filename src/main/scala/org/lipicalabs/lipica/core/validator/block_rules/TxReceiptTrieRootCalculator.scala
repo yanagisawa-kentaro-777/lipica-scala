@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.kernel.TransactionReceipt
 import org.lipicalabs.lipica.core.trie.TrieImpl
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  *
@@ -12,7 +12,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * @author YANAGISAWA, Kentaro
  */
 object TxReceiptTrieRootCalculator {
-	def calculateReceiptsTrieRoot(receipts: Seq[TransactionReceipt]): ImmutableBytes = {
+	def calculateReceiptsTrieRoot(receipts: Seq[TransactionReceipt]): DigestValue = {
 		if (receipts.isEmpty) {
 			return DigestUtils.EmptyTrieHash
 		}

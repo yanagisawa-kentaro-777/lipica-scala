@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.kernel
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, ByteUtils}
 
 /**
  * バイト配列を利用してビットの並びを表現するデータ構造の実装です。
@@ -55,7 +55,8 @@ object BloomFilter {
 	 * ダイジェスト値（エントロピーが非常に高い）を受け取って、
 	 * それに基いて３ビットを立てることによって、2048ビットのBloomFilterを生成して返します。
 	 */
-	def createFromDigest(digest: ImmutableBytes): BloomFilter = {
+	def createFromDigest(aDigest: DigestValue): BloomFilter = {
+		val digest = aDigest.bytes
 		//渡されたダイジェスト値の最初の６バイトから、３個の整数（2047未満）を取り出す。
 		val mov1 = (((digest(0) & 0xff) << 8) + (digest(1) & 0xff)) & 2047
 		val mov2 = (((digest(2) & 0xff) << 8) + (digest(3) & 0xff)) & 2047

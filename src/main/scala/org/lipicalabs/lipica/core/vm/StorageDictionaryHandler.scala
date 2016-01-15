@@ -20,7 +20,7 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 	private val ConstHashes = {
 		var storageIndex = DataWord.Zero
 		(0 until 5000).map(i => {
-			val digest = storageIndex.data.digest256
+			val digest = storageIndex.data.digest256.bytes
 			val entry = new Entry(DataWord(digest), storageIndex.data)
 			storageIndex = storageIndex + DataWord.One
 			getMapKey(digest) -> entry

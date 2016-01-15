@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.kernel.{Block, TransactionLike}
 import org.lipicalabs.lipica.core.trie.TrieImpl
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,7 +32,7 @@ object TxTrieRootRule {
 	/**
 	 * トランザクションのルートを計算する根本アルゴリズム！
 	 */
-	def calculateTxTrieRoot(txs: Seq[TransactionLike]): ImmutableBytes = {
+	def calculateTxTrieRoot(txs: Seq[TransactionLike]): DigestValue = {
 		if (txs.isEmpty) {
 			return DigestUtils.EmptyTrieHash
 		}

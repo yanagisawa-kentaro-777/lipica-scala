@@ -3,7 +3,6 @@ package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
-import scala.util.control.Breaks
 
 /**
  * Created by IntelliJ IDEA.
@@ -68,8 +67,8 @@ object NodeEntry {
 
 	def distance(ownerId: ImmutableBytes, targetId: ImmutableBytes): Int ={
 		//２個のバイト配列の256ビットダイジェストのXORを新たなバイト配列に格納する。
-		val digest1 = ownerId.digest256
-		val digest2 = targetId.digest256
+		val digest1 = ownerId.digest256.bytes
+		val digest2 = targetId.digest256.bytes
 		val xor = new Array[Byte](digest1.length)
 		for (i <- xor.indices) {
 			//等しいバイトはゼロになる。

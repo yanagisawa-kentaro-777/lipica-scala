@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.net.lpc.V0
 import org.lipicalabs.lipica.core.net.lpc.message.{BlockHashesMessage, GetBlockHashesByNumberMessage}
 import org.lipicalabs.lipica.core.sync.SyncStateName.DoneHashRetrieving
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -20,7 +20,7 @@ class Lpc0 extends LpcHandler(V0) {
 	private var commonAncestorFound = false
 	
 
-	override protected def processBlockHashes(received: Seq[ImmutableBytes]): Unit = {
+	override protected def processBlockHashes(received: Seq[DigestValue]): Unit = {
 		if (logger.isTraceEnabled) {
 			logger.trace("<Lpc0> BlockHashes received: Size=%,d".format(received.size))
 		}
@@ -86,7 +86,7 @@ class Lpc0 extends LpcHandler(V0) {
 		sendGetBlockHashesByNumber(blockNumber, ForkCoverBatchSize)
 	}
 
-	private def maintainForkCoverage(received: Seq[ImmutableBytes]): Unit = {
+	private def maintainForkCoverage(received: Seq[DigestValue]): Unit = {
 		val blockNumber =
 			if (1L < this.lastAskedNumber) {
 				received.reverse.find(each => this.blockchain.existsBlock(each)).map {

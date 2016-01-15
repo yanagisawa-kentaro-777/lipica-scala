@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.lpc.message
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -18,7 +18,7 @@ class LpcMessagesTest extends Specification {
 
 	 "test BlockHashesMessage" should {
 		 "be right" in {
-			val original = BlockHashesMessage(Seq(ImmutableBytes.fromOneByte(1)))
+			val original = BlockHashesMessage(Seq(DigestValue.parseHexString("0101010101010101010101010101010101010101010101010101010101010101")))
 			 val encoded = original.toEncodedBytes
 			 val decoded: BlockHashesMessage = decodeMessage(LpcMessageCode.BlockHashes.asByte, encoded)
 

@@ -9,7 +9,7 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.scrypt.SCrypt
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, UtilConsts}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
@@ -24,7 +24,7 @@ class Wallet {
 
 	import Wallet._
 
-	private val walletTransactions = JavaConversions.mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, WalletTransaction])
+	private val walletTransactions = JavaConversions.mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, WalletTransaction])
 
 	private val rows = new mutable.HashMap[ImmutableBytes, Account]
 

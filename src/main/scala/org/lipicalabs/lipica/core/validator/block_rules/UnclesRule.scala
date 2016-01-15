@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.validator.block_rules
 
 import org.lipicalabs.lipica.core.kernel.{Block, BlockHeader}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * Ommer (=Uncle) に関する制限や仕様です。
@@ -43,7 +43,7 @@ object UnclesRule {
 	/**
 	 * Uncleのハッシュ値を計算するための中心アルゴリズム！
 	 */
-	def calculateUnclesHash(uncles: Seq[BlockHeader]): ImmutableBytes = {
+	def calculateUnclesHash(uncles: Seq[BlockHeader]): DigestValue = {
 		BlockHeader.encodeUncles(uncles).digest256
 	}
 

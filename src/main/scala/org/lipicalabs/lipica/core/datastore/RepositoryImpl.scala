@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, HashMapDB, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.{LoggerFactory, Logger}
 
@@ -176,7 +176,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		}
 	}
 
-	override def syncToRoot(v: ImmutableBytes): Unit = {
+	override def syncToRoot(v: DigestValue): Unit = {
 		withAccessCounting {
 			() => {
 				this.worldState.root = v
@@ -351,7 +351,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		cacheDetails.put(address, details)
 	}
 
-	override def createSnapshotTo(root: ImmutableBytes): Repository = {
+	override def createSnapshotTo(root: DigestValue): Repository = {
 		val trie = new SecureTrie(this.stateDS)
 		trie.root = root
 		trie.dataStore = this.worldState.dataStore
@@ -371,7 +371,7 @@ class RepositoryImpl(_detailsDS: KeyValueDataSource, _stateDS: KeyValueDataSourc
 		repo
 	}
 
-	override def rootHash: ImmutableBytes = this.worldState.rootHash
+	override def rootHash: DigestValue = this.worldState.rootHash
 
 }
 

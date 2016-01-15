@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
 import org.lipicalabs.lipica.core.datastore.{HashMapDBFactory, RepositoryImpl, IndexedBlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListenerAdaptor
 import org.lipicalabs.lipica.core.facade.components.{ComponentFactory, AdminInfo}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, EmptyDigest, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.parent_rules.{ParentNumberRule, ParentBlockHeaderValidator, DifficultyRule}
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactoryImpl
 import org.specs2.mutable.Specification
@@ -44,9 +44,9 @@ class BlockchainTest extends Specification {
 			val uri = getClass.getResource("scenario1.dmp")
 			val lines = java.nio.file.Files.readAllLines(Paths.get(uri.toURI), StandardCharsets.UTF_8)
 
-			val chain = new Chain
 			import scala.collection.JavaConversions._
-			var root = ImmutableBytes.empty
+			val chain = new Chain
+			var root: DigestValue = EmptyDigest
 			for (each <- lines) {
 				val block = Block.decode(ImmutableBytes.parseHexString(each))
 				//println("ParentHash=%s".format(block.parentHash))

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -51,7 +51,7 @@ trait ContractDetails {
 	/**
 	 * ストレージデータ全体のトップダイジェスト値を取得します。
 	 */
-	def storageRoot: ImmutableBytes
+	def storageRoot: DigestValue
 
 	/**
 	 * ストレージに格納されたデータ数を取得します。
@@ -75,7 +75,7 @@ trait ContractDetails {
 
 	def syncStorage(): Unit
 
-	def getSnapshotTo(v: ImmutableBytes): ContractDetails
+	def getSnapshotTo(v: DigestValue): ContractDetails
 
 	/**
 	 * このオブジェクトを、RBAC形式にエンコードします。

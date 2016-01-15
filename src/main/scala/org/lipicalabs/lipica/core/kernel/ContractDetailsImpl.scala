@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.slf4j.LoggerFactory
 
@@ -109,7 +109,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 		}
 	}
 
-	override def storageRoot: ImmutableBytes = this.storageTrie.rootHash
+	override def storageRoot: DigestValue = this.storageTrie.rootHash
 
 	override def storageKeys: Set[DataWord] = this.keys.map(DataWord(_)).toSet
 
@@ -149,7 +149,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 		}
 	}
 
-	override def getSnapshotTo(hash: ImmutableBytes) = {
+	override def getSnapshotTo(hash: DigestValue) = {
 		this.synchronized {
 			val keyValueDataSource = this.storageTrie.dataStore.dataSource
 			val snapStorage =
@@ -219,7 +219,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 				each => addKey(each.bytes)
 			}
 			if (useExternalStorage) {
-				this.storageTrie.root = items(5).bytes
+				this.storageTrie.root = Digest256(items(5).bytes)
 				this.storageTrie.dataStore.assignDataSource(externalStorageDataSource)
 			}
 			val endTime = System.nanoTime

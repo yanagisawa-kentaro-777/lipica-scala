@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.kernel.{BlockWrapper, Block, Genesis}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -25,7 +25,7 @@ class BlockQueueTest extends Specification {
 	sequential
 
 	private val blocks = new ArrayBuffer[Block]
-	private val hashes = new ArrayBuffer[ImmutableBytes]
+	private val hashes = new ArrayBuffer[DigestValue]
 	private var cumulativeDifficulty: BigInt = UtilConsts.Zero
 	private val nodeId = new Array[Byte](64)
 

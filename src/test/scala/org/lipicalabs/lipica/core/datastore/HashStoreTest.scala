@@ -5,7 +5,7 @@ import java.util.Random
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -21,7 +21,7 @@ import scala.collection.mutable.ArrayBuffer
 class HashStoreTest extends Specification {
 	sequential
 
-	private val hashes = new ArrayBuffer[ImmutableBytes]
+	private val hashes = new ArrayBuffer[DigestValue]
 	private var hashStore: HashStore = null
 	//private var testDBName: String = ""
 
@@ -30,7 +30,7 @@ class HashStoreTest extends Specification {
 		for (i <- 0 until 50) {
 			val hash = new Array[Byte](32)
 			rng.nextBytes(hash)
-			this.hashes.append(ImmutableBytes(hash))
+			this.hashes.append(Digest256(hash))
 		}
 
 		val r = BigInt(32, new Random)

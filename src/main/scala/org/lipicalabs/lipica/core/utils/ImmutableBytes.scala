@@ -84,7 +84,7 @@ class ImmutableBytes private(private val bytes: Array[Byte]) extends Comparable[
 
 	def reverse: ImmutableBytes = ImmutableBytes(Arrays.reverse(this.bytes))
 
-	def digest256: ImmutableBytes = new ImmutableBytes(DigestUtils.digest256(this.bytes))
+	def digest256: Digest256 = Digest256(new ImmutableBytes(DigestUtils.digest256(this.bytes)))
 	def digest512: ImmutableBytes = new ImmutableBytes(DigestUtils.digest512(this.bytes))
 	def sha2_256: ImmutableBytes = new ImmutableBytes(DigestUtils.sha2_256(this.bytes))
 	def ripemd160(newLength: Int): ImmutableBytes = {

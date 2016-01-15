@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.datastore
 import java.io.Closeable
 
 import org.lipicalabs.lipica.core.kernel.{Block, AccountState, ContractDetails}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable
@@ -126,19 +126,19 @@ trait Repository extends RepositoryLike {
 	/**
 	 * このオブジェクトの現在のルートハッシュを返します。
 	 */
-	def rootHash: ImmutableBytes
+	def rootHash: DigestValue
 
 	/**
 	 * このオブジェクトを、渡されたルートハッシュの状態に巻き戻します。
 	 */
-	def syncToRoot(root: ImmutableBytes)
+	def syncToRoot(root: DigestValue)
 
 	/**
 	 * 渡されたルートハッシュの状態に対応するオブジェクトを新たに生成して返します。
 	 * @param root ルートハッシュ値。
 	 * @return 生成されたオブジェクト。
 	 */
-	def createSnapshotTo(root: ImmutableBytes): Repository
+	def createSnapshotTo(root: DigestValue): Repository
 
 	/**
 	 * 永続化します。

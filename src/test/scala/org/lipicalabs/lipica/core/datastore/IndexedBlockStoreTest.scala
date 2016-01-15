@@ -6,7 +6,7 @@ import java.nio.file.Paths
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.kernel.{Genesis, Block}
 import org.lipicalabs.lipica.core.datastore.datasource.HashMapDB
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -79,7 +79,7 @@ class IndexedBlockStoreTest extends Specification {
 					block.hash mustEqual hash
 				}
 			}
-			blockStore.getBlockByHash(ImmutableBytes.parseHexString("00112233")).isEmpty mustEqual true
+			blockStore.getBlockByHash(DigestValue.parseHexString("00112233")).isEmpty mustEqual true
 			blockStore.getChainBlockByNumber(8004).isEmpty mustEqual true
 			blockStore.getBlocksByNumber(8004).isEmpty mustEqual true
 

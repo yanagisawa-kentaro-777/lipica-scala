@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.kernel
 
 import org.lipicalabs.lipica.core.kernel.genesis.GenesisLoader
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,6 +24,6 @@ object Genesis {
 
 	def getInstance(genesisFileName: String): Genesis = GenesisLoader.loadGenesisBlock(genesisFileName)
 
-	val GenesisHash: ImmutableBytes = getInstance.hash
+	val GenesisHash: DigestValue = getInstance.hash
 
 }

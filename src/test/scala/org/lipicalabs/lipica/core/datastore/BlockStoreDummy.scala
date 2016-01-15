@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.datastore
 
 import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue}
 
 /**
  *
@@ -11,22 +11,22 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class BlockStoreDummy extends BlockStore {
 
-	override def getBlockHashByNumber(blockNumber: Long): Option[ImmutableBytes] = {
+	override def getBlockHashByNumber(blockNumber: Long): Option[DigestValue] = {
 		val data  = String.valueOf(blockNumber).getBytes
-		Option(ImmutableBytes(DigestUtils.digest256(data)))
+		Option(Digest256(DigestUtils.digest256(data)))
 	}
 
-	override def getBlockHashByNumber(blockNumber: Long, branchBlockHash: ImmutableBytes): Option[ImmutableBytes] = {
+	override def getBlockHashByNumber(blockNumber: Long, branchBlockHash: DigestValue): Option[DigestValue] = {
 		getBlockHashByNumber(blockNumber)
 	}
 
 	override def getChainBlockByNumber(blockNumber: Long) = None
 
-	override def getBlockByHash(hash: ImmutableBytes): Option[Block] = null
+	override def getBlockByHash(hash: DigestValue): Option[Block] = null
 
-	override def existsBlock(hash: ImmutableBytes): Boolean = false
+	override def existsBlock(hash: DigestValue): Boolean = false
 
-	override def getHashesEndingWith(hash: ImmutableBytes, qty: Long): Seq[ImmutableBytes] = null
+	override def getHashesEndingWith(hash: DigestValue, qty: Long): Seq[DigestValue] = null
 
 	override def saveBlock(block: Block, cumulativeDifficulty: BigInt, mainChain: Boolean): Unit = ()
 
@@ -40,7 +40,7 @@ class BlockStoreDummy extends BlockStore {
 
 	override def rebranch(forkBlock: Block): Unit = ()
 
-	override def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt = null
+	override def getTotalDifficultyForHash(hash: DigestValue): BigInt = null
 
 	override def close(): Unit = ()
 

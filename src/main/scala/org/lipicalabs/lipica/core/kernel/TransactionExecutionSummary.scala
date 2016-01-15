@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{DigestValue, UtilConsts}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.lipicalabs.lipica.core.vm.program.InternalTransaction
 
@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.vm.program.InternalTransaction
  * YANAGISAWA, Kentaro
  */
 class TransactionExecutionSummary private (
-	val transactionHash: ImmutableBytes,
+	val transactionHash: DigestValue,
 	val value: BigInt,
 	val manaPrice: BigInt,
 	val manaLimit: BigInt,

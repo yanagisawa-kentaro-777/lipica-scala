@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{DigestValue, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
@@ -92,21 +92,21 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 		this.blocksDataSource.delete(key)
 	}
 
-	private def existsHash(aHash: ImmutableBytes): Boolean = {
-		this.hashesDataSource.get(aHash).isDefined
+	private def existsHash(aHash: DigestValue): Boolean = {
+		this.hashesDataSource.get(aHash.bytes).isDefined
 	}
 
-	private def putHash(aHash: ImmutableBytes): Unit = {
-		this.hashesDataSource.put(aHash, OneByteValue)
+	private def putHash(aHash: DigestValue): Unit = {
+		this.hashesDataSource.put(aHash.bytes, OneByteValue)
 	}
 
-	private def putHashes(aHashes: Iterable[ImmutableBytes]): Unit = {
-		val rows = aHashes.map(each => (each, OneByteValue)).toMap
+	private def putHashes(aHashes: Iterable[DigestValue]): Unit = {
+		val rows = aHashes.map(each => (each.bytes, OneByteValue)).toMap
 		this.hashesDataSource.updateBatch(rows)
 	}
 
-	private def deleteHash(aHash: ImmutableBytes): Unit = {
-		this.hashesDataSource.delete(aHash)
+	private def deleteHash(aHash: DigestValue): Unit = {
+		this.hashesDataSource.delete(aHash.bytes)
 	}
 
 	override def addAll(aBlocks: Iterable[BlockWrapper]): Unit = {
@@ -114,7 +114,7 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 		this.writeMutex.synchronized {
 			val numbers = new ArrayBuffer[Long](aBlocks.size)
 
-			val newHashes = new mutable.HashSet[ImmutableBytes]
+			val newHashes = new mutable.HashSet[DigestValue]
 			val newBlocks = new ArrayBuffer[BlockWrapper](aBlocks.size)
 			aBlocks.withFilter(b => !this.index.contains(b.blockNumber) && !numbers.contains(b.blockNumber)).foreach {
 				block => {
@@ -213,7 +213,7 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 	/**
 	 * 渡されたハッシュ値の中から、既にこのキューに溜まっているものを除外したものを返します。
 	 */
-	override def excludeExisting(aHashes: Seq[ImmutableBytes]): Seq[ImmutableBytes] = {
+	override def excludeExisting(aHashes: Seq[DigestValue]): Seq[DigestValue] = {
 		awaitInit()
 		aHashes.filter(each => !existsHash(each))
 	}

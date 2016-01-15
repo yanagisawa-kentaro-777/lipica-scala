@@ -43,9 +43,9 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, value))
 			}
-			this.nodes.put(hash, new CachedNode(value, _dirty = true))
+			this.nodes.put(hash.bytes, new CachedNode(value, _dirty = true))
 			this.isDirty = true
-			Right(hash)
+			Right(hash.bytes)
 		} else {
 			Left(value)
 		}

@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, UtilConsts, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -31,15 +31,15 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 	//TODO 永続化しなければならない。
 	private val maxBlockNumberRef = new AtomicLong(-1L)
 
-	private val hashToBlockCache = mapAsScalaMap(new ConcurrentHashMap[ImmutableBytes, ImmutableBytes])
+	private val hashToBlockCache = mapAsScalaMap(new ConcurrentHashMap[DigestValue, ImmutableBytes])
 	private val numberToBlocksCache = mapAsScalaMap(new ConcurrentHashMap[Long, Seq[BlockInfo]])
 
-	private def readThroughByHash(hash: ImmutableBytes): Option[Block] = {
+	private def readThroughByHash(hash: DigestValue): Option[Block] = {
 		this.hashToBlockCache.get(hash) match {
 			case Some(encoded) =>
 				Some(Block.decode(encoded))
 			case None =>
-				this.hashToBlockStore.get(hash) match {
+				this.hashToBlockStore.get(hash.bytes) match {
 					case Some(bytes) =>
 						Some(Block.decode(bytes))
 					case None =>
@@ -93,7 +93,7 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 			val startTime = System.nanoTime
 			val temporaryHashToBlockMap = new mutable.HashMap[ImmutableBytes, ImmutableBytes]
 			for (entry <- this.hashToBlockCache) {
-				temporaryHashToBlockMap.put(entry._1, entry._2)
+				temporaryHashToBlockMap.put(entry._1.bytes, entry._2)
 				numBlocks += 1
 			}
 			this.hashToBlockStore.updateBatch(temporaryHashToBlockMap.toMap)
@@ -144,7 +144,7 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 	/**
 	 * メインのチェーンから、指定された番号のブロックを探し、そのハッシュ値を返します。
 	 */
-	override def getBlockHashByNumber(blockNumber: Long): Option[ImmutableBytes] = getChainBlockByNumber(blockNumber).map(_.hash)
+	override def getBlockHashByNumber(blockNumber: Long): Option[DigestValue] = getChainBlockByNumber(blockNumber).map(_.hash)
 
 	def getBlocksByNumber(number: Long): Seq[Block] = {
 		readThroughByBlockNumber(number).flatMap(blockInfo => this.readThroughByHash(blockInfo.hash))
@@ -160,18 +160,18 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 	/**
 	 * 渡されたハッシュ値を持つブロックを探索して返します。
 	 */
-	override def getBlockByHash(hash: ImmutableBytes): Option[Block] = {
+	override def getBlockByHash(hash: DigestValue): Option[Block] = {
 		readThroughByHash(hash)
 	}
 
 	/**
 	 * 渡されたハッシュ値を持つブロックが存在するか否かを返します。
 	 */
-	override def existsBlock(hash: ImmutableBytes): Boolean = {
+	override def existsBlock(hash: DigestValue): Boolean = {
 		readThroughByHash(hash).isDefined
 	}
 
-	override def getTotalDifficultyForHash(hash: ImmutableBytes): BigInt = {
+	override def getTotalDifficultyForHash(hash: DigestValue): BigInt = {
 		readThroughByHash(hash).flatMap(block => readThroughByBlockNumber(block.blockNumber).find(blockInfo => blockInfo.hash == block.hash)).map(_.cumulativeDifficulty).getOrElse(UtilConsts.Zero)
 	}
 
@@ -197,10 +197,10 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
 	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
 	 */
-	override def getHashesEndingWith(hash: ImmutableBytes, number: Long): Seq[ImmutableBytes] = {
+	override def getHashesEndingWith(hash: DigestValue, number: Long): Seq[DigestValue] = {
 		readThroughByHash(hash) match {
 			case Some(initialBlock) =>
-				val buffer = new ArrayBuffer[ImmutableBytes]
+				val buffer = new ArrayBuffer[DigestValue]
 				var eachBlock = initialBlock
 				for (i <- 0L until number) {
 					buffer.append(eachBlock.hash)
@@ -221,8 +221,8 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 	/**
 	 * genesisから始まって指定された個数のブロックのハッシュ値を並べて返します。
 	 */
-	def getHashesStartingWith(number: Long, aMaxBlocks: Long): Seq[ImmutableBytes] = {
-		val result = new ArrayBuffer[ImmutableBytes]
+	def getHashesStartingWith(number: Long, aMaxBlocks: Long): Seq[DigestValue] = {
+		val result = new ArrayBuffer[DigestValue]
 		var i = 0
 		var shouldContinue = true
 		while ((i < aMaxBlocks) && shouldContinue) {
@@ -287,7 +287,7 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 		}
 	}
 
-	private def getBlockInfoForHash(blocks: Seq[BlockInfo], hash: ImmutableBytes): Option[BlockInfo] = blocks.find(_.hash == hash)
+	private def getBlockInfoForHash(blocks: Seq[BlockInfo], hash: DigestValue): Option[BlockInfo] = blocks.find(_.hash == hash)
 
 	override def close(): Unit = {
 		this.synchronized {
@@ -304,7 +304,7 @@ object IndexedBlockStore {
 
 }
 
-class BlockInfo(val hash: ImmutableBytes, val cumulativeDifficulty: BigInt, _mainChain: Boolean) extends Serializable {
+class BlockInfo(val hash: DigestValue, val cumulativeDifficulty: BigInt, _mainChain: Boolean) extends Serializable {
 	private val mainChainRef = new AtomicBoolean(_mainChain)
 	def mainChain: Boolean = this.mainChainRef.get
 	def mainChain_=(v: Boolean): Unit = this.mainChainRef.set(v)
@@ -326,6 +326,6 @@ object BlockInfo {
 		val hash = items.head.bytes
 		val cumulativeDifficulty = items(1).asPositiveBigInt
 		val mainChain = 0 < items(2).asInt
-		new BlockInfo(hash, cumulativeDifficulty, mainChain)
+		new BlockInfo(Digest256(hash), cumulativeDifficulty, mainChain)
 	}
 }

@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.lpc.message
 
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,8 +13,8 @@ case class StatusMessage(
 	protocolVersion: Byte,
 	networkId: Int,
 	totalDifficulty: ImmutableBytes,
-	bestHash: ImmutableBytes,
-	genesisHash: ImmutableBytes) extends LpcMessage {
+	bestHash: DigestValue,
+	genesisHash: DigestValue) extends LpcMessage {
 
 	override def toEncodedBytes = {
 		val encodedProcotolVersion = RBACCodec.Encoder.encode(this.protocolVersion)
@@ -37,6 +37,6 @@ object StatusMessage {
 		val totalDifficulty = items(2).bytes
 		val bestHash = items(3).bytes
 		val genesisHash = items(4).bytes
-		new StatusMessage(protocolVersion, networkId, totalDifficulty, bestHash, genesisHash)
+		new StatusMessage(protocolVersion, networkId, totalDifficulty, Digest256(bestHash), Digest256(genesisHash))
 	}
 }

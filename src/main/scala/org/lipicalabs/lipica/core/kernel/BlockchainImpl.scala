@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.components.AdminInfo
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ErrorLogger, ImmutableBytes, UtilConsts}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, BlockValidator, TxReceiptTrieRootCalculator, LogBloomFilterCalculator}
 import org.lipicalabs.lipica.core.validator.parent_rules.ParentBlockHeaderValidator
@@ -85,7 +85,7 @@ class BlockchainImpl(
 	/**
 	 * このブロックチェーンにおける最新ブロックのダイジェスト値を返します。
 	 */
-	override def bestBlockHash: ImmutableBytes = bestBlock.hash
+	override def bestBlockHash: DigestValue = bestBlock.hash
 
 	/**
 	 * このブロックチェーンに登録されているブロック数を返します。
@@ -100,9 +100,9 @@ class BlockchainImpl(
 	/**
 	 * ダイジェスト値に対応するブロックを返します。
 	 */
-	override def getBlockByHash(hash: ImmutableBytes) = this.blockStore.getBlockByHash(hash)
+	override def getBlockByHash(hash: DigestValue) = this.blockStore.getBlockByHash(hash)
 
-	override def getTransactionReceiptByHash(hash: ImmutableBytes) = {
+	override def getTransactionReceiptByHash(hash: DigestValue) = {
 		throw new UnsupportedOperationException("Not implemented.")
 	}
 
@@ -110,7 +110,7 @@ class BlockchainImpl(
 	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
 	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
 	 */
-	override def getSeqOfHashesEndingWith(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes] = {
+	override def getSeqOfHashesEndingWith(hash: DigestValue, count: Int): Seq[DigestValue] = {
 		//逆順でよい。
 		this.blockStore.getHashesEndingWith(hash, count)
 	}
@@ -122,7 +122,7 @@ class BlockchainImpl(
 	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として
 	 * 過去に遡行する形となります。
 	 */
-	override def getSeqOfHashesStartingFromBlock(aBlockNumber: Long, aCount: Int): Seq[ImmutableBytes] = {
+	override def getSeqOfHashesStartingFromBlock(aBlockNumber: Long, aCount: Int): Seq[DigestValue] = {
 		val bestBlockNumber = this.bestBlock.blockNumber
 		if (bestBlockNumber < aBlockNumber) {
 			return Seq.empty
@@ -646,7 +646,7 @@ class BlockchainImpl(
 		this.track = this.repository.startTracking
 	}
 
-	override def existsBlock(hash: ImmutableBytes) = this.blockStore.existsBlock(hash)
+	override def existsBlock(hash: DigestValue) = this.blockStore.existsBlock(hash)
 }
 
 object BlockchainImpl {

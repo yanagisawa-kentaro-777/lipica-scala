@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.trie
 
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, Value}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, Value}
 
 
 /**
@@ -28,7 +28,7 @@ trait Trie {
 	/**
 	 * 最上位レベルのハッシュ値を返します。
 	 */
-	def rootHash: ImmutableBytes
+	def rootHash: DigestValue
 
 	def root_=(value: TrieNode): Trie
 

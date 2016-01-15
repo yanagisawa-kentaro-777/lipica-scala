@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.slf4j.LoggerFactory
 
@@ -164,7 +164,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * 渡されたハッシュ値を保存します。
 	 * 保存されたハッシュ値は、ブロック取得において利用されます。
 	 */
-	def addHash(hash: ImmutableBytes): Unit = {
+	def addHash(hash: DigestValue): Unit = {
 		this.hashStore.addFirst(hash)
 		if (logger.isTraceEnabled) {
 			logger.trace("<SyncQueue> Adding hash to a hashQueue: %s, hashQueue.size=%,d".format(hash.toShortString, this.hashStore.size))
@@ -175,7 +175,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * 渡されたハッシュ値を保存します。
 	 * 保存されたハッシュ値は、ブロック取得において利用されます。
 	 */
-	def addHashes(hashes: Seq[ImmutableBytes]): Unit = {
+	def addHashes(hashes: Seq[DigestValue]): Unit = {
 		val filtered = this.blockQueue.excludeExisting(hashes)
 		this.hashStore.addBatchFirst(filtered)
 		if (logger.isDebugEnabled) {
@@ -187,7 +187,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * 渡されたハッシュ値を保存します。
 	 * 保存されたハッシュ値は、ブロック取得において利用されます。
 	 */
-	def addHashesLast(hashes: Seq[ImmutableBytes]): Unit = {
+	def addHashesLast(hashes: Seq[DigestValue]): Unit = {
 		val filtered = this.blockQueue.excludeExisting(hashes)
 		this.hashStore.addBatch(filtered)
 		if (logger.isDebugEnabled) {
@@ -199,7 +199,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * 渡されたハッシュ値を保存します。
 	 * 保存されたハッシュ値は、ブロック取得において利用されます。
 	 */
-	def addNewBlockHashes(hashes: Seq[ImmutableBytes]): Unit = {
+	def addNewBlockHashes(hashes: Seq[DigestValue]): Unit = {
 		val notInQueue = this.blockQueue.excludeExisting(hashes)
 		val notInChain = notInQueue.filter(each => !this.blockchain.existsBlock(each))
 		this.hashStore.addBatch(notInChain)
@@ -208,7 +208,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	/**
 	 * 一度フロントエンドに払いだしたハッシュ値について、返品を受け付けます。
 	 */
-	def returnHashes(hashes: Seq[ImmutableBytes]): Unit = {
+	def returnHashes(hashes: Seq[DigestValue]): Unit = {
 		if (hashes.isEmpty) {
 			return
 		}
@@ -227,7 +227,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * 設定によって決められた個数のハッシュ値を、
 	 * ブロック取得のために払い出します。
 	 */
-	def pollHashes: Seq[ImmutableBytes] = this.hashStore.pollBatch(NodeProperties.CONFIG.maxBlocksAsk)
+	def pollHashes: Seq[DigestValue] = this.hashStore.pollBatch(NodeProperties.CONFIG.maxBlocksAsk)
 
 	def logHashQueueSize(): Unit = logger.info("<SyncQueue> Block hashes list size = %,d".format(this.hashStore.size))
 

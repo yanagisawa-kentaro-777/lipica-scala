@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.LogInfo
 
 /**
@@ -13,7 +13,7 @@ import org.lipicalabs.lipica.core.vm.LogInfo
  * 2015/11/22 13:02
  * YANAGISAWA, Kentaro
  */
-class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomFilter, val cumulativeMana: ImmutableBytes, val postTxState: ImmutableBytes) {
+class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomFilter, val cumulativeMana: ImmutableBytes, val postTxState: DigestValue) {
 
 	private val transactionRef: AtomicReference[TransactionLike] = new AtomicReference[TransactionLike](null)
 	def transaction: TransactionLike = this.transactionRef.get
@@ -60,7 +60,7 @@ class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomF
 
 object TransactionReceipt {
 
-	def apply(logs: Seq[LogInfo], cumulativeMana: ImmutableBytes, postTxState: ImmutableBytes): TransactionReceipt = {
+	def apply(logs: Seq[LogInfo], cumulativeMana: ImmutableBytes, postTxState: DigestValue): TransactionReceipt = {
 		new TransactionReceipt(logs, buildBloomFilter(logs), cumulativeMana, postTxState)
 	}
 
@@ -71,7 +71,7 @@ object TransactionReceipt {
 		val bloomFilterBytes = items(2).bytes
 		val logs = items(3).items.map(each => LogInfo.decode(each.items))
 
-		new TransactionReceipt(logs.toBuffer, BloomFilter(bloomFilterBytes.toByteArray), cumulativeMana, postTxState)
+		new TransactionReceipt(logs.toBuffer, BloomFilter(bloomFilterBytes.toByteArray), cumulativeMana, Digest256(postTxState))
 	}
 
 	private def buildBloomFilter(logsSeq: Seq[LogInfo]): BloomFilter = {

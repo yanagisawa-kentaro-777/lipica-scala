@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.kernel.{Payment, TransactionLike}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{Digest256, UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
@@ -510,7 +510,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	def getBlockHash(index: Int): DataWord = {
 		if ((index < this.getBlockNumber.longValue) && (256.max(this.getBlockNumber.intValue) - 256 <= index)) {
 			//最近256ブロック内である。
-			this.context.blockStore.getBlockHashByNumber(index, getParentHash.data).map(DataWord(_)).getOrElse(DataWord.Zero)
+			this.context.blockStore.getBlockHashByNumber(index, Digest256(getParentHash.data)).map(found => DataWord(found.bytes)).getOrElse(DataWord.Zero)
 		} else {
 			//古すぎるか未知。
 			DataWord.Zero

@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 import scala.collection.mutable
@@ -59,7 +59,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 		}
 	}
 
-	override def storageRoot: ImmutableBytes = {
+	override def storageRoot: DigestValue = {
 		this.synchronized {
 			val storageTrie = SecureTrie.newInstance
 			for (entry <- this.storage) {
@@ -154,7 +154,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 
 	override def syncStorage() = Option(this.originalContract).foreach(_.syncStorage())
 
-	override def getSnapshotTo(v: ImmutableBytes) = throw new UnsupportedOperationException
+	override def getSnapshotTo(v: DigestValue) = throw new UnsupportedOperationException
 
 	override def toString: String = "Code: %s, StorageSize: %,d".format(this.code.toHexString, this.storageSize)
 

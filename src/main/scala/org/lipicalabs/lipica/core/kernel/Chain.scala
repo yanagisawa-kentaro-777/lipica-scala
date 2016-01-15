@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{DigestValue, UtilConsts}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -20,7 +20,7 @@ class Chain {
 	private var _totalDifficulty: BigInt = UtilConsts.Zero
 	def totalDifficulty: BigInt = this._totalDifficulty
 
-	private val index: mutable.Map[ImmutableBytes, Block] = new mutable.HashMap[ImmutableBytes, Block]
+	private val index: mutable.Map[DigestValue, Block] = new mutable.HashMap[DigestValue, Block]
 
 	/**
 	 * 渡されたブロックがこのチェーンの直接の後続ブロックであれば、連結します。

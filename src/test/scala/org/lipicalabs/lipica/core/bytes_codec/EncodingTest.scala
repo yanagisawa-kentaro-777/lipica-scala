@@ -131,13 +131,14 @@ class EncodingTest extends Specification {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 			))
-			val elem2 = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(ImmutableBytes.empty)).digest256
+			val elem2 = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(ImmutableBytes.empty)).digest256.bytes
 			val elem3 = RBACCodec.Encoder.encode(Array[Byte](
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 				0x00, 0x00, 0x00, 0x00
 			))
-			val encoded = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(elem1, elem2, elem3))
+			val seq: Seq[ImmutableBytes] = Seq(elem1, elem2, elem3)
+			val encoded = RBACCodec.Encoder.encodeSeqOfByteArrays(seq)
 
 			encoded.toHexString mustEqual
 				"f856a000000000000000000000000000000000000000000000000000000000000000001dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000"

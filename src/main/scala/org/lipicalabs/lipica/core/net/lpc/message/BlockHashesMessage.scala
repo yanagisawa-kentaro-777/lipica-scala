@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.lpc.message
 
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, ImmutableBytes}
 
 /**
  * 送信元ノードが知っているブロックダイジェスト値を、
@@ -18,7 +18,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/09 20:36
  * YANAGISAWA, Kentaro
  */
-case class BlockHashesMessage(blockHashes: Seq[ImmutableBytes]) extends LpcMessage {
+case class BlockHashesMessage(blockHashes: Seq[DigestValue]) extends LpcMessage {
 
 	override def toEncodedBytes = {
 		val seq = this.blockHashes.map(each => RBACCodec.Encoder.encode(each))
@@ -35,7 +35,7 @@ object BlockHashesMessage {
 
 	def decode(encodedBytes: ImmutableBytes): BlockHashesMessage = {
 		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items
-		new BlockHashesMessage(items.map(_.bytes))
+		new BlockHashesMessage(items.map(each => Digest256(each.bytes)))
 	}
 
 }

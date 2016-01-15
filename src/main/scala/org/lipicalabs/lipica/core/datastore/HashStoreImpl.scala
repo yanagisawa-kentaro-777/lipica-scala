@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantLock
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils._
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
@@ -62,55 +62,55 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 		this.initDoneRef.set(false)
 	}
 
-	override def add(hash: ImmutableBytes) = {
+	override def add(hash: DigestValue) = {
 		awaitInit()
 		addInternal(first = false, hash)
 	}
 
-	override def addFirst(hash: ImmutableBytes) = {
+	override def addFirst(hash: DigestValue) = {
 		awaitInit()
 		addInternal(first = true, hash)
 	}
 
-	override def addBatch(aHashes: Seq[ImmutableBytes]) = {
+	override def addBatch(aHashes: Seq[DigestValue]) = {
 		privateAddBatch(aHashes, first = false)
 	}
 
-	override def addBatchFirst(aHashes: Seq[ImmutableBytes]) = {
+	override def addBatchFirst(aHashes: Seq[DigestValue]) = {
 		privateAddBatch(aHashes, first = true)
 	}
 
-	private def privateAddBatch(aHashes: Seq[ImmutableBytes], first: Boolean): Unit = {
+	private def privateAddBatch(aHashes: Seq[DigestValue], first: Boolean): Unit = {
 		awaitInit()
 		this.synchronized {
 			val encoder = RBACCodec.Encoder
-			val batch = aHashes.map(each => (encoder.encode(createIndex(first)), each)).toMap
+			val batch = aHashes.map(each => (encoder.encode(createIndex(first)), each.bytes)).toMap
 			this.dataSource.updateBatch(batch)
 		}
 	}
 
-	override def peek: Option[ImmutableBytes] = {
+	override def peek: Option[DigestValue] = {
 		awaitInit()
 		this.synchronized {
 			if (this.index.isEmpty) {
 				return None
 			}
 			val key = RBACCodec.Encoder.encode(this.index.head)
-			this.dataSource.get(key)
+			this.dataSource.get(key).map(Digest256(_))
 		}
 	}
 
-	override def poll: Option[ImmutableBytes] = {
+	override def poll: Option[DigestValue] = {
 		awaitInit()
 		pollInternal
 	}
 
-	override def pollBatch(count: Int): Seq[ImmutableBytes] = {
+	override def pollBatch(count: Int): Seq[DigestValue] = {
 		awaitInit()
 		if (this.index.isEmpty) {
 			return Seq.empty
 		}
-		val result = new ArrayBuffer[ImmutableBytes](count min this.size)
+		val result = new ArrayBuffer[DigestValue](count min this.size)
 		var shouldContinue = true
 		while (shouldContinue && (result.size < count)) {
 			val each = pollInternal
@@ -156,22 +156,22 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 		}
 	}
 
-	private def addInternal(first: Boolean, hash: ImmutableBytes): Unit = {
+	private def addInternal(first: Boolean, hash: DigestValue): Unit = {
 		this.synchronized {
 			val idx = createIndex(first)
 			val key = RBACCodec.Encoder.encode(idx)
-			this.dataSource.put(key, hash)
+			this.dataSource.put(key, hash.bytes)
 		}
 	}
 
-	private def pollInternal: Option[ImmutableBytes] = {
+	private def pollInternal: Option[DigestValue] = {
 		this.synchronized {
 			if (this.index.isEmpty) {
 				return None
 			}
 			val idx = this.index.head
 			val key = RBACCodec.Encoder.encode(idx)
-			val result = this.dataSource.get(key)
+			val result = this.dataSource.get(key).map(Digest256(_))
 			this.dataSource.delete(key)
 			this.index.remove(0)
 			result

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.trie
 
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * 通常の Trie と SecureTrie とを組にして保持し各種操作を行うTrieの実装です。
@@ -30,7 +30,7 @@ class FatTrie(origTrieDS: KeyValueDataSource, secureTrieDS: KeyValueDataSource) 
 		this._secureTrie.delete(key)
 	}
 
-	override def rootHash: ImmutableBytes = this._secureTrie.rootHash
+	override def rootHash: DigestValue = this._secureTrie.rootHash
 
 	override def root_=(node: TrieNode): Trie = this._secureTrie.root = node
 

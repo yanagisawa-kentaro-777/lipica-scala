@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{Digest256, DigestValue, UtilConsts, ImmutableBytes}
 
 /**
  * あるアカウントの残高等の情報を表現するクラス。
@@ -50,9 +50,9 @@ class AccountState(_n: BigInt, _b: BigInt) {
 	/**
 	 * ストレージの状態を表すルートハッシュ値。
 	 */
-	private var _storageRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
-	def storageRoot: ImmutableBytes = this._storageRoot
-	def storageRoot_=(v: ImmutableBytes): Unit = {
+	private var _storageRoot: DigestValue = DigestUtils.EmptyTrieHash
+	def storageRoot: DigestValue = this._storageRoot
+	def storageRoot_=(v: DigestValue): Unit = {
 		this._storageRoot = v
 		this.isDirty = true
 	}
@@ -60,9 +60,9 @@ class AccountState(_n: BigInt, _b: BigInt) {
 	/**
 	 * このアカウントに結び付けられたプログラムコードのハッシュ値。
 	 */
-	private var _codeHash: ImmutableBytes = DigestUtils.EmptyDataHash
-	def codeHash: ImmutableBytes = this._codeHash
-	def codeHash_=(v: ImmutableBytes): Unit = this._codeHash = v
+	private var _codeHash: DigestValue = DigestUtils.EmptyDataHash
+	def codeHash: DigestValue = this._codeHash
+	def codeHash_=(v: DigestValue): Unit = this._codeHash = v
 
 	private var _isDirty: Boolean = false
 	def isDirty: Boolean = this._isDirty
@@ -101,8 +101,8 @@ object AccountState {
 		val result = new AccountState
 		result.nonce = items.head.asPositiveBigInt
 		result.balance = items(1).asPositiveBigInt
-		result.storageRoot = items(2).bytes
-		result.codeHash = items(3).bytes
+		result.storageRoot = Digest256(items(2).bytes)
+		result.codeHash = Digest256(items(3).bytes)
 		result
 	}
 }

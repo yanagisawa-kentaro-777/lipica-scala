@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{Digest256, EmptyDigest, DigestValue, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
 import org.lipicalabs.lipica.core.validator.parent_rules.DifficultyRule
 
@@ -19,17 +19,17 @@ class BlockHeader {
 	/**
 	 * 親ブロックの256ビットダイジェスト値。
 	 */
-	private var _parentHash: ImmutableBytes = ImmutableBytes.empty
-	def parentHash: ImmutableBytes = this._parentHash
-	def parentHash_=(v: ImmutableBytes): Unit = this._parentHash = v
+	private var _parentHash: DigestValue = EmptyDigest
+	def parentHash: DigestValue = this._parentHash
+	def parentHash_=(v: DigestValue): Unit = this._parentHash = v
 
 	/**
 	 * uncle list の256ビットダイジェスト値。
 	 * this.encodeUncles.digest256 と等しいはずである。
 	 */
-	private var _unclesHash: ImmutableBytes = DigestUtils.EmptySeqHash
-	def unclesHash: ImmutableBytes = this._unclesHash
-	def unclesHash_=(v: ImmutableBytes): Unit = this._unclesHash = v
+	private var _unclesHash: DigestValue = DigestUtils.EmptySeqHash
+	def unclesHash: DigestValue = this._unclesHash
+	def unclesHash_=(v: DigestValue): Unit = this._unclesHash = v
 
 	/**
 	 * このブロックのマイニング成功時に、すべての報酬が送られる先の
@@ -43,24 +43,24 @@ class BlockHeader {
 	 * すべてのトランザクションが実行された後の、
 	 * 状態trieのルートハッシュ値。
 	 */
-	private var _stateRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
-	def stateRoot: ImmutableBytes = this._stateRoot
-	def stateRoot_=(v: ImmutableBytes): Unit = this._stateRoot = v
+	private var _stateRoot: DigestValue = DigestUtils.EmptyTrieHash
+	def stateRoot: DigestValue = this._stateRoot
+	def stateRoot_=(v: DigestValue): Unit = this._stateRoot = v
 
 	/**
 	 * トランザクションを格納したtrieのルートハッシュ値。
 	 */
-	private var _txTrieRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
-	def txTrieRoot: ImmutableBytes = this._txTrieRoot
-	def txTrieRoot_=(v: ImmutableBytes): Unit = this._txTrieRoot = v
+	private var _txTrieRoot: DigestValue = DigestUtils.EmptyTrieHash
+	def txTrieRoot: DigestValue = this._txTrieRoot
+	def txTrieRoot_=(v: DigestValue): Unit = this._txTrieRoot = v
 
 	/**
 	 * Transaction Receipt を格納した trie のルートハッシュ値。
 	 * おそらく、Block.calculateTxTrieRoot と同様の方法によって算出可能。
 	 */
-	private var _receiptTrieRoot: ImmutableBytes = DigestUtils.EmptyTrieHash
-	def receiptTrieRoot: ImmutableBytes = this._receiptTrieRoot
-	def receiptTrieRoot_=(v: ImmutableBytes): Unit = this._receiptTrieRoot = v
+	private var _receiptTrieRoot: DigestValue = DigestUtils.EmptyTrieHash
+	def receiptTrieRoot: DigestValue = this._receiptTrieRoot
+	def receiptTrieRoot_=(v: DigestValue): Unit = this._receiptTrieRoot = v
 
 	private var _logsBloom: ImmutableBytes = ImmutableBytes.empty
 	def logsBloom: ImmutableBytes = this._logsBloom
@@ -110,9 +110,9 @@ class BlockHeader {
 	/**
 	 * ethash において意味を持つ mix-hash。
 	 */
-	private var _mixHash: ImmutableBytes = DigestUtils.EmptyDataHash
-	def mixHash: ImmutableBytes = this._mixHash
-	def mixHash_=(v: ImmutableBytes): Unit = this._mixHash = v
+	private var _mixHash: DigestValue = DigestUtils.EmptyDataHash
+	def mixHash: DigestValue = this._mixHash
+	def mixHash_=(v: DigestValue): Unit = this._mixHash = v
 
 	private var _extraData: ImmutableBytes = ImmutableBytes.empty
 	def extraData: ImmutableBytes = this._extraData
@@ -165,11 +165,11 @@ class BlockHeader {
 		//リトルエンディアンに変換する。
 		val revertedNonce = this.nonce.reverse
 		val hashWithoutNonce = this.encode(withNonce = false).digest256
-		val seed = hashWithoutNonce ++ revertedNonce
+		val seed = hashWithoutNonce.bytes ++ revertedNonce
 		val seedHash = seed.digest512
-		val concat = seedHash ++ this.mixHash
+		val concat = seedHash ++ this.mixHash.bytes
 
-		concat.digest256
+		concat.digest256.bytes
 	}
 
 	/**
@@ -207,12 +207,12 @@ class BlockHeader {
 object BlockHeader {
 	def decode(decodedResult: DecodedResult): BlockHeader = {
 		val result = new BlockHeader
-		result.parentHash = decodedResult.items.head.bytes
-		result.unclesHash = decodedResult.items(1).bytes
+		result.parentHash = Digest256(decodedResult.items.head.bytes)
+		result.unclesHash = Digest256(decodedResult.items(1).bytes)
 		result.coinbase = decodedResult.items(2).bytes
-		result.stateRoot = decodedResult.items(3).bytes
-		result.txTrieRoot = decodedResult.items(4).bytes
-		result.receiptTrieRoot = decodedResult.items(5).bytes
+		result.stateRoot = Digest256(decodedResult.items(3).bytes)
+		result.txTrieRoot = Digest256(decodedResult.items(4).bytes)
+		result.receiptTrieRoot = Digest256(decodedResult.items(5).bytes)
 		result.logsBloom = decodedResult.items(6).bytes
 		result.difficulty = decodedResult.items(7).bytes
 
@@ -222,7 +222,7 @@ object BlockHeader {
 		result.timestamp = decodedResult.items(11).bytes.toPositiveBigInt.longValue()
 
 		result.extraData = decodedResult.items(12).bytes
-		result.mixHash = decodedResult.items(13).bytes
+		result.mixHash = DigestValue(decodedResult.items(13).bytes)
 		result.nonce = decodedResult.items(14).bytes
 
 		result

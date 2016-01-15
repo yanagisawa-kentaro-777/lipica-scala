@@ -21,7 +21,7 @@ import org.lipicalabs.lipica.core.net.shh.{ShhHandler, ShhMessageFactory}
 import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzHandler, BzzMessageFactory}
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
 import org.lipicalabs.lipica.core.net.transport.{FrameCodec, MessageCodec}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -172,10 +172,10 @@ class Channel {
 	def maxHashesAsk: Int = this.lpc.maxHashesAsk
 	def maxHashToAsk_=(v: Int): Unit = this.lpc.maxHashesAsk = v
 
-	def lastHashToAsk: ImmutableBytes = this.lpc.lastHashToAsk
-	def lastHashToAsk_=(v: ImmutableBytes): Unit = this.lpc.lastHashToAsk = v
+	def lastHashToAsk: DigestValue = this.lpc.lastHashToAsk
+	def lastHashToAsk_=(v: DigestValue): Unit = this.lpc.lastHashToAsk = v
 
-	def bestKnownHash: ImmutableBytes = this.lpc.bestKnownHash
+	def bestKnownHash: DigestValue = this.lpc.bestKnownHash
 
 	def getSyncStats: SyncStatistics = this.lpc.getSyncStats
 

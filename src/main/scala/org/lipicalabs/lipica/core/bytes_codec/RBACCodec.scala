@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.bytes_codec
 import java.io.PrintStream
 import java.nio.charset.StandardCharsets
 
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ByteUtils, Value, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils._
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
@@ -232,6 +232,7 @@ object RBACCodec {
 			input match {
 				case v: ImmutableBytes => v
 				case v: Array[Byte] => ImmutableBytes(v)
+				case d: DigestValue => d.bytes
 				case v: String => ImmutableBytes(v.getBytes(StandardCharsets.UTF_8))
 				case v: Long =>
 					if (v == 0L) {

@@ -14,7 +14,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.{Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.endpoint.PeerServer
 import org.lipicalabs.lipica.core.facade.submit.{TransactionExecutor, TransactionTask}
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{Digest256, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 
@@ -142,7 +142,7 @@ class LipicaImpl extends Lipica {
 
 
 	override def getSnapshotTo(root: Array[Byte]): RepositoryIF = {
-		new RepositoryIF(this.worldManager.repository.createSnapshotTo(ImmutableBytes(root)))
+		new RepositoryIF(this.worldManager.repository.createSnapshotTo(Digest256(root)))
 	}
 
 	override def getPendingTransactions: Set[TransactionLike] = this.worldManager.blockchain.pendingTransactions

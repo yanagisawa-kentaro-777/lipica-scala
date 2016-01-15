@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import java.util.concurrent.atomic.AtomicLong
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * ブロックに幾つかの情報を追加した薄いラッパークラスです。
@@ -35,11 +35,11 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 
 	def isSolidBlock: Boolean = !isNewBlock || (SolidBlockDurationThresholdMillis < timeSinceReceiving)
 
-	def hash: ImmutableBytes = this.block.hash
+	def hash: DigestValue = this.block.hash
 	def blockNumber: Long = this.block.blockNumber
 	def encode: ImmutableBytes = this.block.encode
 	def shortHash: String = this.block.shortHash
-	def parentHash: ImmutableBytes = this.block.parentHash
+	def parentHash: DigestValue = this.block.parentHash
 
 	def timeSinceFailed: Long = {
 		val timestamp = this.importFailedAt

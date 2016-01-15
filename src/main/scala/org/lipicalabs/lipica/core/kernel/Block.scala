@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -23,12 +23,12 @@ trait Block {
 	/**
 	 * このブロックの親のダイジェスト値。
 	 */
-	def parentHash: ImmutableBytes
+	def parentHash: DigestValue
 
 	/**
 	 * アンクルリスト部分のダイジェスト値。
 	 */
-	def unclesHash: ImmutableBytes
+	def unclesHash: DigestValue
 
 	/**
 	 * このブロックの採掘に成功した場合の報酬が送られるアドレス。
@@ -39,18 +39,18 @@ trait Block {
 	 * このブロックに含まれるすべてのトランザクションの
 	 * 実行および終了処理が完了した時点における、状態のルートダイジェスト値。
 	 */
-	def stateRoot: ImmutableBytes
-	def stateRoot_=(v: ImmutableBytes): Unit
+	def stateRoot: DigestValue
+	def stateRoot_=(v: DigestValue): Unit
 
 	/**
 	 * トランザクションリスト部のダイジェスト値。
 	 */
-	def txTrieRoot: ImmutableBytes
+	def txTrieRoot: DigestValue
 
 	/**
 	 * トランザクションレシートリスト部のダイジェスト値。
 	 */
-	def receiptsRoot: ImmutableBytes
+	def receiptsRoot: DigestValue
 
 	/**
 	 * トランザクションリスト内のログ情報を格納したブルームフィルタ。
@@ -98,7 +98,7 @@ trait Block {
 	/**
 	 * Proof of Work となるダイジェスト値。
 	 */
-	def mixHash: ImmutableBytes
+	def mixHash: DigestValue
 
 	/**
 	 * 64ビット値。Proof of Work の構成要素。
@@ -106,7 +106,7 @@ trait Block {
 	def nonce: ImmutableBytes
 	def nonce_=(v: ImmutableBytes): Unit
 
-	def hash: ImmutableBytes
+	def hash: DigestValue
 
 	def transactions: Seq[TransactionLike]
 
@@ -148,7 +148,7 @@ class PlainBlock private[kernel](override val blockHeader: BlockHeader, override
 
 	override def stateRoot = this.blockHeader.stateRoot
 
-	override def stateRoot_=(v: ImmutableBytes): Unit = {
+	override def stateRoot_=(v: DigestValue): Unit = {
 		this.blockHeader.stateRoot = v
 	}
 

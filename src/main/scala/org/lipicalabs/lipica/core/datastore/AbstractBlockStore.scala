@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.datastore
 
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.
@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 abstract class AbstractBlockStore extends BlockStore {
 
-	override def getBlockHashByNumber(aBlockNumber: Long, aBranchBlockHash: ImmutableBytes): Option[ImmutableBytes] = {
+	override def getBlockHashByNumber(aBlockNumber: Long, aBranchBlockHash: DigestValue): Option[DigestValue] = {
 		getBlockByHash(aBranchBlockHash) match {
 			case Some(branchBlock) =>
 				if (branchBlock.blockNumber < aBlockNumber) {

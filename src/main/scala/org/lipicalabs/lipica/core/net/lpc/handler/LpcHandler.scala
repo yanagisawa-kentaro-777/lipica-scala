@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.net.lpc.message._
 import org.lipicalabs.lipica.core.sync._
 import org.lipicalabs.lipica.core.net.message.ReasonCode
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -54,21 +54,21 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	override def enableTransactions() = this._processTransactions = true
 	override def disableTransactions() = this._processTransactions = false
 
-	protected var bestHash: ImmutableBytes = null
+	protected var bestHash: DigestValue = null
 	override def bestKnownHash = this.bestHash
 
 	/**
 	 * 要求すべき最先端（＝ブロック番号が最も大きい）ブロックのハッシュ値。
 	 */
-	protected var _lastHashToAsk: ImmutableBytes = null
+	protected var _lastHashToAsk: DigestValue = null
 	override def lastHashToAsk = this._lastHashToAsk
-	override def lastHashToAsk_=(v: ImmutableBytes) = this._lastHashToAsk = v
+	override def lastHashToAsk_=(v: DigestValue) = this._lastHashToAsk = v
 
 	protected var _maxHashesAsk = NodeProperties.CONFIG.maxHashesAsk
 	override def maxHashesAsk = this._maxHashesAsk
 	override def maxHashesAsk_=(v: Int) = this._maxHashesAsk = v
 
-	protected val sentHashes: mutable.Buffer[ImmutableBytes] = JavaConversions.asScalaBuffer(java.util.Collections.synchronizedList(new java.util.ArrayList[ImmutableBytes]))
+	protected val sentHashes: mutable.Buffer[DigestValue] = JavaConversions.asScalaBuffer(java.util.Collections.synchronizedList(new java.util.ArrayList[DigestValue]))
 	protected val syncStats: SyncStatistics = new SyncStatistics
 
 
@@ -222,7 +222,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		sendMessage(BlockHashesMessage(hashes))
 	}
 
-	protected def processBlockHashes(hashes: Seq[ImmutableBytes]): Unit
+	protected def processBlockHashes(hashes: Seq[DigestValue]): Unit
 
 	protected def onBlockHashes(message: BlockHashesMessage): Unit = {
 		if (loggerSync.isTraceEnabled) {
@@ -301,7 +301,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		}
 	}
 
-	private def removeFromSentHashes(hash: ImmutableBytes): Unit = {
+	private def removeFromSentHashes(hash: DigestValue): Unit = {
 		this.sentHashes.indices.find(i => this.sentHashes(i) == hash).foreach(idx => this.sentHashes.remove(idx))
 	}
 

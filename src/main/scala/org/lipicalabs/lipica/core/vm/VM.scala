@@ -420,7 +420,7 @@ class VM {
 				val len = program.stackPop
 				val buffer = program.memoryChunk(offset.intValue, len.intValue)
 				//計算する。
-				val result = DataWord(buffer.digest256)
+				val result = DataWord(buffer.digest256.bytes)
 				//TODO 未実装： StorageDictHandler
 //				if (this.storageDictHandler ne null) {
 //					storageDictHandler.vmSha3Notify(buffer, result)

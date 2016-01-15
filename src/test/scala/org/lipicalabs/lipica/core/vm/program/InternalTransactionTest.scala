@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{Digest256, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -19,7 +19,7 @@ class InternalTransactionTest extends Specification {
 
 	"instance creation" should {
 		"be right" in {
-			val parentHash = ImmutableBytes.create(32)
+			val parentHash = Digest256(ImmutableBytes.create(32))
 			val nonce = ImmutableBytes(Array[Byte](0, 1, 2, 3, 4, 5, 6, 7))
 			val manaPrice = DataWord(12L)
 			val manaLimit = DataWord(100L)

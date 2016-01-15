@@ -5,7 +5,7 @@ import org.codehaus.jackson.map.ObjectMapper
 import org.lipicalabs.lipica.core.kernel.{Genesis, AccountState, BlockHeader}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.trie.SecureTrie
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts, JsonUtils}
+import org.lipicalabs.lipica.core.utils._
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,10 +37,10 @@ object GenesisLoader {
 		val blockHeader = new BlockHeader
 		blockHeader.nonce = JsonUtils.parseHexStringToImmutableBytes(genesisJson.nonce)
 		blockHeader.difficulty = JsonUtils.parseHexStringToImmutableBytes(genesisJson.difficulty)
-		blockHeader.mixHash = JsonUtils.parseHexStringToImmutableBytes(genesisJson.mixhash)
+		blockHeader.mixHash = Digest256(JsonUtils.parseHexStringToImmutableBytes(genesisJson.mixhash))
 		blockHeader.coinbase = JsonUtils.parseHexStringToImmutableBytes(genesisJson.coinbase)
 		blockHeader.timestamp = JsonUtils.parseHexStringToLong(genesisJson.timestamp)
-		blockHeader.parentHash = JsonUtils.parseHexStringToImmutableBytes(genesisJson.parentHash)
+		blockHeader.parentHash = Digest256(JsonUtils.parseHexStringToImmutableBytes(genesisJson.parentHash))
 		blockHeader.extraData = JsonUtils.parseHexStringToImmutableBytes(genesisJson.extraData)
 		blockHeader.manaLimit = JsonUtils.parseHexStringToImmutableBytes(genesisJson.manaLimit)
 		blockHeader.logsBloom = ImmutableBytes.create(256)
@@ -57,7 +57,7 @@ object GenesisLoader {
 		new Genesis(blockHeader, premine)
 	}
 
-	private def calculateRootHash(premine: Map[ImmutableBytes, AccountState]): ImmutableBytes = {
+	private def calculateRootHash(premine: Map[ImmutableBytes, AccountState]): DigestValue = {
 		val trie = SecureTrie.newInstance
 		for (entry <- premine) {
 			trie.update(entry._1, entry._2.encode)

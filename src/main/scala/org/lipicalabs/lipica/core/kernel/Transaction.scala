@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.ManaCost
 import org.slf4j.LoggerFactory
 
@@ -80,7 +80,7 @@ trait TransactionLike {
 	/**
 	 * 署名を含めてエンコードされたバイト列のダイジェスト値を返します。
 	 */
-	def hash: ImmutableBytes = toEncodedBytes.digest256
+	def hash: DigestValue = toEncodedBytes.digest256
 
 	/**
 	 * 署名を含めずにエンコードします。
@@ -90,7 +90,7 @@ trait TransactionLike {
 	/**
 	 * 署名を含めずにエンコードされたバイト列のダイジェスト値を返します。
 	 */
-	def rawHash: ImmutableBytes = toEncodedRawBytes.digest256
+	def rawHash: DigestValue = toEncodedRawBytes.digest256
 
 	/**
 	 * このトランザクションにかかるマナの量を返します。

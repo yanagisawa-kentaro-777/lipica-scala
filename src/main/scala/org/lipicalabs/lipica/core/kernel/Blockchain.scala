@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import java.io.Closeable
 
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * 自ノードが管理するブロックチェーンのインターフェイスです。
@@ -34,7 +34,7 @@ trait Blockchain extends Closeable {
 	/**
 	 * このチェーンにおける最新のブロックのダイジェスト値を返します。
 	 */
-	def bestBlockHash: ImmutableBytes
+	def bestBlockHash: DigestValue
 
 	/**
 	 * ブロックチェーンに属する全ブロックのdifficultyの合計値。
@@ -51,7 +51,7 @@ trait Blockchain extends Closeable {
 	/**
 	 * 指定されたブロックが、このチェーン上に存在するか否かを返します。
 	 */
-	def existsBlock(hash: ImmutableBytes): Boolean
+	def existsBlock(hash: DigestValue): Boolean
 
 	/**
 	 * 指定されたブロック番号のブロックがこのチェーン上に存在すれば、そのブロックを返します。
@@ -61,13 +61,13 @@ trait Blockchain extends Closeable {
 	/**
 	 * 指定されたハッシュ値のブロックがこのチェーン上に存在すれば、そのブロックを返します。
 	 */
-	def getBlockByHash(hash: ImmutableBytes): Option[Block]
+	def getBlockByHash(hash: DigestValue): Option[Block]
 
 	/**
 	 * 渡されたハッシュ値を持つブロック以前のブロックのハッシュ値を並べて返します。
 	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として過去に遡行する順序となります。
 	 */
-	def getSeqOfHashesEndingWith(hash: ImmutableBytes, count: Int): Seq[ImmutableBytes]
+	def getSeqOfHashesEndingWith(hash: DigestValue, count: Int): Seq[DigestValue]
 
 	/**
 	 * 渡されたブロック番号を最古（＝最小）のブロック番号として、
@@ -76,9 +76,9 @@ trait Blockchain extends Closeable {
 	 * 並び順は、最も新しい（＝ブロック番号が大きい）ブロックを先頭として
 	 * 過去に遡行する形となります。
 	 */
-	def getSeqOfHashesStartingFromBlock(blockNumber: Long, count: Int): Seq[ImmutableBytes]
+	def getSeqOfHashesStartingFromBlock(blockNumber: Long, count: Int): Seq[DigestValue]
 
-	def getTransactionReceiptByHash(hash: ImmutableBytes): Option[TransactionReceipt]
+	def getTransactionReceiptByHash(hash: DigestValue): Option[TransactionReceipt]
 
 	def hasParentOnTheChain(block: Block): Boolean
 
@@ -106,5 +106,5 @@ trait Blockchain extends Closeable {
 }
 
 object Blockchain {
-	val GenesisHash: ImmutableBytes = Genesis.getInstance.hash
+	val GenesisHash: DigestValue = Genesis.getInstance.hash
 }

@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.datastore
 
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * ブロックのダイジェスト値を永続化して記録するクラスが実装すべき trait です。
@@ -11,19 +11,19 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 trait HashStore extends DiskStore {
 
-	def add(hash: ImmutableBytes): Unit
+	def add(hash: DigestValue): Unit
 
-	def addFirst(hash: ImmutableBytes): Unit
+	def addFirst(hash: DigestValue): Unit
 
-	def addBatch(hashes: Seq[ImmutableBytes]): Unit
+	def addBatch(hashes: Seq[DigestValue]): Unit
 
-	def addBatchFirst(hashes: Seq[ImmutableBytes]): Unit
+	def addBatchFirst(hashes: Seq[DigestValue]): Unit
 
-	def peek: Option[ImmutableBytes]
+	def peek: Option[DigestValue]
 
-	def poll: Option[ImmutableBytes]
+	def poll: Option[DigestValue]
 
-	def pollBatch(count: Int): Seq[ImmutableBytes]
+	def pollBatch(count: Int): Seq[DigestValue]
 
 	def size: Int
 

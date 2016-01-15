@@ -17,7 +17,7 @@ import scala.collection.mutable
  * @author YANAGISAWA, Kentaro
  * @since 2015/09/30
  */
-class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) extends Trie {
+class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extends Trie {
 
 	private[trie] def this(_db: KeyValueDataSource) = this(_db, DigestUtils.EmptyTrieHash)
 
@@ -36,7 +36,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		}
 		this
 	}
-	def root_=(value: ImmutableBytes): TrieImpl = {
+	def root_=(value: DigestValue): TrieImpl = {
 		this.root = TrieNode.fromDigest(value)
 		this
 	}
@@ -45,7 +45,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	/**
 	 * 最上位レベルのハッシュ値を計算して返します。
 	 */
-	override def rootHash: ImmutableBytes = this.rootRef.get.hash
+	override def rootHash: DigestValue = this.rootRef.get.hash
 
 	/**
 	 * 前回のルート要素。（undo に利用する。）
@@ -333,7 +333,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 			TrieNode.empty
 		} else {
 			//対応する値を引いて返す。
-			TrieNode(this.dataStore.get(node.hash).nodeValue)
+			TrieNode(this.dataStore.get(node.hash.bytes).nodeValue)
 		}
 	}
 
@@ -344,7 +344,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 				node
 			case Right(digest) =>
 				//長かったので、ハッシュ値が返ってきたということ。
-				TrieNode.fromDigest(digest)
+				TrieNode.fromDigest(Digest256(digest))
 		}
 	}
 
@@ -358,7 +358,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		this.rootRef.set(prevRoot)
 	}
 
-	override def validate: Boolean = Option(this.dataStore.get(rootHash)).isDefined
+	override def validate: Boolean = Option(this.dataStore.get(rootHash.bytes)).isDefined
 
 	/**
 	 * このTrieに属するすべての要素を、キャッシュから削除します。
@@ -367,7 +367,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 		val startTime = System.currentTimeMillis
 
 		val collectAction = new CollectFullSetOfNodes
-		this.scanTree(this.rootHash, collectAction)
+		this.scanTree(this.rootHash.bytes, collectAction)
 		val collectedHashes = collectAction.getCollectedHashes
 
 		val cachedNodes = this.dataStore.getNodes
@@ -456,7 +456,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: ImmutableBytes) ext
 	 */
 	override def dumpToString: String = {
 		val traceAction = new TraceAllNodes
-		this.scanTree(this.rootHash, traceAction)
+		this.scanTree(this.rootHash.bytes, traceAction)
 
 		val rootString = "root: %s => %s\n".format(rootHash.toHexString, this.root.toString)
 		rootString + traceAction.getOutput
@@ -478,7 +478,7 @@ object TrieImpl {
 	def newInstance(ds: KeyValueDataSource): TrieImpl = new TrieImpl(ds)
 
 	@tailrec
-	def computeHash(obj: Either[ImmutableBytes, Value]): ImmutableBytes = {
+	def computeHash(obj: Either[ImmutableBytes, Value]): DigestValue = {
 		obj match {
 			case null =>
 				DigestUtils.EmptyTrieHash
@@ -487,7 +487,7 @@ object TrieImpl {
 					DigestUtils.EmptyTrieHash
 				} else {
 					//バイト配列である場合には、計算されたハッシュ値であるとみなす。
-					bytes
+					Digest256(bytes)
 				}
 			case Right(value) =>
 				if (value.isBytes) {
@@ -530,7 +530,7 @@ trait TrieNode {
 	def isShortcutNode: Boolean
 	def isRegularNode: Boolean
 	def nodeValue: ImmutableBytes
-	def hash: ImmutableBytes
+	def hash: DigestValue
 }
 
 object TrieNode {
@@ -538,8 +538,8 @@ object TrieNode {
 	val RegularSize = 17
 
 	val emptyTrieNode = new DigestNode(DigestUtils.EmptyTrieHash)
-	val empty = new DigestNode(ImmutableBytes.empty)
-	def fromDigest(hash: ImmutableBytes): DigestNode = {
+	val empty = new DigestNode(EmptyDigest)
+	def fromDigest(hash: DigestValue): DigestNode = {
 		if (hash.isEmpty) {
 			empty
 		} else {
@@ -554,7 +554,7 @@ object TrieNode {
 		} else if (value.isBytes && value.asBytes.isEmpty) {
 			TrieNode.empty
 		} else {
-			TrieNode.fromDigest(value.asBytes)
+			TrieNode.fromDigest(DigestValue(value.asBytes))
 		}
 	}
 
@@ -614,19 +614,19 @@ class ValueNode(override val nodeValue: ImmutableBytes) extends TrieNode {
 	override def isShortcutNode: Boolean = false
 	override def isEmpty: Boolean = false
 
-	override def hash: ImmutableBytes = TrieImpl.computeHash(Left(this.nodeValue))
+	override def hash: DigestValue = TrieImpl.computeHash(Left(this.nodeValue))
 }
 
 object ValueNode {
 	def apply(v: ImmutableBytes): ValueNode = new ValueNode(v)
 }
 
-class DigestNode(override val hash: ImmutableBytes) extends TrieNode {
+class DigestNode(override val hash: DigestValue) extends TrieNode {
 	override val isEmpty: Boolean = this.hash.isEmpty
 	override val isDigestNode: Boolean = true
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = false
-	override val nodeValue: ImmutableBytes = this.hash
+	override val nodeValue: ImmutableBytes = this.hash.bytes
 	override def equals(o: Any): Boolean = {
 		try {
 			this.hash == o.asInstanceOf[DigestNode].hash

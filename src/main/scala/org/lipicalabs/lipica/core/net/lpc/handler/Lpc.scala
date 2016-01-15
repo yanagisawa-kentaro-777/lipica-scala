@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.sync.{SyncStatistics, SyncStateName}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,10 +33,10 @@ trait Lpc {
 	def maxHashesAsk_=(v: Int): Unit
 	def maxHashesAsk: Int
 
-	def lastHashToAsk_=(v: ImmutableBytes): Unit
-	def lastHashToAsk: ImmutableBytes
+	def lastHashToAsk_=(v: DigestValue): Unit
+	def lastHashToAsk: DigestValue
 
-	def bestKnownHash: ImmutableBytes
+	def bestKnownHash: DigestValue
 
 	def getSyncState: SyncStateName
 

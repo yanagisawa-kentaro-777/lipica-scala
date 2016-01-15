@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.datastore
 
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.DigestValue
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,6 +31,6 @@ trait BlockQueue extends DiskStore {
 	/**
 	 * 渡されたハッシュ値の中から、既にこのキューに溜まっているものを除外したものを返します。
 	 */
-	def excludeExisting(hashes: Seq[ImmutableBytes]): Seq[ImmutableBytes]
+	def excludeExisting(hashes: Seq[DigestValue]): Seq[DigestValue]
 
 }

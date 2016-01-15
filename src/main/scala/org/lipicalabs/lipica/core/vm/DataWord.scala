@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm
 import java.nio.ByteBuffer
 
 import org.apache.commons.codec.binary.Hex
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{DigestValue, UtilConsts, ImmutableBytes, ByteUtils}
 
 /**
  * Lipica の VM における１ワードである
@@ -42,7 +42,7 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	/**
 	 * この値の256ビットダイジェスト値を返します。
 	 */
-	def computeDigest256OfData: ImmutableBytes = this.data.digest256
+	def computeDigest256OfData: DigestValue = this.data.digest256
 
 	/**
 	 * この値をInt値として返します。

@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.lpc.handler
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.net.lpc.V0
 import org.lipicalabs.lipica.core.sync.{SyncStateName, SyncStatistics}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, EmptyDigest}
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,7 +18,7 @@ class LpcAdaptor extends Lpc {
 
 	override def isHashRetrievingDone = false
 
-	override def bestKnownHash = ImmutableBytes.empty
+	override def bestKnownHash = EmptyDigest
 
 	override def hasBlocksLack = false
 
@@ -44,13 +44,13 @@ class LpcAdaptor extends Lpc {
 
 	override def onShutdown() = ()
 
-	override def lastHashToAsk_=(v: ImmutableBytes) = ()
+	override def lastHashToAsk_=(v: DigestValue) = ()
 
 	override def getSyncState: SyncStateName = SyncStateName.Idle
 
 	override def syncStateSummaryAsString: String = ""
 
-	override def lastHashToAsk = ImmutableBytes.empty
+	override def lastHashToAsk = EmptyDigest
 
 	override def getSyncStats = this.syncStats
 

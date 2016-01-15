@@ -26,7 +26,7 @@ trait Value {
 
 	def decode: Value
 
-	def hash: ImmutableBytes
+	def hash: DigestValue
 
 	def asSeq: Seq[AnyRef]
 
@@ -130,7 +130,7 @@ class PlainValue private[utils](_value: Any) extends Value {
 
 	override def encodedBytes: ImmutableBytes = encode.encodedBytes
 
-	override def hash: ImmutableBytes = encode.hash
+	override def hash: DigestValue = encode.hash
 
 	override def asSeq: Seq[AnyRef] = this.value.asInstanceOf[Seq[AnyRef]]
 
@@ -208,9 +208,9 @@ class EncodedValue private[utils](override val encodedBytes: ImmutableBytes) ext
 	/**
 	 * ダイジェスト値。
 	 */
-	private val hashOptionRef = new AtomicReference[Option[ImmutableBytes]](None)
+	private val hashOptionRef = new AtomicReference[Option[DigestValue]](None)
 
-	override def hash: ImmutableBytes = {
+	override def hash: DigestValue = {
 		if (this.hashOptionRef.get.isEmpty) {
 			val digest = encodedBytes.digest256
 			this.hashOptionRef.set(Some(digest))

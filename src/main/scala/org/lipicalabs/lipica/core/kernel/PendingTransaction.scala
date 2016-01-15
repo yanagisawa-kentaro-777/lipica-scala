@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{DigestValue, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.
@@ -9,7 +9,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class PendingTransaction private(val transaction: TransactionLike, val blockNumer: Long) {
 
-	def hash: ImmutableBytes = this.transaction.hash
+	def hash: DigestValue = this.transaction.hash
 
 	def toBytes: ImmutableBytes = {
 		val blockNumberBytes = BigInt(this.blockNumer).toByteArray
