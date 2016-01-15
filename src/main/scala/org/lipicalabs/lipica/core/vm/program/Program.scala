@@ -441,17 +441,15 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 
 		//手数料。
 		val endowment = message.endowment.value
-		if (endowment != UtilConsts.Zero) {
-			val senderBalance = track.getBalance(senderAddress).getOrElse(UtilConsts.Zero)
-			if (senderBalance < endowment) {
-				//手数料を払えない。
-				stackPushZero()
-				this.refundMana(message.mana.longValue, "Refund mana from message call.")
-				return
-			}
-			//手数料を取る。
-			Payment.transfer(track, senderAddress, contextAddress, endowment, Payment.ContractInvocationTx)
+		val senderBalance = track.getBalance(senderAddress).getOrElse(UtilConsts.Zero)
+		if (senderBalance < endowment) {
+			//手数料を払えない。
+			stackPushZero()
+			this.refundMana(message.mana.longValue, "Refund mana from message call.")
+			return
 		}
+		//手数料を取る。
+		Payment.transfer(track, senderAddress, contextAddress, endowment, Payment.ContractInvocationTx)
 
 		//データに応じたコストを計算する。
 		val data = this.memoryChunk(message.inDataOffset.intValue, message.inDataSize.intValue)
