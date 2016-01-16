@@ -16,7 +16,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 
 	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, EncodedTrieEntry])
 
-	def getNodes: Map[DigestValue, EncodedTrieEntry] = this.nodes.toMap
+	def entries: Map[DigestValue, EncodedTrieEntry] = this.nodes.toMap
 
 	private val dataSourceRef = new AtomicReference(_dataSource)
 	def dataSource: KeyValueDataSource = this.dataSourceRef.get

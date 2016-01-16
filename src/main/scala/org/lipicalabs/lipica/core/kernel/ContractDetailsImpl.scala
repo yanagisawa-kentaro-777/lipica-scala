@@ -141,7 +141,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 	override def syncStorage(): Unit = {
 		this.synchronized {
 			if (useExternalStorage) {
-				this.storageTrie.dataStore.assignDataSource(externalStorageDataSource)
+				this.storageTrie.backend.assignDataSource(externalStorageDataSource)
 				this.storageTrie.sync()
 
 				this.dataSourceFactory.closeDataSource(this.address.toHexString)
@@ -151,14 +151,14 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 
 	override def getSnapshotTo(hash: DigestValue) = {
 		this.synchronized {
-			val keyValueDataSource = this.storageTrie.dataStore.dataSource
+			val keyValueDataSource = this.storageTrie.backend.dataSource
 			val snapStorage =
 				if (hash == DigestUtils.EmptyTrieHash) {
 					new SecureTrie(keyValueDataSource)
 				} else {
 					new SecureTrie(keyValueDataSource, hash)
 				}
-			snapStorage.dataStore = this.storageTrie.dataStore
+			snapStorage.backend = this.storageTrie.backend
 
 			val details = ContractDetailsImpl.newInstance(this.address, snapStorage, this.code, this.dataSourceFactory)
 			details.keysRef.set(this.keys)
@@ -220,7 +220,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 			}
 			if (useExternalStorage) {
 				this.storageTrie.root = Digest256(items(5).bytes)
-				this.storageTrie.dataStore.assignDataSource(externalStorageDataSource)
+				this.storageTrie.backend.assignDataSource(externalStorageDataSource)
 			}
 			val endTime = System.nanoTime
 			if (logger.isInfoEnabled) {

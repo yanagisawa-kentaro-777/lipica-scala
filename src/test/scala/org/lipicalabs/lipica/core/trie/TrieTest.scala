@@ -519,16 +519,16 @@ class TrieTest extends Specification {
 			val mockDb = new InMemoryDataSource
 			val trie = new TrieImpl(mockDb)
 			trie.update("dog", LONG_STRING)
-			trie.dataStore.isDirty mustEqual true
+			trie.backend.isDirty mustEqual true
 
 			trie.sync()
-			trie.dataStore.isDirty mustEqual false
+			trie.backend.isDirty mustEqual false
 
 			trie.update("test", LONG_STRING)
-			trie.dataStore.isDirty mustEqual true
+			trie.backend.isDirty mustEqual true
 
-			trie.dataStore.undo()
-			trie.dataStore.isDirty mustEqual false
+			trie.backend.undo()
+			trie.backend.isDirty mustEqual false
 		}
 	}
 
@@ -537,10 +537,10 @@ class TrieTest extends Specification {
 			val mockDb = new InMemoryDataSource
 			val trie = new TrieImpl(mockDb)
 			trie.update("dog", LONG_STRING)
-			trie.dataStore.getNodes.size mustNotEqual 0
+			trie.backend.entries.size mustNotEqual 0
 
-			trie.dataStore.undo()
-			trie.dataStore.getNodes.size mustEqual 0
+			trie.backend.undo()
+			trie.backend.entries.size mustEqual 0
 		}
 	}
 

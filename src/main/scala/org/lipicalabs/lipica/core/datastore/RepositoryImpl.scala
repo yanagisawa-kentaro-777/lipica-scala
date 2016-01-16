@@ -344,7 +344,7 @@ class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSour
 	override def createSnapshotTo(root: DigestValue): Repository = {
 		val trie = new SecureTrie(this.stateDS)
 		trie.root = root
-		trie.dataStore = this.worldState.dataStore
+		trie.backend = this.worldState.backend
 
 		val result = new RepositoryImpl(this.dataSourceFactory)
 		result.worldStateRef.set(trie)
