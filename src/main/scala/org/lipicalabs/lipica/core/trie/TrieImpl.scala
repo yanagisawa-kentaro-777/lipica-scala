@@ -394,8 +394,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 		if (encodedBytes.isEmpty) {
 			return
 		}
-		val node = TrieNode.decode(encodedBytes)
-		node match {
+		TrieNode.decode(encodedBytes) match {
 			case shortcut: ShortcutNode =>
 				if (shortcut.childNode.isDigestNode) {
 					scanTree(shortcut.childNode.hash, action)
