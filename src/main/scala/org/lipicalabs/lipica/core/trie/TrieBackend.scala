@@ -14,9 +14,9 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 	import TrieBackend._
 	import scala.collection.JavaConversions._
 
-	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, CachedNode])
+	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, EncodedTrieEntry])
 
-	def getNodes: Map[ImmutableBytes, CachedNode] = this.nodes.toMap
+	def getNodes: Map[ImmutableBytes, EncodedTrieEntry] = this.nodes.toMap
 
 	private val dataSourceRef = new AtomicReference(_dataSource)
 	def dataSource: KeyValueDataSource = this.dataSourceRef.get
@@ -27,11 +27,11 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		this.isDirtyRef.set(value)
 	}
 
-	private[trie] def privatePut(key: ImmutableBytes, value: CachedNode): Unit = {
+	private[trie] def privatePut(key: ImmutableBytes, value: EncodedTrieEntry): Unit = {
 		this.nodes.put(key, value)
 	}
 
-	def put(key: ImmutableBytes, bytes: ImmutableBytes): Unit = this.nodes.put(key, new CachedNode(bytes, _dirty = false))
+	def put(key: ImmutableBytes, bytes: ImmutableBytes): Unit = this.nodes.put(key, new EncodedTrieEntry(bytes, _dirty = false))
 
 	/**
 	 * 渡されたオブジェクトのエンコードされた表現が、
@@ -44,7 +44,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, trieNode))
 			}
-			this.nodes.put(hash.bytes, new CachedNode(encoded, _dirty = true))
+			this.nodes.put(hash.bytes, new EncodedTrieEntry(encoded, _dirty = true))
 			this.isDirty = true
 			Right(hash)
 		} else {
@@ -52,7 +52,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		}
 	}
 
-	def get(key: ImmutableBytes): CachedNode = {
+	def get(key: ImmutableBytes): EncodedTrieEntry = {
 		this.nodes.get(key) match {
 			case Some(node) =>
 				//キャッシュされている。
@@ -65,7 +65,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 					} else {
 						this.dataSource.get(key).getOrElse(ImmutableBytes.empty)
 					}
-				val node = new CachedNode(data, _dirty = false)
+				val node = new EncodedTrieEntry(data, _dirty = false)
 				if (logger.isTraceEnabled) {
 					logger.trace("<Cache> Read: %s -> %s -> %s".format(key, data.toHexString, node.encodedBytes))
 				}
@@ -150,4 +150,22 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 
 object TrieBackend {
 	private val logger = LoggerFactory.getLogger("general")
+}
+
+/**
+ * Trieにおける１ノードをエンコードした表現を
+ * 永続化用に保持するためのクラスです。
+ */
+class EncodedTrieEntry(val encodedBytes: ImmutableBytes, _dirty: Boolean) {
+	/**
+	 * 永続化されていない更新があるか否か。
+	 */
+	private val isDirtyRef = new AtomicBoolean(_dirty)
+
+	def isDirty = this.isDirtyRef.get
+
+	def isDirty(value: Boolean): EncodedTrieEntry = {
+		this.isDirtyRef.set(value)
+		this
+	}
 }
