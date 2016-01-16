@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 
 /**
- * バイト配列を利用してビットの並びを表現するデータ構造の実装です。
+ * ビットの並びを利用して、空間効率高く、要素の集合を表現するデータ構造の実装クラスです。
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
@@ -51,7 +51,7 @@ object BloomFilter {
 	private val NumBytes = 256
 
 	/**
-	 * 渡されたバイト列を、そのままBloomFilterとして返します。
+	 * 渡されたバイト列を、そのままビット列とするBloomFilterを生成して返します。
 	 */
 	def apply(data: Array[Byte]): BloomFilter = {
 		new BloomFilter(java.util.Arrays.copyOf(data, NumBytes))
@@ -85,8 +85,6 @@ object BloomFilter {
 		ByteUtils.setBit(data, mov1, positive = true)
 		ByteUtils.setBit(data, mov2, positive = true)
 		ByteUtils.setBit(data, mov3, positive = true)
-
-		//println("%d %d %d".format(mov1, mov2, mov3))
 
 		BloomFilter.apply(data)
 	}
