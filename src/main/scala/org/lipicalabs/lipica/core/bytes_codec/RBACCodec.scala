@@ -11,26 +11,23 @@ import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * 入れ子になったバイト配列コンテナ（Recursive Byte Array Container）の
- * Codecです。
+ * 入れ子になったバイト配列コンテナ（Recursive Byte Array Container）のCodecです。
  *
  * @author YANAGISAWA, Kentaro
  */
 object RBACCodec {
 
 	/**
-	 * Allow for content up to size of 2 power 64 bytes
+	 * この値以上の長さのデータをエンコードすることはできない。
+	 * 2の64乗。
+	 * ただし、現状実装においては符号付き32ビット整数分のデータしか扱っていないので、
+	 * この値に達することはない。
 	 */
-	private val MAX_ITEM_LENGTH: Double = Math.pow(256, 8)
+	//private val ItemLengthCeil: Double = Math.pow(256, 8)
 
 	/**
-	 * Reason for threshold according to Vitalik Buterin:
-	 * - 56 bytes maximizes the benefit of both options
-	 * - if we went with 60 then we would have only had 4 slots for long strings
-	 * so RLP would not have been able to store objects above 4gb
-	 * - if we went with 48 then RLP would be fine for 2^128 space, but that's way too much
-	 * - so 56 and 2^64 space seems like the right place to put the cutoff
-	 * - also, that's where Bitcoin's varint does the cutof
+	 * 短いリストと長いリストとの境界値。
+	 * この長さ以上のリストは長いリスト扱いになる。
 	 */
 	private val SIZE_THRESHOLD = 56
 
@@ -80,8 +77,6 @@ object RBACCodec {
 	 */
 	private val OFFSET_LONG_LIST = 0xf7
 
-	private val BIGINT_ZERO = BigInt(0L)
-
 	@tailrec
 	private def countBytesRecursively(v: Long, accum: Int): Int = {
 		if (v == 0L) return accum
@@ -115,7 +110,12 @@ object RBACCodec {
 	object Encoder {
 
 		/**
-		 * あらゆる値をエンコードします。
+		 * 渡された値をバイト列にエンコードします。
+		 *
+		 * 静的な型付けの観点からは非常に「甘い」が、
+		 * ここに妙な型のインスタンスを渡した結果
+		 * 実行時例外を投げられてしまう、というバグは、
+		 * テストを１回実行すれば容易に発見できるものだ。
 		 */
 		def encode(v: Any): ImmutableBytes = {
 			v match {
@@ -290,7 +290,7 @@ object RBACCodec {
 						toBytes(0.asInstanceOf[Byte])
 					}
 				case v: BigInt =>
-					if (v == BIGINT_ZERO) {
+					if (v == UtilConsts.Zero) {
 						ImmutableBytes.empty
 					} else {
 						ImmutableBytes.asUnsignedByteArray(v)

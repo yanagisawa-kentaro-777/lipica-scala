@@ -25,7 +25,6 @@
 
 ・context の属性名称を確認する。
 ・Valueを廃絶したい。
-・RBACCodecの引数の型の扱いをまともにする。
 ・数値的な意味を持つImmutableBytesラッパー。
 ・BloomFilterの型。
 ・ContractDetailsCacheImplとか、どうにかならないのか。

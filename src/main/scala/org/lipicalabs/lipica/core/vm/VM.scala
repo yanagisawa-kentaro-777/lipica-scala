@@ -29,8 +29,9 @@ class VM {
 		} catch {
 			case e: RuntimeException =>
 				program.setRuntimeFailure(e)
-			case stackOverFlowError: StackOverflowError =>
-				logger.error("\n !!! StackOverflowError: update your java run command with -Xss32M !!!\n")
+			case stackOverflowError: StackOverflowError =>
+				logger.warn("<VM> StackOverflowError: Update your Java command with -Xss32M.", stackOverflowError)
+				//TODO 結構どうしようもないので、プロセス終了もやむを得ないかも。
 				System.exit(-1)
 		}
 	}
