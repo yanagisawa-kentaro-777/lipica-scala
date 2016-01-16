@@ -2,8 +2,9 @@ package org.lipicalabs.lipica.core.trie
 
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
+import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils._
-import org.lipicalabs.lipica.core.crypto.digest.{Digest256, EmptyDigest, DigestValue, DigestUtils}
+import org.lipicalabs.lipica.core.crypto.digest.{EmptyDigest, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.slf4j.LoggerFactory
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
@@ -333,18 +334,18 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 			TrieNode.empty
 		} else {
 			//対応する値を引いて返す。
-			TrieNode(this.dataStore.get(node.hash.bytes).nodeValue)
+			TrieNode.decode(this.dataStore.get(node.hash.bytes).encodedBytes)
 		}
 	}
 
 	private def putToCache(node: TrieNode): TrieNode = {
-		this.dataStore.put(convertNodeToValue(node)) match {
-			case Left(v) =>
+		this.dataStore.put(node) match {
+			case Left(n) =>
 				//値がそのままである。
-				node
+				n
 			case Right(digest) =>
 				//長かったので、ハッシュ値が返ってきたということ。
-				TrieNode.fromDigest(Digest256(digest))
+				TrieNode.fromDigest(digest)
 		}
 	}
 
@@ -396,19 +397,28 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 	}
 
 	private def scanTree(hash: ImmutableBytes, action: ScanAction): Unit = {
-		val node = this.dataStore.get(hash)
-		if (node.nodeValue.isSeq) {
-			val siblings = node.nodeValue.asSeq
-			if (siblings.size == TrieNode.ShortcutSize) {
-				val value = Value.fromObject(siblings(1))
-				if (value.isHashCode) scanTree(value.asBytes, action)
-			} else {
-				(0 until TrieNode.RegularSize).foreach {i => {
-					val value = Value.fromObject(siblings(i))
-					if (value.isHashCode) scanTree(value.asBytes, action)
-				}}
-			}
-			action.doOnNode(hash, node.nodeValue)
+		val encodedBytes = this.dataStore.get(hash).encodedBytes
+		if (encodedBytes.isEmpty) {
+			return
+		}
+		val node = TrieNode.decode(encodedBytes)
+		node match {
+			case shortcut: ShortcutNode =>
+				if (shortcut.childNode.isDigestNode) {
+					scanTree(shortcut.childNode.hash.bytes, action)
+				}
+				action.doOnNode(hash, shortcut)
+			case regular: RegularNode =>
+				(0 until TrieNode.RegularSize).foreach {
+					i => {
+						val child = regular.child(i)
+						if (child.isDigestNode) {
+							scanTree(child.hash.bytes, action)
+						}
+					}
+				}
+				action.doOnNode(hash, regular)
+			case _ => ()
 		}
 	}
 
@@ -424,12 +434,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 				val encodedRoot = result.items(2).bytes
 
 				valuesSeq.indices.foreach {i => {
-					val encodedValue = valuesSeq(i)
+					val encodedBytes = valuesSeq(i)
 					val key = new Array[Byte](32)
-					val value = Value.fromEncodedBytes(encodedValue).decode
 					keys.copyTo(i * 32, key, 0, 32)
 
-					this.dataStore.put(ImmutableBytes(key), value)
+					this.dataStore.put(ImmutableBytes(key), encodedBytes)
 				}}
 				this.root = TrieNode(Value.fromEncodedBytes(encodedRoot).decode)
 			case Left(e) =>
@@ -445,7 +454,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 	def serialize: ImmutableBytes = {
 		val nodes = this.dataStore.getNodes
 		val encodedKeys = nodes.keys.foldLeft(Array.emptyByteArray)((accum, each) => accum ++ each.toByteArray)
-		val encodedValues = nodes.values.map(each => RBACCodec.Encoder.encode(each.nodeValue.value))
+		val encodedValues = nodes.values.map(each => each.encodedBytes)
 		val encodedRoot = RBACCodec.Encoder.encode(this.root.hash)
 		RBACCodec.Encoder.encode(Seq(encodedKeys, encodedValues, encodedRoot))
 	}
@@ -477,37 +486,37 @@ object TrieImpl {
 
 	def newInstance(ds: KeyValueDataSource): TrieImpl = new TrieImpl(ds)
 
-	@tailrec
-	def computeHash(obj: Either[ImmutableBytes, Value]): DigestValue = {
-		obj match {
-			case null =>
-				DigestUtils.EmptyTrieHash
-			case Left(bytes) =>
-				if (bytes.isEmpty) {
-					DigestUtils.EmptyTrieHash
-				} else {
-					//バイト配列である場合には、計算されたハッシュ値であるとみなす。
-					Digest256(bytes)
-				}
-			case Right(value) =>
-				if (value.isBytes) {
-					computeHash(Left(value.asBytes))
-				} else {
-					value.hash
-				}
-		}
-	}
+//	@tailrec
+//	def computeHash(obj: Either[ImmutableBytes, Value]): DigestValue = {
+//		obj match {
+//			case null =>
+//				DigestUtils.EmptyTrieHash
+//			case Left(bytes) =>
+//				if (bytes.isEmpty) {
+//					DigestUtils.EmptyTrieHash
+//				} else {
+//					//バイト配列である場合には、計算されたハッシュ値であるとみなす。
+//					Digest256(bytes)
+//				}
+//			case Right(value) =>
+//				if (value.isBytes) {
+//					computeHash(Left(value.asBytes))
+//				} else {
+//					value.hash
+//				}
+//		}
+//	}
 
-	def convertNodeToValue(aNode: TrieNode): Value = {
-		aNode match {
-			case node: ShortcutNode =>
-				Value.fromObject(Seq(Value.fromObject(node.shortcutKey), convertNodeToValue(node.childNode)))
-			case node: RegularNode =>
-				Value.fromObject(node.children.map(each => convertNodeToValue(each)))
-			case node: TrieNode =>
-				Value.fromObject(node.nodeValue)
-		}
-	}
+//	def convertNodeToValue(aNode: TrieNode): Value = {
+//		aNode match {
+//			case node: ShortcutNode =>
+//				Value.fromObject(Seq(Value.fromObject(node.shortcutKey), convertNodeToValue(node.childNode)))
+//			case node: RegularNode =>
+//				Value.fromObject(node.children.map(each => convertNodeToValue(each)))
+//			case node: TrieNode =>
+//				Value.fromObject(node.nodeValue)
+//		}
+//	}
 
 	private def createRegularNodeSlice: Array[TrieNode] = {
 		(0 until TrieNode.RegularSize).map(_ => TrieNode.empty).toArray
@@ -519,7 +528,6 @@ object TrieImpl {
 	private def copyRegularNode(node: RegularNode): Array[TrieNode] = {
 		(0 until TrieNode.RegularSize).map(i => Option(node.child(i)).getOrElse(TrieNode.empty)).toArray
 	}
-
 
 }
 
@@ -567,33 +575,52 @@ object TrieNode {
 		val encoder = RBACCodec.Encoder
 		aNode match {
 			case node: ShortcutNode =>
-				encoder.encodeSeqOfByteArrays(Seq(node.shortcutKey, encode(node.childNode)))
+				encoder.encodeSeqOfByteArrays(Seq(encoder.encode(node.shortcutKey), encode(node.childNode)))
 			case node: RegularNode =>
 				encoder.encodeSeqOfByteArrays(node.children.map(each => encode(each)))
 			case node: ValueNode =>
-				0 +: encoder.encode(node.nodeValue)
+				encoder.encode(node.nodeValue)
 			case node: DigestNode =>
-				1 +: encoder.encode(node.hash.bytes)
+				encoder.encode(node.hash.bytes)
 		}
 	}
 
 	def decode(encodedBytes: ImmutableBytes): TrieNode = {
 		val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
+		decode(decodedResult)
+	}
+
+	private def decode(decodedResult: DecodedResult): TrieNode = {
 		if (decodedResult.isSeq) {
 			val items = decodedResult.items
 			if (items.size == ShortcutSize) {
 				//ショートカットノード。
-				new ShortcutNode(items.head.bytes, decode(items(1).bytes))
+				new ShortcutNode(items.head.bytes, decode(items(1)))
 			} else {
-				new RegularNode(items.map(each => decode(each.bytes)))
+				new RegularNode(items.map(each => decode(each)))
 			}
 		} else {
 			val bytes = decodedResult.bytes
-			if (bytes.head == 0) {
-				new ValueNode(bytes.copyOfRange(1, bytes.length))
+			if (bytes.isEmpty) {
+				TrieNode.empty
 			} else {
-				new DigestNode(Digest256(bytes.copyOfRange(1, bytes.length)))
+				new DigestNode(DigestValue(bytes))
 			}
+		}
+	}
+
+	def computeHash(node: TrieNode): DigestValue = {
+		node match {
+			case null =>
+				DigestUtils.EmptyTrieHash
+			case node: ShortcutNode =>
+				encode(node).digest256
+			case node: RegularNode =>
+				encode(node).digest256
+			case node: ValueNode =>
+				node.nodeValue.digest256
+			case node: DigestNode =>
+				node.hash
 		}
 	}
 
@@ -604,7 +631,7 @@ class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) ext
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = true
 	override val isRegularNode: Boolean = false
-	override def hash = TrieImpl.computeHash(Right(TrieImpl.convertNodeToValue(this)))
+	override def hash = TrieNode.computeHash(this)
 
 	override def nodeValue: ImmutableBytes = this.childNode.nodeValue
 
@@ -623,7 +650,7 @@ class RegularNode(val children: Seq[TrieNode]) extends TrieNode {
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = true
-	override def hash = TrieImpl.computeHash(Right(TrieImpl.convertNodeToValue(this)))
+	override def hash = TrieNode.computeHash(this)
 	override def nodeValue: ImmutableBytes = this.children(16).nodeValue
 	def child(idx: Int): TrieNode = this.children(idx)
 
@@ -649,7 +676,7 @@ class ValueNode(override val nodeValue: ImmutableBytes) extends TrieNode {
 	override def isShortcutNode: Boolean = false
 	override def isEmpty: Boolean = false
 
-	override def hash: DigestValue = TrieImpl.computeHash(Left(this.nodeValue))
+	override def hash: DigestValue = TrieNode.computeHash(this)
 }
 
 object ValueNode {

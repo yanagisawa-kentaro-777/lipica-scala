@@ -2,8 +2,9 @@ package org.lipicalabs.lipica.core.trie
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
+import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, Value}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -30,24 +31,24 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		this.nodes.put(key, value)
 	}
 
-	def put(key: ImmutableBytes, value: Value): Unit = this.nodes.put(key, new CachedNode(value, _dirty = false))
+	def put(key: ImmutableBytes, bytes: ImmutableBytes): Unit = this.nodes.put(key, new CachedNode(bytes, _dirty = false))
 
 	/**
 	 * 渡されたオブジェクトのエンコードされた表現が、
 	 * 32バイト（＝256ビット）よりも長ければ、キャッシュに保存します。
 	 */
-	def put(value: Value): Either[Value, ImmutableBytes] = {
-		val encoded = value.encodedBytes
+	def put(trieNode: TrieNode): Either[TrieNode, DigestValue] = {
+		val encoded = TrieNode.encode(trieNode)
 		if (32 <= encoded.length) {
-			val hash = value.hash
+			val hash = trieNode.hash
 			if (logger.isTraceEnabled) {
-				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, value))
+				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, trieNode.getClass.getSimpleName))
 			}
-			this.nodes.put(hash.bytes, new CachedNode(value, _dirty = true))
+			this.nodes.put(hash.bytes, new CachedNode(encoded, _dirty = true))
 			this.isDirty = true
-			Right(hash.bytes)
+			Right(hash)
 		} else {
-			Left(value)
+			Left(trieNode)
 		}
 	}
 
@@ -64,9 +65,9 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 					} else {
 						this.dataSource.get(key).getOrElse(ImmutableBytes.empty)
 					}
-				val node = new CachedNode(Value.fromEncodedBytes(data), _dirty = false)
+				val node = new CachedNode(data, _dirty = false)
 				if (logger.isTraceEnabled) {
-					logger.trace("<Cache> Read: %s -> %s -> %s".format(key, data.toHexString, node.nodeValue.value))
+					logger.trace("<Cache> Read: %s -> %s -> %s".format(key, data.toHexString, node.encodedBytes))
 				}
 				this.nodes.put(key, node)
 				node
@@ -92,12 +93,12 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 				val node = entry.getValue
 				node.isDirty(false)
 
-				val value = node.nodeValue.encodedBytes
+				val value = node.encodedBytes
 
 				totalBytes += (nodeKey.length + value.length)
 
 				if (logger.isTraceEnabled) {
-					logger.trace("<Cache> Committing: %s -> %s -> %s".format(nodeKey, value.toHexString, node.nodeValue.value))
+					logger.trace("<Cache> Committing: %s -> %s -> %s".format(nodeKey, value.toHexString, node.encodedBytes))
 				}
 				nodeKey -> value
 			}
@@ -127,7 +128,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 			if (!existsDataSource) {
 				this.nodes.entrySet().withFilter(entry => !entry.getValue.isDirty).map {
 					entry => {
-						entry.getKey -> entry.getValue.nodeValue.encodedBytes
+						entry.getKey -> entry.getValue.encodedBytes
 					}
 				}.toSet
 			} else {

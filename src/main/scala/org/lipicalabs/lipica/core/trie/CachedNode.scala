@@ -1,9 +1,9 @@
 package org.lipicalabs.lipica.core.trie
 
 import java.util.concurrent.atomic.AtomicBoolean
-import org.lipicalabs.lipica.core.utils.Value
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
-class CachedNode(val nodeValue: Value, _dirty: Boolean) {
+class CachedNode(val encodedBytes: ImmutableBytes, _dirty: Boolean) {
 	/**
 	 * 永続化されていない更新があるか否か。
 	 */
