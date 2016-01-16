@@ -46,4 +46,27 @@ object ManaCost {
 
 	val CreateData = 200
 
+	//以下のメモリ消費容量計算において、２次の項を割るための除数。
+	private val QuadraticCoefficientDivisor = 512L
+
+	/**
+	 * メモリ消費の増分に対する平方（２乗）課金を計算します。
+	 */
+	def calculateQuadraticMemoryMana(newMemoryUsage: Long, oldMemoryUsage: Long): Long = {
+		val memWordsNew = DataWord.countWords(newMemoryUsage)
+		val newFee = calculateQuadraticMana(memWordsNew)
+
+		val memWordsOld = DataWord.countWords(oldMemoryUsage)
+		val oldFee = calculateQuadraticMana(memWordsOld)
+
+		newFee - oldFee
+	}
+
+	private def calculateQuadraticMana(numberOfWords: Long): Long = {
+		//消費ワード数に対して線形の項。
+		val linearElement = ManaCost.Memory * numberOfWords
+		//消費ワード数に対して２次の項。
+		val quadraticElement = (numberOfWords * numberOfWords) / QuadraticCoefficientDivisor
+		linearElement + quadraticElement
+	}
 }

@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.vm
 
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.kernel.Address160
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.OpCode._
 import org.lipicalabs.lipica.core.vm.program.{MessageType, MessageCall, Program}
@@ -64,16 +63,19 @@ class VM {
 
 			//マナコストを、さらに詳しく計算する。
 			var manaCost = baseManaCost
-			val oldMemSize = program.getMemSize
-			val memoryUsage = DataWord.countWords(newMemSize.longValue()) * DataWord.NUM_BYTES
-			var memWords: Long = 0
-			if (oldMemSize < memoryUsage) {
-				memWords = memoryUsage / DataWord.NUM_BYTES
-				val memWordsOld = oldMemSize / DataWord.NUM_BYTES
-				val memMana = (ManaCost.Memory * memWords + memWords * memWords / 512) - (ManaCost.Memory * memWordsOld + memWordsOld * memWordsOld / 512)
-				program.spendMana(memMana, op.name + " (memory usage)")
-				manaCost += memMana
+			//このステップにおけるメモリ使用の増分に対する課金を計算する。
+			//まずWord単位で切り上げる。
+			val newMemoryWords = DataWord.countWords(newMemSize.longValue())
+			val newMemoryUsage = newMemoryWords * DataWord.NUM_BYTES
+			//前ステップまでの実績と比べて消費メモリが増えそうなら、詳しく計算する。
+			val oldMemoryUsage = program.getMemSize
+			if (oldMemoryUsage < newMemoryUsage) {
+				//増分に対する平方の少暇なを計算する。
+				val memoryMana = ManaCost.calculateQuadraticMemoryMana(newMemoryUsage = newMemoryUsage, oldMemoryUsage = oldMemoryUsage)
+				program.spendMana(memoryMana, op.name + " (memory usage)")
+				manaCost += memoryMana
 			}
+			//コピー容量の課金。
 			if (0 < copySize) {
 				val copyMana = ManaCost.CopyMana * DataWord.countWords(copySize)
 				manaCost += copyMana
@@ -81,7 +83,7 @@ class VM {
 			}
 			//詳細デバッグ出力。
 			if (program.getBlockNumber.longValue == NodeProperties.CONFIG.dumpBlock) {
-				dumpLine(op, manaBefore, manaCost, memWords, program)
+				dumpLine(op, manaBefore, manaCost, newMemoryWords, program)
 			}
 
 			//処理を実行する。
