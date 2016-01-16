@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils._
-import org.lipicalabs.lipica.core.crypto.digest.{EmptyDigest, DigestValue, DigestUtils}
+import org.lipicalabs.lipica.core.crypto.digest.{Digest256, EmptyDigest, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.slf4j.LoggerFactory
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
@@ -334,7 +334,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 			TrieNode.empty
 		} else {
 			//対応する値を引いて返す。
-			TrieNode.decode(this.dataStore.get(node.hash.bytes).encodedBytes)
+			TrieNode.decode(this.dataStore.get(node.hash).encodedBytes)
 		}
 	}
 
@@ -359,7 +359,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 		this.rootRef.set(prevRoot)
 	}
 
-	override def validate: Boolean = Option(this.dataStore.get(rootHash.bytes)).isDefined
+	override def validate: Boolean = Option(this.dataStore.get(rootHash)).isDefined
 
 	/**
 	 * このTrieに属するすべての要素を、キャッシュから削除します。
@@ -368,18 +368,18 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 		val startTime = System.currentTimeMillis
 
 		val collectAction = new CollectFullSetOfNodes
-		this.scanTree(this.rootHash.bytes, collectAction)
+		this.scanTree(this.rootHash, collectAction)
 		val collectedHashes = collectAction.getCollectedHashes
 
 		val cachedNodes = this.dataStore.getNodes
-		val toRemoveSet = new mutable.HashSet[ImmutableBytes]
+		val toRemoveSet = new mutable.HashSet[DigestValue]
 		for (key <- cachedNodes.keySet) {
 			if (!collectedHashes.contains(key)) {
 				toRemoveSet.add(key)
 			}
 		}
 		for (key <- toRemoveSet) {
-			this.dataStore.delete(key)
+			this.dataStore.delete(key.bytes)
 			if (logger.isTraceEnabled) {
 				logger.trace("<TrieImpl> Garbage collected node: [%s]".format(key.toHexString))
 			}
@@ -396,7 +396,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 		another
 	}
 
-	private def scanTree(hash: ImmutableBytes, action: ScanAction): Unit = {
+	private def scanTree(hash: DigestValue, action: ScanAction): Unit = {
 		val encodedBytes = this.dataStore.get(hash).encodedBytes
 		if (encodedBytes.isEmpty) {
 			return
@@ -405,7 +405,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 		node match {
 			case shortcut: ShortcutNode =>
 				if (shortcut.childNode.isDigestNode) {
-					scanTree(shortcut.childNode.hash.bytes, action)
+					scanTree(shortcut.childNode.hash, action)
 				}
 				action.doOnNode(hash, shortcut)
 			case regular: RegularNode =>
@@ -413,7 +413,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 					i => {
 						val child = regular.child(i)
 						if (child.isDigestNode) {
-							scanTree(child.hash.bytes, action)
+							scanTree(child.hash, action)
 						}
 					}
 				}
@@ -438,7 +438,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 					val key = new Array[Byte](32)
 					keys.copyTo(i * 32, key, 0, 32)
 
-					this.dataStore.put(ImmutableBytes(key), encodedBytes)
+					this.dataStore.put(Digest256(key), encodedBytes)
 				}}
 				this.root = TrieNode.decode(encodedRoot)
 			case Left(e) =>
@@ -465,7 +465,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 	 */
 	override def dumpToString: String = {
 		val traceAction = new TraceAllNodes
-		this.scanTree(this.rootHash.bytes, traceAction)
+		this.scanTree(this.rootHash, traceAction)
 
 		val rootString = "root: %s => %s\n".format(rootHash.toHexString, this.root.toString)
 		rootString + traceAction.getOutput

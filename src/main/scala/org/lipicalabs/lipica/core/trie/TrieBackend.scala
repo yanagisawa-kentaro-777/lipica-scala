@@ -14,9 +14,9 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 	import TrieBackend._
 	import scala.collection.JavaConversions._
 
-	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, EncodedTrieEntry])
+	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, EncodedTrieEntry])
 
-	def getNodes: Map[ImmutableBytes, EncodedTrieEntry] = this.nodes.toMap
+	def getNodes: Map[DigestValue, EncodedTrieEntry] = this.nodes.toMap
 
 	private val dataSourceRef = new AtomicReference(_dataSource)
 	def dataSource: KeyValueDataSource = this.dataSourceRef.get
@@ -27,11 +27,11 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		this.isDirtyRef.set(value)
 	}
 
-	private[trie] def privatePut(key: ImmutableBytes, value: EncodedTrieEntry): Unit = {
+	private[trie] def privatePut(key: DigestValue, value: EncodedTrieEntry): Unit = {
 		this.nodes.put(key, value)
 	}
 
-	def put(key: ImmutableBytes, bytes: ImmutableBytes): Unit = this.nodes.put(key, new EncodedTrieEntry(bytes, _dirty = false))
+	def put(key: DigestValue, bytes: ImmutableBytes): Unit = this.nodes.put(key, new EncodedTrieEntry(bytes, _dirty = false))
 
 	/**
 	 * 渡されたオブジェクトのエンコードされた表現が、
@@ -44,7 +44,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, trieNode))
 			}
-			this.nodes.put(hash.bytes, new EncodedTrieEntry(encoded, _dirty = true))
+			this.nodes.put(hash, new EncodedTrieEntry(encoded, _dirty = true))
 			this.isDirty = true
 			Right(hash)
 		} else {
@@ -52,7 +52,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		}
 	}
 
-	def get(key: ImmutableBytes): EncodedTrieEntry = {
+	def get(key: DigestValue): EncodedTrieEntry = {
 		this.nodes.get(key) match {
 			case Some(node) =>
 				//キャッシュされている。
@@ -63,7 +63,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 					if (!existsDataSource) {
 						ImmutableBytes.empty
 					} else {
-						this.dataSource.get(key).getOrElse(ImmutableBytes.empty)
+						this.dataSource.get(key.bytes).getOrElse(ImmutableBytes.empty)
 					}
 				val node = new EncodedTrieEntry(data, _dirty = false)
 				if (logger.isTraceEnabled) {
@@ -100,7 +100,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 				if (logger.isTraceEnabled) {
 					logger.trace("<Cache> Committing: %s -> %s -> %s".format(nodeKey, value.toHexString, node.encodedBytes))
 				}
-				nodeKey -> value
+				nodeKey.bytes -> value
 			}
 		}.toMap
 		//保存する。
@@ -128,7 +128,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 			if (!existsDataSource) {
 				this.nodes.entrySet().withFilter(entry => !entry.getValue.isDirty).map {
 					entry => {
-						entry.getKey -> entry.getValue.encodedBytes
+						entry.getKey.bytes -> entry.getValue.encodedBytes
 					}
 				}.toSet
 			} else {
