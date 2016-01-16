@@ -500,7 +500,7 @@ sealed trait TrieNode {
 	def hash: DigestValue
 
 	private val encodedBytesRef = new AtomicReference[ImmutableBytes](null)
-	def encode: ImmutableBytes = {
+	def toEncodedBytes: ImmutableBytes = {
 		var result = this.encodedBytesRef.get
 		if (result ne null) {
 			return result
@@ -567,8 +567,15 @@ object TrieNode {
 			val bytes = decodedResult.bytes
 			if (bytes.isEmpty) {
 				EmptyNode
+			} else if (bytes.length == Digest256.NumberOfBytes) {
+				//ここで、データ長が32バイトのValueNodeあった場合、
+				//それを誤ってDigestNodeとして復元してしまう問題がある。
+				//しかしそのように誤復元されたとしても、
+				//ValueNodeにおいて問題になるnodeValueの値は狂わないので、
+				//結果として問題ないのだ。
+				new DigestNode(Digest256(bytes))
 			} else {
-				new DigestNode(DigestValue(bytes))
+				new ValueNode(bytes)
 			}
 		}
 	}

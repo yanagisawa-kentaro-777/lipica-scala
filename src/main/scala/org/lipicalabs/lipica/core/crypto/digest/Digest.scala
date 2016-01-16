@@ -81,7 +81,7 @@ class Digest256 private(override val bytes: ImmutableBytes) extends DigestValue
 
 object Digest256 {
 
-	private val NumberOfBytes = 32
+	val NumberOfBytes = 32
 
 	def apply(bytes: ImmutableBytes): Digest256 = {
 		if (bytes.length != NumberOfBytes) {

@@ -38,7 +38,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 	 * 32バイト（＝256ビット）よりも長ければ、キャッシュに保存します。
 	 */
 	def put(trieNode: TrieNode): Either[TrieNode, DigestValue] = {
-		val encoded = trieNode.encode
+		val encoded = trieNode.toEncodedBytes
 		if (32 <= encoded.length) {
 			val hash = trieNode.hash
 			if (logger.isTraceEnabled) {
