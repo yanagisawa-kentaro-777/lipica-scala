@@ -1,8 +1,11 @@
 package org.lipicalabs.lipica.core.kernel
 
+import java.nio.charset.StandardCharsets
+
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestUtils}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -29,6 +32,29 @@ class BloomFilterTest extends Specification {
 
 			val totalBloom = BloomFilter() | addressBloom | topicBloom
 			totalBloom.toString mustEqual answer
+		}
+	}
+
+	"test (2)" should {
+		"be right" in {
+			val positives = Seq("dog".getBytes(StandardCharsets.UTF_8), "cat".getBytes(StandardCharsets.UTF_8))
+			val negatives = Seq("cow".getBytes(StandardCharsets.UTF_8), "horse".getBytes(StandardCharsets.UTF_8))
+
+			var bloomFilter = BloomFilter.newInstance
+			for (each <- positives) {
+				bloomFilter = bloomFilter | BloomFilter.createFromDigest(ImmutableBytes(each).digest256)
+			}
+			positives.foreach {
+				each => {
+					bloomFilter.contains(ImmutableBytes(each)) mustEqual true
+				}
+			}
+			negatives.foreach {
+				each => {
+					bloomFilter.contains(ImmutableBytes(each)) mustEqual false
+				}
+			}
+			ok
 		}
 	}
 

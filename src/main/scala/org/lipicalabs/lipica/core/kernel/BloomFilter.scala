@@ -20,6 +20,18 @@ class BloomFilter private(private val data: Array[Byte]) {
 	val immutableBytes: ImmutableBytes = ImmutableBytes(this.data)
 
 	/**
+	 * このブルームフィルタが、渡された値を含むか否かを返します。
+	 */
+	def contains(value: ImmutableBytes): Boolean = {
+		val another = BloomFilter.createFromDigest(value.digest256)
+		val newData = new Array[Byte](this.data.length max another.data.length)
+		newData.indices.foreach { i =>
+			newData(i) = (get(this.data, i) & get(another.data, i)).toByte
+		}
+		java.util.Arrays.equals(another.data, newData)
+	}
+
+	/**
 	 * このBloomFilterと渡されたBloomFilterとの和を返します。
 	 */
 	def `|`(another: BloomFilter): BloomFilter = {
@@ -51,6 +63,11 @@ object BloomFilter {
 	def apply(): BloomFilter = {
 		BloomFilter.apply(new Array[Byte](NumBytes))
 	}
+
+	/**
+	 * 何も登録されていない新たな BloomFilter を生成して返します。
+	 */
+	def newInstance: BloomFilter = apply()
 
 	/**
 	 * ダイジェスト値（エントロピーが非常に高い）を受け取って、
