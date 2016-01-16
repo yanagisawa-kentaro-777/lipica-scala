@@ -524,11 +524,12 @@ object TrieImpl {
 }
 
 
-trait TrieNode {
+sealed trait TrieNode {
 	def isDigestNode: Boolean
 	def isEmpty: Boolean
 	def isShortcutNode: Boolean
 	def isRegularNode: Boolean
+
 	def nodeValue: ImmutableBytes
 	def hash: DigestValue
 }
@@ -561,6 +562,40 @@ object TrieNode {
 	def apply(key: ImmutableBytes, child: TrieNode): ShortcutNode = new ShortcutNode(key, child)
 
 	def apply(children: Seq[TrieNode]): RegularNode = new RegularNode(children)
+
+	def encode(aNode: TrieNode): ImmutableBytes = {
+		val encoder = RBACCodec.Encoder
+		aNode match {
+			case node: ShortcutNode =>
+				encoder.encodeSeqOfByteArrays(Seq(node.shortcutKey, encode(node.childNode)))
+			case node: RegularNode =>
+				encoder.encodeSeqOfByteArrays(node.children.map(each => encode(each)))
+			case node: ValueNode =>
+				0 +: encoder.encode(node.nodeValue)
+			case node: DigestNode =>
+				1 +: encoder.encode(node.hash.bytes)
+		}
+	}
+
+	def decode(encodedBytes: ImmutableBytes): TrieNode = {
+		val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
+		if (decodedResult.isSeq) {
+			val items = decodedResult.items
+			if (items.size == ShortcutSize) {
+				//ショートカットノード。
+				new ShortcutNode(items.head.bytes, decode(items(1).bytes))
+			} else {
+				new RegularNode(items.map(each => decode(each.bytes)))
+			}
+		} else {
+			val bytes = decodedResult.bytes
+			if (bytes.head == 0) {
+				new ValueNode(bytes.copyOfRange(1, bytes.length))
+			} else {
+				new DigestNode(Digest256(bytes.copyOfRange(1, bytes.length)))
+			}
+		}
+	}
 
 }
 
