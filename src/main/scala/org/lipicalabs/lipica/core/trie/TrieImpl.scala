@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 
 import scala.annotation.tailrec
-import scala.collection.mutable
 
 /**
  * Merkle-Patricia Treeの実装クラスです。
@@ -362,22 +361,16 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 	override def validate: Boolean = Option(this.backend.get(rootHash)).isDefined
 
 	/**
-	 * このTrieに属するすべての要素を、キャッシュから削除します。
+	 * このTrieの現在のグラフに含まれないすべてのデータを、バックエンドから削除します。
 	 */
-	def cleanCache(): Unit = {
+	def executeBackendGC(): Unit = {
 		val startTime = System.currentTimeMillis
 
 		val collectAction = new CollectFullSetOfNodes
 		this.scanTree(this.rootHash, collectAction)
 		val collectedHashes = collectAction.getCollectedHashes
 
-		val cachedNodes = this.backend.entries
-		val toRemoveSet = new mutable.HashSet[DigestValue]
-		for (key <- cachedNodes.keySet) {
-			if (!collectedHashes.contains(key)) {
-				toRemoveSet.add(key)
-			}
-		}
+		val toRemoveSet = this.backend.entries.keySet.diff(collectedHashes)
 		for (key <- toRemoveSet) {
 			this.backend.delete(key.bytes)
 			if (logger.isTraceEnabled) {
