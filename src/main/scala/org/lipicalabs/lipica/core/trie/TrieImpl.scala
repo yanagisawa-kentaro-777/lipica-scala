@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils._
-import org.lipicalabs.lipica.core.crypto.digest.{Digest256, EmptyDigest, DigestValue, DigestUtils}
+import org.lipicalabs.lipica.core.crypto.digest.{EmptyDigest, Digest256, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.slf4j.LoggerFactory
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
@@ -190,9 +190,9 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 						//既存ノードのキーの途中で分岐がある。
 						//2要素のショートカットノードを、17要素の通常ノードに変換する。
 						//従来の要素。
-						val oldNode = insert(TrieNode.empty, nodeKey.copyOfRange(matchingLength + 1, nodeKey.length), currentNode.childNode)
+						val oldNode = insert(EmptyNode, nodeKey.copyOfRange(matchingLength + 1, nodeKey.length), currentNode.childNode)
 						//追加された要素。
-						val newNode = insert(TrieNode.empty, key.copyOfRange(matchingLength + 1, key.length), valueNode)
+						val newNode = insert(EmptyNode, key.copyOfRange(matchingLength + 1, key.length), valueNode)
 						//異なる最初のニブルに対応するノードを記録して、分岐させる。
 						val scaledSlice = createRegularNodeSlice
 						scaledSlice(nodeKey(matchingLength)) = oldNode
@@ -228,7 +228,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 	private def delete(node: TrieNode, key: ImmutableBytes): TrieNode = {
 		if (key.isEmpty || node.isEmpty) {
 			//何もしない。
-			return TrieNode.empty
+			return EmptyNode
 		}
 		retrieveNode(node) match {
 			case currentNode: ShortcutNode =>
@@ -239,7 +239,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 
 				if (nodeKey == key) {
 					//ぴたり一致。 これが削除対象である。
-					TrieNode.empty
+					EmptyNode
 				} else if (nodeKey == key.copyOfRange(0, nodeKey.length)) {
 					//このノードのキーが、削除すべきキーの接頭辞である。
 					//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
@@ -294,7 +294,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 					val s = if (other eq null) "null" else other.getClass.getSimpleName
 					logger.debug("<Trie> Trie error: Node is %s".format(s))
 				}
-				TrieNode.empty
+				EmptyNode
 		}
 	}
 
@@ -311,7 +311,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 		var idx = -1
 		(0 until TrieNode.RegularSize).foreach {
 			i => {
-				if (node(i) != TrieNode.empty) {
+				if (node(i) != EmptyNode) {
 					if (idx == -1) {
 						idx = i
 					} else {
@@ -328,9 +328,9 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 			return node
 		}
 		if (node.isEmpty) {
-			TrieNode.empty
+			EmptyNode
 		} else if (node.hash == DigestUtils.EmptyTrieHash) {
-			TrieNode.empty
+			EmptyNode
 		} else {
 			//対応する値を引いて返す。
 			TrieNode.decode(this.backend.get(node.hash).encodedBytes)
@@ -478,14 +478,14 @@ object TrieImpl {
 	def newInstance(ds: KeyValueDataSource): TrieImpl = new TrieImpl(ds)
 
 	private def createRegularNodeSlice: Array[TrieNode] = {
-		(0 until TrieNode.RegularSize).map(_ => TrieNode.empty).toArray
+		(0 until TrieNode.RegularSize).map(_ => EmptyNode).toArray
 	}
 
 	/**
 	 * １７要素ノードの要素を、可変の配列に変換する。
 	 */
 	private def copyRegularNode(node: RegularNode): Array[TrieNode] = {
-		(0 until TrieNode.RegularSize).map(i => Option(node.child(i)).getOrElse(TrieNode.empty)).toArray
+		(0 until TrieNode.RegularSize).map(i => Option(node.child(i)).getOrElse(EmptyNode)).toArray
 	}
 }
 
@@ -520,13 +520,9 @@ object TrieNode {
 	val RegularSize = 17
 
 	val emptyTrieNode = new DigestNode(DigestUtils.EmptyTrieHash)
-	val empty = new DigestNode(EmptyDigest)
-	def fromDigest(hash: DigestValue): DigestNode = {
-		if (hash.isEmpty) {
-			empty
-		} else {
-			new DigestNode(hash)
-		}
+
+	def fromDigest(hash: DigestValue): TrieNode = {
+		new DigestNode(hash)
 	}
 
 	def apply(key: ImmutableBytes, child: TrieNode): ShortcutNode = new ShortcutNode(key, child)
@@ -544,12 +540,18 @@ object TrieNode {
 				encoder.encode(node.nodeValue)
 			case node: DigestNode =>
 				encoder.encode(node.hash.bytes)
+			case EmptyNode =>
+				encoder.encode(ImmutableBytes.empty)
 		}
 	}
 
 	def decode(encodedBytes: ImmutableBytes): TrieNode = {
-		val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
-		decode(decodedResult)
+		if (encodedBytes.isEmpty) {
+			EmptyNode
+		} else {
+			val decodedResult = RBACCodec.Decoder.decode(encodedBytes).right.get
+			decode(decodedResult)
+		}
 	}
 
 	private def decode(decodedResult: DecodedResult): TrieNode = {
@@ -564,7 +566,7 @@ object TrieNode {
 		} else {
 			val bytes = decodedResult.bytes
 			if (bytes.isEmpty) {
-				TrieNode.empty
+				EmptyNode
 			} else {
 				new DigestNode(DigestValue(bytes))
 			}
@@ -583,9 +585,18 @@ object TrieNode {
 				node.nodeValue.digest256
 			case node: DigestNode =>
 				node.hash
+			case EmptyNode => EmptyDigest
 		}
 	}
+}
 
+object EmptyNode extends TrieNode {
+	override val isEmpty = true
+	override val isDigestNode = false
+	override val isRegularNode = false
+	override val isShortcutNode = false
+	override val nodeValue = ImmutableBytes.empty
+	override val hash = EmptyDigest
 }
 
 class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) extends TrieNode {
@@ -639,6 +650,14 @@ class ValueNode(override val nodeValue: ImmutableBytes) extends TrieNode {
 	override def isEmpty: Boolean = false
 
 	override def hash: DigestValue = TrieNode.calculateHash(this)
+
+	override def equals(o: Any): Boolean = {
+		try {
+			this.nodeValue == o.asInstanceOf[ValueNode].nodeValue
+		} catch {
+			case any: Throwable => false
+		}
+	}
 }
 
 object ValueNode {
