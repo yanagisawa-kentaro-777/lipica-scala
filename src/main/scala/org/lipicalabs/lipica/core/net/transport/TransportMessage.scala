@@ -6,9 +6,8 @@ import java.util
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PongMessage, PingMessage}
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ByteUtils, ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
-import org.spongycastle.util.BigIntegers
 
 /**
  * Created by IntelliJ IDEA.
@@ -96,7 +95,10 @@ object TransportMessage {
 		//署名を生成する。
 		val signature = privateKey.sign(forSig)
 		signature.v = (signature.v - 27).toByte
-		val signatureBytes = BigIntegers.asUnsignedByteArray(signature.r) ++ BigIntegers.asUnsignedByteArray(signature.s) ++ Array[Byte](signature.v)
+
+		val rPart = ByteUtils.bigIntegerToBytes(signature.r, 32)
+		val sPart = ByteUtils.bigIntegerToBytes(signature.s, 32)
+		val signatureBytes = rPart ++ sPart ++ Array[Byte](signature.v)
 
 		//MDCを計算する。
 		val dataBytes = data.toByteArray
@@ -143,7 +145,8 @@ object TransportMessage {
 			result.parse(data)
 			Right(result.asInstanceOf[T])
 		} catch {
-			case any: Throwable => Left(any)
+			case any: Throwable =>
+				Left(any)
 		}
 	}
 

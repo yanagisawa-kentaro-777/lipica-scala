@@ -26,6 +26,7 @@
 ・context の属性名称を確認する。
 ・数値的な意味を持つImmutableBytesラッパー。
 ・BloomFilterの型。
+・NodeIdの型。
 ・ContractDetailsCacheImplとか、どうにかならないのか。
 
 ・アウトラインログを作る。
