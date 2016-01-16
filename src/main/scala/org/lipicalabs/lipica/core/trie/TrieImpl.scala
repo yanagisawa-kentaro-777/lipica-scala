@@ -11,7 +11,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import scala.annotation.tailrec
 
 /**
- * Merkle-Patricia Treeの実装クラスです。
+ * Merkle Patricia Treeの実装クラスです。
  *
  * @author YANAGISAWA, Kentaro
  * @since 2015/09/30
@@ -83,7 +83,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 			//キーが消費し尽くされているか、ノードに子孫がいない場合、そのノードの値を返す。
 			return aNode.nodeValue
 		}
-		retrieveNode(aNode) match {
+		retrieveNodeFromBackend(aNode) match {
 			case currentNode: ShortcutNode =>
 				//２要素のショートカットノード。
 				//このノードのキーを長ったらしい表現に戻す。
@@ -166,11 +166,11 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 			//これ以上は処理する必要がない。
 			return valueNode
 		}
-		val node = retrieveNode(aNode)
+		val node = retrieveNodeFromBackend(aNode)
 		if (node.isEmpty) {
 			//親ノードが指定されていないので、新たな２要素ノードを作成して返す。
 			val newNode = TrieNode(packNibbles(key), valueNode)
-			return putToCache(newNode)
+			return putNodeToBackend(newNode)
 		}
 		node match {
 			case currentNode: ShortcutNode =>
@@ -196,7 +196,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 						val scaledSlice = createRegularNodeSlice
 						scaledSlice(nodeKey(matchingLength)) = oldNode
 						scaledSlice(key(matchingLength)) = newNode
-						putToCache(TrieNode(scaledSlice.toSeq))
+						putNodeToBackend(TrieNode(scaledSlice.toSeq))
 					}
 				if (matchingLength == 0) {
 					//既存ノードのキーと新たなキーとの間に共通点はないので、
@@ -205,14 +205,14 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 				} else {
 					//このノードと今作られたノードとをつなぐノードを作成する。
 					val bridgeNode = TrieNode(packNibbles(key.copyOfRange(0, matchingLength)), createdNode)
-					putToCache(bridgeNode)
+					putNodeToBackend(bridgeNode)
 				}
 			case currentNode: RegularNode =>
 				//もともと17要素の通常ノードである。
 				val newNode = copyRegularNode(currentNode)
 				//普通にノードを更新して、保存する。
 				newNode(key(0)) = insert(currentNode.child(key(0)), key.copyOfRange(1, key.length), valueNode)
-				putToCache(TrieNode(newNode.toSeq))
+				putNodeToBackend(TrieNode(newNode.toSeq))
 			case other =>
 				val s = if (other eq null) "null" else other.getClass.getSimpleName
 				ErrorLogger.logger.warn("<Trie> Trie error: Node is %s".format(s))
@@ -229,7 +229,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 			//何もしない。
 			return EmptyNode
 		}
-		retrieveNode(node) match {
+		retrieveNodeFromBackend(node) match {
 			case currentNode: ShortcutNode =>
 				//２要素のショートカットノードである。
 				//長ったらしい表現に戻す。
@@ -243,7 +243,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 					//このノードのキーが、削除すべきキーの接頭辞である。
 					//再帰的に削除を試行する。削除した結果、新たにこのノードの直接の子になるべきノードが返ってくる。
 					val deleteResult = delete(currentNode.childNode, key.copyOfRange(nodeKey.length, key.length))
-					val newNode = retrieveNode(deleteResult) match {
+					val newNode = retrieveNodeFromBackend(deleteResult) match {
 							case newChild: ShortcutNode =>
 								//削除で発生する跳躍をつなぐ。
 								//この操作こそが、削除そのものである。
@@ -252,7 +252,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 							case _ =>
 								TrieNode(packedKey, deleteResult)
 						}
-					putToCache(newNode)
+					putNodeToBackend(newNode)
 				} else {
 					//このノードは関係ない。
 					node
@@ -275,7 +275,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 					} else if (0 <= idx) {
 						//１ノードだけ子供がいて、このノードには値がない。
 						//したがって、このノードと唯一の子供とを、ショートカットノードに変換できる。
-							retrieveNode(items(idx)) match {
+							retrieveNodeFromBackend(items(idx)) match {
 							case child: ShortcutNode =>
 								val concat = ImmutableBytes.fromOneByte(idx.toByte) ++ unpackToNibbles(child.shortcutKey)
 								TrieNode(packNibbles(concat), child.childNode)
@@ -286,7 +286,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 						//２ノード以上子供がいるか、子どもと値がある。
 						TrieNode(items.toSeq)
 					}
-				putToCache(newNode)
+				putNodeToBackend(newNode)
 			case other =>
 				if (logger.isDebugEnabled) {
 					//存在しないノードの削除？
@@ -322,7 +322,25 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 		idx
 	}
 
-	private def retrieveNode(node: TrieNode): TrieNode = {
+	/**
+	 * 渡されたノードを、バックエンドに登録します。
+	 */
+	private def putNodeToBackend(node: TrieNode): TrieNode = {
+		this.backend.put(node) match {
+			case Left(n) =>
+				//値がそのままである。
+				n
+			case Right(digest) =>
+				//長かったので、ハッシュ値が返ってきたということ。
+				TrieNode.fromDigest(digest)
+		}
+	}
+
+	/**
+	 * 渡されたノードがダイジェスト値である場合に、
+	 * 対応する具体的なノードをバックエンドから取得し、再構築して返します。
+	 */
+	private def retrieveNodeFromBackend(node: TrieNode): TrieNode = {
 		if (!node.isDigestNode) {
 			return node
 		}
@@ -332,18 +350,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 			EmptyNode
 		} else {
 			//対応する値を引いて返す。
-			TrieNode.decode(this.backend.get(node.hash).encodedBytes)
-		}
-	}
-
-	private def putToCache(node: TrieNode): TrieNode = {
-		this.backend.put(node) match {
-			case Left(n) =>
-				//値がそのままである。
-				n
-			case Right(digest) =>
-				//長かったので、ハッシュ値が返ってきたということ。
-				TrieNode.fromDigest(digest)
+			val encodedBytes = this.backend.get(node.hash).encodedBytes
+			TrieNode.decode(encodedBytes)
 		}
 	}
 
@@ -376,8 +384,8 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 				logger.trace("<TrieImpl> Garbage collected node: [%s]".format(key.toHexString))
 			}
 		}
-		logger.info("<TrieImpl> Garbage collected node list, size: [%,d]".format(toRemoveSet.size))
-		logger.info("<TrieImpl> Garbage collection time: [%,d ms]".format(System.currentTimeMillis - startTime))
+		logger.info("<TrieImpl> GC nodes, size: [%,d]".format(toRemoveSet.size))
+		logger.info("<TrieImpl> GC time: [%,d ms]".format(System.currentTimeMillis - startTime))
 	}
 
 	def copy: TrieImpl = {
