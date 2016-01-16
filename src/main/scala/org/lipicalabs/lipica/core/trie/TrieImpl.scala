@@ -571,7 +571,7 @@ object TrieNode {
 		}
 	}
 
-	def computeHash(node: TrieNode): DigestValue = {
+	def calculateHash(node: TrieNode): DigestValue = {
 		node match {
 			case null =>
 				DigestUtils.EmptyTrieHash
@@ -593,7 +593,7 @@ class ShortcutNode(val shortcutKey: ImmutableBytes, val childNode: TrieNode) ext
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = true
 	override val isRegularNode: Boolean = false
-	override def hash = TrieNode.computeHash(this)
+	override def hash = TrieNode.calculateHash(this)
 
 	override def nodeValue: ImmutableBytes = this.childNode.nodeValue
 
@@ -612,7 +612,7 @@ class RegularNode(val children: Seq[TrieNode]) extends TrieNode {
 	override val isDigestNode: Boolean = false
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = true
-	override def hash = TrieNode.computeHash(this)
+	override def hash = TrieNode.calculateHash(this)
 	override def nodeValue: ImmutableBytes = this.children(16).nodeValue
 	def child(idx: Int): TrieNode = this.children(idx)
 
@@ -638,7 +638,7 @@ class ValueNode(override val nodeValue: ImmutableBytes) extends TrieNode {
 	override def isShortcutNode: Boolean = false
 	override def isEmpty: Boolean = false
 
-	override def hash: DigestValue = TrieNode.computeHash(this)
+	override def hash: DigestValue = TrieNode.calculateHash(this)
 }
 
 object ValueNode {
