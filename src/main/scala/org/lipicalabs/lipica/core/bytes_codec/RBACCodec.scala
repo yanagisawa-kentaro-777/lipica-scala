@@ -176,7 +176,6 @@ object RBACCodec {
 				case bytes: ImmutableBytes => encodeItem(bytes)
 				case bytes: Array[Byte] => encodeItem(bytes)
 				case seq: Seq[_] => encodeSeq(seq)
-				case v: Value => encodeElement(v.value)
 				case Right(v) => encodeElement(v)
 				case Left(v) => encodeElement(v)
 				case Some(v) => encodeElement(v)

@@ -24,7 +24,6 @@
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
 ・context の属性名称を確認する。
-・Valueを廃絶したい。
 ・数値的な意味を持つImmutableBytesラッパー。
 ・BloomFilterの型。
 ・ContractDetailsCacheImplとか、どうにかならないのか。
