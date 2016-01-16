@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.kernel
 
-import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
 
@@ -10,39 +9,46 @@ import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-class BloomFilter private(private val data: Array[Byte]) {
+class BloomFilter private(val bits: ImmutableBytes) {
 
 	import BloomFilter._
-
-	/**
-	 * この BloomFilter を表すバイト列を返します。
-	 */
-	val immutableBytes: ImmutableBytes = ImmutableBytes(this.data)
 
 	/**
 	 * このブルームフィルタが、渡された値を含むか否かを返します。
 	 */
 	def contains(value: ImmutableBytes): Boolean = {
 		val another = BloomFilter.createFromDigest(value.digest256)
-		val newData = new Array[Byte](this.data.length max another.data.length)
+		val newData = new Array[Byte](this.bits.length max another.bits.length)
 		newData.indices.foreach { i =>
-			newData(i) = (get(this.data, i) & get(another.data, i)).toByte
+			newData(i) = (get(this.bits, i) & get(another.bits, i)).toByte
 		}
-		java.util.Arrays.equals(another.data, newData)
+		java.util.Arrays.equals(another.bits.toByteArray, newData)
 	}
 
 	/**
 	 * このBloomFilterと渡されたBloomFilterとの和を返します。
 	 */
 	def `|`(another: BloomFilter): BloomFilter = {
-		val newData = new Array[Byte](this.data.length max another.data.length)
+		val newData = new Array[Byte](this.bits.length max another.bits.length)
 		newData.indices.foreach { i =>
-			newData(i) = (get(this.data, i) | get(another.data, i)).toByte
+			newData(i) = (get(this.bits, i) | get(another.bits, i)).toByte
 		}
-		new BloomFilter(newData)
+		new BloomFilter(ImmutableBytes(newData))
 	}
 
-	override def toString: String = Hex.encodeHexString(this.data)
+	def toHexString: String = this.bits.toHexString
+
+	override def hashCode: Int = this.bits.hashCode
+
+	override def equals(o: Any): Boolean = {
+		try {
+			this.bits == o.asInstanceOf[BloomFilter].bits
+		} catch {
+			case any: Throwable => false
+		}
+	}
+
+	override def toString: String = toHexString
 
 }
 
@@ -50,18 +56,20 @@ object BloomFilter {
 
 	private val NumBytes = 256
 
+	val empty = new BloomFilter(ImmutableBytes.empty)
+
 	/**
 	 * 渡されたバイト列を、そのままビット列とするBloomFilterを生成して返します。
 	 */
-	def apply(data: Array[Byte]): BloomFilter = {
-		new BloomFilter(java.util.Arrays.copyOf(data, NumBytes))
+	def apply(data: ImmutableBytes): BloomFilter = {
+		new BloomFilter(data)
 	}
 
 	/**
 	 * 何も登録されていない新たな BloomFilter を生成して返します。
 	 */
 	def apply(): BloomFilter = {
-		BloomFilter.apply(new Array[Byte](NumBytes))
+		BloomFilter.apply(ImmutableBytes.create(NumBytes))
 	}
 
 	/**
@@ -86,12 +94,12 @@ object BloomFilter {
 		ByteUtils.setBit(data, mov2, positive = true)
 		ByteUtils.setBit(data, mov3, positive = true)
 
-		BloomFilter.apply(data)
+		BloomFilter.apply(ImmutableBytes(data))
 	}
 
-	private def get(array: Array[Byte], idx: Int): Byte = {
-		if (idx < array.length) {
-			array(idx)
+	private def get(bytes: ImmutableBytes, idx: Int): Byte = {
+		if (idx < bytes.length) {
+			bytes(idx)
 		} else {
 			0
 		}

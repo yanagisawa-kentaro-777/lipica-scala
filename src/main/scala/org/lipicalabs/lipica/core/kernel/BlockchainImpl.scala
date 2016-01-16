@@ -329,17 +329,17 @@ class BlockchainImpl(
 	@tailrec
 	private def validateTxReceipts(block: Block, receipts: Seq[TransactionReceipt], filtered: Boolean): Boolean = {
 		val calculatedBloomFilter = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
-		if (block.logsBloom != calculatedBloomFilter) {
+		if (block.logsBloomFilter != calculatedBloomFilter) {
 			//Bloom Filterが合致しなかった。
 			if (!filtered) {
 				//外部のログを排除して、もう一度試行する。
-				ErrorLogger.logger.warn("<Blockchain> ORIGINAL LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedBloomFilter, block.encode))
-				logger.warn("<Blockchain> ORIGINAL LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedBloomFilter, block.encode))
+				ErrorLogger.logger.warn("<Blockchain> ORIGINAL LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
+				logger.warn("<Blockchain> ORIGINAL LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
 				validateTxReceipts(block, receipts.map(_.excludeAlienLogs), filtered = true)
 			} else {
 				//Bloom Filterが合わなければ、TransactionReceiptが合うことはない。よってこれ以上は試行する必要もない。
-				ErrorLogger.logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedBloomFilter, block.encode))
-				logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloom, calculatedBloomFilter, block.encode))
+				ErrorLogger.logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
+				logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
 				false
 			}
 		} else {

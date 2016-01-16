@@ -44,7 +44,7 @@ object GenesisLoader {
 		blockHeader.parentHash = Digest256(JsonUtils.parseHexStringToImmutableBytes(genesisJson.parentHash))
 		blockHeader.extraData = JsonUtils.parseHexStringToImmutableBytes(genesisJson.extraData)
 		blockHeader.manaLimit = JsonUtils.parseHexStringToImmutableBytes(genesisJson.manaLimit)
-		blockHeader.logsBloom = ImmutableBytes.create(256)
+		blockHeader.logsBloomFilter = BloomFilter.newInstance
 
 		import scala.collection.JavaConversions._
 		val premine: Map[Address, AccountState] = genesisJson.getAlloc.map {

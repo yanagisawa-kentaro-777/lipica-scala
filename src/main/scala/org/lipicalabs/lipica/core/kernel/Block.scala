@@ -56,7 +56,7 @@ trait Block {
 	/**
 	 * トランザクションリスト内のログ情報を格納したブルームフィルタ。
 	 */
-	def logsBloom: ImmutableBytes
+	def logsBloomFilter: BloomFilter
 
 	/**
 	 * このブロックにおける難度。
@@ -157,7 +157,7 @@ class PlainBlock private[kernel](override val blockHeader: BlockHeader, override
 
 	override def receiptsRoot = this.blockHeader.receiptTrieRoot
 
-	override def logsBloom = this.blockHeader.logsBloom
+	override def logsBloomFilter = this.blockHeader.logsBloomFilter
 
 	override def difficulty = this.blockHeader.difficulty
 

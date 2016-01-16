@@ -9,11 +9,11 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * @author YANAGISAWA, Kentaro
  */
 object LogBloomFilterCalculator {
-	def calculateLogBloomFilter(receipts: Seq[TransactionReceipt]): ImmutableBytes = {
+	def calculateLogBloomFilter(receipts: Seq[TransactionReceipt]): BloomFilter = {
 		var result = BloomFilter()
 		for (receipt <- receipts) {
 			result = result | receipt.bloomFilter
 		}
-		result.immutableBytes
+		result
 	}
 }

@@ -62,9 +62,9 @@ class BlockHeader {
 	def receiptTrieRoot: DigestValue = this._receiptTrieRoot
 	def receiptTrieRoot_=(v: DigestValue): Unit = this._receiptTrieRoot = v
 
-	private var _logsBloom: ImmutableBytes = ImmutableBytes.empty
-	def logsBloom: ImmutableBytes = this._logsBloom
-	def logsBloom_=(v: ImmutableBytes): Unit = this._logsBloom = v
+	private var _logsBloomFilter: BloomFilter = BloomFilter.empty
+	def logsBloomFilter: BloomFilter = this._logsBloomFilter
+	def logsBloomFilter_=(v: BloomFilter): Unit = this._logsBloomFilter = v
 
 	/**
 	 * このブロックのdifficultyを表現するスカラー値。
@@ -136,7 +136,7 @@ class BlockHeader {
 		val encodedStateRoot = RBACCodec.Encoder.encode(this.stateRoot)
 		val encodedTxTrieRoot = RBACCodec.Encoder.encode(Option(this.txTrieRoot).getOrElse(DigestUtils.EmptyTrieHash))
 		val encodedReceiptTrieRoot = RBACCodec.Encoder.encode(Option(this.receiptTrieRoot).getOrElse(DigestUtils.EmptyTrieHash))
-		val encodedLogsBloom = RBACCodec.Encoder.encode(this.logsBloom)
+		val encodedLogsBloom = RBACCodec.Encoder.encode(this.logsBloomFilter.bits)
 		val encodedDifficulty = RBACCodec.Encoder.encode(this.difficulty)
 		val encodedBlockNumber = RBACCodec.Encoder.encode(BigInt(this.blockNumber))
 		val encodedManaLimit = RBACCodec.Encoder.encode(this.manaLimit)
@@ -214,7 +214,7 @@ object BlockHeader {
 		result.stateRoot = Digest256(decodedResult.items(3).bytes)
 		result.txTrieRoot = Digest256(decodedResult.items(4).bytes)
 		result.receiptTrieRoot = Digest256(decodedResult.items(5).bytes)
-		result.logsBloom = decodedResult.items(6).bytes
+		result.logsBloomFilter = BloomFilter(decodedResult.items(6).bytes)
 		result.difficulty = decodedResult.items(7).bytes
 
 		result.blockNumber = decodedResult.items(8).bytes.toPositiveBigInt.longValue()

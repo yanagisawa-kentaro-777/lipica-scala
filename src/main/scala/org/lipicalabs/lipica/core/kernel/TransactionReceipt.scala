@@ -27,7 +27,7 @@ class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomF
 	def encode: ImmutableBytes = {
 		val encodedPostTxState = RBACCodec.Encoder.encode(this.postTxState)
 		val encodedCumulativeMana = RBACCodec.Encoder.encode(this.cumulativeMana)
-		val encodedBloom = RBACCodec.Encoder.encode(this.bloomFilter.immutableBytes)
+		val encodedBloom = RBACCodec.Encoder.encode(this.bloomFilter.bits)
 		val encodedLogInfoSeq = RBACCodec.Encoder.encodeSeqOfByteArrays(this.logs.map(_.encode))
 
 		RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedPostTxState, encodedCumulativeMana, encodedBloom, encodedLogInfoSeq))
@@ -72,7 +72,7 @@ object TransactionReceipt {
 		val bloomFilterBytes = items(2).bytes
 		val logs = items(3).items.map(each => LogInfo.decode(each.items))
 
-		new TransactionReceipt(logs.toBuffer, BloomFilter(bloomFilterBytes.toByteArray), cumulativeMana, Digest256(postTxState))
+		new TransactionReceipt(logs.toBuffer, BloomFilter(bloomFilterBytes), cumulativeMana, Digest256(postTxState))
 	}
 
 	private def buildBloomFilter(logsSeq: Seq[LogInfo]): BloomFilter = {
