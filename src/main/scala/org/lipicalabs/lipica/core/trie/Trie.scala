@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 
 /**
- * Merkle-Patricia Tree による trie データ構造のインターフェイスです。
+ * Merkle Patricia Tree による Trie（Prefix Tree） データ構造のインターフェイスです。
  */
 trait Trie {
 

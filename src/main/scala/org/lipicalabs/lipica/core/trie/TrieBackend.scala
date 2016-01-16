@@ -14,9 +14,9 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 	import TrieBackend._
 	import scala.collection.JavaConversions._
 
-	private val nodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, EncodedTrieEntry])
+	private val encodedNodes = mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, EncodedTrieEntry])
 
-	def entries: Map[DigestValue, EncodedTrieEntry] = this.nodes.toMap
+	def entries: Map[DigestValue, EncodedTrieEntry] = this.encodedNodes.toMap
 
 	private val dataSourceRef = new AtomicReference(_dataSource)
 	def dataSource: KeyValueDataSource = this.dataSourceRef.get
@@ -28,10 +28,10 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 	}
 
 	private[trie] def privatePut(key: DigestValue, value: EncodedTrieEntry): Unit = {
-		this.nodes.put(key, value)
+		this.encodedNodes.put(key, value)
 	}
 
-	def put(key: DigestValue, bytes: ImmutableBytes): Unit = this.nodes.put(key, new EncodedTrieEntry(bytes, _dirty = false))
+	def put(key: DigestValue, bytes: ImmutableBytes): Unit = this.encodedNodes.put(key, new EncodedTrieEntry(bytes, _dirty = false))
 
 	/**
 	 * 渡されたオブジェクトのエンコードされた表現が、
@@ -44,7 +44,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 			if (logger.isTraceEnabled) {
 				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, trieNode))
 			}
-			this.nodes.put(hash, new EncodedTrieEntry(encoded, _dirty = true))
+			this.encodedNodes.put(hash, new EncodedTrieEntry(encoded, _dirty = true))
 			this.isDirty = true
 			Right(hash)
 		} else {
@@ -53,7 +53,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 	}
 
 	def get(key: DigestValue): EncodedTrieEntry = {
-		this.nodes.get(key) match {
+		this.encodedNodes.get(key) match {
 			case Some(node) =>
 				//キャッシュされている。
 				node
@@ -69,13 +69,13 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 				if (logger.isTraceEnabled) {
 					logger.trace("<Cache> Read: %s -> %s -> %s".format(key, data.toHexString, node.encodedBytes))
 				}
-				this.nodes.put(key, node)
+				this.encodedNodes.put(key, node)
 				node
 		}
 	}
 
 	def delete(key: ImmutableBytes): Unit = {
-		this.nodes.remove(key)
+		this.encodedNodes.remove(key)
 
 		Option(this.dataSource).foreach {
 			_.delete(key)
@@ -87,7 +87,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		val start = System.nanoTime
 
 		var totalBytes = 0
-		val batch = this.nodes.entrySet().withFilter(pair => pair.getValue.isDirty).map {
+		val batch = this.encodedNodes.entrySet().withFilter(pair => pair.getValue.isDirty).map {
 			entry => {
 				val nodeKey = entry.getKey
 				val node = entry.getValue
@@ -106,16 +106,16 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		//保存する。
 		this.dataSource.updateBatch(batch)
 		this.isDirty = false
-		this.nodes.clear()
+		this.encodedNodes.clear()
 
 		val finish = System.nanoTime
 		logger.info("<Cache> Flushed '%s' in: %,d nanos, %d nodes, %02.2fMB".format(dataSource.name, finish - start, batch.size, totalBytes.toDouble / 1048576))
 	}
 
 	def undo(): Unit = {
-		val dirtyKeys = this.nodes.entrySet().withFilter(entry => entry.getValue.isDirty).map(entry => entry.getKey)
+		val dirtyKeys = this.encodedNodes.entrySet().withFilter(entry => entry.getValue.isDirty).map(entry => entry.getKey)
 		dirtyKeys.foreach {
-			eachKey => this.nodes.remove(eachKey)
+			eachKey => this.encodedNodes.remove(eachKey)
 		}
 		this.isDirty = false
 	}
@@ -126,7 +126,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 		}
 		val rows: Set[(ImmutableBytes, ImmutableBytes)] =
 			if (!existsDataSource) {
-				this.nodes.entrySet().withFilter(entry => !entry.getValue.isDirty).map {
+				this.encodedNodes.entrySet().withFilter(entry => !entry.getValue.isDirty).map {
 					entry => {
 						entry.getKey.bytes -> entry.getValue.encodedBytes
 					}
@@ -149,7 +149,7 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 }
 
 object TrieBackend {
-	private val logger = LoggerFactory.getLogger("general")
+	private val logger = LoggerFactory.getLogger("trie")
 }
 
 /**
