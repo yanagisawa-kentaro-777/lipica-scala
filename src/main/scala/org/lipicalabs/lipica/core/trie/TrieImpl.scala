@@ -440,7 +440,7 @@ class TrieImpl private[trie](_db: KeyValueDataSource, _root: DigestValue) extend
 
 					this.dataStore.put(ImmutableBytes(key), encodedBytes)
 				}}
-				this.root = TrieNode(Value.fromEncodedBytes(encodedRoot).decode)
+				this.root = TrieNode.decode(encodedRoot)
 			case Left(e) =>
 				ErrorLogger.logger.warn("<TrieImpl> Deserialization error.", e)
 				logger.warn("<TrieImpl> Deserialization error.", e)
@@ -483,40 +483,7 @@ object TrieImpl {
 	private val logger = LoggerFactory.getLogger("trie")
 
 	def newInstance: TrieImpl = new TrieImpl(null)
-
 	def newInstance(ds: KeyValueDataSource): TrieImpl = new TrieImpl(ds)
-
-//	@tailrec
-//	def computeHash(obj: Either[ImmutableBytes, Value]): DigestValue = {
-//		obj match {
-//			case null =>
-//				DigestUtils.EmptyTrieHash
-//			case Left(bytes) =>
-//				if (bytes.isEmpty) {
-//					DigestUtils.EmptyTrieHash
-//				} else {
-//					//バイト配列である場合には、計算されたハッシュ値であるとみなす。
-//					Digest256(bytes)
-//				}
-//			case Right(value) =>
-//				if (value.isBytes) {
-//					computeHash(Left(value.asBytes))
-//				} else {
-//					value.hash
-//				}
-//		}
-//	}
-
-//	def convertNodeToValue(aNode: TrieNode): Value = {
-//		aNode match {
-//			case node: ShortcutNode =>
-//				Value.fromObject(Seq(Value.fromObject(node.shortcutKey), convertNodeToValue(node.childNode)))
-//			case node: RegularNode =>
-//				Value.fromObject(node.children.map(each => convertNodeToValue(each)))
-//			case node: TrieNode =>
-//				Value.fromObject(node.nodeValue)
-//		}
-//	}
 
 	private def createRegularNodeSlice: Array[TrieNode] = {
 		(0 until TrieNode.RegularSize).map(_ => TrieNode.empty).toArray
@@ -528,7 +495,6 @@ object TrieImpl {
 	private def copyRegularNode(node: RegularNode): Array[TrieNode] = {
 		(0 until TrieNode.RegularSize).map(i => Option(node.child(i)).getOrElse(TrieNode.empty)).toArray
 	}
-
 }
 
 
@@ -540,6 +506,21 @@ sealed trait TrieNode {
 
 	def nodeValue: ImmutableBytes
 	def hash: DigestValue
+
+	private val encodedBytesRef = new AtomicReference[ImmutableBytes](null)
+	def encode: ImmutableBytes = {
+		var result = this.encodedBytesRef.get
+		if (result ne null) {
+			return result
+		}
+		result = TrieNode.encode(this)
+		this.encodedBytesRef.set(result)
+		result
+	}
+
+	override def toString: String = {
+		"%s (%s)".format(getClass.getSimpleName, nodeValue.toShortString)
+	}
 }
 
 object TrieNode {
@@ -555,23 +536,12 @@ object TrieNode {
 			new DigestNode(hash)
 		}
 	}
-	def apply(value: Value): TrieNode = {
-		if (value.isSeq && value.length == ShortcutSize) {
-			apply(value.get(0).get.asBytes, TrieNode(value.get(1).get))
-		} else if (value.isSeq && value.length == RegularSize) {
-			apply(value.asSeq.map(each => apply(Value.fromObject(each))))
-		} else if (value.isBytes && value.asBytes.isEmpty) {
-			TrieNode.empty
-		} else {
-			TrieNode.fromDigest(DigestValue(value.asBytes))
-		}
-	}
 
 	def apply(key: ImmutableBytes, child: TrieNode): ShortcutNode = new ShortcutNode(key, child)
 
 	def apply(children: Seq[TrieNode]): RegularNode = new RegularNode(children)
 
-	def encode(aNode: TrieNode): ImmutableBytes = {
+	private def encode(aNode: TrieNode): ImmutableBytes = {
 		val encoder = RBACCodec.Encoder
 		aNode match {
 			case node: ShortcutNode =>

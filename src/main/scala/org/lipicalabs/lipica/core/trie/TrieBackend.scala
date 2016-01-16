@@ -38,11 +38,11 @@ class TrieBackend(_dataSource: KeyValueDataSource) {
 	 * 32バイト（＝256ビット）よりも長ければ、キャッシュに保存します。
 	 */
 	def put(trieNode: TrieNode): Either[TrieNode, DigestValue] = {
-		val encoded = TrieNode.encode(trieNode)
+		val encoded = trieNode.encode
 		if (32 <= encoded.length) {
 			val hash = trieNode.hash
 			if (logger.isTraceEnabled) {
-				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, trieNode.getClass.getSimpleName))
+				logger.trace("<Cache> Putting: %s (%s): %s".format(encoded.toHexString, hash.toHexString, trieNode))
 			}
 			this.nodes.put(hash.bytes, new CachedNode(encoded, _dirty = true))
 			this.isDirty = true
