@@ -665,7 +665,7 @@ object ValueNode {
 }
 
 class DigestNode(override val hash: DigestValue) extends TrieNode {
-	override val isEmpty: Boolean = this.hash.isEmpty
+	override val isEmpty: Boolean = false
 	override val isDigestNode: Boolean = true
 	override val isShortcutNode: Boolean = false
 	override val isRegularNode: Boolean = false
