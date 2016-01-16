@@ -13,6 +13,5 @@ class CachedNode(val nodeValue: Value, _dirty: Boolean) {
 		this.isDirtyRef.set(value)
 		this
 	}
-	def isEmpty: Boolean = this.nodeValue.isNull || (this.nodeValue.length == 0)
 }
 
