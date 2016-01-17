@@ -38,7 +38,7 @@ object TransactionExecutionSummary {
 		private val transactionHash = this.tx.hash
 		private val manaLimit = this.tx.manaLimit.toPositiveBigInt
 		private val manaPrice = this.tx.manaPrice.toPositiveBigInt
-		private val value = this.tx.value.toPositiveBigInt
+		private val value = this.tx.value.positiveBigInt
 
 		private var manaUsed: BigInt = UtilConsts.Zero
 		def manaUsed(v: BigInt): Builder = {

@@ -6,7 +6,7 @@ import java.util
 import org.codehaus.jackson.map.ObjectMapper
 import org.lipicalabs.lipica.core.kernel.CallTransaction.Type.{StringType, IntType}
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ByteUtils, ImmutableBytes}
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,10 +18,10 @@ object CallTransaction {
 	def createRawTransaction(nonce: Long, manaPrice: Long, manaLimit: Long, toAddress: String, value: Long, data: ImmutableBytes): TransactionLike = {
 		Transaction(
 			nonce = ByteUtils.toByteArrayWithNoLeadingZeros(nonce),
-			manaPrice = ByteUtils.toByteArrayWithNoLeadingZeros(manaPrice),
-			manaLimit = ByteUtils.toByteArrayWithNoLeadingZeros(manaLimit),
+			manaPrice = BigIntBytes(ByteUtils.toByteArrayWithNoLeadingZeros(manaPrice)),
+			manaLimit = BigIntBytes(ByteUtils.toByteArrayWithNoLeadingZeros(manaLimit)),
 			receiveAddress = Address160.parseHexString(toAddress),
-			value = ByteUtils.toByteArrayWithNoLeadingZeros(value),
+			value = BigIntBytes(ByteUtils.toByteArrayWithNoLeadingZeros(value)),
 			data = data
 		)
 	}

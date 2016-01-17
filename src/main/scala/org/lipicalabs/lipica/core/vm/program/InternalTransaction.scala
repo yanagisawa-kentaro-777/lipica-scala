@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm.program
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Address, Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -11,9 +11,9 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * 2015/10/31 15:36
  * YANAGISAWA, Kentaro
  */
-class InternalTransaction(private val parentHash: DigestValue, val deep: Int, val index: Int, _nonce: ImmutableBytes, _manaPrice: DataWord, _manaLimit: DataWord, override val senderAddress: Address, _receiveAddress: Address, _value: ImmutableBytes, _data: ImmutableBytes, val note: String) extends TransactionLike {
+class InternalTransaction(private val parentHash: DigestValue, val deep: Int, val index: Int, _nonce: ImmutableBytes, _manaPrice: DataWord, _manaLimit: DataWord, override val senderAddress: Address, _receiveAddress: Address, _value: BigIntBytes, _data: ImmutableBytes, val note: String) extends TransactionLike {
 
-	private val core = Transaction(_nonce, _manaPrice.data, _manaLimit.data, _receiveAddress, _value, _data)
+	private val core = Transaction(_nonce, BigIntBytes(_manaPrice.data), BigIntBytes(_manaLimit.data), _receiveAddress, _value, _data)
 
 	private var rejected = false
 

@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
 import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.ManaCost
 import org.slf4j.LoggerFactory
 
@@ -40,7 +40,7 @@ trait TransactionLike {
 	 * メッセージコールにおいては、受信者が受け取る金額。
 	 * コントラクト作成においては、作成されたコントラクトアカウントへの寄託額。
 	 */
-	def value: ImmutableBytes
+	def value: BigIntBytes
 
 	/**
 	 *  受信者のアドレス。
@@ -50,13 +50,13 @@ trait TransactionLike {
 	/**
 	 * マナ１単位を調達するのに必要な金額。
 	 */
-	def manaPrice: ImmutableBytes
+	def manaPrice: BigIntBytes
 
 	/**
 	 * このトランザクションで消費して良いマナの最大量。
 	 * 先払いとして引き当てられる。
 	 */
-	def manaLimit: ImmutableBytes
+	def manaLimit: BigIntBytes
 
 	/**
 	 * メッセージコールの場合、コールに伴う入力値。
@@ -134,15 +134,15 @@ trait TransactionLike {
 	}
 
 	override final def toString: String = {
-		"Tx[Hash=%s; Nonce=%,d; ManaPrice=%,d; ManaLimit=%,d; Sender=%s; Receiver=%s; Value=%,d; Data=%s; Signature=%s]".format(
+		"Tx[Hash=%s; Nonce=%,d; ManaPrice=%,d; ManaLimit=%,d; Sender=%s; Receiver=%s; Value=%s; Data=%s; Signature=%s]".format(
 			this.hash, this.nonce.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.manaLimit.toPositiveBigInt,
-			this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.data, this.signatureOption.map(sig => "V(%d) R(%d) S(%d)".format(sig.v, sig.r, sig.s)).getOrElse("")
+			this.senderAddress, this.receiverAddress, this.value, this.data, this.signatureOption.map(sig => "V(%d) R(%d) S(%d)".format(sig.v, sig.r, sig.s)).getOrElse("")
 		)
 	}
 
 	def summaryString: String = {
-		"Tx[Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%,d; ManaLimit=%,d; ManaPrice=%,d; Data=%s]".format(
-			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value.toPositiveBigInt, this.manaLimit.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.data.toShortString
+		"Tx[Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%s; ManaLimit=%,d; ManaPrice=%,d; Data=%s]".format(
+			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value, this.manaLimit.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.data.toShortString
 		)
 	}
 
@@ -188,10 +188,10 @@ trait TransactionLike {
 
 class UnsignedTransaction(
 	override val nonce: ImmutableBytes,
-	override val value: ImmutableBytes,
+	override val value: BigIntBytes,
 	override val receiverAddress: Address,
-	override val manaPrice: ImmutableBytes,
-	override val manaLimit: ImmutableBytes,
+	override val manaPrice: BigIntBytes,
+	override val manaLimit: BigIntBytes,
 	override val data: ImmutableBytes
 ) extends TransactionLike {
 
@@ -241,10 +241,10 @@ class UnsignedTransaction(
 
 class SignedTransaction(
 	override val nonce: ImmutableBytes,
-	override val value: ImmutableBytes,
+	override val value: BigIntBytes,
 	override val receiverAddress: Address,
-	override val manaPrice: ImmutableBytes,
-	override val manaLimit: ImmutableBytes,
+	override val manaPrice: BigIntBytes,
+	override val manaLimit: BigIntBytes,
 	override val data: ImmutableBytes,
 	signature: ECDSASignature) extends TransactionLike {
 
@@ -296,8 +296,8 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 			//val transaction = decodedTxList.items.head.items
 
 			val nonce = items.head.bytes
-			val manaPrice = items(1).bytes
-			val manaLimit = items(2).bytes
+			val manaPrice = BigIntBytes(items(1).bytes)
+			val manaLimit = BigIntBytes(items(2).bytes)
 			val receiveAddress =
 				if (items(3).bytes.isEmpty) {
 					//コントラクトの生成。
@@ -305,7 +305,7 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 				} else {
 					Address160(items(3).bytes)
 				}
-			val value = items(4).bytes
+			val value = BigIntBytes(items(4).bytes)
 			val data = items(5).bytes
 			val sixthElem = items(6).bytes
 			this.parsed =
@@ -344,13 +344,13 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 
 	override def senderAddress: Address = parse.senderAddress
 
-	override def value: ImmutableBytes = parse.value
+	override def value: BigIntBytes = parse.value
 
 	override def receiverAddress: Address = parse.receiverAddress
 
-	override def manaPrice: ImmutableBytes = parse.manaPrice
+	override def manaPrice: BigIntBytes = parse.manaPrice
 
-	override def manaLimit: ImmutableBytes = parse.manaLimit
+	override def manaLimit: BigIntBytes = parse.manaLimit
 
 	override def data: ImmutableBytes = parse.data
 
@@ -373,18 +373,18 @@ object Transaction {
 		decode(RBACCodec.Decoder.decode(rawData).right.get)
 	}
 
-	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: Address, value: ImmutableBytes, data: ImmutableBytes): TransactionLike = {
+	def apply(nonce: ImmutableBytes, manaPrice: BigIntBytes, manaLimit: BigIntBytes, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes): TransactionLike = {
 		new UnsignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data)
 	}
 
-	def apply(nonce: ImmutableBytes, manaPrice: ImmutableBytes, manaLimit: ImmutableBytes, receiveAddress: Address, value: ImmutableBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
+	def apply(nonce: ImmutableBytes, manaPrice: BigIntBytes, manaLimit: BigIntBytes, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
 		val signature: ECKey.ECDSASignature = new ECKey.ECDSASignature(r.toSignedBigInteger, s.toSignedBigInteger)
 		signature.v = v
 		new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 	}
 
 	def create(to: String, amount: BigInt, nonce: BigInt, manaPrice: BigInt, manaLimit: BigInt): TransactionLike = {
-		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), ImmutableBytes.asUnsignedByteArray(manaPrice), ImmutableBytes.asUnsignedByteArray(manaLimit), Address160.parseHexString(to), ImmutableBytes.asUnsignedByteArray(amount), ImmutableBytes.empty)
+		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), BigIntBytes(manaPrice), BigIntBytes(manaLimit), Address160.parseHexString(to), BigIntBytes(amount), ImmutableBytes.empty)
 	}
 
 	def createDefault(to: String, amount: BigInteger, nonce: BigInteger): TransactionLike = {

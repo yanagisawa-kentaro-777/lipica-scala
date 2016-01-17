@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.Address
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.{CallCreate, LogInfo, DataWord}
 
 import scala.collection.mutable
@@ -94,7 +94,7 @@ class ProgramResult {
 	}
 
 	def internalTransactions: Seq[InternalTransaction] = this._internalTransactions.toSeq
-	def addInternalTransaction(parentHash: DigestValue, deep: Int, nonce: ImmutableBytes, manaPrice: DataWord, manaLimit: DataWord, senderAddress: Address, receiveAddress: Address, value: ImmutableBytes, data: ImmutableBytes, note: String): InternalTransaction = {
+	def addInternalTransaction(parentHash: DigestValue, deep: Int, nonce: ImmutableBytes, manaPrice: DataWord, manaLimit: DataWord, senderAddress: Address, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes, note: String): InternalTransaction = {
 		val index = this._internalTransactions.size
 		val result = new InternalTransaction(parentHash, deep, index, nonce, manaPrice, manaLimit, senderAddress, receiveAddress, value, data, note)
 		this._internalTransactions.append(result)

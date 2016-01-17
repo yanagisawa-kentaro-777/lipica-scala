@@ -13,6 +13,8 @@ class BigIntBytes private(val bytes: ImmutableBytes) extends Comparable[BigIntBy
 
 	val positiveBigInt: BigInt = this.bytes.toPositiveBigInt
 
+	val toPositiveBigInt: BigInt = positiveBigInt
+
 	def toByteArray: Array[Byte] = this.bytes.toByteArray
 
 	/**
@@ -23,9 +25,7 @@ class BigIntBytes private(val bytes: ImmutableBytes) extends Comparable[BigIntBy
 	def isEmpty: Boolean = this.length == 0
 
 	def increment: BigIntBytes = {
-		val byteArray = this.bytes.toByteArray
-		BigIntBytes.increment(byteArray)
-		BigIntBytes(byteArray)
+		BigIntBytes(this.positiveBigInt + 1)
 	}
 
 	override def hashCode: Int = this.bytes.hashCode
@@ -65,7 +65,7 @@ object BigIntBytes {
 	}
 
 	def apply(v: BigInt): BigIntBytes = {
-		new BigIntBytes(ImmutableBytes.asSignedByteArray(v))
+		new BigIntBytes(ImmutableBytes.asUnsignedByteArray(v))
 	}
 
 	def parseHexString(s: String): BigIntBytes = {

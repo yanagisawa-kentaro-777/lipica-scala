@@ -64,7 +64,7 @@ class TransactionExecutor(
 			return
 		}
 		val txManaCost = this.tx.manaPrice.toPositiveBigInt * BigInt(txManaLimit)
-		val totalCost = this.tx.value.toPositiveBigInt + txManaCost
+		val totalCost = this.tx.value.positiveBigInt + txManaCost
 		val senderBalance = this.track.getBalance(this.tx.senderAddress).getOrElse(UtilConsts.Zero)
 		if (senderBalance < totalCost) {
 			logger.info("<TxExecutor> Not enough coin: Required: %s, Sender balance: %s".format(totalCost, senderBalance))

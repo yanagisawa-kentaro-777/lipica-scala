@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm.program
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.Digest256
 import org.lipicalabs.lipica.core.kernel.Address
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.DataWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -27,7 +27,7 @@ class InternalTransactionTest extends Specification {
 			val manaLimit = DataWord(100L)
 			val senderAddress = Address(Array[Byte](7, 8, 9, 10))
 			val receiverAddress = Address(Array[Byte](12, 13, 14, 15))
-			val value = ImmutableBytes(Array[Byte](20, 21, 22, 23))
+			val value = BigIntBytes(Array[Byte](20, 21, 22, 23))
 			val data = ImmutableBytes.empty
 
 			val internalTx = new InternalTransaction(parentHash, 0, 1, nonce, manaPrice, manaLimit, senderAddress, receiverAddress, value, data, "xyz")
@@ -35,8 +35,8 @@ class InternalTransactionTest extends Specification {
 			internalTx.deep mustEqual 0
 			internalTx.index mustEqual 1
 			internalTx.nonce mustEqual nonce
-			internalTx.manaPrice mustEqual manaPrice.data
-			internalTx.manaLimit mustEqual manaLimit.data
+			internalTx.manaPrice.bytes mustEqual manaPrice.data
+			internalTx.manaLimit.bytes mustEqual manaLimit.data
 			internalTx.senderAddress mustEqual senderAddress
 			internalTx.receiverAddress mustEqual receiverAddress
 			internalTx.value mustEqual value

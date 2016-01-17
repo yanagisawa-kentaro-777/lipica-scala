@@ -14,7 +14,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.{Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.endpoint.PeerServer
 import org.lipicalabs.lipica.core.facade.submit.{TransactionExecutor, TransactionTask}
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 
@@ -128,9 +128,9 @@ class LipicaImpl extends Lipica {
 	 */
 	override def createTransaction(nonce: BigInteger, manaPrice: BigInteger, mana: BigInteger, receiveAddress: Array[Byte], value: BigInteger, data: Array[Byte]): TransactionLike = {
 		val nonceBytes = ImmutableBytes.asUnsignedByteArray(nonce)
-		val manaPriceBytes = ImmutableBytes.asUnsignedByteArray(manaPrice)
-		val manaBytes = ImmutableBytes.asUnsignedByteArray(mana)
-		val valueBytes = ImmutableBytes.asUnsignedByteArray(value)
+		val manaPriceBytes = BigIntBytes(manaPrice)
+		val manaBytes = BigIntBytes(mana)
+		val valueBytes = BigIntBytes(ImmutableBytes.asUnsignedByteArray(value))
 
 		Transaction(nonceBytes, manaPriceBytes, manaBytes, Address160(receiveAddress), valueBytes, ImmutableBytes(data))
 	}

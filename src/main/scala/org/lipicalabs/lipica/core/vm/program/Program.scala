@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.kernel.{EmptyAddress, Address, Payment, TransactionLike}
 import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestUtils}
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
 import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
@@ -68,7 +68,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 				} else {
 					nonce
 				}
-			this.result.addInternalTransaction(this.transaction.hash, getCallDepth, senderNonce, getManaPrice, manaLimit, senderAddress, receiveAddress, ImmutableBytes.asSignedByteArray(value), data, note)
+			this.result.addInternalTransaction(this.transaction.hash, getCallDepth, senderNonce, getManaPrice, manaLimit, senderAddress, receiveAddress, BigIntBytes(value), data, note)
 		} else {
 			null
 		}

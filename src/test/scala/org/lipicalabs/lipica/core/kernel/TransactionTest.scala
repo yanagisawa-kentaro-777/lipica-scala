@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import org.apache.commons.codec.binary.Hex
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes, ByteUtils}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -24,10 +24,10 @@ class TransactionTest extends Specification {
 	private val RLP_ENCODED_SIGNED_TX: String = "f86b8085e8d4a510008227109413978aee95f38490e9769c39b2773ed763d9cd5f872386f26fc10000801ba0eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4a014a569d327dcda4b29f74f93c0e9729d2f49ad726e703f9cd90dbb0fbf6649f1"
 	private val KEY: String = "c85ef7d79691fe79573b1a7064c19c1a9819ebdbd1faaab1a8ec92344438aaf4"
 	private val testNonce: ImmutableBytes = ImmutableBytes.parseHexString("")
-	private val testManaPrice: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(1000000000000L))
-	private val testManaLimit: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(10000))
+	private val testManaPrice: BigIntBytes = BigIntBytes(BigInt(1000000000000L))
+	private val testManaLimit: BigIntBytes = BigIntBytes(BigInt(10000))
 	private val testReceiveAddress: Address = Address.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
-	private val testValue: ImmutableBytes = ImmutableBytes.asUnsignedByteArray(BigInt(10000000000000000L))
+	private val testValue: BigIntBytes = BigIntBytes(BigInt(10000000000000000L))
 	private val testData: ImmutableBytes = ImmutableBytes.parseHexString("")
 	private val testInit: ImmutableBytes = ImmutableBytes.parseHexString("")
 
@@ -105,10 +105,10 @@ class TransactionTest extends Specification {
 			val HASH_TX_SIGNED = "5d3466b457f3480945474de8e2df3c01ceaa55a12d0347d2e17a3f3444651f86"
 
 			val nonce = ImmutableBytes.asUnsignedByteArray(BigInt(0))
-			val manaPrice = ImmutableBytes.parseHexString("e8d4a51000")
-			val mana = ImmutableBytes.parseHexString("2710")
+			val manaPrice = BigIntBytes.parseHexString("e8d4a51000")
+			val mana = BigIntBytes.parseHexString("2710")
 			val receiveAddress = Address.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
-			val value = ImmutableBytes.parseHexString("2386f26fc10000")
+			val value = BigIntBytes.parseHexString("2386f26fc10000")
 			val data = ImmutableBytes.empty
 
 			val tx = Transaction(nonce, manaPrice, mana, receiveAddress, value, data)
@@ -239,7 +239,7 @@ class TransactionTest extends Specification {
 			val seed = System.currentTimeMillis
 			System.out.println("Seed=%,d".format(seed))
 			Seq(0L, 1L, Int.MaxValue.toLong - 1L, Int.MaxValue.toLong, Int.MaxValue.toLong + 1L, Long.MaxValue - 1L, Long.MaxValue).foreach {eachValue => {
-				val value = ImmutableBytes.asUnsignedByteArray(BigInt(eachValue))
+				val value = BigIntBytes(BigInt(eachValue))
 				val originalTx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, value, testData)
 				val encoded = originalTx.toEncodedBytes
 

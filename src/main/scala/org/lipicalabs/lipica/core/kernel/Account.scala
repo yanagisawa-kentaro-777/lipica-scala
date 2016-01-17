@@ -5,7 +5,7 @@ import java.util
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.UtilConsts
 
 /**
  * Created by IntelliJ IDEA.
@@ -47,10 +47,10 @@ class Account {
 			if (this._pendingTransactions.nonEmpty) {
 				for (tx <- this._pendingTransactions) {
 					if (tx.senderAddress == this.address) {
-						result -= tx.value.toPositiveBigInt
+						result -= tx.value.positiveBigInt
 					}
 					if (tx.receiverAddress == this.address) {
-						result += tx.value.toPositiveBigInt
+						result += tx.value.positiveBigInt
 					}
 				}
 				//TODO feeの計算。

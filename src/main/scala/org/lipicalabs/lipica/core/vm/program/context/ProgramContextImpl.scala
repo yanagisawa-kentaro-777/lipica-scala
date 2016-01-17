@@ -176,9 +176,9 @@ object ProgramContextImpl {
 		origin: Address,
 		caller: Address,
 		balance: ImmutableBytes,
-		manaPrice: ImmutableBytes,
-		mana: ImmutableBytes,
-		callValue: ImmutableBytes,
+		manaPrice: BigIntBytes,
+		txManaLimit: BigIntBytes,
+		callValue: BigIntBytes,
 		messageData: ImmutableBytes,
 		parentHash: DigestValue,
 		coinbase: Address,
@@ -191,8 +191,8 @@ object ProgramContextImpl {
 	): ProgramContextImpl = {
 		new ProgramContextImpl(
 			address = DataWord(address.bytes), origin = DataWord(origin.bytes), caller = DataWord(caller.bytes),
-			balance = DataWord(balance), manaPrice = DataWord(manaPrice), mana = DataWord(mana),
-			callValue = DataWord(callValue), messageData = messageData,
+			balance = DataWord(balance), manaPrice = DataWord(manaPrice.bytes), mana = DataWord(txManaLimit.bytes),
+			callValue = DataWord(callValue.bytes), messageData = messageData,
 			parentHash = DataWord(parentHash.bytes), coinbase = DataWord(coinbase.bytes), timestamp = DataWord(timestamp),
 			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty.bytes), blockManaLimit = DataWord(blockManaLimit.bytes),
 			repository = repository, callDepth = 0, blockStore = blockStore, byTransaction = true
