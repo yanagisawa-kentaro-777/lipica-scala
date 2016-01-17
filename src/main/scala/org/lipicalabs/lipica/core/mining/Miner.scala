@@ -2,9 +2,9 @@ package org.lipicalabs.lipica.core.mining
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.lipicalabs.lipica.core.kernel.{BlockHeader, Block}
+import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
 import org.slf4j.LoggerFactory
 
@@ -41,10 +41,10 @@ class Miner {
 	 * BE(X) evaluates to the value equal to X when interpreted as a
 	 * big-endian-encoded integer.
 	 */
-	def mine(newBlock: Block, difficulty: ImmutableBytes): Boolean = {
+	def mine(newBlock: Block, difficulty: BigIntBytes): Boolean = {
 		this.stopRef.set(false)
 
-		val target = ProofOfWorkRule.getProofOfWorkBoundary(difficulty)
+		val target = ProofOfWorkRule.calculateProofOfWorkBoundary(difficulty)
 
 		//yellow paper の 式40および41を参照。
 		val newManaLimit = 125000L max (newBlock.manaLimit.toPositiveBigInt.longValue * (1024 - 1) + (newBlock.manaUsed * 6 / 5)) / 1024
@@ -65,7 +65,7 @@ class Miner {
 			newBlock.nonce = wrappedTestNonce
 			val powValue = newBlock.blockHeader.calculateProofOfWorkValue
 
-			if (powValue.compareTo(target) <= 0) {
+			if (powValue.positiveBigInt <= target) {
 				logger.info("<Miner> Mined! %s < %s (nonce=%s)".format(powValue, target, ImmutableBytes(testNonce)))
 				//println("<Miner> Mined! %s < %s (nonce=%s)".format(result, target, ImmutableBytes(testNonce)))
 				return true

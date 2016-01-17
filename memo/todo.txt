@@ -7,7 +7,6 @@
 ・pending transaction の意味は？
 
 ０、不具合
-2016-01-11 14:41:05.696 WARN  <Blockchain> RECEIPT HASH UNMATCH [668910]
 
 24GByteでもあまる。次は20GByteぐらいで行こう。
 

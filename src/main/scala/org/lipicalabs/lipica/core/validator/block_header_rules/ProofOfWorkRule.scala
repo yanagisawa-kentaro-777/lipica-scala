@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.validator.block_header_rules
 import java.math.BigInteger
 
 import org.lipicalabs.lipica.core.kernel.BlockHeader
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{UtilConsts, BigIntBytes, ImmutableBytes}
 import org.spongycastle.util.BigIntegers
 
 /**
@@ -16,10 +16,10 @@ class ProofOfWorkRule extends BlockHeaderRule {
 	override def validate(header: BlockHeader): Boolean = {
 		this.errors.clear()
 
-		val proof = header.calculateProofOfWorkValue
+		val proof = header.calculateProofOfWorkValue.positiveBigInt
 		val boundary = header.getProofOfWorkBoundary
 
-		if ((proof compareTo boundary) <= 0) {
+		if (proof <= boundary) {
 			true
 		} else {
 			this.errors.append("[Block %,d] Bad PoW. %s < %s".format(header.blockNumber, boundary, proof))
@@ -34,7 +34,7 @@ object ProofOfWorkRule {
 	/**
 	 * 渡された difficulty に基づいて、許容されるブロックヘッダダイジェスト値の上限値を返します。
 	 */
-	def getProofOfWorkBoundary(difficulty: ImmutableBytes): ImmutableBytes = {
-		ImmutableBytes(BigIntegers.asUnsignedByteArray(32, BigInteger.ONE.shiftLeft(256).divide(difficulty.toPositiveBigInt.bigInteger)))
+	def calculateProofOfWorkBoundary(difficulty: BigIntBytes): BigInt = {
+		(UtilConsts.One << 256) / difficulty.positiveBigInt
 	}
 }

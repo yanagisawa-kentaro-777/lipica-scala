@@ -561,7 +561,7 @@ class BlockchainImpl(
 	override def close() = ()
 
 	override def updateTotalDifficulty(block: Block) = {
-		this.totalDifficultyRef.set(this.totalDifficulty + block.difficultyAsBigInt)
+		this.totalDifficultyRef.set(this.totalDifficulty + block.difficulty.positiveBigInt)
 		if (logger.isDebugEnabled) {
 			logger.debug("<Blockchain> Total difficulty is updated to %,d".format(this.totalDifficulty))
 		}

@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import org.lipicalabs.lipica.core.crypto.digest.{Digest256, EmptyDigest, DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
 import org.lipicalabs.lipica.core.validator.parent_rules.DifficultyRule
 
@@ -70,10 +70,9 @@ class BlockHeader {
 	 * このブロックのdifficultyを表現するスカラー値。
 	 * calculateDifficulty によって、前のブロックおよびタイムスタンプから計算される。
 	 */
-	private var _difficulty: ImmutableBytes = ImmutableBytes.empty
-	def difficulty: ImmutableBytes = this._difficulty
-	def difficulty_=(v: ImmutableBytes): Unit = this._difficulty = v
-	def difficultyAsBigInt: BigInt = this.difficulty.toPositiveBigInt
+	private var _difficulty: BigIntBytes = BigIntBytes.zero
+	def difficulty: BigIntBytes = this._difficulty
+	def difficulty_=(v: BigIntBytes): Unit = this._difficulty = v
 
 	private var _timestamp: Long = 0L
 	def timestamp: Long = this._timestamp
@@ -119,7 +118,7 @@ class BlockHeader {
 	def extraData_=(v: ImmutableBytes): Unit = this._extraData = v
 
 	/**
-	 * 充分な計算が実行されたことを証明する、256ビットハッシュ値。
+	 * PoWの計算に利用する値。
 	 */
 	private var _nonce: ImmutableBytes = ImmutableBytes.empty
 	def nonce: ImmutableBytes = this._nonce
@@ -156,13 +155,13 @@ class BlockHeader {
 	/**
 	 * このブロックの difficulty に対応する、許容されるダイジェスト値の上限値を返します。
 	 */
-	def getProofOfWorkBoundary: ImmutableBytes = ProofOfWorkRule.getProofOfWorkBoundary(this.difficulty)
+	def getProofOfWorkBoundary: BigInt = ProofOfWorkRule.calculateProofOfWorkBoundary(this.difficulty)
 
 	/**
 	 * Powの中心アルゴリズム！
 	 * この値が PoW Boundary を下回っている必要があります。
 	 */
-	def calculateProofOfWorkValue: ImmutableBytes = {
+	def calculateProofOfWorkValue: BigIntBytes = {
 		//リトルエンディアンに変換する。
 		val revertedNonce = this.nonce.reverse
 		val hashWithoutNonce = this.encode(withNonce = false).digest256
@@ -170,7 +169,7 @@ class BlockHeader {
 		val seedHash = seed.digest512
 		val concat = seedHash.bytes ++ this.mixHash.bytes
 
-		concat.digest256.bytes
+		BigIntBytes(concat.digest256.bytes)
 	}
 
 	/**
@@ -188,7 +187,7 @@ class BlockHeader {
 			append("stateRoot=").append(this.stateRoot.toHexString).append(suffix).
 			append("txTrieHash=").append(this.txTrieRoot.toHexString).append(suffix).
 			append("receiptsTrieHash=").append(this.receiptTrieRoot.toHexString).append(suffix).
-			append("difficulty=").append(this.difficulty.toPositiveBigInt).append(suffix).
+			append("difficulty=").append(this.difficulty).append(suffix).
 			append("blockNumber=").append(this.blockNumber).append(suffix).
 			append("manaLimit=").append(this.manaLimit.toPositiveBigInt).append(suffix).
 			append("manaUsed=").append(this.manaUsed).append(suffix).
@@ -215,7 +214,7 @@ object BlockHeader {
 		result.txTrieRoot = Digest256(decodedResult.items(4).bytes)
 		result.receiptTrieRoot = Digest256(decodedResult.items(5).bytes)
 		result.logsBloomFilter = BloomFilter(decodedResult.items(6).bytes)
-		result.difficulty = decodedResult.items(7).bytes
+		result.difficulty = BigIntBytes(decodedResult.items(7).bytes)
 
 		result.blockNumber = decodedResult.items(8).bytes.toPositiveBigInt.longValue()
 		result.manaLimit = decodedResult.items(9).bytes

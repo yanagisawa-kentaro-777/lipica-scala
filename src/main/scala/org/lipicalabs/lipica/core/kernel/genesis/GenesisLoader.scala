@@ -37,7 +37,7 @@ object GenesisLoader {
 	private def createGenesis(genesisJson: GenesisJson): Genesis = {
 		val blockHeader = new BlockHeader
 		blockHeader.nonce = JsonUtils.parseHexStringToImmutableBytes(genesisJson.nonce)
-		blockHeader.difficulty = JsonUtils.parseHexStringToImmutableBytes(genesisJson.difficulty)
+		blockHeader.difficulty = BigIntBytes(JsonUtils.parseHexStringToImmutableBytes(genesisJson.difficulty))
 		blockHeader.mixHash = Digest256(JsonUtils.parseHexStringToImmutableBytes(genesisJson.mixhash))
 		blockHeader.coinbase = Address160(JsonUtils.parseHexStringToImmutableBytes(genesisJson.coinbase))
 		blockHeader.timestamp = JsonUtils.parseHexStringToLong(genesisJson.timestamp)

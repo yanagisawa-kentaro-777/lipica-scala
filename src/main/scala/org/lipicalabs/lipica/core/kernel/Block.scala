@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
@@ -62,8 +62,7 @@ trait Block {
 	 * このブロックにおける難度。
 	 * 前ブロックの難度および経過時間から計算可能。
 	 */
-	def difficulty: ImmutableBytes
-	def difficultyAsBigInt: BigInt
+	def difficulty: BigIntBytes
 
 	/**
 	 * このブロックに至るまでの難度の合計。
@@ -107,10 +106,19 @@ trait Block {
 	def nonce: ImmutableBytes
 	def nonce_=(v: ImmutableBytes): Unit
 
+	/**
+	 * このブロックを代表するハッシュ値。
+	 */
 	def hash: DigestValue
 
+	/**
+	 * このブロックに含まれるトランザクション。
+	 */
 	def transactions: Seq[TransactionLike]
 
+	/**
+	 * このブロックに付随するuncleブロックのヘッダ。
+	 */
 	def uncles: Seq[BlockHeader]
 
 	def encode: ImmutableBytes
@@ -161,11 +169,9 @@ class PlainBlock private[kernel](override val blockHeader: BlockHeader, override
 
 	override def difficulty = this.blockHeader.difficulty
 
-	override def difficultyAsBigInt = this.blockHeader.difficultyAsBigInt
-
 	override def cumulativeDifficulty = {
-		val thisDifficulty = this.blockHeader.difficultyAsBigInt
-		this.uncles.foldLeft(thisDifficulty)((accum, each) => accum + each.difficultyAsBigInt)
+		val thisDifficulty = this.blockHeader.difficulty.positiveBigInt
+		this.uncles.foldLeft(thisDifficulty)((accum, each) => accum + each.difficulty.positiveBigInt)
 	}
 
 	override def timestamp = this.blockHeader.timestamp
@@ -225,8 +231,8 @@ class PlainBlock private[kernel](override val blockHeader: BlockHeader, override
 	}
 
 	override def summaryString(short: Boolean): String = {
-		val template = "Block[BlockNumber=%,d; Hash=%s; ParentHash=%s; Coinbase=%s; Difficulty=%,d]"
-		template.format(this.blockNumber, this.hash.toShortString, this.parentHash.toShortString, this.coinbase.toShortString, this.difficultyAsBigInt)
+		val template = "Block[BlockNumber=%,d; Hash=%s; ParentHash=%s; Coinbase=%s; Difficulty=%s]"
+		template.format(this.blockNumber, this.hash.toShortString, this.parentHash.toShortString, this.coinbase.toShortString, this.difficulty)
 	}
 
 	def toFlatString: String = {

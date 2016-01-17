@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm.program.context
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.kernel.Address
-import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.DataWord
 
 /**
@@ -184,7 +184,7 @@ object ProgramContextImpl {
 		coinbase: Address,
 		timestamp: Long,
 		blockNumber: Long,
-		difficulty: ImmutableBytes,
+		difficulty: BigIntBytes,
 		blockManaLimit: ImmutableBytes,
 		repository: RepositoryLike,
 		blockStore: BlockStore
@@ -194,7 +194,7 @@ object ProgramContextImpl {
 			balance = DataWord(balance), manaPrice = DataWord(manaPrice), mana = DataWord(mana),
 			callValue = DataWord(callValue), messageData = messageData,
 			parentHash = DataWord(parentHash.bytes), coinbase = DataWord(coinbase.bytes), timestamp = DataWord(timestamp),
-			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty), blockManaLimit = DataWord(blockManaLimit),
+			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty.bytes), blockManaLimit = DataWord(blockManaLimit),
 			repository = repository, callDepth = 0, blockStore = blockStore, byTransaction = true
 		)
 	}

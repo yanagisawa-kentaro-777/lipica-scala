@@ -285,9 +285,9 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 		if (message.blocks.nonEmpty) {
 			for (block <- message.blocks) {
-				if (this.channel.totalDifficulty < block.difficultyAsBigInt) {
+				if (this.channel.totalDifficulty < block.difficulty.positiveBigInt) {
 					this.bestHash = block.hash
-					this.channel.nodeStatistics.lpcTotalDifficulty = block.difficultyAsBigInt
+					this.channel.nodeStatistics.lpcTotalDifficulty = block.difficulty.positiveBigInt
 				}
 			}
 			this.syncQueue.addBlocks(message.blocks, this.channel.nodeId)
@@ -314,7 +314,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		val newBlock = message.block
 		loggerSync.info("<LpcHandler> New block received: index=%,d".format(newBlock.blockNumber))
 
-		this.channel.nodeStatistics.lpcTotalDifficulty = message.difficulty.toPositiveBigInt
+		this.channel.nodeStatistics.lpcTotalDifficulty = message.difficulty.positiveBigInt
 		this.bestHash = newBlock.hash
 
 		this.syncQueue.addNewBlock(newBlock, channel.nodeId)

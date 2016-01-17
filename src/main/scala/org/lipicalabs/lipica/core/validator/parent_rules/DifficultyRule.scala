@@ -12,7 +12,7 @@ class DifficultyRule extends DependentBlockHeaderRule {
 	override def validate(header: BlockHeader, parent: BlockHeader): Boolean = {
 		errors.clear()
 		val calculated = header.calculateDifficulty(parent)
-		val actual = header.difficultyAsBigInt
+		val actual = header.difficulty.positiveBigInt
 
 		if (actual != calculated) {
 			errors.append("Difficulty %,d != %,d".format(calculated, actual))
@@ -29,7 +29,7 @@ object DifficultyRule {
 	 * difficulty 遷移の中心アルゴリズム！
 	 */
 	def calculateDifficulty(parent: BlockHeader, newBlockNumber: Long, newTimeStamp: Long): BigInt = {
-		val parentDifficulty = parent.difficultyAsBigInt
+		val parentDifficulty = parent.difficulty.positiveBigInt
 		val quotient = parentDifficulty / DifficultyBoundDivisor
 
 		val fromParent = if ((parent.timestamp + DurationLimit) <= newTimeStamp) {

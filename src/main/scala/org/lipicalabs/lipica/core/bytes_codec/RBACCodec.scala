@@ -235,6 +235,7 @@ object RBACCodec {
 				case v: Array[Byte] => ImmutableBytes(v)
 				case d: DigestValue => d.bytes
 				case a: Address => a.bytes
+				case v: BigIntBytes => v.bytes
 				case s: String => ImmutableBytes(s.getBytes(StandardCharsets.UTF_8))
 				case v: Long =>
 					if (v == 0L) {
