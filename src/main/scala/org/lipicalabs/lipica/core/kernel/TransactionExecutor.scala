@@ -58,7 +58,7 @@ class TransactionExecutor(
 			return
 		}
 		val reqNonce = this.track.getNonce(this.tx.senderAddress)
-		val txNonce = this.tx.nonce.toPositiveBigInt
+		val txNonce = this.tx.nonce.positiveBigInt
 		if (reqNonce != txNonce) {
 			logger.info("<TxExecutor> Invalid nonce: Required: %s != Tx: %s".format(reqNonce, txNonce))
 			return

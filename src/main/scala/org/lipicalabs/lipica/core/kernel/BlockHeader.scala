@@ -120,9 +120,9 @@ class BlockHeader {
 	/**
 	 * PoWの計算に利用する256ビット値。
 	 */
-	private var _nonce: ImmutableBytes = ImmutableBytes.empty
-	def nonce: ImmutableBytes = this._nonce
-	def nonce_=(v: ImmutableBytes): Unit = this._nonce = v
+	private var _nonce: BigIntBytes = BigIntBytes.empty
+	def nonce: BigIntBytes = this._nonce
+	def nonce_=(v: BigIntBytes): Unit = this._nonce = v
 
 	def isGenesis: Boolean = this.blockNumber == 0
 
@@ -163,7 +163,7 @@ class BlockHeader {
 	 */
 	def calculateProofOfWorkValue: BigIntBytes = {
 		//リトルエンディアンに変換する。
-		val revertedNonce = this.nonce.reverse
+		val revertedNonce = this.nonce.bytes.reverse
 		val hashWithoutNonce = this.encode(withNonce = false).digest256
 		val seed = hashWithoutNonce.bytes ++ revertedNonce
 		val seedHash = seed.digest512
@@ -223,7 +223,7 @@ object BlockHeader {
 
 		result.extraData = decodedResult.items(12).bytes
 		result.mixHash = DigestValue(decodedResult.items(13).bytes)
-		result.nonce = decodedResult.items(14).bytes
+		result.nonce = BigIntBytes(decodedResult.items(14).bytes)
 
 		result
 	}

@@ -67,7 +67,7 @@ object DigestUtils {
 
 	def computeNewAddress(address: Address, nonce: BigIntBytes): Address = {
 		val encodedSender = RBACCodec.Encoder.encode(address)
-		val encodedNonce = RBACCodec.Encoder.encode(nonce.toPositiveBigInt)
+		val encodedNonce = RBACCodec.Encoder.encode(nonce.positiveBigInt)
 		Address160(digest256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray))
 	}
 

@@ -103,8 +103,8 @@ trait Block {
 	/**
 	 * 64ビット値。Proof of Work の構成要素。
 	 */
-	def nonce: ImmutableBytes
-	def nonce_=(v: ImmutableBytes): Unit
+	def nonce: BigIntBytes
+	def nonce_=(v: BigIntBytes): Unit
 
 	/**
 	 * このブロックを代表するハッシュ値。
@@ -188,7 +188,7 @@ class PlainBlock private[kernel](override val blockHeader: BlockHeader, override
 
 	override def nonce = this.blockHeader.nonce
 
-	override def nonce_=(v: ImmutableBytes): Unit = {
+	override def nonce_=(v: BigIntBytes): Unit = {
 		this.blockHeader.nonce = v
 	}
 

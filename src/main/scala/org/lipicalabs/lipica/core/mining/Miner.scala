@@ -61,7 +61,7 @@ class Miner {
 				Thread.sleep(10L)
 			}
 
-			val wrappedTestNonce = ImmutableBytes(testNonce)
+			val wrappedTestNonce = BigIntBytes(testNonce)
 			newBlock.nonce = wrappedTestNonce
 			val powValue = newBlock.blockHeader.calculateProofOfWorkValue
 

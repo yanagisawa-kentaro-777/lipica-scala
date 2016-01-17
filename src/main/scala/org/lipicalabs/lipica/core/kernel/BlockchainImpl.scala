@@ -586,7 +586,7 @@ class BlockchainImpl(
 		}
 		val bestBlockNumber = this.bestBlock.blockNumber
 		for (tx <- transactions) {
-			val txNonce = tx.nonce.toPositiveBigInt
+			val txNonce = tx.nonce.positiveBigInt
 			this.repository.getAccountState(tx.senderAddress) match {
 				case Some(account) =>
 					val currentNonce = account.nonce

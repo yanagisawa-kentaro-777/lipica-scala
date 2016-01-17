@@ -36,7 +36,7 @@ class TransactionTest extends Specification {
 			val txSigned = Transaction.decode(ImmutableBytes.parseHexString(RLP_ENCODED_SIGNED_TX))
 			txSigned.hash.toHexString mustEqual HASH_SIGNED_TX
 			txSigned.toEncodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
-			txSigned.nonce.toPositiveBigInt mustEqual BigInt(0)
+			txSigned.nonce.positiveBigInt mustEqual BigInt(0)
 			txSigned.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
 			txSigned.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 			txSigned.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
@@ -57,7 +57,7 @@ class TransactionTest extends Specification {
 			tx.hash.toHexString mustEqual HASH_SIGNED_TX
 			tx.toEncodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 
-			tx.nonce.toPositiveBigInt mustEqual BigInt(0)
+			tx.nonce.positiveBigInt mustEqual BigInt(0)
 			tx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
 			tx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 			tx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
@@ -74,7 +74,7 @@ class TransactionTest extends Specification {
 		"be right" in {
 			val tx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, testValue, testData)
 
-			tx.nonce.toPositiveBigInt mustEqual BigInt(0)
+			tx.nonce.positiveBigInt mustEqual BigInt(0)
 			tx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
 			tx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 			tx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
@@ -223,7 +223,7 @@ class TransactionTest extends Specification {
 
 				rebuiltTx.data mustEqual data
 
-				rebuiltTx.nonce.toPositiveBigInt mustEqual BigInt(0)
+				rebuiltTx.nonce.positiveBigInt mustEqual BigInt(0)
 				rebuiltTx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
 				rebuiltTx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 				rebuiltTx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
@@ -247,7 +247,7 @@ class TransactionTest extends Specification {
 
 				rebuiltTx.value.positiveBigInt.toLong mustEqual eachValue
 
-				rebuiltTx.nonce.toPositiveBigInt mustEqual BigInt(0)
+				rebuiltTx.nonce.positiveBigInt mustEqual BigInt(0)
 				rebuiltTx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
 				rebuiltTx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 				rebuiltTx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
