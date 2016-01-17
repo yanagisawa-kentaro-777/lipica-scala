@@ -14,20 +14,25 @@ import org.lipicalabs.lipica.core.vm.DataWord
 trait ProgramContext {
 
 	/**
-	 * 現在実行中コードのアドレス。
+	 * 現在実行中コード自身のアドレス。
+	 * （コントラクト作成の場合も、コントラきうと呼び出しの場合も。）
 	 */
 	def getOwnerAddress: DataWord
 
 	/**
-	 * 一連の処理の最初の実行者のアドレス。（コントラクトではあり得ない。）
+	 * このコード実行に至る一連の処理の
+	 * 最初のトランザクションの実行者のアドレス。（コントラクトではあり得ない。）
 	 */
 	def getOriginAddress: DataWord
 
 	/**
-	 * この処理を直接実行したアドレス。
+	 * このコードを呼び出したトランザクション実行者もしくはコントラクトのアドレス。
 	 */
 	def getCallerAddress: DataWord
 
+	/**
+	 * コントラクト自身の残高。
+	 */
 	def getBalance: DataWord
 
 	/**
@@ -36,34 +41,62 @@ trait ProgramContext {
 	def getMinManaPrice: DataWord
 
 	/**
-	 * 現在の実行コンテクストの残マナ。
+	 * 現在の実行コンテクストのマナ消費可能容量。
 	 */
 	def getMana: DataWord
 
+	/**
+	 * 実行対象コントラクトに振り込まれる金額。
+	 */
 	def getCallValue: DataWord
 
+	/**
+	 * 実行時に渡されたデータ長。
+	 */
 	def getDataSize: DataWord
 
+	/**
+	 * 指定されたオフセットから、１ワード分のデータをスタックに格納します。
+	 */
 	def getDataValue(indexData: DataWord): DataWord
 
+	/**
+	 * 指定されたオフセットから、指定された長さのデータを返します。
+	 */
 	def getDataCopy(offsetData: DataWord, lengthData: DataWord): ImmutableBytes
 
+	/**
+	 * このブロックの直前ブロックのハッシュ値を返します。
+	 */
 	def getParentHash: DataWord
 
+	/**
+	 * このブロックの採掘者のアドレスを返します。
+	 */
 	def getCoinbase: DataWord
 
+	/**
+	  * このブロックの生成された日時（UNIX時刻）を返します。
+	  */
 	def getTimestamp: DataWord
 
+	/**
+	 * このブロックの番号を返します。
+	 */
 	def getBlockNumber: DataWord
 
+	/**
+	 * このブロックのDifficulty値を返します。
+	 */
 	def getDifficulty: DataWord
 
-	/** ブロックにおけるマナ上限。 */
+	/**
+	 * ブロックにおけるマナ上限を返します。
+	 */
 	def getBlockManaLimit: DataWord
 
 	def byTransaction: Boolean
 
-	//def byTestingSuite: Boolean
 
 	def getCallDepth: Int
 
