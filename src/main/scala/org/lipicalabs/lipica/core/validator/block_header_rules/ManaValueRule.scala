@@ -10,8 +10,8 @@ import org.lipicalabs.lipica.core.kernel.BlockHeader
 class ManaValueRule extends BlockHeaderRule {
 	override def validate(header: BlockHeader): Boolean = {
 		errors.clear()
-		if (header.manaLimit.toPositiveBigInt < BigInt(header.manaUsed)) {
-			errors.append("[Block %,d] ManaUsed %,d < %,d".format(header.blockNumber, header.manaLimit.toPositiveBigInt, header.manaUsed))
+		if (header.manaLimit.positiveBigInt < BigInt(header.manaUsed)) {
+			errors.append("[Block %,d] ManaUsed %,d < %,d".format(header.blockNumber, header.manaLimit.positiveBigInt, header.manaUsed))
 			false
 		} else {
 			true

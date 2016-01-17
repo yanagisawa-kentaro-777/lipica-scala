@@ -33,7 +33,7 @@ class ProgramContextFactoryImpl extends ProgramContextFactory {
 		val caller = tx.senderAddress
 		val balance = ImmutableBytes.asSignedByteArray(repository.getBalance(address).getOrElse(UtilConsts.Zero))
 		val manaPrice = tx.manaPrice
-		val mana = tx.manaLimit
+		val txManaLimit = tx.manaLimit
 		val callValue = tx.value
 		val data = if (tx.isContractCreation) ImmutableBytes.empty else tx.data
 		val lastHash = lastBlock.hash
@@ -43,7 +43,7 @@ class ProgramContextFactoryImpl extends ProgramContextFactory {
 		val difficulty = block.difficulty
 		val blockManaLimit = block.manaLimit
 
-		val result = ProgramContextImpl(address, origin, caller, balance, manaPrice, mana, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, blockStore)
+		val result = ProgramContextImpl(address, origin, caller, balance, manaPrice, txManaLimit, callValue, data, lastHash, coinbase, timestamp, blockNumber, difficulty, blockManaLimit, repository, blockStore)
 		logger.info("Top level call: %s".format(result))
 		result
 	}

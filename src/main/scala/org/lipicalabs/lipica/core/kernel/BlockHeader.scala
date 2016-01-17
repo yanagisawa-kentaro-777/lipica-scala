@@ -95,9 +95,9 @@ class BlockHeader {
 	 * minerはこの値を、一定の条件下で変動させることができる。
 	 * 40 & 41 の式を参照。
 	 */
-	private var _manaLimit: ImmutableBytes = ImmutableBytes.empty
-	def manaLimit: ImmutableBytes = this._manaLimit
-	def manaLimit_=(v: ImmutableBytes): Unit = this._manaLimit = v
+	private var _manaLimit: BigIntBytes = BigIntBytes.zero
+	def manaLimit: BigIntBytes = this._manaLimit
+	def manaLimit_=(v: BigIntBytes): Unit = this._manaLimit = v
 
 	/**
 	 * このブロックに含まれるトランザクションすべてによって消費されたマナの総量。
@@ -118,7 +118,7 @@ class BlockHeader {
 	def extraData_=(v: ImmutableBytes): Unit = this._extraData = v
 
 	/**
-	 * PoWの計算に利用する値。
+	 * PoWの計算に利用する256ビット値。
 	 */
 	private var _nonce: ImmutableBytes = ImmutableBytes.empty
 	def nonce: ImmutableBytes = this._nonce
@@ -189,7 +189,7 @@ class BlockHeader {
 			append("receiptsTrieHash=").append(this.receiptTrieRoot.toHexString).append(suffix).
 			append("difficulty=").append(this.difficulty).append(suffix).
 			append("blockNumber=").append(this.blockNumber).append(suffix).
-			append("manaLimit=").append(this.manaLimit.toPositiveBigInt).append(suffix).
+			append("manaLimit=").append(this.manaLimit).append(suffix).
 			append("manaUsed=").append(this.manaUsed).append(suffix).
 			append("timestamp=").append(this.timestamp).append(suffix).
 			append("extraData=").append(this.extraData.toHexString).append(suffix).
@@ -217,7 +217,7 @@ object BlockHeader {
 		result.difficulty = BigIntBytes(decodedResult.items(7).bytes)
 
 		result.blockNumber = decodedResult.items(8).bytes.toPositiveBigInt.longValue()
-		result.manaLimit = decodedResult.items(9).bytes
+		result.manaLimit = BigIntBytes(decodedResult.items(9).bytes)
 		result.manaUsed = decodedResult.items(10).bytes.toPositiveBigInt.longValue()
 		result.timestamp = decodedResult.items(11).bytes.toPositiveBigInt.longValue()
 

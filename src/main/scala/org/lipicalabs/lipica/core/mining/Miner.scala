@@ -47,8 +47,8 @@ class Miner {
 		val target = ProofOfWorkRule.calculateProofOfWorkBoundary(difficulty)
 
 		//yellow paper の 式40および41を参照。
-		val newManaLimit = 125000L max (newBlock.manaLimit.toPositiveBigInt.longValue * (1024 - 1) + (newBlock.manaUsed * 6 / 5)) / 1024
-		newBlock.blockHeader.manaLimit = ImmutableBytes.asSignedByteArray(BigInt(newManaLimit))
+		val newManaLimit = 125000L max (newBlock.manaLimit.positiveBigInt.longValue * (1024 - 1) + (newBlock.manaUsed * 6 / 5)) / 1024
+		newBlock.blockHeader.manaLimit = BigIntBytes(BigInt(newManaLimit))
 		val hash = DigestUtils.digest256(newBlock.encodeWithoutNonce.toByteArray)
 		val testNonce = new Array[Byte](32)
 

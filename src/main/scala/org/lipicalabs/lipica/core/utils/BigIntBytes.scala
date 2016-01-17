@@ -1,9 +1,7 @@
 package org.lipicalabs.lipica.core.utils
 
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
-
 /**
- * 正の整数を表現する最小限の長さのバイト配列を表すクラスです。
+ * 正の整数を表現するバイト配列を表すクラスです。
  *
  * ImmutableBytes の薄いラッパーです。
  *
@@ -23,6 +21,12 @@ class BigIntBytes private(val bytes: ImmutableBytes) extends Comparable[BigIntBy
 	def length: Int = this.bytes.length
 
 	def isEmpty: Boolean = this.length == 0
+
+	def increment: BigIntBytes = {
+		val byteArray = this.bytes.toByteArray
+		BigIntBytes.increment(byteArray)
+		BigIntBytes(byteArray)
+	}
 
 	override def hashCode: Int = this.bytes.hashCode
 
@@ -60,8 +64,27 @@ object BigIntBytes {
 		new BigIntBytes(ImmutableBytes(bytes))
 	}
 
+	def apply(v: BigInt): BigIntBytes = {
+		new BigIntBytes(ImmutableBytes.asSignedByteArray(v))
+	}
+
 	def parseHexString(s: String): BigIntBytes = {
 		new BigIntBytes(ImmutableBytes.parseHexString(s))
+	}
+
+	private def increment(bytes: Array[Byte]): Boolean = {
+		val startIndex = 0
+		bytes.indices.reverse.foreach {
+			i => {
+				bytes(i) = (bytes(i) + 1).toByte
+				if (bytes(i) != 0) {
+					return true
+				} else if (i == startIndex) {
+					return false
+				}
+			}
+		}
+		true
 	}
 }
 

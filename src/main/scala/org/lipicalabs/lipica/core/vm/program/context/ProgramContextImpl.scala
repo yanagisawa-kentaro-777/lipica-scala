@@ -185,7 +185,7 @@ object ProgramContextImpl {
 		timestamp: Long,
 		blockNumber: Long,
 		difficulty: BigIntBytes,
-		blockManaLimit: ImmutableBytes,
+		blockManaLimit: BigIntBytes,
 		repository: RepositoryLike,
 		blockStore: BlockStore
 	): ProgramContextImpl = {
@@ -194,7 +194,7 @@ object ProgramContextImpl {
 			balance = DataWord(balance), manaPrice = DataWord(manaPrice), mana = DataWord(mana),
 			callValue = DataWord(callValue), messageData = messageData,
 			parentHash = DataWord(parentHash.bytes), coinbase = DataWord(coinbase.bytes), timestamp = DataWord(timestamp),
-			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty.bytes), blockManaLimit = DataWord(blockManaLimit),
+			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty.bytes), blockManaLimit = DataWord(blockManaLimit.bytes),
 			repository = repository, callDepth = 0, blockStore = blockStore, byTransaction = true
 		)
 	}
