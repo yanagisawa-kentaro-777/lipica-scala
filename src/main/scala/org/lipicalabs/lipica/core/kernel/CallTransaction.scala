@@ -17,7 +17,7 @@ object CallTransaction {
 
 	def createRawTransaction(nonce: Long, manaPrice: Long, manaLimit: Long, toAddress: String, value: Long, data: ImmutableBytes): TransactionLike = {
 		Transaction(
-			nonce = ByteUtils.toByteArrayWithNoLeadingZeros(nonce),
+			nonce = BigIntBytes(ByteUtils.toByteArrayWithNoLeadingZeros(nonce)),
 			manaPrice = BigIntBytes(ByteUtils.toByteArrayWithNoLeadingZeros(manaPrice)),
 			manaLimit = BigIntBytes(ByteUtils.toByteArrayWithNoLeadingZeros(manaLimit)),
 			receiveAddress = Address160.parseHexString(toAddress),

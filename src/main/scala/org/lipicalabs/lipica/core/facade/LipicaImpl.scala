@@ -127,7 +127,7 @@ class LipicaImpl extends Lipica {
 	 * @return 作成されたトランザクション。
 	 */
 	override def createTransaction(nonce: BigInteger, manaPrice: BigInteger, mana: BigInteger, receiveAddress: Array[Byte], value: BigInteger, data: Array[Byte]): TransactionLike = {
-		val nonceBytes = ImmutableBytes.asUnsignedByteArray(nonce)
+		val nonceBytes = BigIntBytes(nonce)
 		val manaPriceBytes = BigIntBytes(manaPrice)
 		val manaBytes = BigIntBytes(mana)
 		val valueBytes = BigIntBytes(ImmutableBytes.asUnsignedByteArray(value))

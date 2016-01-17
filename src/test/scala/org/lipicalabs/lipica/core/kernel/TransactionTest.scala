@@ -23,7 +23,7 @@ class TransactionTest extends Specification {
 	private val HASH_SIGNED_TX = "5d3466b457f3480945474de8e2df3c01ceaa55a12d0347d2e17a3f3444651f86"
 	private val RLP_ENCODED_SIGNED_TX: String = "f86b8085e8d4a510008227109413978aee95f38490e9769c39b2773ed763d9cd5f872386f26fc10000801ba0eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4a014a569d327dcda4b29f74f93c0e9729d2f49ad726e703f9cd90dbb0fbf6649f1"
 	private val KEY: String = "c85ef7d79691fe79573b1a7064c19c1a9819ebdbd1faaab1a8ec92344438aaf4"
-	private val testNonce: ImmutableBytes = ImmutableBytes.parseHexString("")
+	private val testNonce: BigIntBytes = BigIntBytes.parseHexString("")
 	private val testManaPrice: BigIntBytes = BigIntBytes(BigInt(1000000000000L))
 	private val testManaLimit: BigIntBytes = BigIntBytes(BigInt(10000))
 	private val testReceiveAddress: Address = Address.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
@@ -37,10 +37,10 @@ class TransactionTest extends Specification {
 			txSigned.hash.toHexString mustEqual HASH_SIGNED_TX
 			txSigned.toEncodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 			txSigned.nonce.toPositiveBigInt mustEqual BigInt(0)
-			txSigned.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
-			txSigned.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+			txSigned.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
+			txSigned.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 			txSigned.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
-			txSigned.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
+			txSigned.value.positiveBigInt mustEqual testValue.positiveBigInt
 			txSigned.data.isEmpty mustEqual true
 			txSigned.signatureOption.get.v mustEqual 27
 			Hex.encodeHexString(ByteUtils.asUnsignedByteArray(txSigned.signatureOption.get.r)) mustEqual "eab47c1a49bf2fe5d40e01d313900e19ca485867d462fe06e139e3a536c6d4f4"
@@ -58,10 +58,10 @@ class TransactionTest extends Specification {
 			tx.toEncodedBytes.toHexString mustEqual RLP_ENCODED_SIGNED_TX
 
 			tx.nonce.toPositiveBigInt mustEqual BigInt(0)
-			tx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
-			tx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+			tx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
+			tx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 			tx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
-			tx.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
+			tx.value.positiveBigInt mustEqual testValue.positiveBigInt
 			tx.data.isEmpty mustEqual true
 
 			tx.signatureOption.get.v mustEqual 27
@@ -75,10 +75,10 @@ class TransactionTest extends Specification {
 			val tx = Transaction(testNonce, testManaPrice, testManaLimit, testReceiveAddress, testValue, testData)
 
 			tx.nonce.toPositiveBigInt mustEqual BigInt(0)
-			tx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
-			tx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+			tx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
+			tx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 			tx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
-			tx.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
+			tx.value.positiveBigInt mustEqual testValue.positiveBigInt
 			tx.data.isEmpty mustEqual true
 			tx.signatureOption.isEmpty mustEqual true
 
@@ -104,7 +104,7 @@ class TransactionTest extends Specification {
 			val HASH_TX_UNSIGNED = "b747c9318ba950fb2a002683fe9d8874eb17cad6e98831f2ae08a9e5c1753710"
 			val HASH_TX_SIGNED = "5d3466b457f3480945474de8e2df3c01ceaa55a12d0347d2e17a3f3444651f86"
 
-			val nonce = ImmutableBytes.asUnsignedByteArray(BigInt(0))
+			val nonce = BigIntBytes(BigInt(0))
 			val manaPrice = BigIntBytes.parseHexString("e8d4a51000")
 			val mana = BigIntBytes.parseHexString("2710")
 			val receiveAddress = Address.parseHexString("13978aee95f38490e9769c39b2773ed763d9cd5f")
@@ -224,10 +224,10 @@ class TransactionTest extends Specification {
 				rebuiltTx.data mustEqual data
 
 				rebuiltTx.nonce.toPositiveBigInt mustEqual BigInt(0)
-				rebuiltTx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
-				rebuiltTx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+				rebuiltTx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
+				rebuiltTx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 				rebuiltTx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
-				rebuiltTx.value.toPositiveBigInt mustEqual testValue.toPositiveBigInt
+				rebuiltTx.value.positiveBigInt mustEqual testValue.positiveBigInt
 				rebuiltTx.signatureOption.isEmpty mustEqual true
 			}}
 			ok
@@ -245,11 +245,11 @@ class TransactionTest extends Specification {
 
 				val rebuiltTx = Transaction.decode(encoded)
 
-				rebuiltTx.value.toPositiveBigInt.toLong mustEqual eachValue
+				rebuiltTx.value.positiveBigInt.toLong mustEqual eachValue
 
 				rebuiltTx.nonce.toPositiveBigInt mustEqual BigInt(0)
-				rebuiltTx.manaPrice.toPositiveBigInt mustEqual testManaPrice.toPositiveBigInt
-				rebuiltTx.manaLimit.toPositiveBigInt mustEqual testManaLimit.toPositiveBigInt
+				rebuiltTx.manaPrice.positiveBigInt mustEqual testManaPrice.positiveBigInt
+				rebuiltTx.manaLimit.positiveBigInt mustEqual testManaLimit.positiveBigInt
 				rebuiltTx.receiverAddress.toHexString mustEqual testReceiveAddress.toHexString
 				rebuiltTx.data mustEqual testData
 				rebuiltTx.signatureOption.isEmpty mustEqual true

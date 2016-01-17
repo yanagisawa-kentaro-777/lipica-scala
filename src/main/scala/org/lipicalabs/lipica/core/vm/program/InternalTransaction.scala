@@ -11,7 +11,7 @@ import org.lipicalabs.lipica.core.vm.DataWord
  * 2015/10/31 15:36
  * YANAGISAWA, Kentaro
  */
-class InternalTransaction(private val parentHash: DigestValue, val deep: Int, val index: Int, _nonce: ImmutableBytes, _manaPrice: DataWord, _manaLimit: DataWord, override val senderAddress: Address, _receiveAddress: Address, _value: BigIntBytes, _data: ImmutableBytes, val note: String) extends TransactionLike {
+class InternalTransaction(private val parentHash: DigestValue, val deep: Int, val index: Int, _nonce: BigIntBytes, _manaPrice: DataWord, _manaLimit: DataWord, override val senderAddress: Address, _receiveAddress: Address, _value: BigIntBytes, _data: ImmutableBytes, val note: String) extends TransactionLike {
 
 	private val core = Transaction(_nonce, BigIntBytes(_manaPrice.data), BigIntBytes(_manaLimit.data), _receiveAddress, _value, _data)
 
@@ -34,7 +34,7 @@ class InternalTransaction(private val parentHash: DigestValue, val deep: Int, va
 		if (this.rbacBytes eq null) {
 			val thisNonce = nonce
 			val encodedNonce =
-				if (ByteUtils.isNullOrEmpty(thisNonce) || ((thisNonce.length == 1) && (thisNonce(0) == 0))) {
+				if (ByteUtils.isNullOrEmpty(thisNonce) || ((thisNonce.length == 1) && (thisNonce.bytes(0) == 0))) {
 					RBACCodec.Encoder.encode(null)
 				} else {
 					RBACCodec.Encoder.encode(thisNonce)

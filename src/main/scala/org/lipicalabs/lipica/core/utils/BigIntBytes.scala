@@ -13,7 +13,7 @@ class BigIntBytes private(val bytes: ImmutableBytes) extends Comparable[BigIntBy
 
 	val positiveBigInt: BigInt = this.bytes.toPositiveBigInt
 
-	val toPositiveBigInt: BigInt = positiveBigInt
+	val toPositiveBigInt: BigInt = this.bytes.toPositiveBigInt
 
 	def toByteArray: Array[Byte] = this.bytes.toByteArray
 
@@ -55,6 +55,8 @@ class BigIntBytes private(val bytes: ImmutableBytes) extends Comparable[BigIntBy
 object BigIntBytes {
 
 	val zero: BigIntBytes = new BigIntBytes(ImmutableBytes.empty)
+
+	val empty: BigIntBytes = new BigIntBytes(ImmutableBytes.empty)
 
 	def apply(bytes: ImmutableBytes): BigIntBytes = {
 		new BigIntBytes(bytes)

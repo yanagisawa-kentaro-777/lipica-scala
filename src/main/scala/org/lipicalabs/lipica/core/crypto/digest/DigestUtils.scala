@@ -4,7 +4,7 @@ import java.security.MessageDigest
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.kernel.{Address160, Address}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.spongycastle.crypto.Digest
 import org.spongycastle.crypto.digests.{KeccakDigest, RIPEMD160Digest}
 
@@ -65,7 +65,7 @@ object DigestUtils {
 		calculateDigest(digest, data)
 	}
 
-	def computeNewAddress(address: Address, nonce: ImmutableBytes): Address = {
+	def computeNewAddress(address: Address, nonce: BigIntBytes): Address = {
 		val encodedSender = RBACCodec.Encoder.encode(address)
 		val encodedNonce = RBACCodec.Encoder.encode(nonce.toPositiveBigInt)
 		Address160(digest256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray))

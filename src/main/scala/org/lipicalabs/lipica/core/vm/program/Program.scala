@@ -60,11 +60,11 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 
 	def getCallDepth: Int = this.context.getCallDepth
 
-	private def addInternalTx(nonce: ImmutableBytes, manaLimit: DataWord, senderAddress: Address, receiveAddress: Address, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
+	private def addInternalTx(nonce: BigIntBytes, manaLimit: DataWord, senderAddress: Address, receiveAddress: Address, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
 		if (this.transaction ne null) {
 			val senderNonce =
 				if (nonce.isEmpty) {
-					ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
+					BigIntBytes(this.storage.getNonce(senderAddress))
 				} else {
 					nonce
 				}
@@ -216,7 +216,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 			logger.info("Transfer to [%s] heritage: [%s]".format(obtainer.toHexString, balance))
 		}
 
-		addInternalTx(ImmutableBytes.empty, DataWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
+		addInternalTx(BigIntBytes.empty, DataWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
 		Payment.transfer(this.storage, owner, obtainer, balance, Payment.Bequest)
 		result.addDeletedAccount(getOwnerAddress)
 	}
@@ -243,7 +243,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 		spendMana(manaLimit.longValue, "internal call")
 
 		//コントラクト用アドレスを生成する。
-		val nonce = ImmutableBytes.asSignedByteArray(this.storage.getNonce(senderAddress))
+		val nonce = BigIntBytes(this.storage.getNonce(senderAddress))
 		val newAddress = DigestUtils.computeNewAddress(getOwnerAddress.last20Bytes, nonce)
 
 		//nonceを更新する。
@@ -363,7 +363,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 		val contextBalance = Payment.transfer(track, senderAddress, contextAddress, endowment, Payment.ContractInvocationTx)
 
 		//内部トランザクションを生成する。
-		val internalTx = addInternalTx(ImmutableBytes.empty, getBlockManaLimit, senderAddress, contextAddress, endowment, programCode, "call")
+		val internalTx = addInternalTx(BigIntBytes.empty, getBlockManaLimit, senderAddress, contextAddress, endowment, programCode, "call")
 
 		val programResultOption =
 			if (programCode.nonEmpty) {

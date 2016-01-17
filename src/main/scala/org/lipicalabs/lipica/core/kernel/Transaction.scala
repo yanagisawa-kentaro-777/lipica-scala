@@ -29,7 +29,7 @@ trait TransactionLike {
 	/**
 	 * 送信者がこれまで送ったトランザクションの数と等しい連番。
 	 */
-	def nonce: ImmutableBytes
+	def nonce: BigIntBytes
 
 	/**
 	 * 送信者のアドレス。
@@ -135,14 +135,14 @@ trait TransactionLike {
 
 	override final def toString: String = {
 		"Tx[Hash=%s; Nonce=%,d; ManaPrice=%,d; ManaLimit=%,d; Sender=%s; Receiver=%s; Value=%s; Data=%s; Signature=%s]".format(
-			this.hash, this.nonce.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.manaLimit.toPositiveBigInt,
+			this.hash, this.nonce.toPositiveBigInt, this.manaPrice.positiveBigInt, this.manaLimit.positiveBigInt,
 			this.senderAddress, this.receiverAddress, this.value, this.data, this.signatureOption.map(sig => "V(%d) R(%d) S(%d)".format(sig.v, sig.r, sig.s)).getOrElse("")
 		)
 	}
 
 	def summaryString: String = {
 		"Tx[Hash=%s; Nonce=%,d; Sender=%s; Receiver=%s; Value=%s; ManaLimit=%,d; ManaPrice=%,d; Data=%s]".format(
-			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value, this.manaLimit.toPositiveBigInt, this.manaPrice.toPositiveBigInt, this.data.toShortString
+			this.hash.toShortString, this.nonce.toPositiveBigInt, this.senderAddress, this.receiverAddress, this.value, this.manaLimit.positiveBigInt, this.manaPrice.positiveBigInt, this.data.toShortString
 		)
 	}
 
@@ -187,7 +187,7 @@ trait TransactionLike {
 
 
 class UnsignedTransaction(
-	override val nonce: ImmutableBytes,
+	override val nonce: BigIntBytes,
 	override val value: BigIntBytes,
 	override val receiverAddress: Address,
 	override val manaPrice: BigIntBytes,
@@ -240,7 +240,7 @@ class UnsignedTransaction(
 }
 
 class SignedTransaction(
-	override val nonce: ImmutableBytes,
+	override val nonce: BigIntBytes,
 	override val value: BigIntBytes,
 	override val receiverAddress: Address,
 	override val manaPrice: BigIntBytes,
@@ -295,7 +295,7 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 			//val transaction = RBACCodec.Decoder.decode(this.encodedBytes).right.get.items
 			//val transaction = decodedTxList.items.head.items
 
-			val nonce = items.head.bytes
+			val nonce = BigIntBytes(items.head.bytes)
 			val manaPrice = BigIntBytes(items(1).bytes)
 			val manaLimit = BigIntBytes(items(2).bytes)
 			val receiveAddress =
@@ -340,7 +340,7 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 		this.encodedBytes = null
 	}
 
-	override def nonce: ImmutableBytes = parse.nonce
+	override def nonce: BigIntBytes = parse.nonce
 
 	override def senderAddress: Address = parse.senderAddress
 
@@ -373,18 +373,18 @@ object Transaction {
 		decode(RBACCodec.Decoder.decode(rawData).right.get)
 	}
 
-	def apply(nonce: ImmutableBytes, manaPrice: BigIntBytes, manaLimit: BigIntBytes, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes): TransactionLike = {
+	def apply(nonce: BigIntBytes, manaPrice: BigIntBytes, manaLimit: BigIntBytes, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes): TransactionLike = {
 		new UnsignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data)
 	}
 
-	def apply(nonce: ImmutableBytes, manaPrice: BigIntBytes, manaLimit: BigIntBytes, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
+	def apply(nonce: BigIntBytes, manaPrice: BigIntBytes, manaLimit: BigIntBytes, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
 		val signature: ECKey.ECDSASignature = new ECKey.ECDSASignature(r.toSignedBigInteger, s.toSignedBigInteger)
 		signature.v = v
 		new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 	}
 
 	def create(to: String, amount: BigInt, nonce: BigInt, manaPrice: BigInt, manaLimit: BigInt): TransactionLike = {
-		Transaction.apply(ImmutableBytes.asUnsignedByteArray(nonce), BigIntBytes(manaPrice), BigIntBytes(manaLimit), Address160.parseHexString(to), BigIntBytes(amount), ImmutableBytes.empty)
+		Transaction.apply(BigIntBytes(nonce), BigIntBytes(manaPrice), BigIntBytes(manaLimit), Address160.parseHexString(to), BigIntBytes(amount), ImmutableBytes.empty)
 	}
 
 	def createDefault(to: String, amount: BigInteger, nonce: BigInteger): TransactionLike = {

@@ -22,7 +22,7 @@ class InternalTransactionTest extends Specification {
 	"instance creation" should {
 		"be right" in {
 			val parentHash = Digest256(ImmutableBytes.create(32))
-			val nonce = ImmutableBytes(Array[Byte](0, 1, 2, 3, 4, 5, 6, 7))
+			val nonce = BigIntBytes(Array[Byte](0, 1, 2, 3, 4, 5, 6, 7))
 			val manaPrice = DataWord(12L)
 			val manaLimit = DataWord(100L)
 			val senderAddress = Address(Array[Byte](7, 8, 9, 10))

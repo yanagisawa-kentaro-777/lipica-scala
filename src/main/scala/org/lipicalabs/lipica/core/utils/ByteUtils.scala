@@ -119,4 +119,8 @@ object ByteUtils {
 		(bytes eq null) || bytes.isEmpty
 	}
 
+	def isNullOrEmpty(bytes: BigIntBytes): Boolean = {
+		(bytes eq null) || bytes.isEmpty
+	}
+
 }

@@ -43,7 +43,7 @@ class TransactionExecutor(
 			this.readyToExecute = true
 			return
 		}
-		val txManaLimit = this.tx.manaLimit.toPositiveBigInt.longValue()
+		val txManaLimit = this.tx.manaLimit.positiveBigInt.longValue()
 		//新たなトランザクションを処理すると、このブロックのマナ上限を超えるか？
 		val exceedingLimit = this.currentBlock.manaLimit.positiveBigInt < BigInt(this.manaUsedInTheBlock + txManaLimit)
 		if (exceedingLimit) {
@@ -63,7 +63,7 @@ class TransactionExecutor(
 			logger.info("<TxExecutor> Invalid nonce: Required: %s != Tx: %s".format(reqNonce, txNonce))
 			return
 		}
-		val txManaCost = this.tx.manaPrice.toPositiveBigInt * BigInt(txManaLimit)
+		val txManaCost = this.tx.manaPrice.positiveBigInt * BigInt(txManaLimit)
 		val totalCost = this.tx.value.positiveBigInt + txManaCost
 		val senderBalance = this.track.getBalance(this.tx.senderAddress).getOrElse(UtilConsts.Zero)
 		if (senderBalance < totalCost) {
@@ -79,8 +79,8 @@ class TransactionExecutor(
 		}
 		if (!localCall) {
 			this.track.increaseNonce(this.tx.senderAddress)
-			val txManaPrice = this.tx.manaPrice.toPositiveBigInt
-			val txManaLimit = this.tx.manaLimit.toPositiveBigInt
+			val txManaPrice = this.tx.manaPrice.positiveBigInt
+			val txManaLimit = this.tx.manaLimit.positiveBigInt
 			val txManaCost = txManaPrice * txManaLimit
 			Payment.txFee(this.track, tx.senderAddress, -txManaCost, Payment.TxFeeAdvanceWithdrawal)
 			logger.info("<TxExecutor> Withdraw in advance: TxManaCost: %,d, ManaPrice: %,d, ManaLimit: %,d".format(txManaCost, txManaPrice, txManaLimit))
@@ -95,7 +95,7 @@ class TransactionExecutor(
 	private def create(): Unit = {
 		val newContractAddress = this.tx.contractAddress.get
 		if (this.tx.data.isEmpty) {
-			this.endMana = this.tx.manaLimit.toPositiveBigInt.longValue() - this.basicTxCost
+			this.endMana = this.tx.manaLimit.positiveBigInt.longValue() - this.basicTxCost
 			this.cacheTrack.createAccount(newContractAddress)
 		} else {
 			val context = this.programContextFactory.createProgramContext(tx, currentBlock, cacheTrack, blockStore)
@@ -110,7 +110,7 @@ class TransactionExecutor(
 				}
 			}
 		}
-		val endowment = this.tx.value.toPositiveBigInt
+		val endowment = this.tx.value.positiveBigInt
 		Payment.transfer(this.cacheTrack, this.tx.senderAddress, newContractAddress, endowment, Payment.ContractCreationTx)
 	}
 
@@ -126,7 +126,7 @@ class TransactionExecutor(
 					logger.debug("<TxExecutor> Precompiled contract invocation: [%s]".format(targetAddress))
 				}
 				val requiredMana = contract.manaForData(this.tx.data)
-				val txManaLimit = this.tx.manaLimit.toPositiveBigInt.longValue()
+				val txManaLimit = this.tx.manaLimit.positiveBigInt.longValue()
 				if (!localCall && txManaLimit < requiredMana) {
 					//コストオーバー。
 					return
@@ -150,11 +150,11 @@ class TransactionExecutor(
 						if (logger.isTraceEnabled) {
 							logger.trace("<TxExecutor> Normal tx.")
 						}
-						this.endMana = this.tx.manaLimit.toPositiveBigInt.longValue() - this.basicTxCost
+						this.endMana = this.tx.manaLimit.positiveBigInt.longValue() - this.basicTxCost
 				}
 		}
 
-		val endowment = this.tx.value.toPositiveBigInt
+		val endowment = this.tx.value.positiveBigInt
 		Payment.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment, Payment.TxSettlement)
 	}
 
@@ -169,7 +169,7 @@ class TransactionExecutor(
 			this.program.spendMana(this.tx.transactionCost, "Tx Cost")
 			this.vm.play(this.program)
 			this.result = this.program.result
-			this.endMana = (this.tx.manaLimit.toPositiveBigInt - BigInt(this.result.manaUsed)).longValue()
+			this.endMana = (this.tx.manaLimit.positiveBigInt - BigInt(this.result.manaUsed)).longValue()
 
 			if (this.tx.isContractCreation) {
 				val returnDataManaValue = result.hReturn.length * ManaCost.CreateData
@@ -259,7 +259,7 @@ class TransactionExecutor(
 
 	def logs: Seq[LogInfo] = this._logs
 	def resultOption: Option[ProgramResult] = Option(this.result)
-	def manaUsed: Long = this.tx.manaLimit.toPositiveBigInt.longValue() - this.endMana
+	def manaUsed: Long = this.tx.manaLimit.positiveBigInt.longValue() - this.endMana
 
 }
 
