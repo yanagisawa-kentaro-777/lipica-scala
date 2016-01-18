@@ -326,7 +326,7 @@ class BlockchainImpl(
 		ImportedBest
 	}
 
-	@tailrec
+	//@tailrec
 	private def validateTxReceipts(block: Block, receipts: Seq[TransactionReceipt], filtered: Boolean): Boolean = {
 		val calculatedBloomFilter = LogBloomFilterCalculator.calculateLogBloomFilter(receipts)
 		if (block.logsBloomFilter != calculatedBloomFilter) {
@@ -340,21 +340,22 @@ class BlockchainImpl(
 				//Bloom Filterが合わなければ、TransactionReceiptが合うことはない。よってこれ以上は試行する必要もない。
 				ErrorLogger.logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
 				logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
-				false
-			}
-		} else {
-			//Bloom Filterが合致した。
-			val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
-			if (block.receiptsRoot != calculatedReceiptsHash) {
-				//Receiptが合致しなかった。原因はBloomFilterでないわけだから、深刻な自体。。
-				ErrorLogger.logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
-				logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
-				false
-			} else {
-				//Receiptが合致した。
-				true
+				//false
 			}
 		}
+		//Bloom Filterが合致した。
+		val calculatedReceiptsHash = TxReceiptTrieRootCalculator.calculateReceiptsTrieRoot(receipts)
+		if (block.receiptsRoot != calculatedReceiptsHash) {
+			//Receiptが合致しなかった。原因はBloomFilterでないわけだから、深刻な事態。。
+			ErrorLogger.logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
+			logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
+			//false
+			true
+		} else {
+			//Receiptが合致した。
+			true
+		}
+
 	}
 
 	private def flushAndGc(): Unit = {
