@@ -9,6 +9,7 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{BlockWrapper, Block, Genesis}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.datasource.InMemoryDataSource
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -86,15 +87,15 @@ class BlockQueueTest extends Specification {
 
 				val receivedAt = System.currentTimeMillis
 				val importFailedAt = receivedAt + receivedAt / 2L
-				val wrapper = BlockWrapper(this.blocks.head, newBlock = true, ImmutableBytes(nodeId))
+				val wrapper = BlockWrapper(this.blocks.head, newBlock = true, NodeId(nodeId))
 				wrapper.receivedAt = receivedAt
 				wrapper.importFailedAt = importFailedAt
 
 				wrapper.receivedAt mustEqual receivedAt
 				wrapper.importFailedAt mustEqual importFailedAt
-				wrapper.nodeId mustEqual ImmutableBytes(this.nodeId)
+				wrapper.nodeId mustEqual NodeId(this.nodeId)
 
-				this.blockQueue.add(BlockWrapper(this.blocks.head, ImmutableBytes(this.nodeId)))
+				this.blockQueue.add(BlockWrapper(this.blocks.head, NodeId(this.nodeId)))
 
 				val block = this.blockQueue.peek.get
 				block.encode mustEqual this.blocks.head.encode
@@ -103,7 +104,7 @@ class BlockQueueTest extends Specification {
 				this.blockQueue.addAll(
 					this.blocks.map {
 						each => {
-							val result = BlockWrapper(each, ImmutableBytes(this.nodeId))
+							val result = BlockWrapper(each, NodeId(this.nodeId))
 							result.receivedAt = System.currentTimeMillis
 							result
 						}
@@ -129,7 +130,7 @@ class BlockQueueTest extends Specification {
 				blockQueue.isEmpty mustEqual true
 
 				for (b <- this.blocks) {
-					this.blockQueue.add(BlockWrapper(b, ImmutableBytes(this.nodeId)))
+					this.blockQueue.add(BlockWrapper(b, NodeId(this.nodeId)))
 				}
 
 				prevBlockNumber = -1L
@@ -180,7 +181,7 @@ class BlockQueueTest extends Specification {
 		override def run(): Unit = {
 			for (i <- 0 until 50) {
 				val b = blocks(i)
-				blockQueue.add(BlockWrapper(b, ImmutableBytes(nodeId)))
+				blockQueue.add(BlockWrapper(b, NodeId(nodeId)))
 				Thread.sleep(50L)
 			}
 		}

@@ -4,8 +4,8 @@ import java.net.{InetSocketAddress, InetAddress}
 import java.util.Random
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.net.peer_discovery.Node
-import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.{DistanceComparator, NodeEntry, KademliaOptions, NodeTable}
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
+import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.{KademliaOptions, NodeTable}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
@@ -105,8 +105,8 @@ class KademliaTest extends Specification {
 		new Random(seed)
 	}
 
-	private def getNodeId(random: Random): ImmutableBytes = {
-		ImmutableBytes.createRandom(random, 64)
+	private def getNodeId(random: Random): NodeId = {
+		NodeId(ImmutableBytes.createRandom(random, 64))
 	}
 
 	private def getNode(random: Random): Node = {
@@ -115,7 +115,7 @@ class KademliaTest extends Specification {
 
 	def getNode(random: Random, id: Array[Byte], i: Int): Node = {
 		id(0) = (id(0) + i).toByte
-		new Node(ImmutableBytes(id), new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 30303))
+		new Node(NodeId(id), new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 30303))
 	}
 
 	def getTestNodeTable(random: Random, nodesCount: Int): NodeTable = {

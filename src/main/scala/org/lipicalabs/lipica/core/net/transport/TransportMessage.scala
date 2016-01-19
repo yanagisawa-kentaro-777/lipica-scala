@@ -5,6 +5,7 @@ import java.util
 
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PongMessage, PingMessage}
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
@@ -59,13 +60,13 @@ class TransportMessage {
 		}
 	}
 
-	def nodeId: ImmutableBytes = {
+	def nodeId: NodeId = {
 		this.key match {
 			case Right(k) =>
 				val publicKey = ImmutableBytes(k.getPubKey)
-				publicKey.copyOfRange(1, 65)
+				NodeId(publicKey.copyOfRange(1, 65))
 			case Left(e) =>
-				ImmutableBytes.empty
+				NodeId.empty
 		}
 	}
 

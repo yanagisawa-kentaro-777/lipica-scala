@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.{AtomicReference, AtomicLong, AtomicBoolean}
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.HelloMessage
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 import scala.collection.mutable
 
@@ -16,7 +15,7 @@ import scala.collection.mutable
  * 2015/12/07 20:28
  * YANAGISAWA, Kentaro
  */
-class PeerInfo(val address: InetSocketAddress, val nodeId: ImmutableBytes) {
+class PeerInfo(val address: InetSocketAddress, val nodeId: NodeId) {
 
 	private val onlineRef: AtomicBoolean = new AtomicBoolean(false)
 	def online: Boolean = {

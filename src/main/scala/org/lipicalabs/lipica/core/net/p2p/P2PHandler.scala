@@ -147,7 +147,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 			}
 			val address: InetAddress = ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress].getAddress
 			val port = message.listenPort
-			val confirmedPeer = new PeerInfo(new InetSocketAddress(address, port), message.peerId)
+			val confirmedPeer = new PeerInfo(new InetSocketAddress(address, port), message.nodeId)
 			confirmedPeer.online = false
 			confirmedPeer.addCapabilities(message.capabilities)
 

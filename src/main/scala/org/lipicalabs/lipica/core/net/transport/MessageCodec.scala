@@ -15,6 +15,7 @@ import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
 import org.lipicalabs.lipica.core.net.message.{Command, MessageFactory, Message}
 import org.lipicalabs.lipica.core.net.p2p.{P2PMessageFactory, DisconnectMessage, HelloMessage, P2PMessageCode}
 import org.lipicalabs.lipica.core.net.channel.Channel
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.net.shh.ShhMessageCode
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzMessageCode
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
@@ -39,11 +40,11 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _myKey = NodeProperties.CONFIG.privateKey
 	def myKey: ECKey = this._myKey
 
-	private var _nodeId: ImmutableBytes = null
-	def nodeId: ImmutableBytes = this._nodeId
+	private var _nodeId: NodeId = null
+	def nodeId: NodeId = this._nodeId
 
-	private var _remoteNodeId: ImmutableBytes = null
-	def remoteNodeId: ImmutableBytes = this._remoteNodeId
+	private var _remoteNodeId: NodeId = null
+	def remoteNodeId: NodeId = this._remoteNodeId
 
 	private var _handshake: EncryptionHandshake = null
 	def handshake: EncryptionHandshake = this._handshake
@@ -86,7 +87,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 				initiate(ctx)
 			} else {
 				_handshake = EncryptionHandshake.createResponder
-				_nodeId = ImmutableBytes(myKey.getNodeId)
+				_nodeId = NodeId(myKey.getNodeId)
 			}
 		}
 	}
@@ -94,9 +95,9 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	def initiate(ctx: ChannelHandlerContext): Unit = {
 		loggerNet.info("<MessageCodec> Transport activated.")
 
-		this._nodeId = ImmutableBytes(myKey.getNodeId)
+		this._nodeId = NodeId(myKey.getNodeId)
 		val remotePublicBytes = new Array[Byte](remoteNodeId.length + 1)
-		remoteNodeId.copyTo(0, remotePublicBytes, 1, remoteNodeId.length)
+		remoteNodeId.bytes.copyTo(0, remotePublicBytes, 1, remoteNodeId.length)
 		remotePublicBytes(0) = 0x04//uncomporessed.
 		val remotePublicKeyPoint = ECKey.fromPublicOnly(remotePublicBytes).getPubKeyPoint
 		this._handshake = EncryptionHandshake.createInitiator(remotePublicKeyPoint)
@@ -168,7 +169,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 				val secrets = this._handshake.secrets
 				this._frameCodec = new FrameCodec(secrets)
 				loggerNet.info("<MessageCodec> Key exchange is done.")
-				this._channel.sendHelloMessage(ctx, this._frameCodec, this._nodeId.toHexString)
+				this._channel.sendHelloMessage(ctx, this._frameCodec, this._nodeId)
 			} else {
 				val frame = this._frameCodec.readFrame(buffer)
 				if (frame eq null) {
@@ -213,7 +214,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 
 					val remoteIdBytes = new Array[Byte](compressed.length - 1)
 					System.arraycopy(compressed, 1, remoteIdBytes, 0, remoteIdBytes.length)
-					this._remoteNodeId = ImmutableBytes(remoteIdBytes)
+					this._remoteNodeId = NodeId(remoteIdBytes)
 					this._channel.assignNode(this._remoteNodeId)
 
 					val byteBuffer = ctx.alloc.buffer(responsePacket.length)
@@ -241,7 +242,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 							return
 						}
 						this._isHandshakeDone = true
-						this._channel.sendHelloMessage(ctx, this._frameCodec, this.nodeId.toHexString)
+						this._channel.sendHelloMessage(ctx, this._frameCodec, this.nodeId)
 						this._channel.publicTransportHandshakeFinished(ctx, message.asInstanceOf[HelloMessage])
 					case None => ()
 				}
@@ -316,7 +317,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		}
 	}
 
-	def setRemoteNodeId(aRemoteNodeId: ImmutableBytes, channel: Channel): Unit = {
+	def setRemoteNodeId(aRemoteNodeId: NodeId, channel: Channel): Unit = {
 		this._remoteNodeId = aRemoteNodeId
 		this._channel = channel
 	}

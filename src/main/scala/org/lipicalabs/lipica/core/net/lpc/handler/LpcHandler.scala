@@ -205,16 +205,6 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		}
 	}
 
-//	/**
-//	 * GetBlockHashes メッセージを送信します。
-//	 */
-//	protected def sendGetBlockHashes(): Unit = {
-//		if (loggerSync.isTraceEnabled) {
-//			loggerSync.trace("<LpcHandler> Peer %s: send GetBlockHashes. Hash=%s, MaxAsk=%,d".format(this.channel.peerIdShort, this.lastHashToAsk, this.maxHashesAsk))
-//		}
-//		sendMessage(new GetBlockHashesMessage(this.lastHashToAsk, this.maxHashesAsk))
-//	}
-
 	/**
 	 * 他ノードからの GetBlockHashes メッセージを処理します。
 	 */

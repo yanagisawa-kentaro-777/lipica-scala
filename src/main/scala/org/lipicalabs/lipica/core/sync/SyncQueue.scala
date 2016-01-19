@@ -9,6 +9,7 @@ import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.slf4j.LoggerFactory
@@ -115,7 +116,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	/**
 	 * 渡されたブロックを、ブロックキューに追加します。
 	 */
-	def addBlocks(blocks: Seq[Block], nodeId: ImmutableBytes): Unit = {
+	def addBlocks(blocks: Seq[Block], nodeId: NodeId): Unit = {
 		if (blocks.isEmpty) {
 			return
 		}
@@ -145,7 +146,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	/**
 	 * 渡された新たなブロックをキューに追加します。
 	 */
-	def addNewBlock(block: Block, nodeId: ImmutableBytes): Unit = {
+	def addNewBlock(block: Block, nodeId: NodeId): Unit = {
 		if (!isValid(block.blockHeader)) {
 			this.syncManager.reportInvalidBlock(nodeId)
 			return

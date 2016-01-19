@@ -17,12 +17,11 @@ import org.lipicalabs.lipica.core.net.lpc.message.LpcMessageFactory
 import org.lipicalabs.lipica.core.sync.{SyncStateName, SyncStatistics}
 import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, MessageFactory}
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler, P2PMessageFactory}
-import org.lipicalabs.lipica.core.net.peer_discovery.{NodeStatistics, NodeManager, Node}
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, NodeStatistics, NodeManager, Node}
 import org.lipicalabs.lipica.core.net.shh.{ShhHandler, ShhMessageFactory}
 import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzHandler, BzzMessageFactory}
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
 import org.lipicalabs.lipica.core.net.transport.{FrameCodec, MessageCodec}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -55,13 +54,13 @@ class Channel {
 
 	private val nodeRef: AtomicReference[Node] = new AtomicReference[Node](null)
 	def node: Node = this.nodeRef.get
-	def nodeId: ImmutableBytes = Option(this.node).map(_.id).getOrElse(ImmutableBytes.empty)
+	def nodeId: NodeId = Option(this.node).map(_.id).getOrElse(NodeId.empty)
 	def nodeIdShort: String = nodeId.toShortString
 
 	/**
 	 * このチャネルと、渡された識別子を持つノードとを結びつけます。
 	 */
-	def assignNode(nodeId: ImmutableBytes): Unit = {
+	def assignNode(nodeId: NodeId): Unit = {
 		this.nodeRef.set(new Node(nodeId, this.inetSocketAddress))
 		this._nodeStatistics = this.nodeManager.getNodeStatistics(this.node)
 	}
@@ -72,7 +71,7 @@ class Channel {
 	private var _discoveryMode: Boolean = false
 	def isDiscoveryMode: Boolean = this._discoveryMode
 
-	def init(pipeline: ChannelPipeline, remoteNodeId: ImmutableBytes, aDiscoveryMode: Boolean): Unit = {
+	def init(pipeline: ChannelPipeline, remoteNodeId: NodeId, aDiscoveryMode: Boolean): Unit = {
 		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(NodeProperties.CONFIG.readTimeoutMillis, TimeUnit.MILLISECONDS))
 		pipeline.addLast("initiator", messageCodec.initiator)
 		pipeline.addLast("messageCodec", messageCodec)
@@ -104,7 +103,7 @@ class Channel {
 		nodeStatistics.transportHandshake.add
 	}
 
-	def sendHelloMessage(ctx: ChannelHandlerContext, frameCodec: FrameCodec, nodeId: String): Unit = {
+	def sendHelloMessage(ctx: ChannelHandlerContext, frameCodec: FrameCodec, nodeId: NodeId): Unit = {
 		//discovery modeでは、外部からの接続を受け付けないために嘘のポート番号を供給する。
 		val helloMessage = if (this._discoveryMode) ImmutableMessages.createHelloMessage(nodeId, 9) else ImmutableMessages.createHelloMessage(nodeId)
 		val payload = helloMessage.toEncodedBytes

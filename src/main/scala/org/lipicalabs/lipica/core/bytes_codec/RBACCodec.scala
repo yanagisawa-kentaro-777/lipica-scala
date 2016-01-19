@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.Address
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils._
 
 import scala.annotation.tailrec
@@ -236,6 +237,7 @@ object RBACCodec {
 				case d: DigestValue => d.bytes
 				case a: Address => a.bytes
 				case v: BigIntBytes => v.bytes
+				case n:	 NodeId => n.bytes
 				case s: String => ImmutableBytes(s.getBytes(StandardCharsets.UTF_8))
 				case v: Long =>
 					if (v == 0L) {

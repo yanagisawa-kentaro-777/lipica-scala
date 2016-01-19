@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 
-import org.lipicalabs.lipica.core.net.peer_discovery.Node
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 
@@ -11,8 +11,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class NodeEntry private() {
 
-	private var _ownerId: ImmutableBytes = null
-	def ownerId: ImmutableBytes = this._ownerId
+	private var _ownerId: NodeId = null
+	def ownerId: NodeId = this._ownerId
 
 	private var _node: Node = null
 	def node: Node = this._node
@@ -55,7 +55,7 @@ object NodeEntry {
 		result
 	}
 
-	def apply(ownerId: ImmutableBytes, n: Node): NodeEntry = {
+	def apply(ownerId: NodeId, n: Node): NodeEntry = {
 		val result = new NodeEntry
 		result._node = n
 		result._ownerId = ownerId
@@ -65,10 +65,10 @@ object NodeEntry {
 		result
 	}
 
-	def distance(ownerId: ImmutableBytes, targetId: ImmutableBytes): Int ={
+	def distance(ownerId: NodeId, targetId: NodeId): Int ={
 		//２個のバイト配列の256ビットダイジェストのXORを新たなバイト配列に格納する。
-		val digest1 = ownerId.digest256.bytes
-		val digest2 = targetId.digest256.bytes
+		val digest1 = ownerId.bytes.digest256.bytes
+		val digest2 = targetId.bytes.digest256.bytes
 		val xor = new Array[Byte](digest1.length)
 		for (i <- xor.indices) {
 			//等しいバイトはゼロになる。

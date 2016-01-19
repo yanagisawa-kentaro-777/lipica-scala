@@ -9,7 +9,8 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
 import org.slf4j.LoggerFactory
 
 /**
@@ -30,12 +31,12 @@ class PeerClient {
 	 * @param address 接続先アドレス。
 	 * @param nodeId 接続先ノードID。
 	 */
-	def connect(address: InetSocketAddress, nodeId: ImmutableBytes): Unit = connect(address, nodeId, discoveryMode = false)
+	def connect(address: InetSocketAddress, nodeId: NodeId): Unit = connect(address, nodeId, discoveryMode = false)
 
 	/**
 	 * 他ノードに対して接続確立を試行します。
 	 */
-	def connect(address: InetSocketAddress, nodeId: ImmutableBytes, discoveryMode: Boolean): Unit = {
+	def connect(address: InetSocketAddress, nodeId: NodeId, discoveryMode: Boolean): Unit = {
 		this.worldManager.listener.trace("<PeerClient> Connecting to %s".format(address))
 		val channelInitializer = new LipicaChannelInitializer(nodeId)
 		channelInitializer.peerDiscoveryMode = discoveryMode

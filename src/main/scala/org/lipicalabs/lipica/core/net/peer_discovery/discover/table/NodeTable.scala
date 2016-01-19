@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 
-import org.lipicalabs.lipica.core.net.peer_discovery.Node
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 import scala.collection.mutable.ArrayBuffer
@@ -85,7 +85,7 @@ class NodeTable(val node: Node, includedHomeNode: Boolean) {
 		}
 	}
 
-	def getClosestNodes(targetId: ImmutableBytes): Seq[Node] = {
+	def getClosestNodes(targetId: NodeId): Seq[Node] = {
 		this.synchronized {
 			val comparator = new DistanceComparator(targetId)
 			getAllNodes.sortWith((e1, e2) => comparator.compare(e1, e2) < 0).take(KademliaOptions.BucketSize).map(_.node)

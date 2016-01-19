@@ -210,7 +210,7 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 		}
 	}
 
-	def getBestLpcNodes(used: Set[ImmutableBytes], lowerDifficulty: BigInt, limit: Int): Seq[NodeHandler] = {
+	def getBestLpcNodes(used: Set[NodeId], lowerDifficulty: BigInt, limit: Int): Seq[NodeHandler] = {
 		val predicate: (NodeHandler) => Boolean = (handler) => {
 			if (handler.nodeStatistics.lpcTotalDifficulty eq null) {
 				false
@@ -288,7 +288,7 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 object NodeManager {
 	private val logger = LoggerFactory.getLogger("discovery")
 
-	private val DummyStat = new NodeStatistics(new Node(ImmutableBytes.empty, new InetSocketAddress(InetAddress.getByAddress(new Array[Byte](4)), 0)))
+	private val DummyStat = new NodeStatistics(new Node(NodeId.empty, new InetSocketAddress(InetAddress.getByAddress(new Array[Byte](4)), 0)))
 	private val Persist: Boolean = NodeProperties.CONFIG.peerDiscoveryPersist
 
 	private val ListenerRefreshRate = 1000L

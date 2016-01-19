@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.message
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.p2p._
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,14 +17,14 @@ object ImmutableMessages {
 	val GetPeersMessage: GetPeersMessage = new GetPeersMessage
 	val DisconnectMessage: DisconnectMessage = new DisconnectMessage(ReasonCode.Requested)
 
-	def createHelloMessage(peerId: String): HelloMessage = {
-		createHelloMessage(peerId, NodeProperties.CONFIG.bindPort)
+	def createHelloMessage(nodeId: NodeId): HelloMessage = {
+		createHelloMessage(nodeId, NodeProperties.CONFIG.bindPort)
 	}
 
-	def createHelloMessage(peerId: String, listenPort: Int): HelloMessage = {
+	def createHelloMessage(nodeId: NodeId, listenPort: Int): HelloMessage = {
 		val announcement = buildHelloAnnouncement
 		val p2pVersion = P2PHandler.Version
-		HelloMessage(p2pVersion, announcement, Capability.all, listenPort, ImmutableBytes.parseHexString(peerId))
+		HelloMessage(p2pVersion, announcement, Capability.all, listenPort, nodeId)
 	}
 
 	private def buildHelloAnnouncement: String = {

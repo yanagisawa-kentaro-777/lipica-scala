@@ -199,7 +199,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		this.nodeStatistics.discoverOutNeighbours.add
 	}
 
-	def sendFindNode(target: ImmutableBytes): Unit = {
+	def sendFindNode(target: NodeId): Unit = {
 		if (logger.isDebugEnabled) {
 			logger.debug("<NodeHandler> Sending [FIND_NODE] %s".format(this))
 		}

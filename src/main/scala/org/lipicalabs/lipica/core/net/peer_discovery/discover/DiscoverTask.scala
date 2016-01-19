@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
-import org.lipicalabs.lipica.core.net.peer_discovery.{NodeManager, Node}
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, NodeManager, Node}
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.KademliaOptions
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
@@ -17,13 +17,13 @@ import scala.util.control.Breaks
 class DiscoverTask(val nodeManager: NodeManager) extends Runnable {
 	import DiscoverTask._
 
-	private val nodeId: ImmutableBytes = nodeManager.homeNode.id
+	private val nodeId: NodeId = nodeManager.homeNode.id
 
 	override def run(): Unit = {
 		discover(this.nodeId, 0, Seq.empty)
 	}
 
-	def discover(nodeId: ImmutableBytes, round: Int, prevTried: Seq[Node]): Unit = {
+	def discover(nodeId: NodeId, round: Int, prevTried: Seq[Node]): Unit = {
 		try {
 			if (round == KademliaOptions.MaxSteps) {
 				logger.info("<DiscoverTask> %,d nodes found.".format(this.nodeManager.table.getNodeCount))

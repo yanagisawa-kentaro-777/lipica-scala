@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -12,7 +13,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * @since 2015/11/21
  * @author YANAGISAWA, Kentaro
  */
-class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId: ImmutableBytes) {
+class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId: NodeId) {
 
 	import BlockWrapper._
 
@@ -74,8 +75,8 @@ class BlockWrapper private(val block: Block, val isNewBlock: Boolean, val nodeId
 object BlockWrapper {
 	private val SolidBlockDurationThresholdMillis: Long = 60L * 1000L
 
-	def apply(block: Block, newBlock: Boolean, nodeId: ImmutableBytes): BlockWrapper = new BlockWrapper(block, newBlock, nodeId)
-	def apply(block: Block, nodeId: ImmutableBytes): BlockWrapper = new BlockWrapper(block, false, nodeId)
+	def apply(block: Block, newBlock: Boolean, nodeId: NodeId): BlockWrapper = new BlockWrapper(block, newBlock, nodeId)
+	def apply(block: Block, nodeId: NodeId): BlockWrapper = new BlockWrapper(block, false, nodeId)
 
 	def parse(encodedBytes: ImmutableBytes): BlockWrapper = {
 		val decoded = RBACCodec.Decoder.decode(encodedBytes).right.get.items
@@ -83,7 +84,7 @@ object BlockWrapper {
 		val importFailedAt = decoded(1).bytes.toPositiveLong
 		val receivedAt = decoded(2).bytes.toPositiveLong
 		val newBlock = decoded(3).bytes.toPositiveLong != 0
-		val nodeId = decoded(4).bytes
+		val nodeId = NodeId(decoded(4).bytes)
 		val result = apply(block, newBlock, nodeId)
 		result.importFailedAt = importFailedAt
 		result.receivedAt = receivedAt

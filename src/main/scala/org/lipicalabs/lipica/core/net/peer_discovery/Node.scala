@@ -6,6 +6,55 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
+class NodeId private (val bytes: ImmutableBytes) extends Comparable[NodeId] {
+
+	def toByteArray: Array[Byte] = this.bytes.toByteArray
+
+	/**
+	 * アドレスのバイト数。
+	 */
+	def length: Int = this.bytes.length
+
+	def isEmpty: Boolean = this.length == 0
+
+	override def hashCode: Int = this.bytes.hashCode
+
+	override def equals(o: Any): Boolean = {
+		try {
+			this.bytes == o.asInstanceOf[NodeId].bytes
+		} catch {
+			case any: Throwable => false
+		}
+	}
+
+	override def compareTo(o: NodeId): Int = {
+		this.bytes.compareTo(o.bytes)
+	}
+
+	def toShortString: String = this.bytes.toShortString
+
+	def toHexString: String = this.bytes.toHexString
+
+	override def toString: String = this.toHexString
+}
+
+object NodeId {
+
+	val empty: NodeId = new NodeId(ImmutableBytes.empty)
+
+	def apply(bytes: ImmutableBytes): NodeId = {
+		new NodeId(bytes)
+	}
+
+	def apply(bytes: Array[Byte]): NodeId = {
+		new NodeId(ImmutableBytes(bytes))
+	}
+
+	def parseHexString(s: String): NodeId = {
+		new NodeId(ImmutableBytes.parseHexString(s))
+	}
+}
+
 /**
  * 自ノードもしくは他ノードの中核的な情報をモデル化したクラスです。
  *
@@ -16,7 +65,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/12/11 19:38
  * YANAGISAWA, Kentaro
  */
-class Node(val id: ImmutableBytes, val address: InetSocketAddress) extends Serializable {
+class Node(val id: NodeId, val address: InetSocketAddress) extends Serializable {
 
 	def toEncodedBytes: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(ImmutableBytes(this.address.getAddress.getAddress))
@@ -51,7 +100,7 @@ object Node {
 
 	def apply(nodeURI: URI): Node = {
 		try {
-			val id = ImmutableBytes.parseHexString(nodeURI.getUserInfo)
+			val id = NodeId(ImmutableBytes.parseHexString(nodeURI.getUserInfo))
 			val address = InetAddress.getByName(nodeURI.getHost)
 			val port = nodeURI.getPort
 			val socketAddress = new InetSocketAddress(address, port)
@@ -78,12 +127,12 @@ object Node {
 		if (3 < items.length) {
 			val udpPort = items(1).asInt
 			val tcpPort = items(2).asInt
-			val id = items(3).bytes
+			val id = NodeId(items(3).bytes)
 			val socketAddress = new InetSocketAddress(address, udpPort)
 			new Node(id, socketAddress)
 		} else {
 			val port = items(1).asInt
-			val id = items(2).bytes
+			val id = NodeId(items(2).bytes)
 			val socketAddress = new InetSocketAddress(address, port)
 			new Node(id, socketAddress)
 		}

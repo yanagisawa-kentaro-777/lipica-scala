@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
 import java.util.Random
 
-import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, NodeManager}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -12,9 +12,9 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  */
 class RefreshTask(_nodeManager: NodeManager) extends DiscoverTask(_nodeManager) {
 
-	private def getNodeId: ImmutableBytes = {
+	private def getNodeId: NodeId = {
 		val random = new Random
-		ImmutableBytes.createRandom(random, 64)
+		NodeId(ImmutableBytes.createRandom(random, 64))
 	}
 
 	override def run(): Unit = discover(getNodeId, 0, Seq.empty)

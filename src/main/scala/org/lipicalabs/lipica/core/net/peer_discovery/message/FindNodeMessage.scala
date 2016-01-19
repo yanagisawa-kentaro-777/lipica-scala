@@ -2,8 +2,9 @@ package org.lipicalabs.lipica.core.net.peer_discovery.message
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.net.transport.TransportMessage
-import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,15 +13,15 @@ import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
  */
 class FindNodeMessage extends TransportMessage {
 
-	private var _target: ImmutableBytes = null
-	def target: ImmutableBytes = this._target
+	private var _target: NodeId = null
+	def target: NodeId = this._target
 
 	private var _expiration: Long = (System.currentTimeMillis / 1000L) + 60L
 	def expiration: Long = this._expiration
 
 	override def parse(data: Array[Byte]): Unit = {
 		val items = RBACCodec.Decoder.decode(data).right.get.items
-		this._target = items.head.bytes
+		this._target = NodeId(items.head.bytes)
 		this._expiration = items(1).asPositiveLong
 	}
 
@@ -33,7 +34,7 @@ class FindNodeMessage extends TransportMessage {
 
 object FindNodeMessage {
 
-	def create(target: ImmutableBytes, privateKey: ECKey): FindNodeMessage = {
+	def create(target: NodeId, privateKey: ECKey): FindNodeMessage = {
 		val expiration = (System.currentTimeMillis / 1000L) + 60L
 
 		val encodedTarget = RBACCodec.Encoder.encode(target)

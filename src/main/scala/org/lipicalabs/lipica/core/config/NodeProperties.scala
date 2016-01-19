@@ -13,7 +13,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.net.peer_discovery.Node
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
@@ -57,7 +57,7 @@ trait NodePropertiesLike {
 
 	def networkId: Int
 	def privateKey: ECKey
-	def nodeId: ImmutableBytes
+	def nodeId: NodeId
 	def externalAddress: String
 	def bindAddress: String
 	def bindPort: Int
@@ -213,7 +213,7 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 	 * 「ネットワーク」内における自ノードの一意識別子です。
 	 * その内容は、自ノードの秘密鍵に対応する公開鍵です。
 	 */
-	override def nodeId: ImmutableBytes = ImmutableBytes(privateKey.getNodeId)
+	override def nodeId: NodeId = NodeId(privateKey.getNodeId)
 
 	/**
 	 * 他ノードに対して宣伝する、自ノードの体外部アドレスです。
@@ -342,7 +342,7 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 
 	override def isPublicHomeNode: Boolean = true
 
-	override def nodeId: ImmutableBytes = ImmutableBytes(privateKey.getNodeId)
+	override def nodeId: NodeId = NodeId(privateKey.getNodeId)
 
 	override def cacheFlushMemory: Double = 0.7d
 

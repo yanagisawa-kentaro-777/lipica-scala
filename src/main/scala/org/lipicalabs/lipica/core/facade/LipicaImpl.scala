@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
 import org.lipicalabs.lipica.core.facade.components.{AdminInfo, ComponentsMotherboard}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
-import org.lipicalabs.lipica.core.net.peer_discovery.{Node, PeerInfo}
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.endpoint.PeerServer
 import org.lipicalabs.lipica.core.facade.submit.{TransactionExecutor, TransactionTask}
@@ -78,7 +78,7 @@ class LipicaImpl extends Lipica {
 	override def connect(node: Node) = connect(node.address, node.id)
 
 	private val connectExecutor = Executors.newCachedThreadPool(new CountingThreadFactory("front-connector"))
-	override def connect(address: InetSocketAddress, remoteNodeId: ImmutableBytes): Unit = {
+	override def connect(address: InetSocketAddress, remoteNodeId: NodeId): Unit = {
 		this.connectExecutor.submit(new Runnable {
 			override def run(): Unit = {
 				worldManager.client.connect(address, remoteNodeId)

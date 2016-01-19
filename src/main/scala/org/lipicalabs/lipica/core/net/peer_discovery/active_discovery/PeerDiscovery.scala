@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.net.p2p.Peer
-import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, PeerInfo}
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
@@ -92,7 +92,7 @@ class PeerDiscovery {
 					val trimmed = each.trim
 					val uri = URI.create(trimmed)
 
-					Option(new PeerInfo(new InetSocketAddress(InetAddress.getByName(uri.getHost), uri.getPort), ImmutableBytes.parseHexString(uri.getUserInfo)))
+					Option(new PeerInfo(new InetSocketAddress(InetAddress.getByName(uri.getHost), uri.getPort), NodeId.parseHexString(uri.getUserInfo)))
 				} catch {
 					case e: UnknownHostException =>
 						ErrorLogger.logger.warn("<PeerDiscovery> Unknown host.", e)

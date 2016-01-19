@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.{ChannelManager, Channel}
-import org.lipicalabs.lipica.core.net.peer_discovery.{NodeStatistics, NodeManager, NodeHandler}
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, NodeStatistics, NodeManager, NodeHandler}
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoverListener
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, UtilConsts, ImmutableBytes}
 import org.slf4j.LoggerFactory
@@ -168,7 +168,7 @@ class SyncManager {
 		}
 	}
 
-	def reportInvalidBlock(nodeId: ImmutableBytes): Unit = {
+	def reportInvalidBlock(nodeId: NodeId): Unit = {
 		this.pool.getByNodeId(nodeId).foreach {
 			peer => {
 				logger.info("<SyncManager> Banning a peer: Peer %s: Invalid block received.".format(peer.nodeIdShort))

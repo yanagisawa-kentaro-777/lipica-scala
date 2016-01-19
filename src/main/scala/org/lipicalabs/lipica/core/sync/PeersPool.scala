@@ -4,8 +4,8 @@ import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 
 import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.core.net.channel.Channel
-import org.lipicalabs.lipica.core.net.peer_discovery.Node
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
+import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -21,11 +21,11 @@ class PeersPool {
 	import PeersPool._
 	import scala.collection.JavaConversions._
 
-	private val activePeers: mutable.Map[ImmutableBytes, Channel] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Channel])
+	private val activePeers: mutable.Map[NodeId, Channel] = mapAsScalaConcurrentMap(new ConcurrentHashMap[NodeId, Channel])
 	private val bannedPeers: mutable.Map[Channel, BanReason] = mapAsScalaConcurrentMap(new ConcurrentHashMap[Channel, BanReason])
-	private val disconnectHits: mutable.Map[ImmutableBytes, Int] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Int])
-	private val bans: mutable.Map[ImmutableBytes, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Long])
-	private val pendingConnections: mutable.Map[ImmutableBytes, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[ImmutableBytes, Long])
+	private val disconnectHits: mutable.Map[NodeId, Int] = mapAsScalaConcurrentMap(new ConcurrentHashMap[NodeId, Int])
+	private val bans: mutable.Map[NodeId, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[NodeId, Long])
+	private val pendingConnections: mutable.Map[NodeId, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[NodeId, Long])
 
 	private def lipica: Lipica = Lipica.instance
 
@@ -70,7 +70,7 @@ class PeersPool {
 			if (this.activePeers.isEmpty) {
 				return None
 			}
-			val best: (ImmutableBytes, Channel) = this.activePeers.reduceLeft {
+			val best: (NodeId, Channel) = this.activePeers.reduceLeft {
 				(accum, each) => if (accum._2.totalDifficulty < each._2.totalDifficulty) each else accum
 			}
 			Option(best._2)
@@ -80,7 +80,7 @@ class PeersPool {
 	/**
 	 * active peerの中から、指定されたIDを持つノードを選択して返します。
 	 */
-	def getByNodeId(nodeId: ImmutableBytes): Option[Channel] = this.activePeers.get(nodeId)
+	def getByNodeId(nodeId: NodeId): Option[Channel] = this.activePeers.get(nodeId)
 
 	def onDisconnect(peer: Channel): Unit = {
 		if ((peer eq null) || isNullOrEmpty(peer.nodeId)) {
@@ -152,8 +152,8 @@ class PeersPool {
 	/**
 	 * このインスタンスにとって既知であるノードの集合を返します。
 	 */
-	def nodesInUse: Set[ImmutableBytes] = {
-		var result: Set[ImmutableBytes] =
+	def nodesInUse: Set[NodeId] = {
+		var result: Set[NodeId] =
 			this.activePeers.synchronized {
 				this.activePeers.values.map(_.nodeId).toSet
 			}
@@ -163,7 +163,7 @@ class PeersPool {
 		result
 	}
 
-	def isInUse(nodeId: ImmutableBytes): Boolean = nodesInUse.contains(nodeId)
+	def isInUse(nodeId: NodeId): Boolean = nodesInUse.contains(nodeId)
 
 	/**
 	 * すべてのピアについて、状態を指定されたものに遷移させようとします。
@@ -214,9 +214,9 @@ class PeersPool {
 		//TODO 未実装。
 	}
 
-	def bannedPeersMap: Map[ImmutableBytes, BanReason] = {
+	def bannedPeersMap: Map[NodeId, BanReason] = {
 		this.synchronized {
-			this.bannedPeers.map(entry => entry._1.nodeId -> entry._2).toMap
+			this.bannedPeers.map(entry => (entry._1.nodeId, entry._2)).toMap
 		}
 	}
 
@@ -224,7 +224,7 @@ class PeersPool {
 	 * 時間が経過したban対象を赦免し、active peersに戻します。
 	 */
 	private def releaseBans(): Unit = {
-		var released: Set[ImmutableBytes] = Set.empty
+		var released: Set[NodeId] = Set.empty
 		this.bans.synchronized {
 			released = getTimeoutExceeded(this.bans)
 			this.activePeers.synchronized {
@@ -262,11 +262,11 @@ object PeersPool {
 	private val DefaultBanTimeout = TimeUnit.MINUTES.toMillis(1)
 	private val ConnectionTimeout = TimeUnit.SECONDS.toMillis(30)
 
-	private def isNullOrEmpty(nodeId: ImmutableBytes): Boolean = {
+	private def isNullOrEmpty(nodeId: NodeId): Boolean = {
 		(nodeId eq null) || nodeId.isEmpty
 	}
 
-	private def getTimeoutExceeded(map: mutable.Map[ImmutableBytes, Long]): Set[ImmutableBytes] = {
+	private def getTimeoutExceeded(map: mutable.Map[NodeId, Long]): Set[NodeId] = {
 		//渡された連想配列の要素を時刻として解釈し、すでにその時刻が到来している要素の集合を返す。
 		val now = System.currentTimeMillis
 		map.withFilter(entry => entry._2 <= now).map(entry => entry._1).toSet

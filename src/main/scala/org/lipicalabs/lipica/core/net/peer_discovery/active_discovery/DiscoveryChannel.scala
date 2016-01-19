@@ -12,6 +12,7 @@ import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel, LipicaChan
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc0, LpcHandler}
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
 import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler}
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -38,7 +39,7 @@ class DiscoveryChannel {
 	def getHelloHandshake: HelloMessage = this.p2pHandler.handshakeHelloMessage
 	def getStatusHandshake: StatusMessage = this.lpcHandler.getHandshakeStatusMessage
 
-	def connect(host: InetAddress, port: Int, remoteNodeId: ImmutableBytes): Unit = {
+	def connect(host: InetAddress, port: Int, remoteNodeId: NodeId): Unit = {
 		val workerGroup: EventLoopGroup = new NioEventLoopGroup
 		this.worldManager.listener.trace("<DiscoveryChannel> Connecting to [%s]:%d".format(host, port))
 		try {

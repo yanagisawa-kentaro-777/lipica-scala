@@ -10,6 +10,7 @@ import io.netty.handler.logging.LoggingHandler
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
@@ -25,7 +26,7 @@ class PeerServer {
 
 	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
 
-	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer(ImmutableBytes.empty)
+	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer(NodeId.empty)
 
 	def start(address: InetSocketAddress): Unit = {
 		val factory = new CountingThreadFactory("peer-server")

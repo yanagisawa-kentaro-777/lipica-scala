@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory
  * 2015/12/13 15:47
  * YANAGISAWA, Kentaro
  */
-class LipicaChannelInitializer(val nodeId: ImmutableBytes) extends ChannelInitializer[NioSocketChannel] {
+class LipicaChannelInitializer(val nodeId: NodeId) extends ChannelInitializer[NioSocketChannel] {
 
 	import LipicaChannelInitializer._
 
