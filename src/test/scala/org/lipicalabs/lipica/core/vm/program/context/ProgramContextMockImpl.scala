@@ -14,50 +14,50 @@ import org.lipicalabs.lipica.core.vm.DataWord
  */
 class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends ProgramContext {
 
-	private var repository: Repository = new RepositoryDummy
-	private var ownerAddress = Address.parseHexString("cd2a3d9f938e13cd947ec05abc7fe734df8dd826")
-	private val contractAddress = Address.parseHexString("471fd3ad3e9eeadeec4608b92d16ce6b500704cc")
-	private var manaLimit: Long = 1000000
+	private var _repository: Repository = new RepositoryDummy
+	private var _ownerAddress = Address.parseHexString("cd2a3d9f938e13cd947ec05abc7fe734df8dd826")
+	private val _contractAddress = Address.parseHexString("471fd3ad3e9eeadeec4608b92d16ce6b500704cc")
+	private var _manaLimit: Long = 1000000
 
-	this.repository.createAccount(this.ownerAddress)
-	this.repository.createAccount(this.contractAddress)
-	this.repository.saveCode(contractAddress, ImmutableBytes.parseHexString("385E60076000396000605f556014600054601e60" + "205463abcddcba6040545b51602001600a525451" + "6040016014525451606001601e52545160800160" + "28525460a052546016604860003960166000f260" + "00603f556103e75660005460005360200235"))
+	this._repository.createAccount(this._ownerAddress)
+	this._repository.createAccount(this._contractAddress)
+	this._repository.saveCode(_contractAddress, ImmutableBytes.parseHexString("385E60076000396000605f556014600054601e60" + "205463abcddcba6040545b51602001600a525451" + "6040016014525451606001601e52545160800160" + "28525460a052546016604860003960166000f260" + "00603f556103e75660005460005360200235"))
 
-	override def getOwnerAddress: DataWord = {
-		DataWord(ownerAddress.bytes)
+	override def ownerAddress: DataWord = {
+		DataWord(_ownerAddress.bytes)
 	}
 
-	override def getBalance: DataWord = {
+	override def balance: DataWord = {
 		val balance = ImmutableBytes.parseHexString("0DE0B6B3A7640000")
 		DataWord(balance)
 	}
 
-	override def getOriginAddress: DataWord = {
+	override def originAddress: DataWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("horse".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
 		DataWord(addr.bytes)
 	}
 
-	override def getCallerAddress: DataWord = {
+	override def callerAddress: DataWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("monkey".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
 		DataWord(addr.bytes)
 	}
 
-	override def getMinManaPrice: DataWord = {
+	override def manaPrice: DataWord = {
 		val minManaPrice = ImmutableBytes.parseHexString("09184e72a000")
 		DataWord(minManaPrice)
 	}
 
-	override def getMana: DataWord = {
-		DataWord(manaLimit)
+	override def manaLimit: DataWord = {
+		DataWord(_manaLimit)
 	}
 
 	def setMana(v: Long) {
-		this.manaLimit = v
+		this._manaLimit = v
 	}
 
-	override def getCallValue: DataWord = {
+	override def callValue: DataWord = {
 		val balance= ImmutableBytes.parseHexString("0DE0B6B3A7640000")
 		DataWord(balance)
 	}
@@ -73,7 +73,7 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 		DataWord(data)
 	}
 
-	override def getDataSize: DataWord = {
+	override def dataSize: DataWord = {
 		if (msgData == null || msgData.length == 0) return DataWord(new Array[Byte](32))
 		val size: Int = msgData.length
 		DataWord(size)
@@ -90,49 +90,49 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 		ImmutableBytes(data)
 	}
 
-	override def getParentHash: DataWord = {
+	override def parentHash: DataWord = {
 		val prevHash = ImmutableBytes.parseHexString("961CB117ABA86D1E596854015A1483323F18883C2D745B0BC03E87F146D2BB1C")
 		DataWord(prevHash)
 	}
 
-	override def getCoinbase: DataWord = {
+	override def coinbase: DataWord = {
 		val coinBase = ImmutableBytes.parseHexString("E559DE5527492BCB42EC68D07DF0742A98EC3F1E")
 		DataWord(coinBase)
 	}
 
-	override def getTimestamp: DataWord = {
+	override def timestamp: DataWord = {
 		val timestamp: Long = 1401421348
 		DataWord(timestamp)
 	}
 
-	override def getBlockNumber: DataWord = {
+	override def blockNumber: DataWord = {
 		val number: Long = 33
 		DataWord(number)
 	}
 
-	override def getDifficulty: DataWord = {
+	override def difficulty: DataWord = {
 		val difficulty = ImmutableBytes.parseHexString("3ED290")
 		DataWord(difficulty)
 	}
 
-	override def getBlockManaLimit: DataWord = {
-		DataWord(this.manaLimit)
+	override def blockManaLimit: DataWord = {
+		DataWord(this._manaLimit)
 	}
 
 	def setManaLimit(v: Long) {
-		this.manaLimit = v
+		this._manaLimit = v
 	}
 
 	def setOwnerAddress(ownerAddress: Address) {
-		this.ownerAddress = ownerAddress
+		this._ownerAddress = ownerAddress
 	}
 
 	override def byTransaction: Boolean = {
 		true
 	}
 
-	override def getRepository: Repository = {
-		this.repository
+	override def repository: Repository = {
+		this._repository
 	}
 
 	override def blockStore: BlockStore = {
@@ -140,10 +140,10 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 	}
 
 	def setRepository(repository: Repository) {
-		this.repository = repository
+		this._repository = repository
 	}
 
-	override def getCallDepth: Int = {
+	override def callDepth: Int = {
 		0
 	}
 }

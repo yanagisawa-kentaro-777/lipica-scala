@@ -680,7 +680,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 3).foreach {
 				_ => vm.step(program)
 			}
-			val value = program.storage.getStorageValue(kernel.Address(invoke.getOwnerAddress.getDataWithoutLeadingZeros), DataWord(expectedKey)).get
+			val value = program.storage.getStorageValue(kernel.Address(invoke.ownerAddress.getDataWithoutLeadingZeros), DataWord(expectedKey)).get
 			value.data.toHexString mustEqual expectedValue
 		}
 	}

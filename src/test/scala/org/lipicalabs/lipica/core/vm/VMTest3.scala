@@ -55,7 +55,7 @@ class VMTest3 extends Specification with BeforeExample {
 
 			val pi = new ProgramContextMockImpl(null)
 			pi.setOwnerAddress(contractAddr)
-			val repository = pi.getRepository
+			val repository = pi.repository
 
 			try {
 				repository.createAccount(callerAddr)

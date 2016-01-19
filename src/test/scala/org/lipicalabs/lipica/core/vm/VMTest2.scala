@@ -29,8 +29,8 @@ class VMTest2 extends Specification with BeforeExample {
 		invoke = new ProgramContextMockImpl(msgData)
 		invoke.setOwnerAddress(ownerAddress)
 
-		invoke.getRepository.createAccount(ownerAddress)
-		invoke.getRepository.addBalance(ownerAddress, BigInt(1000L))
+		invoke.repository.createAccount(ownerAddress)
+		invoke.repository.addBalance(ownerAddress, BigInt(1000L))
 	}
 
 	"calldatasize (1)" should {

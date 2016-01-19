@@ -16,44 +16,61 @@ trait ProgramContext {
 	/**
 	 * 現在実行中コード自身のアドレス。
 	 * （コントラクト作成の場合も、コントラきうと呼び出しの場合も。）
+	 *
+	 * Address op.
 	 */
-	def getOwnerAddress: DataWord
+	def ownerAddress: DataWord
 
 	/**
 	 * このコード実行に至る一連の処理の
 	 * 最初のトランザクションの実行者のアドレス。（コントラクトではあり得ない。）
+	 *
+	 * Origin op.
 	 */
-	def getOriginAddress: DataWord
+	def originAddress: DataWord
 
 	/**
 	 * このコードを呼び出したトランザクション実行者もしくはコントラクトのアドレス。
+	 *
+	 * Caller op.
 	 */
-	def getCallerAddress: DataWord
+	def callerAddress: DataWord
 
 	/**
 	 * コントラクト自身の残高。
+	 *
+	 * Balance op.
 	 */
-	def getBalance: DataWord
+	def balance: DataWord
 
 	/**
 	 * 現在の実行コンテクストのマナ価格。
+	 *
+	 * ManaPrice op.
 	 */
-	def getMinManaPrice: DataWord
+	def manaPrice: DataWord
 
 	/**
 	 * 現在の実行コンテクストのマナ消費可能容量。
+	 * （トランザクションにおける上限。）
+	 *
+	 * Mana op.
 	 */
-	def getMana: DataWord
+	def manaLimit: DataWord
 
 	/**
 	 * 実行対象コントラクトに振り込まれる金額。
+	 *
+	 * CallValue op.
 	 */
-	def getCallValue: DataWord
+	def callValue: DataWord
 
 	/**
 	 * 実行時に渡されたデータ長。
+	 *
+	 * CallDataSize op.
 	 */
-	def getDataSize: DataWord
+	def dataSize: DataWord
 
 	/**
 	 * 指定されたオフセットから、１ワード分のデータをスタックに格納します。
@@ -67,41 +84,51 @@ trait ProgramContext {
 
 	/**
 	 * このブロックの直前ブロックのハッシュ値を返します。
+	 *
+	 * PrevHash op.
 	 */
-	def getParentHash: DataWord
+	def parentHash: DataWord
 
 	/**
 	 * このブロックの採掘者のアドレスを返します。
+	 *
+	 * Coinbase op.
 	 */
-	def getCoinbase: DataWord
+	def coinbase: DataWord
 
 	/**
 	  * このブロックの生成された日時（UNIX時刻）を返します。
+	 *
+	 * Timestamp op.
 	  */
-	def getTimestamp: DataWord
+	def timestamp: DataWord
 
 	/**
 	 * このブロックの番号を返します。
+	 *
+	 * BlockNumber op.
 	 */
-	def getBlockNumber: DataWord
+	def blockNumber: DataWord
 
 	/**
 	 * このブロックのDifficulty値を返します。
+	 *
+	 * Difficulty op.
 	 */
-	def getDifficulty: DataWord
+	def difficulty: DataWord
 
 	/**
 	 * ブロックにおけるマナ上限を返します。
+	 *
+	 * ManaLimit op.
 	 */
-	def getBlockManaLimit: DataWord
+	def blockManaLimit: DataWord
 
-	def byTransaction: Boolean
+	def callDepth: Int
 
-
-	def getCallDepth: Int
-
-	def getRepository: RepositoryLike
+	def repository: RepositoryLike
 
 	def blockStore: BlockStore
 
+	def byTransaction: Boolean
 }

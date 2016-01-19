@@ -38,13 +38,13 @@ class ProgramTrace(private val programContext: ProgramContext) {
 	private var contractAddress: String = null
 
 	if (NodeProperties.CONFIG.vmTrace && (programContext ne null)) {
-		this.contractAddress = programContext.getOwnerAddress.last20Bytes.toHexString
+		this.contractAddress = programContext.ownerAddress.last20Bytes.toHexString
 		getContractDetails(programContext) match {
 			case Some(contractDetails) =>
 				this.storageSize = contractDetails.storageSize
 				if (this.storageSize <= NodeProperties.CONFIG.vmTraceInitStorageLimit) {
 					this.fullStorage = true
-					val address = programContext.getOwnerAddress.last20Bytes.toHexString
+					val address = programContext.ownerAddress.last20Bytes.toHexString
 					contractDetails.storageContent.foreach { entry => {
 						val (key, value) = entry
 						if ((key eq null) || (value eq null)) {
@@ -90,11 +90,11 @@ class ProgramTrace(private val programContext: ProgramContext) {
 	}
 
 	private def getContractDetails(programContext: ProgramContext): Option[ContractDetails] = {
-		val repository = programContext.getRepository match {
+		val repository = programContext.repository match {
 			case track: RepositoryTrackLike => track.originalRepository
 			case repos: Repository => repos
 		}
-		val address = programContext.getOwnerAddress.last20Bytes
+		val address = programContext.ownerAddress.last20Bytes
 		repository.getContractDetails(address)
 	}
 

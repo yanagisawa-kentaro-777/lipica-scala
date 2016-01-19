@@ -15,48 +15,28 @@ import org.lipicalabs.lipica.core.vm.DataWord
  */
 class ProgramContextImpl private(
 	//トランザクションもしくはコントラクトに関する情報。
-	private val address: DataWord,
-	private val origin: DataWord,
-	private val caller: DataWord,
-	private val balance: DataWord,
-	private val manaPrice: DataWord,
-	private val mana: DataWord,
-	private val callValue: DataWord,
+	override val ownerAddress: DataWord,
+	override val originAddress: DataWord,
+	override val callerAddress: DataWord,
+	override val balance: DataWord,
+	override val manaPrice: DataWord,
+	override val manaLimit: DataWord,
+	override val callValue: DataWord,
 	private val messageData: ImmutableBytes,
 	//最終ブロックに関する情報。
-	private val parentHash: DataWord,
-	private val coinbase: DataWord,
-	private val timestamp: DataWord,
-	private val blockNumber: DataWord,
-	private val difficulty: DataWord,
-	private val blockManaLimit: DataWord,
+	override val parentHash: DataWord,
+	override val coinbase: DataWord,
+	override val timestamp: DataWord,
+	override val blockNumber: DataWord,
+	override val difficulty: DataWord,
+	override val blockManaLimit: DataWord,
 
-	private val repository: RepositoryLike,
-	private val callDepth: Int,
+	override val repository: RepositoryLike,
+	override val callDepth: Int,
 	override val blockStore: BlockStore,
 	override val byTransaction: Boolean
 ) extends ProgramContext {
 
-	/** ADDRESS op. */
-	override def getOwnerAddress = this.address
-
-	/** BALANCE op. */
-	override def getBalance = this.balance
-
-	/** ORIGIN op. */
-	override def getOriginAddress = this.origin
-
-	/** CALLER op. */
-	override def getCallerAddress = this.caller
-
-	/** MANAPRICE op. */
-	override def getMinManaPrice = this.manaPrice
-
-	/** MANA op. */
-	override def getMana = this.mana
-
-	/** CALLVALUE op. */
-	override def getCallValue = this.callValue
 
 	private val MaxMessageData = BigInt(Int.MaxValue)
 
@@ -81,7 +61,7 @@ class ProgramContextImpl private(
 	}
 
 	/** CALLDATASIZE op. */
-	override def getDataSize: DataWord = {
+	override def dataSize: DataWord = {
 		if (ByteUtils.isNullOrEmpty(this.messageData)) return DataWord.Zero
 		DataWord(this.messageData.length)
 	}
@@ -105,31 +85,9 @@ class ProgramContextImpl private(
 		ImmutableBytes(result)
 	}
 
-	/** PREVHASH op. */
-	override def getParentHash = this.parentHash
-
-	/** COINBASE op. */
-	override def getCoinbase = this.coinbase
-
-	/** TIMESTAMP op. */
-	override def getTimestamp = this.timestamp
-
-	/** NUMBER op. */
-	override def getBlockNumber = this.blockNumber
-
-	/** DIFFICULTY op. */
-	override def getDifficulty = this.difficulty
-
-	/** MANALIMIT op. */
-	override def getBlockManaLimit = this.blockManaLimit
-
-	override def getCallDepth: Int = this.callDepth
-
-	override def getRepository = this.repository
-
 	override def toString: String = {
 		"ProgramInvokeImpl{address=%s, origin=%s, caller=%s, balance=%s, mana=%s, manaPrice=%s, callValue=%s, messageData=%s, parentHash=%s, coinbase=%s, timestamp=%s, blockNumber=%s, difficulty=%s, blockManaLimit=%s, byTransaction=%s, callDepth=%s}".format(
-			this.address, this.origin, this.caller, this.balance, this.mana, this.manaPrice, this.callValue, this.messageData, this.parentHash, this.coinbase, this.timestamp, this.blockNumber, this.difficulty, this.blockManaLimit, this.byTransaction, this.callDepth
+			this.ownerAddress, this.originAddress, this.callerAddress, this.balance, this.manaLimit, this.manaPrice, this.callValue, this.messageData, this.parentHash, this.coinbase, this.timestamp, this.blockNumber, this.difficulty, this.blockManaLimit, this.byTransaction, this.callDepth
 		)
 	}
 
@@ -165,7 +123,7 @@ object ProgramContextImpl {
 		blockStore: BlockStore
 	): ProgramContextImpl = {
 		new ProgramContextImpl(
-			address = address, origin = origin, caller = caller, balance = balance, manaPrice = manaPrice, mana = mana, callValue = callValue, messageData = messageData,
+			ownerAddress = address, originAddress = origin, callerAddress = caller, balance = balance, manaPrice = manaPrice, manaLimit = mana, callValue = callValue, messageData = messageData,
 			parentHash = parentHash, coinbase = coinbase, timestamp = timestamp, blockNumber = blockNumber, difficulty = difficulty, blockManaLimit = blockManaLimit,
 			repository = repository, callDepth = callDepth, blockStore = blockStore, byTransaction = false
 		)
@@ -190,8 +148,8 @@ object ProgramContextImpl {
 		blockStore: BlockStore
 	): ProgramContextImpl = {
 		new ProgramContextImpl(
-			address = DataWord(address.bytes), origin = DataWord(origin.bytes), caller = DataWord(caller.bytes),
-			balance = DataWord(balance), manaPrice = DataWord(manaPrice.bytes), mana = DataWord(txManaLimit.bytes),
+			ownerAddress = DataWord(address.bytes), originAddress = DataWord(origin.bytes), callerAddress = DataWord(caller.bytes),
+			balance = DataWord(balance), manaPrice = DataWord(manaPrice.bytes), manaLimit = DataWord(txManaLimit.bytes),
 			callValue = DataWord(callValue.bytes), messageData = messageData,
 			parentHash = DataWord(parentHash.bytes), coinbase = DataWord(coinbase.bytes), timestamp = DataWord(timestamp),
 			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty.bytes), blockManaLimit = DataWord(blockManaLimit.bytes),
