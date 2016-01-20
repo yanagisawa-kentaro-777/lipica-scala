@@ -1,8 +1,8 @@
 package org.lipicalabs.lipica.core.sync
 
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.kernel._
@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{BlockQueueImpl, HashStoreImpl, BlockQueue, HashStore}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.slf4j.LoggerFactory
 
@@ -30,10 +30,10 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	/**
 	 * ノード単位でグローバルなシングルトンコンポーネント類。
 	 */
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
-	private def blockchain: Blockchain = worldManager.blockchain
-	private def syncManager: SyncManager = worldManager.syncManager
-	private def headerValidator: BlockHeaderValidator = worldManager.blockHeaderValidator
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def blockchain: Blockchain = componentsMotherboard.blockchain
+	private def syncManager: SyncManager = componentsMotherboard.syncManager
+	private def headerValidator: BlockHeaderValidator = componentsMotherboard.blockHeaderValidator
 
 	/**
 	 * 他ノードから受領したブロックハッシュ値を格納する保管庫です。
@@ -63,7 +63,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 			override def run(): Unit = consumeQueue()
 		}
 		//単一の常駐スレッド上で実行する。
-		Executors.newSingleThreadExecutor(new CountingThreadFactory("sync-queue")).execute(task)
+		ExecutorPool.instance.syncQueue.execute(task)
 	}
 
 	/**

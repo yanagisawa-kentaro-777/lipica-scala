@@ -4,8 +4,8 @@ import java.net.InetAddress
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel._
-import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel, LipicaChannelInitializer}
@@ -15,7 +15,6 @@ import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler}
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -28,7 +27,7 @@ class DiscoveryChannel {
 
 	private var _peerDiscoveryMode: Boolean = false
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val messageQueue: MessageQueue = new MessageQueue
 	private val p2pHandler: P2PHandler = new P2PHandler(this.messageQueue)
@@ -40,8 +39,8 @@ class DiscoveryChannel {
 	def getStatusHandshake: StatusMessage = this.lpcHandler.getHandshakeStatusMessage
 
 	def connect(host: InetAddress, port: Int, remoteNodeId: NodeId): Unit = {
-		val workerGroup: EventLoopGroup = new NioEventLoopGroup
-		this.worldManager.listener.trace("<DiscoveryChannel> Connecting to [%s]:%d".format(host, port))
+		val workerGroup = ExecutorPool.instance.discoveryGroup
+		this.componentsMotherboard.listener.trace("<DiscoveryChannel> Connecting to [%s]:%d".format(host, port))
 		try {
 			val b = (new Bootstrap).group(workerGroup).channel(classOf[NioSocketChannel]).
 				option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE).

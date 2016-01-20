@@ -20,6 +20,10 @@
 ３、整備
 ・BlockのcumulativeDifficultyとは？
 
+・ThreadPoolExecutorのプールを実現する。
+・スレッド類のgracefulな終了を実現する。
+
+
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
 ・ContractDetailsCacheImplとか、どうにかならないのか。
@@ -29,7 +33,6 @@
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
 
-・スレッド類のgracefulな終了を実現する。
 ・フロントエンドへの逆呼び出しを廃絶する。
 ・永続化されたデータのプロセス引継ぎを実現する。
 

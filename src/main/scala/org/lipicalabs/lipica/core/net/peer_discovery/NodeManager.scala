@@ -4,8 +4,9 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.util
 import java.util.Comparator
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
-import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
@@ -15,7 +16,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.discover._
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.NodeTable
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PingMessage, PongMessage}
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageHandler
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
@@ -35,7 +36,7 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 	import JavaConversions._
 	import NodeManager._
 
-	def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	val peerConnectionExaminer: PeerConnectionExaminer = new PeerConnectionExaminer
 
@@ -70,7 +71,7 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 			return
 		}
 		this.isInitDoneRef.set(true)
-		val executor = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("listener-processor"))
+		val executor = ExecutorPool.instance.listenerProcessor
 		executor.scheduleAtFixedRate(new Runnable {
 			override def run(): Unit = {
 				processListeners()
@@ -158,7 +159,7 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 					if (logger.isDebugEnabled) {
 						logger.debug("<NodeManager> New node: " + result)
 					}
-					this.worldManager.listener.onNodeDiscovered(result.node)
+					this.componentsMotherboard.listener.onNodeDiscovered(result.node)
 					result
 			}
 		}

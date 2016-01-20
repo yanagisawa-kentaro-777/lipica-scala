@@ -63,7 +63,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _isHandshakeDone: Boolean = false
 	def isHandshakeDone: Boolean = this._isHandshakeDone
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private var _p2pMessageFactory: MessageFactory = null
 	def setP2PMessageFactory(v: MessageFactory): Unit = this._p2pMessageFactory = v
@@ -115,7 +115,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 
 	override def encode(ctx: ChannelHandlerContext, message: Message, out: ByteBuf): Unit = {
 		val output = "To: %s, Sending: %s".format(ctx.channel.remoteAddress, message)
-		worldManager.listener.trace(output)
+		componentsMotherboard.listener.trace(output)
 		loggerNet.info(output)
 
 		val encoded = message.toEncodedBytes
@@ -265,7 +265,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 				messageOption.foreach {
 					message => {
 						loggerNet.info("<MessageCodec> From: %s, Received: %s".format(ctx.channel.remoteAddress, message))
-						worldManager.listener.onReceiveMessage(message)
+						componentsMotherboard.listener.onReceiveMessage(message)
 
 						out.add(message)
 						this._channel.nodeStatistics.transportInMessages.add

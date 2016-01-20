@@ -21,8 +21,8 @@ class LipicaChannelInitializer(val nodeId: NodeId) extends ChannelInitializer[Ni
 
 	import LipicaChannelInitializer._
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
-	private def channelManager: ChannelManager = worldManager.channelManager
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def channelManager: ChannelManager = componentsMotherboard.channelManager
 
 
 	private var _peerDiscoveryMode: Boolean = false

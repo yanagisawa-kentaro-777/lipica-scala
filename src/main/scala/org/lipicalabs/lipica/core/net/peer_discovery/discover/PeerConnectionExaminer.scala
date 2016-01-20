@@ -4,10 +4,11 @@ import java.util
 import java.util.{Collections, Comparator}
 import java.util.concurrent._
 
+import org.lipicalabs.lipica.core.concurrent.{ExecutorPool, CountingThreadFactory}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeHandler
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, UtilConsts}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, UtilConsts}
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -23,7 +24,7 @@ import scala.collection.{JavaConversions, mutable}
 class PeerConnectionExaminer {
 	import PeerConnectionExaminer._
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val connectedCandidates: mutable.Map[NodeHandler, NodeHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[NodeHandler, NodeHandler])
 
@@ -32,7 +33,7 @@ class PeerConnectionExaminer {
 	})
 	private val peerConnectionPool = new ThreadPoolExecutor(ConnectThreads, ConnectThreads, 0L, TimeUnit.SECONDS, queue, new CountingThreadFactory("conn-examiner"))
 
-	private val reconnectTimer = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("reconnect-timer"))
+	private val reconnectTimer = ExecutorPool.instance.reconnectTimer
 	private var _reconnectPeersCount = 0
 
 	class ConnectTask(val nodeHandler: NodeHandler) extends Runnable {
@@ -45,7 +46,7 @@ class PeerConnectionExaminer {
 				//
 				//接続を試行し、切断されるまでブロックする。
 				val node = this.nodeHandler.node
-				worldManager.client.connect(node.address, node.id, discoveryMode = true)
+				componentsMotherboard.client.connect(node.address, node.id, discoveryMode = true)
 				if (logger.isDebugEnabled) {
 					logger.debug("<PeerConnectionExaminer> Terminated node connection " + this.nodeHandler)
 				}

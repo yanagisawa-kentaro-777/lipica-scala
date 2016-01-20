@@ -15,17 +15,17 @@ import org.scalatra._
 class RestApiServlet extends ScalatraServlet {
 
 	get("/:apiVersion/node/status") {
-		val worldManager = ComponentsMotherboard.instance
-		val startedUnixMillis = worldManager.adminInfo.startupTimeStamp
+		val componentsMotherboard = ComponentsMotherboard.instance
+		val startedUnixMillis = componentsMotherboard.adminInfo.startupTimeStamp
 		val startedTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z").format(startedUnixMillis)
 
-		val blockchain = worldManager.blockchain
+		val blockchain = componentsMotherboard.blockchain
 		val bestBlock = blockchain.bestBlock
 		val totalDifficulty = blockchain.totalDifficulty
 
-		val peersPool = worldManager.peersPool
-		val nodeManager = worldManager.nodeManager
-		val syncManager = worldManager.syncManager
+		val peersPool = componentsMotherboard.peersPool
+		val nodeManager = componentsMotherboard.nodeManager
+		val syncManager = componentsMotherboard.syncManager
 
 		val bannedPeers = peersPool.bannedPeersMap
 

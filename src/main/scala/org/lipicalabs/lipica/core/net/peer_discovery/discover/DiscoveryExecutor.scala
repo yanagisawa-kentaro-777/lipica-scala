@@ -1,10 +1,10 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover
 
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent.TimeUnit
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.KademliaOptions
-import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,8 +13,8 @@ import org.lipicalabs.lipica.core.utils.CountingThreadFactory
  */
 class DiscoveryExecutor(val nodeManager: NodeManager) {
 
-	private val discoverer = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("discoverer"))
-	private val refresher = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("refresher"))
+	private val discoverer = ExecutorPool.instance.discoverer
+	private val refresher = ExecutorPool.instance.refresher
 
 	def discover(): Unit = {
 		this.discoverer.scheduleWithFixedDelay(

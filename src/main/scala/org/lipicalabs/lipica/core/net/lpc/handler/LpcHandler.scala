@@ -24,9 +24,9 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	import LpcHandler._
 
-	protected def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
-	protected def blockchain: Blockchain = worldManager.blockchain
-	protected def syncQueue: SyncQueue = worldManager.syncQueue
+	protected def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+	protected def blockchain: Blockchain = componentsMotherboard.blockchain
+	protected def syncQueue: SyncQueue = componentsMotherboard.syncQueue
 
 	protected var _channel: Channel = null
 	def channel: Channel = this._channel
@@ -79,7 +79,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 				loggerNet.debug("<LpcHandler> Received: %s".format(message.command))
 			}
 		}
-		this.worldManager.listener.trace("<LpcHandler> Invoke: %s".format(message.command))
+		this.componentsMotherboard.listener.trace("<LpcHandler> Invoke: %s".format(message.command))
 		channel.nodeStatistics.lpcInbound.add
 
 		message.command match {
@@ -129,7 +129,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	def activate(): Unit = {
 		loggerNet.info("<LpcHandler> LPC protocol activated.")
-		this.worldManager.listener.trace("LPC protocol activated.")
+		this.componentsMotherboard.listener.trace("LPC protocol activated.")
 		sendStatus()
 	}
 
@@ -140,7 +140,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	private def onStatusReceived(message: StatusMessage, ctx: ChannelHandlerContext): Unit = {
 		this.channel.nodeStatistics.lpcHandshake(message)
-		this.worldManager.listener.onLpcStatusUpdated(this.channel.node, message)
+		this.componentsMotherboard.listener.onLpcStatusUpdated(this.channel.node, message)
 
 		if ((message.genesisHash != Blockchain.GenesisHash) || (message.protocolVersion != this.version.code)) {
 			loggerNet.info("<LpcHandler> Removing handler for %s due to protocol incompatibility.".format(ctx.channel().remoteAddress()))
@@ -201,7 +201,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 		}
 		this.blockchain.addPendingTransactions(message.transactions.toSet)
 		for (tx <- message.transactions) {
-			this.worldManager.wallet.addTransaction(tx)
+			this.componentsMotherboard.wallet.addTransaction(tx)
 		}
 	}
 

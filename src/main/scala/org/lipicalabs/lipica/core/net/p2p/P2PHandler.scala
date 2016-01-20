@@ -4,6 +4,7 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent._
 
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
@@ -14,7 +15,7 @@ import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
 import org.lipicalabs.lipica.core.net.shh.ShhHandler
 import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.net.transport.HandshakeHelper
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -38,7 +39,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 
 	private var lastPeersSent: Set[PeerInfo] = null
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private var _channel: Channel = null
 	def channel: Channel = this._channel
@@ -49,7 +50,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 	override def handlerAdded(ctx: ChannelHandlerContext): Unit = {
 		logger.info("<P2PHandler> P2P protocol activated.")
 		this.messageQueue.activate(ctx)
-		this.worldManager.listener.trace("P2P protocol activated.")
+		this.componentsMotherboard.listener.trace("P2P protocol activated.")
 		startTimers()
 	}
 
@@ -59,7 +60,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 				logger.debug("<P2PHandler> Received: %s".format(message.command))
 			}
 		}
-		this.worldManager.listener.trace("<P2PHandler> P2PHandler invoked: %s".format(message.command))
+		this.componentsMotherboard.listener.trace("<P2PHandler> P2PHandler invoked: %s".format(message.command))
 		message.command match {
 			case Hello =>
 				this.messageQueue.receiveMessage(message)
@@ -108,7 +109,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 	}
 
 	private def processPeers(ctx: ChannelHandlerContext, peersMessage: PeersMessage): Unit = {
-		this.worldManager.peerDiscovery.addPeers(peersMessage.peers)
+		this.componentsMotherboard.peerDiscovery.addPeers(peersMessage.peers)
 	}
 
 	private def sendGetPeers(): Unit = {
@@ -116,7 +117,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 	}
 
 	private def sendPeers(): Unit = {
-		val peers = this.worldManager.peerDiscovery.peers
+		val peers = this.componentsMotherboard.peerDiscovery.peers
 		if ((this.lastPeersSent ne null) && (this.lastPeersSent == peers)) {
 			logger.info("<P2PHandler> No new peers discovered. Do not answer GetPeers.")
 			return
@@ -151,8 +152,8 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 			confirmedPeer.online = false
 			confirmedPeer.addCapabilities(message.capabilities)
 
-			this.worldManager.peerDiscovery.addPeer(confirmedPeer)
-			this.worldManager.listener.onHandshakePeer(channel.node, message)
+			this.componentsMotherboard.peerDiscovery.addPeer(confirmedPeer)
+			this.componentsMotherboard.listener.onHandshakePeer(channel.node, message)
 		}
 	}
 
@@ -190,5 +191,5 @@ object P2PHandler {
 	private val logger = LoggerFactory.getLogger("net")
 	val Version: Byte = 4
 
-	private val pingTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("p2p-ping-timer"))
+	private val pingTimer: ScheduledExecutorService = ExecutorPool.instance.p2pHandlerProcessor
 }

@@ -3,15 +3,15 @@ package org.lipicalabs.lipica.core.net.endpoint
 import java.net.InetSocketAddress
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.{ChannelOption, DefaultMessageSizeEstimator}
 import io.netty.handler.logging.LoggingHandler
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -24,16 +24,15 @@ import org.slf4j.LoggerFactory
 class PeerServer {
 	import PeerServer._
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val channelInitializer: LipicaChannelInitializer = new LipicaChannelInitializer(NodeId.empty)
 
 	def start(address: InetSocketAddress): Unit = {
-		val factory = new CountingThreadFactory("peer-server")
-		val bossGroup = new NioEventLoopGroup(1, factory)
-		val workerGroup = new NioEventLoopGroup
+		val bossGroup = ExecutorPool.instance.serverBossGroup
+		val workerGroup = ExecutorPool.instance.serverWorkerGroup
 
-		this.worldManager.listener.trace("Listening on %s".format(address))
+		this.componentsMotherboard.listener.trace("Listening on %s".format(address))
 		try {
 			val b = new ServerBootstrap
 			b.group(bossGroup, workerGroup)

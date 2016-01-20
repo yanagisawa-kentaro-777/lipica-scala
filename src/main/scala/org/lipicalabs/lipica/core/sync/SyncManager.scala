@@ -1,8 +1,9 @@
 package org.lipicalabs.lipica.core.sync
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
-import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{ScheduledExecutorService, TimeUnit}
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.kernel.{Blockchain, BlockWrapper}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
@@ -10,7 +11,7 @@ import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.{ChannelManager, Channel}
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, NodeStatistics, NodeManager, NodeHandler}
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoverListener
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ErrorLogger, UtilConsts}
 import org.slf4j.LoggerFactory
 
 /**
@@ -51,17 +52,17 @@ class SyncManager {
 	private val highestKnownDifficultyRef: AtomicReference[BigInt] = new AtomicReference[BigInt](UtilConsts.Zero)
 	def highestKnownDifficulty: BigInt = this.highestKnownDifficultyRef.get
 
-	private val worker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("sync-manager"))
+	private val worker: ScheduledExecutorService = ExecutorPool.instance.syncManagerProcessor
 
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
-	private def blockchain: Blockchain = worldManager.blockchain
-	private def nodeManager: NodeManager = worldManager.nodeManager
-	private def lipicaListener: LipicaListener = worldManager.listener
-	private def channelManager: ChannelManager = worldManager.channelManager
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def blockchain: Blockchain = componentsMotherboard.blockchain
+	private def nodeManager: NodeManager = componentsMotherboard.nodeManager
+	private def lipicaListener: LipicaListener = componentsMotherboard.listener
+	private def channelManager: ChannelManager = componentsMotherboard.channelManager
 
-	def queue: SyncQueue = worldManager.syncQueue
-	def pool: PeersPool = worldManager.peersPool
+	def queue: SyncQueue = componentsMotherboard.syncQueue
+	def pool: PeersPool = componentsMotherboard.peersPool
 
 
 	def start(): Unit = {
@@ -100,7 +101,7 @@ class SyncManager {
 				}
 			}
 		}
-		Executors.newSingleThreadExecutor(new CountingThreadFactory("sync-manager-starter")).execute(task)
+		ExecutorPool.instance.syncManagerStarter.execute(task)
 	}
 
 	def addPeer(peer: Channel): Unit = {
@@ -309,7 +310,7 @@ class SyncManager {
 	}
 
 	private def startLogWorker(): Unit = {
-		Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("sync-logger")).scheduleWithFixedDelay(
+		ExecutorPool.instance.syncLogger.scheduleWithFixedDelay(
 			new Runnable {
 				override def run(): Unit = {
 					try {

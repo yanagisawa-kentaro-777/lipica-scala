@@ -2,8 +2,8 @@ package org.lipicalabs.lipica.core.facade.submit
 
 import java.util.concurrent.{Future, Executors}
 
+import org.lipicalabs.lipica.core.concurrent.CountingThreadFactory
 import org.lipicalabs.lipica.core.kernel.TransactionLike
-import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 
 /**
  * Created by IntelliJ IDEA.

@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory
 class Channel {
 	import Channel._
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
-	private def nodeManager: NodeManager = worldManager.nodeManager
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def nodeManager: NodeManager = componentsMotherboard.nodeManager
 
 	private val messageQueue: MessageQueue = new MessageQueue
 	private val messageCodec: MessageCodec = new MessageCodec

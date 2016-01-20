@@ -12,14 +12,14 @@ import org.slf4j.LoggerFactory
  * 2015/11/30 20:47
  * YANAGISAWA, Kentaro
  */
-class TransactionTask(private val tx: TransactionLike, private val worldManager: ComponentsMotherboard) extends Callable[TransactionLike] {
+class TransactionTask(private val tx: TransactionLike, private val componentsMotherboard: ComponentsMotherboard) extends Callable[TransactionLike] {
 
 	import TransactionTask._
 
 	override def call: TransactionLike = {
 		try {
 			logger.info("<TxTask> Submitting tx: %s".format(this.tx))
-			this.worldManager.channelManager.sendTransaction(this.tx)
+			this.componentsMotherboard.channelManager.sendTransaction(this.tx)
 			this.tx
 		} catch {
 			case e: Throwable =>

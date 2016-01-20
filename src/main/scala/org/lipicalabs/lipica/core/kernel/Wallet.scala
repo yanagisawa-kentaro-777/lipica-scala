@@ -31,7 +31,7 @@ class Wallet {
 
 	private var high: Long = 0
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private val listeners = new ArrayBuffer[WalletListener]
 

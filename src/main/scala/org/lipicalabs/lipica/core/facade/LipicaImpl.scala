@@ -4,6 +4,7 @@ import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.util.concurrent.{Future, Executors}
 
+import org.lipicalabs.lipica.core.concurrent.CountingThreadFactory
 import org.lipicalabs.lipica.core.crypto.digest.Digest256
 import org.lipicalabs.lipica.core.kernel.{Address160, CallTransaction, Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.NodeProperties
@@ -14,7 +15,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.endpoint.PeerServer
 import org.lipicalabs.lipica.core.facade.submit.{TransactionExecutor, TransactionTask}
-import org.lipicalabs.lipica.core.utils.{BigIntBytes, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 
@@ -27,11 +28,11 @@ import scala.annotation.tailrec
  */
 class LipicaImpl extends Lipica {
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
-	def adminInfo: AdminInfo = worldManager.adminInfo
-	def channelManager: ChannelManager = worldManager.channelManager
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+	def adminInfo: AdminInfo = componentsMotherboard.adminInfo
+	def channelManager: ChannelManager = componentsMotherboard.channelManager
 	val peerServer: PeerServer = new PeerServer
-	def programContextFactory: ProgramContextFactory = worldManager.programContextFactory
+	def programContextFactory: ProgramContextFactory = componentsMotherboard.programContextFactory
 
 	private val manaPriceTracker = new ManaPriceTracker
 
@@ -50,9 +51,9 @@ class LipicaImpl extends Lipica {
 	}
 
 	override def findOnlinePeer(exclude: Set[PeerInfo]): Option[PeerInfo] = {
-		this.worldManager.listener.trace("Looking for online peer.")
-		this.worldManager.startPeerDiscovery()
-		val peers = this.worldManager.peerDiscovery.peers
+		this.componentsMotherboard.listener.trace("Looking for online peer.")
+		this.componentsMotherboard.startPeerDiscovery()
+		val peers = this.componentsMotherboard.peerDiscovery.peers
 		peers.find(each => each.online && !exclude.contains(each))
 	}
 
@@ -69,11 +70,11 @@ class LipicaImpl extends Lipica {
 		awaitOnlinePeer
 	}
 
-	override def getPeers: Set[PeerInfo] = this.worldManager.peerDiscovery.peers
+	override def getPeers: Set[PeerInfo] = this.componentsMotherboard.peerDiscovery.peers
 
-	override def startPeerDiscovery() = this.worldManager.startPeerDiscovery()
+	override def startPeerDiscovery() = this.componentsMotherboard.startPeerDiscovery()
 
-	override def stopPeerDiscovery() = this.worldManager.stopPeerDiscovery()
+	override def stopPeerDiscovery() = this.componentsMotherboard.stopPeerDiscovery()
 
 	override def connect(node: Node) = connect(node.address, node.id)
 
@@ -81,7 +82,7 @@ class LipicaImpl extends Lipica {
 	override def connect(address: InetSocketAddress, remoteNodeId: NodeId): Unit = {
 		this.connectExecutor.submit(new Runnable {
 			override def run(): Unit = {
-				worldManager.client.connect(address, remoteNodeId)
+				componentsMotherboard.client.connect(address, remoteNodeId)
 			}
 		})
 	}
@@ -90,9 +91,9 @@ class LipicaImpl extends Lipica {
 		val tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L, receiveAddress, 0, function, funcArgs)
 		tx.sign(ImmutableBytes.create(32))
 
-		val bestBlock = worldManager.blockchain.bestBlock
+		val bestBlock = componentsMotherboard.blockchain.bestBlock
 		val executor = new org.lipicalabs.lipica.core.kernel.TransactionExecutor(
-			tx, bestBlock.coinbase, worldManager.repository, worldManager.blockStore, programContextFactory, bestBlock, new LipicaListenerAdaptor, 0
+			tx, bestBlock.coinbase, componentsMotherboard.repository, componentsMotherboard.blockStore, programContextFactory, bestBlock, new LipicaListenerAdaptor, 0
 		)
 		executor.localCall = true
 
@@ -104,15 +105,15 @@ class LipicaImpl extends Lipica {
 		executor.resultOption
 	}
 
-	override def getBlockchain: BlockchainIF = new BlockchainIF(worldManager.blockchain)
+	override def getBlockchain: BlockchainIF = new BlockchainIF(componentsMotherboard.blockchain)
 
-	override def getAdminInfo: AdminInfo = worldManager.adminInfo
+	override def getAdminInfo: AdminInfo = componentsMotherboard.adminInfo
 
-	override def getRepository: RepositoryIF = new RepositoryIF(worldManager.repository)
+	override def getRepository: RepositoryIF = new RepositoryIF(componentsMotherboard.repository)
 
-	override def addListener(listener: LipicaListener) = worldManager.listener.addListener(listener)
+	override def addListener(listener: LipicaListener) = componentsMotherboard.listener.addListener(listener)
 
-	override def client: PeerClient = this.worldManager.client
+	override def client: PeerClient = this.componentsMotherboard.client
 
 
 	/**
@@ -136,18 +137,18 @@ class LipicaImpl extends Lipica {
 	}
 
 	override def submitTransaction(tx: TransactionLike): Future[TransactionLike] = {
-		val task = new TransactionTask(tx, this.worldManager)
+		val task = new TransactionTask(tx, this.componentsMotherboard)
 		TransactionExecutor.submitTransaction(task)
 	}
 
 
 	override def getSnapshotTo(root: Array[Byte]): RepositoryIF = {
-		new RepositoryIF(this.worldManager.repository.createSnapshotTo(Digest256(root)))
+		new RepositoryIF(this.componentsMotherboard.repository.createSnapshotTo(Digest256(root)))
 	}
 
-	override def getPendingTransactions: Set[TransactionLike] = this.worldManager.blockchain.pendingTransactions
+	override def getPendingTransactions: Set[TransactionLike] = this.componentsMotherboard.blockchain.pendingTransactions
 
-	override def getChannelManager = this.worldManager.channelManager
+	override def getChannelManager = this.componentsMotherboard.channelManager
 
 	/**
 	 * 最近のトランザクションにおけるマナ価格の実績に基いて、
@@ -160,9 +161,9 @@ class LipicaImpl extends Lipica {
 	override def getManaPrice = this.manaPriceTracker.getManaPrice
 
 	override def close(): Unit = {
-		this.worldManager.close()
+		this.componentsMotherboard.close()
 	}
 
-	override def exitOn(number: Long) = this.worldManager.blockchain.exitOn = number
+	override def exitOn(number: Long) = this.componentsMotherboard.blockchain.exitOn = number
 
 }

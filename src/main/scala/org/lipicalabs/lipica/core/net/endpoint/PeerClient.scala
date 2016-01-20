@@ -3,14 +3,14 @@ package org.lipicalabs.lipica.core.net.endpoint
 import java.net.InetSocketAddress
 
 import io.netty.bootstrap.Bootstrap
-import io.netty.channel.{DefaultMessageSizeEstimator, ChannelOption, EventLoopGroup}
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.{DefaultMessageSizeEstimator, ChannelOption}
 import io.netty.channel.socket.nio.NioSocketChannel
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.LipicaChannelInitializer
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 class PeerClient {
 	import PeerClient._
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	/**
 	 * 他ノードに対して接続確立を試行します。
@@ -37,12 +37,12 @@ class PeerClient {
 	 * 他ノードに対して接続確立を試行します。
 	 */
 	def connect(address: InetSocketAddress, nodeId: NodeId, discoveryMode: Boolean): Unit = {
-		this.worldManager.listener.trace("<PeerClient> Connecting to %s".format(address))
+		this.componentsMotherboard.listener.trace("<PeerClient> Connecting to %s".format(address))
 		val channelInitializer = new LipicaChannelInitializer(nodeId)
 		channelInitializer.peerDiscoveryMode = discoveryMode
 
 		try {
-			val b = (new Bootstrap).group(workerGroup).channel(classOf[NioSocketChannel]).
+			val b = (new Bootstrap).group(ExecutorPool.instance.clientGroup).channel(classOf[NioSocketChannel]).
 				option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE).
 				option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT).
 				option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Integer.valueOf(NodeProperties.CONFIG.connectionTimeoutMillis)).
@@ -69,5 +69,4 @@ class PeerClient {
 
 object PeerClient {
 	private val logger = LoggerFactory.getLogger("net")
-	private val workerGroup: EventLoopGroup = new NioEventLoopGroup(0, new CountingThreadFactory("peer-client-worker"))
 }

@@ -1,11 +1,11 @@
 package org.lipicalabs.lipica.core.net.channel
 
-import java.util.concurrent.{CopyOnWriteArrayList, Executors, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{CopyOnWriteArrayList, ScheduledExecutorService, TimeUnit}
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.sync.SyncManager
-import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
@@ -23,13 +23,13 @@ class ChannelManager {
 
 	import scala.collection.JavaConversions._
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
-	private def syncManager: SyncManager = worldManager.syncManager
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def syncManager: SyncManager = componentsMotherboard.syncManager
 
 	private val newPeers = new CopyOnWriteArrayList[Channel]()
 	private val activePeers = new CopyOnWriteArrayList[Channel]()
 
-	private val mainWorker: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("channel-manager"))
+	private val mainWorker: ScheduledExecutorService = ExecutorPool.instance.channelManagerProcessor
 
 	def init(): Unit = {
 		this.mainWorker.scheduleWithFixedDelay(new Runnable {

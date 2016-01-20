@@ -21,7 +21,7 @@ class Account {
 
 	private val _pendingTransactions = asScalaSet(java.util.Collections.synchronizedSet(new util.HashSet[TransactionLike]))
 
-	def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	def init(aKey: ECKey): Unit = {
 		this._ecKey = aKey
@@ -39,10 +39,10 @@ class Account {
 
 	def pendingTransactions: Set[TransactionLike] = this._pendingTransactions.toSet
 
-	def nonce: BigInt = this.worldManager.repository.getNonce(this.address)
+	def nonce: BigInt = this.componentsMotherboard.repository.getNonce(this.address)
 
 	def balance: BigInt = {
-		var result = this.worldManager.repository.getBalance(this.address).getOrElse(UtilConsts.Zero)
+		var result = this.componentsMotherboard.repository.getBalance(this.address).getOrElse(UtilConsts.Zero)
 		this._pendingTransactions.synchronized {
 			if (this._pendingTransactions.nonEmpty) {
 				for (tx <- this._pendingTransactions) {

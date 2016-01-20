@@ -3,10 +3,10 @@ package org.lipicalabs.lipica.core.net.channel
 import java.util.concurrent._
 
 import io.netty.channel.ChannelHandlerContext
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, Message, ReasonCode}
 import org.lipicalabs.lipica.core.net.p2p.{DisconnectMessage, PingMessage}
-import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 /**
@@ -22,7 +22,7 @@ class MessageQueue {
 	private val messageQueue = new ConcurrentLinkedDeque[MessageRoundtrip]
 	private var ctx: ChannelHandlerContext = null
 
-	private def worldManager: ComponentsMotherboard = ComponentsMotherboard.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private var hasPing = false
 
@@ -58,7 +58,7 @@ class MessageQueue {
 	def disconnect(): Unit = disconnect(ImmutableMessages.DisconnectMessage)
 
 	def receiveMessage(message: Message): Unit = {
-		this.worldManager.listener.trace("[Recv: %s]".format(message))
+		this.componentsMotherboard.listener.trace("[Recv: %s]".format(message))
 
 		if (!messageQueue.isEmpty) {
 			val messageRoundTrip = this.messageQueue.peek()
@@ -99,7 +99,7 @@ class MessageQueue {
 			each => {
 				if (each.retryTimes == 0) {
 					val message = each.message
-					this.worldManager.listener.onSendMessage(message)
+					this.componentsMotherboard.listener.onSendMessage(message)
 					if (logger.isDebugEnabled) {
 						logger.debug("<MessageQueue> Sending %s to %s".format(message.command.getClass.getSimpleName, this.ctx.channel.remoteAddress))
 					}
@@ -135,7 +135,7 @@ class MessageQueue {
 object MessageQueue {
 	private val logger = LoggerFactory.getLogger("net")
 
-	private val timer = Executors.newScheduledThreadPool(8, new CountingThreadFactory("message-queue-timer"))
+	private val timer = ExecutorPool.instance.messageQueueProcessor
 
 }
 

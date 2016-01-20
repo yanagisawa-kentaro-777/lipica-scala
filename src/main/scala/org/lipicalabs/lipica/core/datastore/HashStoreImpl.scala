@@ -1,14 +1,14 @@
 package org.lipicalabs.lipica.core.datastore
 
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestValue}
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
-import org.lipicalabs.lipica.core.utils._
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
@@ -25,6 +25,8 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 
 	import HashStoreImpl._
 
+	def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+
 	private val indexRef: AtomicReference[mutable.Buffer[Long]] = new AtomicReference[mutable.Buffer[Long]](null)
 	private def index: mutable.Buffer[Long] = this.indexRef.get
 
@@ -37,6 +39,7 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 	override def open(): Unit = {
 		val task = new Runnable() {
 			override def run(): Unit = {
+				println("here")//TODO
 				initLock.lock()
 				try {
 					val indices = dataSource.keys.map(each => RBACCodec.Decoder.decode(each).right.get.asPositiveLong)
@@ -54,7 +57,7 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 				}
 			}
 		}
-		Executors.newSingleThreadExecutor(new CountingThreadFactory("hash-store")).execute(task)
+		ExecutorPool.instance.hashStoreOpener.execute(task)
 	}
 
 	override def close() = {

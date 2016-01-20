@@ -4,10 +4,12 @@ import java.net.{InetSocketAddress, InetAddress, URI, UnknownHostException}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicBoolean
 
+import org.lipicalabs.lipica.core.concurrent.{ExecutorPool, CountingThreadFactory}
 import org.lipicalabs.lipica.core.config.NodeProperties
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.p2p.Peer
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, PeerInfo}
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 import scala.collection.{JavaConversions, mutable}
@@ -41,7 +43,7 @@ class PeerDiscovery {
 			new ArrayBlockingQueue[Runnable](1000), this.threadFactory, this.rejectionHandler
 		)
 		this.monitor = new PeerMonitorTask(this.executorPool, 1, this)
-		val monitorExecutor = Executors.newSingleThreadExecutor(new CountingThreadFactory("peer-discovery-monitor"))
+		val monitorExecutor = ExecutorPool.instance.peerDiscoveryMonitor
 		monitorExecutor.execute(this.monitor)
 
 		val peerDataSeq = parsePeerDiscoveryAddresses(NodeProperties.CONFIG.seedNodes)

@@ -1,15 +1,16 @@
 package org.lipicalabs.lipica.core.datastore
 
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
@@ -30,6 +31,8 @@ import scala.collection.mutable.ArrayBuffer
 class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private val hashesDataSource: KeyValueDataSource) extends BlockQueue {
 
 	import BlockQueueImpl._
+
+	def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	//takeLock等によってガードされている。
 	private var readHits: Int = 0
@@ -69,7 +72,7 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 				}
 			}
 		}
-		Executors.newSingleThreadExecutor(new CountingThreadFactory("block-queue")).execute(task)
+		ExecutorPool.instance.blockQueueOpener.execute(task)
 	}
 
 	private def getBlock(blockNumber: Long): Option[BlockWrapper] = {

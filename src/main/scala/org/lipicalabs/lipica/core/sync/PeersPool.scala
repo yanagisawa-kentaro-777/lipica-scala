@@ -1,11 +1,11 @@
 package org.lipicalabs.lipica.core.sync
 
-import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.facade.Lipica
 import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
-import org.lipicalabs.lipica.core.utils.CountingThreadFactory
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -34,7 +34,7 @@ class PeersPool {
 	 */
 	def init(): Unit = {
 		//定期処理を登録し実行します。
-		Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("peers-pool")).scheduleWithFixedDelay(
+		ExecutorPool.instance.peersPoolProcessor.scheduleWithFixedDelay(
 			new Runnable {
 				override def run(): Unit = {
 					releaseBans()

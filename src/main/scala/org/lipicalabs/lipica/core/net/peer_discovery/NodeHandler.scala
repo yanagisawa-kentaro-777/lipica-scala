@@ -3,12 +3,13 @@ package org.lipicalabs.lipica.core.net.peer_discovery
 import java.net.InetSocketAddress
 import java.util
 import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReference, AtomicBoolean}
-import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{ScheduledExecutorService, TimeUnit}
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryEvent
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PingMessage, PongMessage}
 import org.lipicalabs.lipica.core.net.transport._
-import org.lipicalabs.lipica.core.utils.{CountingThreadFactory, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
@@ -221,7 +222,7 @@ object NodeHandler {
 	private val logger = LoggerFactory.getLogger("discovery")
 
 	val aliveNodes: util.Queue[NodeHandler] = new util.ArrayDeque[NodeHandler]
-	private val pongTimer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new CountingThreadFactory("pong-timer"))
+	private val pongTimer: ScheduledExecutorService = ExecutorPool.instance.pongProcessor
 	private val PingTimeout: Long = 15000L
 
 	sealed trait State

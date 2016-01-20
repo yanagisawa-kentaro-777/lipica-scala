@@ -1,16 +1,15 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.udp
 
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelInitializer
-import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioDatagramChannel
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryExecutor
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, CountingThreadFactory}
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
@@ -29,8 +28,6 @@ class UDPListener {
 	private val address: String = NodeProperties.CONFIG.bindAddress
 	private val port: Int = NodeProperties.CONFIG.bindPort
 
-	private val executor = Executors.newSingleThreadExecutor(new CountingThreadFactory("udp-starter"))
-
 	def start(): Boolean = {
 		if (NodeProperties.CONFIG.peerDiscoveryEnabled) {
 			val task = new Runnable {
@@ -44,7 +41,7 @@ class UDPListener {
 					}
 				}
 			}
-			this.executor.execute(task)
+			ExecutorPool.instance.udpStarter.execute(task)
 			//TODO bind完了をFutureで待てるようにする。
 			true
 		} else {
@@ -54,7 +51,7 @@ class UDPListener {
 	}
 
 	private def bind(): Unit = {
-		val group = new NioEventLoopGroup(1, new CountingThreadFactory("udp-listener"))
+		val group = ExecutorPool.instance.udpGroup
 		val nodeManager = ComponentsMotherboard.instance.nodeManager
 		val discoverExecutor = new DiscoveryExecutor(nodeManager)
 		val startedRef: AtomicBoolean = new AtomicBoolean(false)
