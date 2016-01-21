@@ -4,9 +4,8 @@ import java.net.{InetSocketAddress, InetAddress, URI, UnknownHostException}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.lipicalabs.lipica.core.concurrent.{ExecutorPool, CountingThreadFactory}
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.p2p.Peer
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, PeerInfo}
 import org.lipicalabs.lipica.core.utils.ErrorLogger
@@ -28,21 +27,13 @@ class PeerDiscovery {
 
 	private var monitor: PeerMonitorTask = null
 
-	private var threadFactory: ThreadFactory = null
-	private var executorPool: ThreadPoolExecutor = null
-	private var rejectionHandler: RejectedExecutionHandler = null
+	private val workerExecutor: ThreadPoolExecutor = ExecutorPool.instance.peerDiscoveryWorker
 
 	private val isStartedRef = new AtomicBoolean(false)
 	def isStarted: Boolean = this.isStartedRef.get
 
 	def start(): Unit = {
-		this.rejectionHandler = new RejectionLogger
-		this.threadFactory = new CountingThreadFactory("peer-discovery-worker")
-		this.executorPool = new ThreadPoolExecutor(
-			NodeProperties.CONFIG.peerDiscoveryWorkers, NodeProperties.CONFIG.peerDiscoveryWorkers, 10, TimeUnit.SECONDS,
-			new ArrayBlockingQueue[Runnable](1000), this.threadFactory, this.rejectionHandler
-		)
-		this.monitor = new PeerMonitorTask(this.executorPool, 1, this)
+		this.monitor = new PeerMonitorTask(this.workerExecutor, 1, this)
 		val monitorExecutor = ExecutorPool.instance.peerDiscoveryMonitor
 		monitorExecutor.execute(this.monitor)
 
@@ -58,12 +49,12 @@ class PeerDiscovery {
 			logger.debug("<PeerDiscovery> Adding a new peer for discovery: %s.".format(peerInfo))
 		}
 		val workerTask = new WorkerTask
-		workerTask.init(peerInfo, this.executorPool)
-		this.executorPool.execute(workerTask)
+		workerTask.init(peerInfo, this.workerExecutor)
+		this.workerExecutor.execute(workerTask)
 	}
 
 	def stop(): Unit = {
-		this.executorPool.shutdown()
+		this.workerExecutor.shutdown()
 		this.monitor.shutdown()
 		this.isStartedRef.set(false)
 	}

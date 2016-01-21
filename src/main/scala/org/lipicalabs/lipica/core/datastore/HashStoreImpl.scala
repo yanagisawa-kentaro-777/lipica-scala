@@ -39,7 +39,6 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 	override def open(): Unit = {
 		val task = new Runnable() {
 			override def run(): Unit = {
-				println("here")//TODO
 				initLock.lock()
 				try {
 					val indices = dataSource.keys.map(each => RBACCodec.Decoder.decode(each).right.get.asPositiveLong)

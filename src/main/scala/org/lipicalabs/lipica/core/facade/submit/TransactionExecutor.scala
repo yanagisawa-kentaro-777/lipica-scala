@@ -1,8 +1,8 @@
 package org.lipicalabs.lipica.core.facade.submit
 
-import java.util.concurrent.{Future, Executors}
+import java.util.concurrent.Future
 
-import org.lipicalabs.lipica.core.concurrent.CountingThreadFactory
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.kernel.TransactionLike
 
 /**
@@ -11,7 +11,5 @@ import org.lipicalabs.lipica.core.kernel.TransactionLike
  * YANAGISAWA, Kentaro
  */
 object TransactionExecutor {
-	private val executor = Executors.newFixedThreadPool(1, new CountingThreadFactory("tx-executor"))
-
-	def submitTransaction(task: TransactionTask): Future[TransactionLike] = this.executor.submit(task)
+	def submitTransaction(task: TransactionTask): Future[TransactionLike] = ExecutorPool.instance.txExecutor.submit(task)
 }

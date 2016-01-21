@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.datastore
 
 import java.io._
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.{AtomicLong, AtomicBoolean}
 
@@ -29,8 +30,13 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 	import IndexedBlockStore._
 	import JavaConversions._
 
-	//TODO 永続化しなければならない。
 	private val maxBlockNumberRef = new AtomicLong(-1L)
+	this.numberToBlocksStore.get(MaxBlockNumberKey).foreach {
+		valueBytes => {
+			this.maxBlockNumberRef.set(valueBytes.toPositiveBigInt.longValue())
+			println(this.maxBlockNumberRef.get)//TODO
+		}
+	}
 
 	private val hashToBlockCache = mapAsScalaMap(new ConcurrentHashMap[DigestValue, ImmutableBytes])
 	private val numberToBlocksCache = mapAsScalaMap(new ConcurrentHashMap[Long, Seq[BlockInfo]])
@@ -108,6 +114,12 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 				numIndices += 1
 			}
 			this.numberToBlocksStore.updateBatch(temporaryNumberToBlocksMap.toMap)
+
+			val maxNumber = this.maxBlockNumberRef.get
+			if (0 < maxNumber) {
+				this.numberToBlocksStore.put(MaxBlockNumberKey, ImmutableBytes.asUnsignedByteArray(BigInt(maxNumber)))
+			}
+
 			this.hashToBlockCache.clear()
 			this.numberToBlocksCache.clear()
 			val endTime = System.nanoTime
@@ -299,7 +311,10 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 }
 
 object IndexedBlockStore {
+
 	private val logger = LoggerFactory.getLogger("datastore")
+
+	private val MaxBlockNumberKey = ImmutableBytes("MaxBlockNumber".getBytes(StandardCharsets.UTF_8))
 
 	def newInstance(hashToBlockStore: KeyValueDataSource, numberToBlocksStore: KeyValueDataSource): IndexedBlockStore = new IndexedBlockStore(hashToBlockStore, numberToBlocksStore)
 

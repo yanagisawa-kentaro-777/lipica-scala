@@ -2,6 +2,8 @@ package org.lipicalabs.lipica.core.datastore.datasource
 
 import java.util.concurrent.ConcurrentHashMap
 
+import org.lipicalabs.lipica.utils.MiscUtils
+
 import scala.collection.JavaConversions
 
 /**
@@ -48,6 +50,10 @@ object DataSourcePool {
 			}
 		}
 		result
+	}
+
+	def closeAll(): Unit = {
+		this.pool.values.foreach(MiscUtils.closeIfNotNull(_))
 	}
 
 }

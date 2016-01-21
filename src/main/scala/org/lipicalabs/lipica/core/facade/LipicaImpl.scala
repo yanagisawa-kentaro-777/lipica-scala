@@ -4,7 +4,7 @@ import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.util.concurrent.{Future, Executors}
 
-import org.lipicalabs.lipica.core.concurrent.CountingThreadFactory
+import org.lipicalabs.lipica.core.concurrent.{ExecutorPool, CountingThreadFactory}
 import org.lipicalabs.lipica.core.crypto.digest.Digest256
 import org.lipicalabs.lipica.core.kernel.{Address160, CallTransaction, Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.NodeProperties
@@ -78,7 +78,7 @@ class LipicaImpl extends Lipica {
 
 	override def connect(node: Node) = connect(node.address, node.id)
 
-	private val connectExecutor = Executors.newCachedThreadPool(new CountingThreadFactory("front-connector"))
+	private val connectExecutor = ExecutorPool.instance.frontendConnector
 	override def connect(address: InetSocketAddress, remoteNodeId: NodeId): Unit = {
 		this.connectExecutor.submit(new Runnable {
 			override def run(): Unit = {

@@ -4,7 +4,7 @@ import java.util
 import java.util.{Collections, Comparator}
 import java.util.concurrent._
 
-import org.lipicalabs.lipica.core.concurrent.{ExecutorPool, CountingThreadFactory}
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeHandler
@@ -31,7 +31,7 @@ class PeerConnectionExaminer {
 	private val queue = new MutablePriorityQueue[Runnable, ConnectTask](new Comparator[ConnectTask] {
 		override def compare(o1: ConnectTask, o2: ConnectTask): Int = o2.nodeHandler.nodeStatistics.reputation - o1.nodeHandler.nodeStatistics.reputation
 	})
-	private val peerConnectionPool = new ThreadPoolExecutor(ConnectThreads, ConnectThreads, 0L, TimeUnit.SECONDS, queue, new CountingThreadFactory("conn-examiner"))
+	private val peerConnectionPool = ExecutorPool.instance.peerConnectionExaminer(ConnectThreads, queue)
 
 	private val reconnectTimer = ExecutorPool.instance.reconnectTimer
 	private var _reconnectPeersCount = 0

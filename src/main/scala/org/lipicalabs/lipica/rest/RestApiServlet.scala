@@ -2,8 +2,11 @@ package org.lipicalabs.lipica.rest
 
 import java.text.SimpleDateFormat
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
+import org.lipicalabs.lipica.core.datastore.datasource.DataSourcePool
+import org.lipicalabs.lipica.core.facade.components.{ComponentFactory, ComponentsMotherboard}
+import org.lipicalabs.lipica.utils.MiscUtils
 import org.scalatra.ScalatraServlet
 import org.scalatra._
 
@@ -95,6 +98,34 @@ class RestApiServlet extends ScalatraServlet {
 		val body = renderMemoryInfo
 		status = 200
 		Ok(body)
+	}
+
+	get("/:apiVersion/node/stop") {
+		val task = new Runnable {
+			override def run() = {
+				Thread.sleep(3000L)
+				ExecutorPool.instance.close()
+				RestApiServer.shutdown()
+
+				val threads = Utils.allThreads.toSeq.sortWith((t1, t2) => t1.getName.compareTo(t2.getName) < 0)
+				printThreads(threads)
+				threads.find(each => each.getName.startsWith("sync-queue")).foreach(each => each.interrupt())
+
+
+				val motherboard = ComponentsMotherboard.instance
+				motherboard.repository.flush()
+				motherboard.blockStore.flush()
+				DataSourcePool.closeAll()
+				ComponentFactory.dataSources.values.foreach(MiscUtils.closeIfNotNull)
+				println("Flushed") //TODO
+			}
+		}
+		new Thread(task).start()
+	}
+
+	private def printThreads(threads: Seq[Thread]): Unit = {
+		val s = "Number of threads: %,d\n\n%s\n\n".format(threads.size, threads.map(_.getName).mkString("\n"))
+		println(s) //TODO
 	}
 
 	private def renderMemoryInfo: String = {

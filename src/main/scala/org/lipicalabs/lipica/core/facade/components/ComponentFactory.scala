@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.facade.components
 
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore._
@@ -17,6 +18,7 @@ import org.lipicalabs.lipica.core.validator.block_rules.{BlockValidator, TxTrieR
 import org.lipicalabs.lipica.core.validator.parent_rules.{DifficultyRule, ParentBlockHeaderValidator, ParentNumberRule}
 import org.lipicalabs.lipica.core.vm.program.context.{ProgramContextFactory, ProgramContextFactoryImpl}
 
+import scala.collection.JavaConversions
 
 /**
  * ノードの動作において重要なコンポーネントであるクラスのインスタンスを、
@@ -36,15 +38,24 @@ object ComponentFactory {
 		override def closeDataSource(name: String) = DataSourcePool.closeDataSource(dataSourceName(name))
 	}
 
+	val dataSources = JavaConversions.mapAsScalaConcurrentMap(new ConcurrentHashMap[String, KeyValueDataSource])
+	private def put(dataSource: KeyValueDataSource): Unit = {
+		this.dataSources.put(dataSource.name, dataSource)
+	}
+
 	def createBlockStore: BlockStore = {
 		val hashToBlockDB = openKeyValueDataSource("hash2block_db")
+		put(hashToBlockDB)
 		val numberToBlocksDB = openKeyValueDataSource("number2blocks_db")
+		put(numberToBlocksDB)
 		IndexedBlockStore.newInstance(hashToBlockDB, numberToBlocksDB)
 	}
 
 	def createRepository: Repository = {
 		val contractDS = openKeyValueDataSource("contract_dtl_db")
+		put(contractDS)
 		val stateDS = openKeyValueDataSource("state_db")
+		put(stateDS)
 		new RepositoryImpl(contractDS, stateDS, new LevelDBDataSourceFactory("contract_dtl_storage"))
 	}
 
@@ -79,6 +90,7 @@ object ComponentFactory {
 
 	def createNodeManager: NodeManager = {
 		val dataSource = openKeyValueDataSource("nodestats_db")
+		put(dataSource)
 		val result = NodeManager.create(dataSource)
 		result.seedNodes = NodeProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => Node(uri))
 		result
@@ -88,8 +100,11 @@ object ComponentFactory {
 
 	def createSyncQueue: SyncQueue = {
 		val hashStoreDB = openKeyValueDataSource("hashstore_db")
+		put(hashStoreDB)
 		val queuedBlocksDB = openKeyValueDataSource("queued_blocks_db")
+		put(queuedBlocksDB)
 		val queuedHashesDB = openKeyValueDataSource("queued_hashes_db")
+		put(queuedHashesDB)
 		new SyncQueue(hashStoreDataSource = hashStoreDB, queuedBlocksDataSource = queuedBlocksDB, queuedHashesDataSource = queuedHashesDB)
 	}
 

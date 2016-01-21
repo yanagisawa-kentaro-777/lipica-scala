@@ -71,7 +71,8 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * それを自ノードのブロックチェーンに連結することを継続的に試みます。
 	 */
 	private def consumeQueue(): Unit = {
-		while (true) {
+		var shouldStop = false
+		while (!shouldStop) {
 			try {
 				val blockWrapper = this.blockQueue.take
 				logger.info("<SyncQueue> BlockQueue size=%,d".format(this.blockQueue.size))
@@ -105,6 +106,8 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 					logger.info("<SyncQueue> Success importing NOT_BEST: BlockNumber=%,d & BlockHash=%s, Tx.size=%,d".format(blockWrapper.blockNumber, blockWrapper.block.shortHash, blockWrapper.block.transactions.size))
 				}
 			} catch {
+				case e: InterruptedException =>
+					shouldStop = true
 				case e: Throwable =>
 					//ループの外に例外を突き抜けさせない。
 					ErrorLogger.logger.warn("<SyncQueue> Exception caught: %s".format(e.getClass.getSimpleName), e)
