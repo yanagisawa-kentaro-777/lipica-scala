@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.sync
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
 import org.lipicalabs.lipica.core.concurrent.ExecutorPool
-import org.lipicalabs.lipica.core.facade.Lipica
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.channel.Channel
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
 import org.slf4j.LoggerFactory
@@ -27,7 +27,7 @@ class PeersPool {
 	private val bans: mutable.Map[NodeId, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[NodeId, Long])
 	private val pendingConnections: mutable.Map[NodeId, Long] = mapAsScalaConcurrentMap(new ConcurrentHashMap[NodeId, Long])
 
-	private def lipica: Lipica = Lipica.instance
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	/**
 	 * 生成後に１回だけ実行される初期化処理です。
@@ -127,7 +127,13 @@ class PeersPool {
 		}
 		logger.info("<PeersPool> CONNECTING to %s (%s).".format(node.id.toShortString, node.address))
 		this.pendingConnections.synchronized {
-			lipica.connect(node)
+			ExecutorPool.instance.clientConnector.execute(
+				new Runnable {
+					override def run(): Unit = {
+						componentsMotherboard.client.connect(node.address, node.id)
+					}
+				}
+			)
 			this.pendingConnections.put(node.id, System.currentTimeMillis + ConnectionTimeout)
 		}
 	}

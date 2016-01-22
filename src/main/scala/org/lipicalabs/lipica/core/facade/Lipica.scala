@@ -38,8 +38,6 @@ trait Lipica extends Closeable {
 
 	def connect(address: InetSocketAddress, remoteNodeId: NodeId)
 
-	def connect(node: Node): Unit
-
 	def getBlockchain: BlockchainIF
 
 	def addListener(listener: LipicaListener): Unit

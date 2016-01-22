@@ -23,8 +23,6 @@
 
 ・BlockのcumulativeDifficultyとは？
 
-・フロントエンドへの逆呼び出しを廃絶する。
-
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
 ・ContractDetailsCacheImplとか、どうにかならないのか。

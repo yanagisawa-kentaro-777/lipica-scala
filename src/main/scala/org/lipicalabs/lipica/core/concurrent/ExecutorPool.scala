@@ -65,13 +65,13 @@ class ExecutorPool private() extends Closeable {
 	val discoveryGroup: EventLoopGroup = new NioEventLoopGroup
 	val udpGroup: EventLoopGroup = new NioEventLoopGroup(1, new CountingThreadFactory("udp-listener"))
 
-	val frontendConnector: ExecutorService = Executors.newCachedThreadPool(new CountingThreadFactory("frontend-connector"))
+	val clientConnector: ExecutorService = Executors.newCachedThreadPool(new CountingThreadFactory("client-connector"))
 	val txExecutor: ExecutorService = Executors.newFixedThreadPool(1, new CountingThreadFactory("tx-executor"))
 
 	override def close(): Unit = {
 		val seq = Seq(
 				this.txExecutor,
-				this.frontendConnector,
+				this.clientConnector,
 				this.udpGroup,
 				this.discoveryGroup,
 				this.clientGroup,
