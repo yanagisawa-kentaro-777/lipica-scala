@@ -31,12 +31,14 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 	import JavaConversions._
 
 	private val maxBlockNumberRef = new AtomicLong(-1L)
-	this.numberToBlocksStore.get(MaxBlockNumberKey).foreach {
-		valueBytes => {
+	this.numberToBlocksStore.get(MaxBlockNumberKey) match {
+		case Some(valueBytes) =>
 			this.maxBlockNumberRef.set(valueBytes.toPositiveBigInt.longValue())
-			println(this.maxBlockNumberRef.get)//TODO
-		}
+			logger.info("<IndexedBlockStore> Max block number is loaded: %,d".format(this.maxBlockNumberRef.get))
+		case None =>
+			logger.info("<IndexedBlockStore> Max block number NOT loaded: %,d".format(this.maxBlockNumberRef.get))
 	}
+
 
 	private val hashToBlockCache = mapAsScalaMap(new ConcurrentHashMap[DigestValue, ImmutableBytes])
 	private val numberToBlocksCache = mapAsScalaMap(new ConcurrentHashMap[Long, Seq[BlockInfo]])
@@ -124,11 +126,11 @@ class IndexedBlockStore private(private val hashToBlockStore: KeyValueDataSource
 			this.numberToBlocksCache.clear()
 			val endTime = System.nanoTime
 
-			//		println("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos.".format(
+			//		println("<IndexedBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos.".format(
 			//			endTime - startTime, numBlocks, time1 - startTime, numIndices, endTime - time1
 			//		))
 
-			logger.info("<IndexBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos.".format(
+			logger.info("<IndexedBlockStore> Flushed block store in %,d nanos (%,d blocks in %,d nanos; %,d indices in %,d nanos.".format(
 				endTime - startTime, numBlocks, time1 - startTime, numIndices, endTime - time1
 			))
 		}

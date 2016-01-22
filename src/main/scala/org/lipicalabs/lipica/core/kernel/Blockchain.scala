@@ -97,6 +97,8 @@ trait Blockchain extends Closeable {
 
 	def exitOn_=(v: Long): Unit
 
+	def flush()
+
 	def close(): Unit
 
 	/**

@@ -152,7 +152,7 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 		this.initLock.lock()
 		try {
 			if (!this.initDone) {
-				this.init.awaitUninterruptibly()
+				this.init.await()
 			}
 		} finally {
 			this.initLock.unlock()

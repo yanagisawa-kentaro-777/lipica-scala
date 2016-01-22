@@ -358,7 +358,7 @@ class BlockchainImpl(
 
 	}
 
-	private def flushAndGc(): Unit = {
+	override def flush(): Unit = {
 		val startNanos = System.nanoTime
 		logger.info("<Blockchain> Flushing data.")
 		this.repository.flush()
@@ -368,11 +368,15 @@ class BlockchainImpl(
 		this.blockStore.flush()
 		val endNanos = System.nanoTime
 		logger.info("<Blockchain> Flushed block store in %,d nanos.".format(endNanos - reposEndNanos))
+	}
 
+	private def flushAndGc(): Unit = {
+		flush()
+		val startNanos = System.nanoTime
 		//GCの明示的実行はみだりにすべきでないが、ここは例外。
 		System.gc()
-		val gcEndNanos = System.nanoTime
-		logger.info("<Blockchain> GC executed in %,d nanos.".format(gcEndNanos - endNanos))
+		val endNanos = System.nanoTime
+		logger.info("<Blockchain> GC executed in %,d nanos.".format(endNanos - startNanos))
 	}
 
 	private def processBlock(block: Block): Seq[TransactionReceipt] = {

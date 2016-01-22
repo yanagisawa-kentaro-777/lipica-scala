@@ -88,6 +88,8 @@ trait Lipica extends Closeable {
 
 	def exitOn(number: Long)
 
+	def shutdown(): Unit
+
 }
 
 object Lipica {
@@ -97,12 +99,22 @@ object Lipica {
 	def instance: Lipica = this.instanceRef.get
 
 
-	def create: Lipica = {
+	def startup(): Unit = {
 		this.synchronized {
+			if (Option(this.instanceRef.get).isDefined) {
+				return
+			}
+
 			val result = new LipicaImpl
 			result.init()
 			this.instanceRef.set(result)
 			result
+		}
+	}
+
+	def shutdown(): Unit = {
+		this.synchronized {
+			Option(this.instanceRef.get).foreach(_.shutdown())
 		}
 	}
 

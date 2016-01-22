@@ -50,13 +50,13 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	def init(): Unit = {
 		logger.info("<SyncQueue> Start loading sync queue.")
 		//HashStoreの生成および初期化を実行する。
-		val hs = new HashStoreImpl(hashStoreDataSource)
-		hs.open()
-		this.hashStoreRef.set(hs)
+		val hashStore = new HashStoreImpl(hashStoreDataSource)
+		hashStore.open()
+		this.hashStoreRef.set(hashStore)
 		//BlockQueueの生成および初期化を実行する。
-		val bq = new BlockQueueImpl(blocksDataSource = queuedBlocksDataSource, hashesDataSource = queuedHashesDataSource)
-		bq.open()
-		this.blockQueueRef.set(bq)
+		val blockQueue = new BlockQueueImpl(blocksDataSource = queuedBlocksDataSource, hashesDataSource = queuedHashesDataSource)
+		blockQueue.open()
+		this.blockQueueRef.set(blockQueue)
 
 		//キューからブロックを取り出してブロックチェーンにつなげようとする処理タスクを生成する。
 		val task = new Runnable {
@@ -107,6 +107,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 				}
 			} catch {
 				case e: InterruptedException =>
+					logger.info("<SyncQueue> Execution is interrupted.")
 					shouldStop = true
 				case e: Throwable =>
 					//ループの外に例外を突き抜けさせない。

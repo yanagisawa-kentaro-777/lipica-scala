@@ -183,7 +183,7 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 		try {
 			var blockOrNone = pollInternal
 			while (blockOrNone.isEmpty) {
-				this.notEmpty.awaitUninterruptibly()
+				this.notEmpty.await()
 				blockOrNone = pollInternal
 			}
 			commitReading()
@@ -255,7 +255,7 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 		this.initLock.lock()
 		try {
 			if (!this.initDone) {
-				this.init.awaitUninterruptibly()
+				this.init.await()
 			}
 		} finally {
 			this.initLock.unlock()

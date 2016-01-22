@@ -6,10 +6,11 @@ import java.util.concurrent.{Future, Executors}
 
 import org.lipicalabs.lipica.core.concurrent.{ExecutorPool, CountingThreadFactory}
 import org.lipicalabs.lipica.core.crypto.digest.Digest256
+import org.lipicalabs.lipica.core.datastore.datasource.DataSourcePool
 import org.lipicalabs.lipica.core.kernel.{Address160, CallTransaction, Transaction, TransactionLike}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
-import org.lipicalabs.lipica.core.facade.components.{AdminInfo, ComponentsMotherboard}
+import org.lipicalabs.lipica.core.facade.components.{ComponentFactory, AdminInfo, ComponentsMotherboard}
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node, PeerInfo}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
@@ -18,6 +19,8 @@ import org.lipicalabs.lipica.core.facade.submit.{TransactionExecutor, Transactio
 import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
+import org.lipicalabs.lipica.utils.MiscUtils
+import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
 
@@ -166,4 +169,24 @@ class LipicaImpl extends Lipica {
 
 	override def exitOn(number: Long) = this.componentsMotherboard.blockchain.exitOn = number
 
+	override def shutdown(): Unit = {
+		import LipicaImpl._
+		logger.info("<Lipica> Shutting down.")
+		//動作中の ExecutorService 類を停止させる。
+		ExecutorPool.instance.close()
+
+		//DataSourceの始末をつける。
+		val motherboard = ComponentsMotherboard.instance
+		//Repository と BlockStore が flushされる。
+		motherboard.blockchain.flush()
+		//DataSourceをクローズする。
+		DataSourcePool.closeAll()
+		ComponentFactory.dataSources.values.foreach(MiscUtils.closeIfNotNull)
+
+		logger.info("<Lipica> Shut down complete.")
+	}
+}
+
+object LipicaImpl {
+	private val logger = LoggerFactory.getLogger("general")
 }
