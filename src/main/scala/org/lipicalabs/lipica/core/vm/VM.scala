@@ -425,10 +425,6 @@ class VM {
 				val buffer = program.memoryChunk(offset.intValue, len.intValue)
 				//計算する。
 				val result = VMWord(buffer.digest256.bytes)
-				//TODO 未実装： StorageDictHandler
-//				if (this.storageDictHandler ne null) {
-//					storageDictHandler.vmSha3Notify(buffer, result)
-//				}
 				if (logger.isInfoEnabled) {
 					hint = result.toString
 				}
@@ -661,10 +657,6 @@ class VM {
 					hint = "[%s] key: %s value: %s".format(program.getOwnerAddress.toPrefixString, key, value)
 				}
 				program.storageSave(key, value)
-				//TODO 未実装：StorageDictHandler
-//				if (storageDictHandler ne null) {
-//					storageDictHandler.vmSStoreNotify(addr, value)
-//				}
 				program.step()
 			case Jump =>
 				val pos = program.stackPop
