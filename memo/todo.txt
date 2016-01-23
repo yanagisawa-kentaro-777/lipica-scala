@@ -26,7 +26,6 @@
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
 
-
 ・expirationによるdiscardを実装する。（replay attack対策）
 ・ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 ・スレッドセイフティ
