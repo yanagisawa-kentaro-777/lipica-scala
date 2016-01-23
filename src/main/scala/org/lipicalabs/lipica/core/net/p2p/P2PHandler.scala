@@ -37,8 +37,6 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 	private var _handshakeHelloMessage: HelloMessage = null
 	def handshakeHelloMessage: HelloMessage = this._handshakeHelloMessage
 
-	private var lastPeersSent: Set[PeerInfo] = null
-
 	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	private var _channel: Channel = null
@@ -73,19 +71,6 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 				ctx.writeAndFlush(ImmutableMessages.PongMessage)
 			case Pong =>
 				this.messageQueue.receiveMessage(message)
-			case GetPeers =>
-				this.messageQueue.receiveMessage(message)
-				sendPeers()
-			case Peers =>
-				this.messageQueue.receiveMessage(message)
-				processPeers(ctx, message.asInstanceOf[PeersMessage])
-
-				if (this.peerDiscoveryMode || !handshakeHelloMessage.capabilities.map(_.name).contains(Capability.LPC)) {
-					disconnect(ReasonCode.Requested)
-					killTimers()
-					ctx.close().sync()
-					ctx.disconnect().sync()
-				}
 			case _ =>
 				ctx.fireChannelRead(message)
 		}
@@ -106,26 +91,6 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 		logger.warn("<P2PHandler> Error caught: %s".format(cause))
 		ctx.close()
 		killTimers()
-	}
-
-	private def processPeers(ctx: ChannelHandlerContext, peersMessage: PeersMessage): Unit = {
-		this.componentsMotherboard.peerDiscovery.addPeers(peersMessage.peers)
-	}
-
-	private def sendGetPeers(): Unit = {
-		this.messageQueue.sendMessage(ImmutableMessages.GetPeersMessage)
-	}
-
-	private def sendPeers(): Unit = {
-		val peers = this.componentsMotherboard.peerDiscovery.peers
-		if ((this.lastPeersSent ne null) && (this.lastPeersSent == peers)) {
-			logger.info("<P2PHandler> No new peers discovered. Do not answer GetPeers.")
-			return
-		}
-		val peerSet = peers.map(each => new Peer(each.address.getAddress, each.address.getPort, each.nodeId, Seq.empty))
-		val message = PeersMessage(peerSet)
-		this.lastPeersSent = peers
-		this.messageQueue.sendMessage(message)
 	}
 
 	def setHandshake(message: HelloMessage, ctx: ChannelHandlerContext): Unit = {

@@ -20,15 +20,13 @@ class AdaptiveMessageIdTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			P2PMessageCode.all.size mustEqual 7
+			P2PMessageCode.all.size mustEqual 5
 
 			val resolver = new MessageCodesResolver(Seq.empty)
 			resolver.withP2POffset(P2PMessageCode.Hello.asByte) mustEqual 0
 			resolver.withP2POffset(P2PMessageCode.Disconnect.asByte) mustEqual 1
 			resolver.withP2POffset(P2PMessageCode.Ping.asByte) mustEqual 2
 			resolver.withP2POffset(P2PMessageCode.Pong.asByte) mustEqual 3
-			resolver.withP2POffset(P2PMessageCode.GetPeers.asByte) mustEqual 4
-			resolver.withP2POffset(P2PMessageCode.Peers.asByte) mustEqual 5
 			resolver.withP2POffset(P2PMessageCode.User.asByte) mustEqual 15
 		}
 	}

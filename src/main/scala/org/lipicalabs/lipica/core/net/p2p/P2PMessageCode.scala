@@ -50,17 +50,6 @@ object P2PMessageCode {
 	case object Pong extends AbstractP2PMessageCode(0x03)
 	register(Pong)
 
-	/**
-	 * 知っているピアをいくつか情報提供するように要求するメッセージ。
-	 */
-	case object GetPeers extends AbstractP2PMessageCode(0x04)
-	register(GetPeers)
-
-	/**
-	 * 既知のノード情報を提供するためのメッセージ。
-	 */
-	case object Peers extends AbstractP2PMessageCode(0x05)
-	register(Peers)
 
 	case object User extends AbstractP2PMessageCode(0x0F)
 	register(User)

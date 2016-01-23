@@ -17,8 +17,6 @@ class P2PMessageFactory extends MessageFactory {
 				case Disconnect => DisconnectMessage.decode(encodedBytes)
 				case Ping => ImmutableMessages.PingMessage
 				case Pong => ImmutableMessages.PongMessage
-				case GetPeers => ImmutableMessages.GetPeersMessage
-				case Peers => PeersMessage.decode(encodedBytes)
 				case _ => null
 			}
 		Option(result)

@@ -82,28 +82,6 @@ class P2PMessagesTest extends Specification {
 		}
 	}
 
-	"test GetPeersMessage" should {
-		"be right" in {
-			val message = GetPeersMessage()
-			val encoded = message.toEncodedBytes
-			val decoded: GetPeersMessage = decodeMessage(P2PMessageCode.GetPeers.asByte, encoded)
-
-			decoded.code mustEqual message.code
-		}
-	}
-
-	"test PeersMessage" should {
-		"be right" in {
-			val message = PeersMessage(Set(Peer(InetAddress.getByAddress(Array[Byte](192.toByte, 168.toByte, 100.toByte, 101.toByte)), 123, NodeId.parseHexString("0123456789"), Seq(Capability("a", 2)))))
-			val encoded = message.toEncodedBytes
-			val decoded: PeersMessage = decodeMessage(P2PMessageCode.Peers.asByte, encoded)
-
-			decoded.code mustEqual message.code
-			decoded.peers.size mustEqual message.peers.size
-			(decoded.peers == message.peers) mustEqual true
-		}
-	}
-
 	"test PingMessage" should {
 		"be right" in {
 			val message = PingMessage()

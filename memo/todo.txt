@@ -21,8 +21,6 @@
 
 ・フロントエンドを整備する。
 
-・BlockのcumulativeDifficultyとは？
-
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
 ・ContractDetailsCacheImplとか、どうにかならないのか。

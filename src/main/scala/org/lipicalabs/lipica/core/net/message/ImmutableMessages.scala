@@ -14,7 +14,6 @@ object ImmutableMessages {
 
 	val PingMessage: PingMessage = new PingMessage
 	val PongMessage: PongMessage = new PongMessage
-	val GetPeersMessage: GetPeersMessage = new GetPeersMessage
 	val DisconnectMessage: DisconnectMessage = new DisconnectMessage(ReasonCode.Requested)
 
 	def createHelloMessage(nodeId: NodeId): HelloMessage = {

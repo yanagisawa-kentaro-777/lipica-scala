@@ -65,7 +65,7 @@ trait Block {
 	def difficulty: BigIntBytes
 
 	/**
-	 * このブロックに至るまでの難度の合計。
+	 * このブロックおよびuncleの難度の合計値。
 	 */
 	def cumulativeDifficulty: BigInt
 
