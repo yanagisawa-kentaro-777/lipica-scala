@@ -1,6 +1,4 @@
 ０、仕様
-・external storageの正確な仕様を調べる。
-
 ・secp256k1 について学ぶ。
 ・mdc = modification detection code
 ・mac = message authentication code
@@ -24,7 +22,6 @@
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
 
 ・ContractDetailsCacheImplとか、どうにかならないのか。
-・GetPeers、Peers等いらないはず。
 
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）

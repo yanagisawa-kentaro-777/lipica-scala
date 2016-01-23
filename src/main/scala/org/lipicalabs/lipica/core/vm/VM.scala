@@ -71,7 +71,7 @@ class VM {
 			//前ステップまでの実績と比べて消費メモリが増えそうなら、詳しく計算する。
 			val oldMemoryUsage = program.getMemSize
 			if (oldMemoryUsage < newMemoryUsage) {
-				//増分に対する平方の少暇なを計算する。
+				//増分に対する平方の消費マナを計算する。
 				val memoryMana = ManaCost.calculateQuadraticMemoryMana(newMemoryUsage = newMemoryUsage, oldMemoryUsage = oldMemoryUsage)
 				program.spendMana(memoryMana, op.name + " (memory usage)")
 				manaCost += memoryMana
@@ -523,12 +523,16 @@ class VM {
 				val length = program.stackPop.intValueSafe
 				val sizeToBeCopied =
 					if (fullCode.length < (codeOffset + length)) {
+						//コピー位置の終点が突き抜けている。
 						if (fullCode.length < codeOffset) {
+							//始点も突き抜けている。
 							0
 						} else {
+							//始点からコードの終端まで。
 							fullCode.length - codeOffset
 						}
 					} else {
+						//コードの範囲内に収まっている。
 						length
 					}
 				val result =
@@ -741,7 +745,7 @@ class VM {
 				val outDataSize = program.stackPop
 
 				if (logger.isInfoEnabled) {
-					hint = "addr: %s gas: %s inOffset: %s inSize: %s".format(codeAddress.last20Bytes.toHexString, mana.shortHex, inDataOffset.shortHex, inDataSize.shortHex)
+					hint = "ddr: %s mana: %s inOffset: %s inSize: %s".format(codeAddress.last20Bytes.toHexString, mana.shortHex, inDataOffset.shortHex, inDataSize.shortHex)
 					logger.info(logString.format("[%5s]".format(program.getPC), "%-12s".format(op.name), program.getMana.value, program.getCallDepth, hint))
 				}
 
