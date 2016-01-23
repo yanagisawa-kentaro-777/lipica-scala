@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.trace
 
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAdaptor
 
 /**
@@ -33,7 +33,7 @@ class ProgramTraceListener extends ProgramListenerAdaptor {
 		}
 	}
 
-	override def onStackPush(value: DataWord): Unit = {
+	override def onStackPush(value: VMWord): Unit = {
 		if (this.enabled) {
 			this.actions = this.actions.stackPush(value)
 		}
@@ -45,9 +45,9 @@ class ProgramTraceListener extends ProgramListenerAdaptor {
 		}
 	}
 
-	override def onStoragePut(key: DataWord, value: DataWord): Unit = {
+	override def onStoragePut(key: VMWord, value: VMWord): Unit = {
 		if (this.enabled) {
-			if (value == DataWord.Zero) {
+			if (value == VMWord.Zero) {
 				this.actions = this.actions.storageRemove(key)
 			} else {
 				this.actions = this.actions.storagePut(key, value)

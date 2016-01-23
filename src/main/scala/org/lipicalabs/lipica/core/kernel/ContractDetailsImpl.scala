@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactor
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -80,11 +80,11 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 		//this.keys.remove(key)
 	}
 
-	def put(key: ImmutableBytes, value: ImmutableBytes): Unit = put(DataWord(key), DataWord(value))
+	def put(key: ImmutableBytes, value: ImmutableBytes): Unit = put(VMWord(key), VMWord(value))
 
-	override def put(key: DataWord, value: DataWord) = {
+	override def put(key: VMWord, value: VMWord) = {
 		this.synchronized {
-			if (value == DataWord.Zero) {
+			if (value == VMWord.Zero) {
 				this.storageTrie.delete(key.data)
 				removeKey(key.data)
 			} else {
@@ -98,11 +98,11 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 		}
 	}
 
-	override def get(key: DataWord): Option[DataWord] = {
+	override def get(key: VMWord): Option[VMWord] = {
 		this.synchronized {
 			val data = this.storageTrie.get(key.data)
 			if (data.nonEmpty) {
-				Some(DataWord(RBACCodec.Decoder.decode(data).right.get.bytes))
+				Some(VMWord(RBACCodec.Decoder.decode(data).right.get.bytes))
 			} else {
 				None
 			}
@@ -111,15 +111,15 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 
 	override def storageRoot: DigestValue = this.storageTrie.rootHash
 
-	override def storageKeys: Set[DataWord] = this.keys.map(DataWord(_)).toSet
+	override def storageKeys: Set[VMWord] = this.keys.map(VMWord(_)).toSet
 
-	override def put(data: Map[DataWord, DataWord]): Unit = {
+	override def put(data: Map[VMWord, VMWord]): Unit = {
 		for (entry <- data) {
 			put(entry._1, entry._2)
 		}
 	}
 
-	override def storageContent(aKeys: Iterable[DataWord]) = {
+	override def storageContent(aKeys: Iterable[VMWord]) = {
 		aKeys.flatMap {
 			eachKey => {
 				get(eachKey).map(v => (eachKey, v))
@@ -127,10 +127,10 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 		}.toMap
 	}
 
-	override def storageContent: Map[DataWord, DataWord] = {
+	override def storageContent: Map[VMWord, VMWord] = {
 		this.keys.flatMap {
 			each => {
-				val eachKey = DataWord(each)
+				val eachKey = VMWord(each)
 				get(eachKey).map(v => (eachKey, v))
 			}
 		}.toMap

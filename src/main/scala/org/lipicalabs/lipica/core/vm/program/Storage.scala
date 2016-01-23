@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.kernel.{Address, AccountState, Block, ContractDetails}
 import org.lipicalabs.lipica.core.datastore.RepositoryLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContext
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
@@ -16,7 +16,7 @@ import scala.collection.mutable
  * 2015/10/25 14:22
  * YANAGISAWA, Kentaro
  */
-class Storage private(private val address: DataWord, private val repository: RepositoryLike) extends RepositoryLike with ProgramListenerAware {
+class Storage private(private val address: VMWord, private val repository: RepositoryLike) extends RepositoryLike with ProgramListenerAware {
 
 	private val traceListenerRef: AtomicReference[ProgramListener] = new AtomicReference[ProgramListener](null)
 
@@ -48,16 +48,16 @@ class Storage private(private val address: DataWord, private val repository: Rep
 
 	override def getCode(address: Address) = this.repository.getCode(address)
 
-	override def addStorageRow(address: Address, key: DataWord, value: DataWord) = {
+	override def addStorageRow(address: Address, key: VMWord, value: VMWord) = {
 		if (canListenTrace(address)) {
 			this.traceListener.onStoragePut(key, value)
 		}
 		this.repository.addStorageRow(address, key, value)
 	}
 
-	override def getStorageValue(address: Address, key: DataWord) = this.repository.getStorageValue(address, key)
+	override def getStorageValue(address: Address, key: VMWord) = this.repository.getStorageValue(address, key)
 
-	override def getStorageContent(address: Address, keys: Iterable[DataWord]): Map[DataWord, DataWord] = this.repository.getStorageContent(address, keys)
+	override def getStorageContent(address: Address, keys: Iterable[VMWord]): Map[VMWord, VMWord] = this.repository.getStorageContent(address, keys)
 
 	override def getBalance(address: Address) = this.repository.getBalance(address)
 
@@ -94,7 +94,7 @@ class Storage private(private val address: DataWord, private val repository: Rep
 	}
 
 	private def canListenTrace(address: Address): Boolean = {
-		(this.address == DataWord(address.bytes)) && (traceListener != null)
+		(this.address == VMWord(address.bytes)) && (traceListener != null)
 	}
 
 	override def close(): Unit = ()

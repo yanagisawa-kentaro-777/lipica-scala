@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -31,33 +31,33 @@ class StackTest extends Specification {
 			}
 
 
-			stack.push(DataWord(0L))
+			stack.push(VMWord(0L))
 
 			stack.isEmpty mustEqual false
 			stack.nonEmpty mustEqual true
 			stack.size mustEqual 1
-			stack.peek mustEqual DataWord(0)
-			stack.get(0) mustEqual DataWord(0)
-			stack.get(-1) mustEqual DataWord(0)
+			stack.peek mustEqual VMWord(0)
+			stack.get(0) mustEqual VMWord(0)
+			stack.get(-1) mustEqual VMWord(0)
 
-			stack.push(DataWord(1L))
+			stack.push(VMWord(1L))
 
 			stack.isEmpty mustEqual false
 			stack.nonEmpty mustEqual true
 			stack.size mustEqual 2
 
-			stack.peek mustEqual DataWord(1L)
-			stack.get(1) mustEqual DataWord(1)
-			stack.get(-1) mustEqual DataWord(1)
-			stack.get(-2) mustEqual DataWord(0)
-			stack.pop mustEqual DataWord(1L)
+			stack.peek mustEqual VMWord(1L)
+			stack.get(1) mustEqual VMWord(1)
+			stack.get(-1) mustEqual VMWord(1)
+			stack.get(-2) mustEqual VMWord(0)
+			stack.pop mustEqual VMWord(1L)
 
 			stack.isEmpty mustEqual false
 			stack.nonEmpty mustEqual true
 			stack.size mustEqual 1
 
-			stack.peek mustEqual DataWord(0L)
-			stack.pop mustEqual DataWord(0L)
+			stack.peek mustEqual VMWord(0L)
+			stack.pop mustEqual VMWord(0L)
 
 			stack.size mustEqual 0
 			stack.isEmpty mustEqual true
@@ -75,27 +75,27 @@ class StackTest extends Specification {
 	"test (2)" should {
 		"be right" in {
 			val stack = new Stack
-			stack.push(DataWord(0L))
-			stack.push(DataWord(1L))
+			stack.push(VMWord(0L))
+			stack.push(VMWord(1L))
 
 			stack.swap(0, 1).isRight mustEqual true
 
-			stack.pop mustEqual DataWord(0L)
-			stack.pop mustEqual DataWord(1L)
+			stack.pop mustEqual VMWord(0L)
+			stack.pop mustEqual VMWord(1L)
 
 			stack.swap(0, 2).isRight mustEqual false
 			stack.swap(-1, 1).isRight mustEqual false
 
-			stack.push(DataWord(0L))
-			stack.push(DataWord(1L))
+			stack.push(VMWord(0L))
+			stack.push(VMWord(1L))
 
 			stack.swap(0, 1).isRight mustEqual true
 			stack.swap(1, 0).isRight mustEqual true
 
 			stack.asIterable.size mustEqual 2
 
-			stack.pop mustEqual DataWord(1L)
-			stack.pop mustEqual DataWord(0L)
+			stack.pop mustEqual VMWord(1L)
+			stack.pop mustEqual VMWord(0L)
 
 			stack.asIterable.size mustEqual 0
 		}

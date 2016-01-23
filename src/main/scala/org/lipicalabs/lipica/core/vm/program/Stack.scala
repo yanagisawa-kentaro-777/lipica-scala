@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.vm.program
 
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListener, ProgramListenerAware}
 
 
@@ -15,13 +15,13 @@ class Stack extends ProgramListenerAware {
 
 	private var traceListener: ProgramListener = null
 
-	private val stack = new java.util.Stack[DataWord]
+	private val stack = new java.util.Stack[VMWord]
 
 	override def setTraceListener(traceListener: ProgramListener): Unit = {
 		this.traceListener = traceListener
 	}
 
-	def pop: DataWord = {
+	def pop: VMWord = {
 		this.synchronized {
 			if (this.traceListener ne null) {
 				this.traceListener.onStackPop()
@@ -30,7 +30,7 @@ class Stack extends ProgramListenerAware {
 		}
 	}
 
-	def push(item: DataWord): DataWord = {
+	def push(item: VMWord): VMWord = {
 		this.synchronized {
 			if (this.traceListener ne null) {
 				this.traceListener.onStackPush(item)
@@ -55,9 +55,9 @@ class Stack extends ProgramListenerAware {
 		}
 	}
 
-	def peek: DataWord = this.stack.peek
+	def peek: VMWord = this.stack.peek
 
-	def get(index: Int): DataWord = {
+	def get(index: Int): VMWord = {
 		if (0 <= index) {
 			this.stack.get(index)
 		} else {
@@ -75,7 +75,7 @@ class Stack extends ProgramListenerAware {
 	def isEmpty: Boolean = this.size == 0
 	def nonEmpty: Boolean = !this.isEmpty
 
-	def asIterable: Iterable[DataWord] = {
+	def asIterable: Iterable[VMWord] = {
 		this.synchronized {
 			import scala.collection.JavaConversions._
 			iterableAsScalaIterable(this.stack)

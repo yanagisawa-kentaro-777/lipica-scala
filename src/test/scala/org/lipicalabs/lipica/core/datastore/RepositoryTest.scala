@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.datastore.datasource.InMemoryDataSource
 import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -91,12 +91,12 @@ class RepositoryTest extends Specification {
 				val horseKey = ImmutableBytes.parseHexString("B1B2B3")
 				val horseValue = ImmutableBytes.parseHexString("B4B5B6")
 
-				track.addStorageRow(cow, DataWord(cowKey), DataWord(cowValue))
-				track.addStorageRow(horse, DataWord(horseKey), DataWord(horseValue))
+				track.addStorageRow(cow, VMWord(cowKey), VMWord(cowValue))
+				track.addStorageRow(horse, VMWord(horseKey), VMWord(horseValue))
 				track.commit()
 
-				repository.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
-				repository.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
+				repository.getStorageValue(cow, VMWord(cowKey)).get mustEqual VMWord(cowValue)
+				repository.getStorageValue(horse, VMWord(horseKey)).get mustEqual VMWord(horseValue)
 			} finally {
 				repository.close()
 			}
@@ -233,20 +233,20 @@ class RepositoryTest extends Specification {
 				val horseKey = ImmutableBytes.parseHexString("B1B2B3")
 				val horseValue = ImmutableBytes.parseHexString("B4B5B6")
 
-				track.addStorageRow(cow, DataWord(cowKey), DataWord(cowValue))
-				track.addStorageRow(horse, DataWord(horseKey), DataWord(horseValue))
+				track.addStorageRow(cow, VMWord(cowKey), VMWord(cowValue))
+				track.addStorageRow(horse, VMWord(horseKey), VMWord(horseValue))
 
-				track.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
-				track.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
-				repository.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
-				repository.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
+				track.getStorageValue(cow, VMWord(cowKey)).get mustEqual VMWord(cowValue)
+				track.getStorageValue(horse, VMWord(horseKey)).get mustEqual VMWord(horseValue)
+				repository.getStorageValue(cow, VMWord(cowKey)).isEmpty mustEqual true
+				repository.getStorageValue(horse, VMWord(horseKey)).isEmpty mustEqual true
 
 				track.commit()
 
-				track.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
-				track.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
-				repository.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
-				repository.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
+				track.getStorageValue(cow, VMWord(cowKey)).get mustEqual VMWord(cowValue)
+				track.getStorageValue(horse, VMWord(horseKey)).get mustEqual VMWord(horseValue)
+				repository.getStorageValue(cow, VMWord(cowKey)).get mustEqual VMWord(cowValue)
+				repository.getStorageValue(horse, VMWord(horseKey)).get mustEqual VMWord(horseValue)
 			} finally {
 				repository.close()
 			}
@@ -267,20 +267,20 @@ class RepositoryTest extends Specification {
 				val horseKey = ImmutableBytes.parseHexString("B1B2B3")
 				val horseValue = ImmutableBytes.parseHexString("B4B5B6")
 
-				track.addStorageRow(cow, DataWord(cowKey), DataWord(cowValue))
-				track.addStorageRow(horse, DataWord(horseKey), DataWord(horseValue))
+				track.addStorageRow(cow, VMWord(cowKey), VMWord(cowValue))
+				track.addStorageRow(horse, VMWord(horseKey), VMWord(horseValue))
 
-				track.getStorageValue(cow, DataWord(cowKey)).get mustEqual DataWord(cowValue)
-				track.getStorageValue(horse, DataWord(horseKey)).get mustEqual DataWord(horseValue)
-				repository.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
-				repository.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
+				track.getStorageValue(cow, VMWord(cowKey)).get mustEqual VMWord(cowValue)
+				track.getStorageValue(horse, VMWord(horseKey)).get mustEqual VMWord(horseValue)
+				repository.getStorageValue(cow, VMWord(cowKey)).isEmpty mustEqual true
+				repository.getStorageValue(horse, VMWord(horseKey)).isEmpty mustEqual true
 
 				track.rollback()
 
-				track.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
-				track.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
-				repository.getStorageValue(cow, DataWord(cowKey)).isEmpty mustEqual true
-				repository.getStorageValue(horse, DataWord(horseKey)).isEmpty mustEqual true
+				track.getStorageValue(cow, VMWord(cowKey)).isEmpty mustEqual true
+				track.getStorageValue(horse, VMWord(horseKey)).isEmpty mustEqual true
+				repository.getStorageValue(cow, VMWord(cowKey)).isEmpty mustEqual true
+				repository.getStorageValue(horse, VMWord(horseKey)).isEmpty mustEqual true
 			} finally {
 				repository.close()
 			}
@@ -435,31 +435,31 @@ class RepositoryTest extends Specification {
 				val horseValue2 = ImmutableBytes("val-h-2".getBytes)
 
 				val track1 = repository.startTracking
-				track1.addStorageRow(cow, DataWord(cowKey1), DataWord(cowValue1))
-				track1.addStorageRow(horse, DataWord(horseKey1), DataWord(horseValue1))
+				track1.addStorageRow(cow, VMWord(cowKey1), VMWord(cowValue1))
+				track1.addStorageRow(horse, VMWord(horseKey1), VMWord(horseValue1))
 
 				val track2 = track1.startTracking
-				track2.addStorageRow(cow, DataWord(cowKey2), DataWord(cowValue2))
-				track2.addStorageRow(horse, DataWord(horseKey2), DataWord(horseValue2))
+				track2.addStorageRow(cow, VMWord(cowKey2), VMWord(cowValue2))
+				track2.addStorageRow(horse, VMWord(horseKey2), VMWord(horseValue2))
 
-				track2.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
-				track2.getStorageValue(horse, DataWord(horseKey1)).get mustEqual DataWord(horseValue1)
-				track2.getStorageValue(cow, DataWord(cowKey2)).get mustEqual DataWord(cowValue2)
-				track2.getStorageValue(horse, DataWord(horseKey2)).get mustEqual DataWord(horseValue2)
+				track2.getStorageValue(cow, VMWord(cowKey1)).get mustEqual VMWord(cowValue1)
+				track2.getStorageValue(horse, VMWord(horseKey1)).get mustEqual VMWord(horseValue1)
+				track2.getStorageValue(cow, VMWord(cowKey2)).get mustEqual VMWord(cowValue2)
+				track2.getStorageValue(horse, VMWord(horseKey2)).get mustEqual VMWord(horseValue2)
 
 				track2.commit()
 
-				track1.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
-				track1.getStorageValue(horse, DataWord(horseKey1)).get mustEqual DataWord(horseValue1)
-				track1.getStorageValue(cow, DataWord(cowKey2)).get mustEqual DataWord(cowValue2)
-				track1.getStorageValue(horse, DataWord(horseKey2)).get mustEqual DataWord(horseValue2)
+				track1.getStorageValue(cow, VMWord(cowKey1)).get mustEqual VMWord(cowValue1)
+				track1.getStorageValue(horse, VMWord(horseKey1)).get mustEqual VMWord(horseValue1)
+				track1.getStorageValue(cow, VMWord(cowKey2)).get mustEqual VMWord(cowValue2)
+				track1.getStorageValue(horse, VMWord(horseKey2)).get mustEqual VMWord(horseValue2)
 
 				track1.commit()
 
-				repository.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
-				repository.getStorageValue(horse, DataWord(horseKey1)).get mustEqual DataWord(horseValue1)
-				repository.getStorageValue(cow, DataWord(cowKey2)).get mustEqual DataWord(cowValue2)
-				repository.getStorageValue(horse, DataWord(horseKey2)).get mustEqual DataWord(horseValue2)
+				repository.getStorageValue(cow, VMWord(cowKey1)).get mustEqual VMWord(cowValue1)
+				repository.getStorageValue(horse, VMWord(horseKey1)).get mustEqual VMWord(horseValue1)
+				repository.getStorageValue(cow, VMWord(cowKey2)).get mustEqual VMWord(cowValue2)
+				repository.getStorageValue(horse, VMWord(horseKey2)).get mustEqual VMWord(horseValue2)
 
 			} finally {
 				repository.close()
@@ -482,13 +482,13 @@ class RepositoryTest extends Specification {
 				val track1 = repository.startTracking
 
 				val track2 = track1.startTracking
-				track2.addStorageRow(cow, DataWord(cowKey1), DataWord(cowValue1))
-				track2.getStorageValue(cow, DataWord(cowKey1)).get mustEqual DataWord(cowValue1)
+				track2.addStorageRow(cow, VMWord(cowKey1), VMWord(cowValue1))
+				track2.getStorageValue(cow, VMWord(cowKey1)).get mustEqual VMWord(cowValue1)
 
 				track2.rollback()
 				track1.commit()
 
-				repository.getStorageValue(cow, DataWord(cowKey1)).isEmpty mustEqual true
+				repository.getStorageValue(cow, VMWord(cowKey1)).isEmpty mustEqual true
 			} finally {
 				repository.close()
 			}
@@ -531,13 +531,13 @@ class RepositoryTest extends Specification {
 				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
-				val cowKey1 = DataWord(ImmutableBytes("ck1".getBytes))
-				val cowVal1 = DataWord(ImmutableBytes("cv1".getBytes))
-				val cowVal0 = DataWord(ImmutableBytes("cv0".getBytes))
+				val cowKey1 = VMWord(ImmutableBytes("ck1".getBytes))
+				val cowVal1 = VMWord(ImmutableBytes("cv1".getBytes))
+				val cowVal0 = VMWord(ImmutableBytes("cv0".getBytes))
 
-				val horseKey1 = DataWord(ImmutableBytes("hk1".getBytes))
-				val horseVal1 = DataWord(ImmutableBytes("hv1".getBytes))
-				val horseVal0 = DataWord(ImmutableBytes("hv0".getBytes))
+				val horseKey1 = VMWord(ImmutableBytes("hk1".getBytes))
+				val horseVal1 = VMWord(ImmutableBytes("hv1".getBytes))
+				val horseVal0 = VMWord(ImmutableBytes("hv0".getBytes))
 
 				val track = repository.startTracking
 				track.addStorageRow(cow, cowKey1, cowVal0)
@@ -581,15 +581,15 @@ class RepositoryTest extends Specification {
 				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
-				val cowKey1 = DataWord(ImmutableBytes("ck1".getBytes))
-				val cowKey2 = DataWord(ImmutableBytes("ck2".getBytes))
-				val cowVal1 = DataWord(ImmutableBytes("cv1".getBytes))
-				val cowVal0 = DataWord(ImmutableBytes("cv0".getBytes))
+				val cowKey1 = VMWord(ImmutableBytes("ck1".getBytes))
+				val cowKey2 = VMWord(ImmutableBytes("ck2".getBytes))
+				val cowVal1 = VMWord(ImmutableBytes("cv1".getBytes))
+				val cowVal0 = VMWord(ImmutableBytes("cv0".getBytes))
 
-				val horseKey1 = DataWord(ImmutableBytes("hk1".getBytes))
-				val horseKey2 = DataWord(ImmutableBytes("hk2".getBytes))
-				val horseVal1 = DataWord(ImmutableBytes("hv1".getBytes))
-				val horseVal0 = DataWord(ImmutableBytes("hv0".getBytes))
+				val horseKey1 = VMWord(ImmutableBytes("hk1".getBytes))
+				val horseKey2 = VMWord(ImmutableBytes("hk2".getBytes))
+				val horseVal1 = VMWord(ImmutableBytes("hv1".getBytes))
+				val horseVal0 = VMWord(ImmutableBytes("hv0".getBytes))
 
 
 

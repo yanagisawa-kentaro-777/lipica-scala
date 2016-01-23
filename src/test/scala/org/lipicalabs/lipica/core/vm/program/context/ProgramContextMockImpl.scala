@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datastore.{Repository, RepositoryDummy, BlockStoreDummy, BlockStore}
 import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 /**
  *
@@ -23,63 +23,63 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 	this._repository.createAccount(this._contractAddress)
 	this._repository.saveCode(_contractAddress, ImmutableBytes.parseHexString("385E60076000396000605f556014600054601e60" + "205463abcddcba6040545b51602001600a525451" + "6040016014525451606001601e52545160800160" + "28525460a052546016604860003960166000f260" + "00603f556103e75660005460005360200235"))
 
-	override def ownerAddress: DataWord = {
-		DataWord(_ownerAddress.bytes)
+	override def ownerAddress: VMWord = {
+		VMWord(_ownerAddress.bytes)
 	}
 
-	override def balance: DataWord = {
+	override def balance: VMWord = {
 		val balance = ImmutableBytes.parseHexString("0DE0B6B3A7640000")
-		DataWord(balance)
+		VMWord(balance)
 	}
 
-	override def originAddress: DataWord = {
+	override def originAddress: VMWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("horse".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
-		DataWord(addr.bytes)
+		VMWord(addr.bytes)
 	}
 
-	override def callerAddress: DataWord = {
+	override def callerAddress: VMWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("monkey".getBytes)
 		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
-		DataWord(addr.bytes)
+		VMWord(addr.bytes)
 	}
 
-	override def manaPrice: DataWord = {
+	override def manaPrice: VMWord = {
 		val minManaPrice = ImmutableBytes.parseHexString("09184e72a000")
-		DataWord(minManaPrice)
+		VMWord(minManaPrice)
 	}
 
-	override def manaLimit: DataWord = {
-		DataWord(_manaLimit)
+	override def manaLimit: VMWord = {
+		VMWord(_manaLimit)
 	}
 
 	def setMana(v: Long) {
 		this._manaLimit = v
 	}
 
-	override def callValue: DataWord = {
+	override def callValue: VMWord = {
 		val balance= ImmutableBytes.parseHexString("0DE0B6B3A7640000")
-		DataWord(balance)
+		VMWord(balance)
 	}
 
-	override def getDataValue(indexData: DataWord): DataWord = {
+	override def getDataValue(indexData: VMWord): VMWord = {
 		val data: Array[Byte] = new Array[Byte](32)
 		val index: Int = indexData.value.intValue()
 		var size: Int = 32
-		if (msgData == null) return DataWord(data)
-		if (index > msgData.length) return DataWord(data)
+		if (msgData == null) return VMWord(data)
+		if (index > msgData.length) return VMWord(data)
 		if (index + 32 > msgData.length) size = msgData.length - index
 		msgData.copyTo(index, data, 0, size)
-		DataWord(data)
+		VMWord(data)
 	}
 
-	override def dataSize: DataWord = {
-		if (msgData == null || msgData.length == 0) return DataWord(new Array[Byte](32))
+	override def dataSize: VMWord = {
+		if (msgData == null || msgData.length == 0) return VMWord(new Array[Byte](32))
 		val size: Int = msgData.length
-		DataWord(size)
+		VMWord(size)
 	}
 
-	override def getDataCopy(offsetData: DataWord, lengthData: DataWord): ImmutableBytes = {
+	override def getDataCopy(offsetData: VMWord, lengthData: VMWord): ImmutableBytes = {
 		val offset: Int = offsetData.value.intValue()
 		var length: Int = lengthData.value.intValue()
 		val data: Array[Byte] = new Array[Byte](length)
@@ -90,33 +90,33 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 		ImmutableBytes(data)
 	}
 
-	override def parentHash: DataWord = {
+	override def parentHash: VMWord = {
 		val prevHash = ImmutableBytes.parseHexString("961CB117ABA86D1E596854015A1483323F18883C2D745B0BC03E87F146D2BB1C")
-		DataWord(prevHash)
+		VMWord(prevHash)
 	}
 
-	override def coinbase: DataWord = {
+	override def coinbase: VMWord = {
 		val coinBase = ImmutableBytes.parseHexString("E559DE5527492BCB42EC68D07DF0742A98EC3F1E")
-		DataWord(coinBase)
+		VMWord(coinBase)
 	}
 
-	override def timestamp: DataWord = {
+	override def timestamp: VMWord = {
 		val timestamp: Long = 1401421348
-		DataWord(timestamp)
+		VMWord(timestamp)
 	}
 
-	override def blockNumber: DataWord = {
+	override def blockNumber: VMWord = {
 		val number: Long = 33
-		DataWord(number)
+		VMWord(number)
 	}
 
-	override def difficulty: DataWord = {
+	override def difficulty: VMWord = {
 		val difficulty = ImmutableBytes.parseHexString("3ED290")
-		DataWord(difficulty)
+		VMWord(difficulty)
 	}
 
-	override def blockManaLimit: DataWord = {
-		DataWord(this._manaLimit)
+	override def blockManaLimit: VMWord = {
+		VMWord(this._manaLimit)
 	}
 
 	def setManaLimit(v: Long) {

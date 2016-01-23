@@ -16,14 +16,14 @@ import scala.util.Random
  */
 
 @RunWith(classOf[JUnitRunner])
-class DataWordTest extends Specification {
+class VMWordTest extends Specification {
 	sequential
 
 	private val RANDOM_CASES = 100
 
 	"last 20" should {
 		"be right" in {
-			val word = DataWord((0 until 32).map(_.toByte).toArray)
+			val word = VMWord((0 until 32).map(_.toByte).toArray)
 			word.data.length mustEqual 32
 
 			val bytes = word.last20Bytes.bytes
@@ -35,7 +35,7 @@ class DataWordTest extends Specification {
 
 	"strip zeros (1)" should {
 		"be right" in {
-			val word = DataWord((0 until 32).map(_.toByte).toArray)
+			val word = VMWord((0 until 32).map(_.toByte).toArray)
 			word.data.length mustEqual 32
 			word.getDataWithoutLeadingZeros.length mustEqual 31
 			word.occupiedBytes mustEqual 31
@@ -45,7 +45,7 @@ class DataWordTest extends Specification {
 
 	"strip zeros (2)" should {
 		"be right" in {
-			val word = DataWord((1 until 33).map(_.toByte).toArray)
+			val word = VMWord((1 until 33).map(_.toByte).toArray)
 			word.data.length mustEqual 32
 			word.getDataWithoutLeadingZeros.length mustEqual 32
 			word.occupiedBytes mustEqual 32
@@ -55,37 +55,37 @@ class DataWordTest extends Specification {
 
 	"strip zeros (3)" should {
 		"be right" in {
-			val word = DataWord(0)
+			val word = VMWord(0)
 			word.data.length mustEqual 32
 			word.getDataWithoutLeadingZeros.length mustEqual 0
 			word.occupiedBytes mustEqual 0
-			(word == DataWord.Zero) mustEqual true
-			word.hashCode mustEqual DataWord.Zero.hashCode
+			(word == VMWord.Zero) mustEqual true
+			word.hashCode mustEqual VMWord.Zero.hashCode
 			word.toPrefixString mustEqual ""
 		}
 	}
 
 	"strip zeros (4)" should {
 		"be right" in {
-			val word = DataWord(1)
+			val word = VMWord(1)
 			word.data.length mustEqual 32
 			word.getDataWithoutLeadingZeros.length mustEqual 1
 			word.occupiedBytes mustEqual 1
-			(word == DataWord.One) mustEqual true
+			(word == VMWord.One) mustEqual true
 			word.toPrefixString mustEqual "01"
 		}
 	}
 
 	"instance creation (1)" should {
 		"be right" in {
-			val zero = DataWord(null.asInstanceOf[ImmutableBytes])
+			val zero = VMWord(null.asInstanceOf[ImmutableBytes])
 			zero.isZero mustEqual true
 		}
 	}
 
 	"instance creation (2)" should {
 		"be right" in {
-			val word = DataWord(ImmutableBytes((0 until 32).map(_.toByte).toArray))
+			val word = VMWord(ImmutableBytes((0 until 32).map(_.toByte).toArray))
 			word.data.indices.foreach {i => {
 				word.data(i) mustEqual i
 			}}
@@ -95,7 +95,7 @@ class DataWordTest extends Specification {
 
 	"instance creation (3)" should {
 		"be right" in {
-			val word = DataWord(ImmutableBytes.fromOneByte(1))
+			val word = VMWord(ImmutableBytes.fromOneByte(1))
 			word.data.length mustEqual 32
 			word.data(31) mustEqual 1
 			word.getDataWithoutLeadingZeros.length mustEqual 1
@@ -104,18 +104,18 @@ class DataWordTest extends Specification {
 
 	"comparison" should {
 		"be right" in {
-			val zero = DataWord(0)
-			zero.compareTo(DataWord.Zero) mustEqual 0
-			zero.compareTo(DataWord.One) mustEqual -1
-			DataWord.One.compareTo(zero) mustEqual 1
+			val zero = VMWord(0)
+			zero.compareTo(VMWord.Zero) mustEqual 0
+			zero.compareTo(VMWord.One) mustEqual -1
+			VMWord.One.compareTo(zero) mustEqual 1
 		}
 	}
 
 	"add simple" should {
 		"be right" in {
-			val word0 = DataWord(0)
-			val word1 = DataWord(1)
-			val word2 = DataWord(2)
+			val word0 = VMWord(0)
+			val word1 = VMWord(1)
+			val word2 = VMWord(2)
 			(word1 + word2).intValue mustEqual 3
 			(word0 + word1).intValue mustEqual 1
 			(word2 + word0).intValue mustEqual 2
@@ -130,9 +130,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = random.nextLong()
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = random.nextLong()
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 & word2).longValue mustEqual (value1 & value2)
 					//println("[And] %,d == %,d".format((word1 & word2).longValue, value1 & value2))
 				}
@@ -149,9 +149,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = random.nextLong()
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = random.nextLong()
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 | word2).longValue mustEqual (value1 | value2)
 					//println("[Or] %,d == %,d".format((word1 | word2).longValue, value1 | value2))
 				}
@@ -168,9 +168,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = random.nextLong()
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = random.nextLong()
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 ^ word2).longValue mustEqual (value1 ^ value2)
 					//println("[Xor] %,d == %,d".format((word1 ^ word2).longValue, value1 ^ value2))
 				}
@@ -187,7 +187,7 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value = Math.abs(random.nextLong())
-					val word = DataWord(value)
+					val word = VMWord(value)
 					(~word).longValue mustEqual ~value
 					//println("[1s' compl] %,d == %,d".format((~word).longValue, ~value))
 				}
@@ -204,9 +204,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = random.nextLong()
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = random.nextLong()
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 + word2).longValue mustEqual (value1 + value2)
 					//println("[Add] %,d == %,d".format((word1 + word2).longValue, value1 + value2))
 				}
@@ -225,8 +225,8 @@ class DataWordTest extends Specification {
 					val value1 = random.nextLong()
 					val value2 = random.nextLong()
 
-					val word1 = DataWord(value1.max(value2))
-					val word2 = DataWord(value2.min(value1))
+					val word1 = VMWord(value1.max(value2))
+					val word2 = VMWord(value2.min(value1))
 					(word1 - word2).longValue mustEqual (value1.max(value2) - value2.min(value1))
 					//println("[Sub] %,d == %,d".format((word1 - word2).longValue, value1 - value2))
 				}
@@ -243,9 +243,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = random.nextLong()
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = random.nextLong()
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 * word2).longValue mustEqual (value1 * value2)
 					//println("[Mul] %,d == %,d".format((word1 * word2).longValue, value1 * value2))
 				}
@@ -272,9 +272,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = Math.abs(random.nextLong())
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = generateNonZeroLong(random)
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 / word2).longValue mustEqual (value1 / value2)
 					//println("[Div] %,d == %,d".format((word1 / word2).longValue, value1 / value2))
 				}
@@ -291,9 +291,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = Math.abs(random.nextLong())
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = generateNonZeroLong(random)
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 % word2).longValue mustEqual (value1 % value2)
 					//println("[Mod] %,d == %,d".format((word1 % word2).longValue, value1 % value2))
 				}
@@ -310,9 +310,9 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = Math.abs(random.nextInt(Int.MaxValue / 4))
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = Math.abs(random.nextInt(3))
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					(word1 exp word2).longValue mustEqual BigInt(value1).pow(value2).longValue
 					//println("[Exp] %,d == %,d".format((word1 exp word2).longValue, BigInt(value1).pow(value2).longValue()))
 				}
@@ -329,11 +329,11 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					val value3 = Math.abs(random.nextInt(Int.MaxValue - 1)) + 1
-					val word3 = DataWord(value3)
+					val word3 = VMWord(value3)
 					word1.addMod(word2, word3).longValue mustEqual (BigInt(value1) + BigInt(value2)) % BigInt(value3)
 					//println("[AddMod] %,d == %,d".format(word1.addMod(word2, word3).longValue, (BigInt(value1) + BigInt(value2)) % BigInt(value3)))
 				}
@@ -350,11 +350,11 @@ class DataWordTest extends Specification {
 			(0 until RANDOM_CASES).foreach {
 				_ => {
 					val value1 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
-					val word1 = DataWord(value1)
+					val word1 = VMWord(value1)
 					val value2 = Math.abs(random.nextInt((Int.MaxValue / 2) - 1))
-					val word2 = DataWord(value2)
+					val word2 = VMWord(value2)
 					val value3 = Math.abs(random.nextInt(Int.MaxValue - 1)) + 1
-					val word3 = DataWord(value3)
+					val word3 = VMWord(value3)
 					word1.mulMod(word2, word3).longValue mustEqual (BigInt(value1) * BigInt(value2)) % BigInt(value3)
 					//println("[MulMod] %,d == %,d".format(word1.mulMod(word2, word3).longValue, (BigInt(value1) * BigInt(value2)) % BigInt(value3)))
 				}
@@ -370,8 +370,8 @@ class DataWordTest extends Specification {
 			val b = new Array[Byte](32)
 			b(0) = 0x1 // 0x1000000000000000000000000000000000000000000000000000000000000000
 
-			val x = DataWord(a)
-			val y = DataWord(b)
+			val x = VMWord(a)
+			val y = VMWord(b)
 			val result = x * y
 			result.data.length mustEqual 32
 		}
@@ -388,8 +388,8 @@ class DataWordTest extends Specification {
 			b(31) = 0x0f
 			// 0x000000000000000000000000000000000000000000000000000000000000000f
 
-			val x = DataWord(a)
-			val y = DataWord(b)
+			val x = VMWord(a)
+			val y = VMWord(b)
 			val result = x / y
 			result.isHex("0000000000000000000000000000000000000000000000000000000000000014") mustEqual true
 		}
@@ -403,8 +403,8 @@ class DataWordTest extends Specification {
 
 			val b = new Array[Byte](32)
 
-			val x = DataWord(a)
-			val y = DataWord(b)
+			val x = VMWord(a)
+			val y = VMWord(b)
 			val result = x / y
 			result.isZero mustEqual true
 		}
@@ -418,8 +418,8 @@ class DataWordTest extends Specification {
 
 			val b = new Array[Byte](32)
 
-			val x = DataWord(a)
-			val y = DataWord(b)
+			val x = VMWord(a)
+			val y = VMWord(b)
 			val result = x % y
 			result.isZero mustEqual true
 		}
@@ -433,8 +433,8 @@ class DataWordTest extends Specification {
 			val b = new Array[Byte](32)
 			b(31) = 0x0f
 
-			val x = DataWord(a)
-			val y = DataWord(b)
+			val x = VMWord(a)
+			val y = VMWord(b)
 			val result = x sDiv y
 
 			result.toString mustEqual "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffec"
@@ -443,7 +443,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (1)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("f2".toCharArray))
+			val x  = VMWord(Hex.decodeHex("f2".toCharArray))
 			val result = x.signExtend(0)
 
 			val expected : String = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2"
@@ -453,7 +453,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (2)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("f2".toCharArray))
+			val x  = VMWord(Hex.decodeHex("f2".toCharArray))
 			val result = x.signExtend(1)
 
 			val expected : String = "00000000000000000000000000000000000000000000000000000000000000f2"
@@ -463,7 +463,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (3)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("0f00ab".toCharArray))
+			val x  = VMWord(Hex.decodeHex("0f00ab".toCharArray))
 			val result = x.signExtend(1)
 
 			val expected : String = "00000000000000000000000000000000000000000000000000000000000000ab"
@@ -473,7 +473,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (4)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("ffff".toCharArray))
+			val x  = VMWord(Hex.decodeHex("ffff".toCharArray))
 			val result = x.signExtend(1)
 
 			val expected : String = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -483,7 +483,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (5)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("ffffffff".toCharArray))
+			val x  = VMWord(Hex.decodeHex("ffffffff".toCharArray))
 			val result = x.signExtend(3)
 
 			val expected : String = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -493,7 +493,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (6)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("ab02345678".toCharArray))
+			val x  = VMWord(Hex.decodeHex("ab02345678".toCharArray))
 			val result = x.signExtend(3)
 
 			val expected : String = "0000000000000000000000000000000000000000000000000000000002345678"
@@ -503,7 +503,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (7)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("ab82345678".toCharArray))
+			val x  = VMWord(Hex.decodeHex("ab82345678".toCharArray))
 			val result = x.signExtend(3)
 
 			val expected : String = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff82345678"
@@ -513,7 +513,7 @@ class DataWordTest extends Specification {
 
 	"sign extend (8)" should {
 		"be right" in {
-			val x  = DataWord(Hex.decodeHex("ff34567882345678823456788234567882345678823456788234567882345678".toCharArray))
+			val x  = VMWord(Hex.decodeHex("ff34567882345678823456788234567882345678823456788234567882345678".toCharArray))
 			val result = x.signExtend(30)
 
 			val expected : String = "0034567882345678823456788234567882345678823456788234567882345678"
@@ -524,7 +524,7 @@ class DataWordTest extends Specification {
 	"sign extend exception (1)" should {
 		"be right" in {
 			try {
-				val x  = DataWord(Hex.decodeHex("ff34567882345678823456788234567882345678823456788234567882345678".toCharArray))
+				val x  = VMWord(Hex.decodeHex("ff34567882345678823456788234567882345678823456788234567882345678".toCharArray))
 				x.signExtend(-1)
 				ko
 			} catch {
@@ -537,7 +537,7 @@ class DataWordTest extends Specification {
 	"sign extend exception (2)" should {
 		"be right" in {
 			try {
-				val x  = DataWord(Hex.decodeHex("ff34567882345678823456788234567882345678823456788234567882345678".toCharArray))
+				val x  = VMWord(Hex.decodeHex("ff34567882345678823456788234567882345678823456788234567882345678".toCharArray))
 				x.signExtend(32)
 				ko
 			} catch {
@@ -549,11 +549,11 @@ class DataWordTest extends Specification {
 
 	"overflow" should {
 		"be right" in {
-			val v1 = DataWord(7)
+			val v1 = VMWord(7)
 			v1.intValueSafe mustEqual 7
 			v1.longValueSafe mustEqual 7L
 
-			val v2 = DataWord((0 until 32).map(_ => 0xff.toByte).toArray)
+			val v2 = VMWord((0 until 32).map(_ => 0xff.toByte).toArray)
 			v2.intValueSafe mustEqual Int.MaxValue
 			v2.longValueSafe mustEqual Long.MaxValue
 		}

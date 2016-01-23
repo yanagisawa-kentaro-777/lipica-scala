@@ -10,7 +10,7 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
  */
-case class LogInfo(address: Address, topics: Seq[DataWord], data: ImmutableBytes) {
+case class LogInfo(address: Address, topics: Seq[VMWord], data: ImmutableBytes) {
 
 	def encode: ImmutableBytes = {
 		val encodedAddress = RBACCodec.Encoder.encode(this.address)
@@ -45,7 +45,7 @@ object LogInfo {
 
 	def decode(items: Seq[DecodedResult]): LogInfo = {
 		val address = Address160(items.head.bytes)
-		val topics = items(1).items.map(each => DataWord(each.bytes))
+		val topics = items(1).items.map(each => VMWord(each.bytes))
 		val data = items(2).bytes
 		LogInfo(address, topics, data)
 	}

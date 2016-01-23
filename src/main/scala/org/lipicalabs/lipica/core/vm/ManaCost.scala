@@ -53,10 +53,10 @@ object ManaCost {
 	 * メモリ消費の増分に対する平方（２乗）課金を計算します。
 	 */
 	def calculateQuadraticMemoryMana(newMemoryUsage: Long, oldMemoryUsage: Long): Long = {
-		val memWordsNew = DataWord.countWords(newMemoryUsage)
+		val memWordsNew = VMWord.countWords(newMemoryUsage)
 		val newFee = calculateQuadraticMana(memWordsNew)
 
-		val memWordsOld = DataWord.countWords(oldMemoryUsage)
+		val memWordsOld = VMWord.countWords(oldMemoryUsage)
 		val oldFee = calculateQuadraticMana(memWordsOld)
 
 		newFee - oldFee

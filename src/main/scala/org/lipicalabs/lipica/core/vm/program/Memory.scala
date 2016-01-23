@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program
 
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, ByteUtils}
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.program.listener.{ProgramListenerAware, ProgramListener}
 
 import scala.collection.mutable
@@ -124,8 +124,8 @@ class Memory extends ProgramListenerAware {
 	/**
 	 * メモリ上の番地から１ワードを読み取って返します。
 	 */
-	def readWord(address: Int): DataWord = {
-		DataWord(read(address, 32))
+	def readWord(address: Int): VMWord = {
+		VMWord(read(address, 32))
 	}
 
 	def size: Int = this.softSize
@@ -188,5 +188,5 @@ class Memory extends ProgramListenerAware {
 
 object Memory {
 	private[program] val CHUNK_SIZE = 1024
-	private[program] val WORD_SIZE = DataWord.NUM_BYTES
+	private[program] val WORD_SIZE = VMWord.NumberOfBytes
 }

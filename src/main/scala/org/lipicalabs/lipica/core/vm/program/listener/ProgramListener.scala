@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program.listener
 
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 /**
  *
@@ -16,11 +16,11 @@ trait ProgramListener {
 
 	def onStackPop(): Unit
 
-	def onStackPush(value: DataWord): Unit
+	def onStackPush(value: VMWord): Unit
 
 	def onStackSwap(from: Int, to: Int): Unit
 
-	def onStoragePut(key: DataWord, value: DataWord): Unit
+	def onStoragePut(key: VMWord, value: VMWord): Unit
 
 	def onStorageClear(): Unit
 

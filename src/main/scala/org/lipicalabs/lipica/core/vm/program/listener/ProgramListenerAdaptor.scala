@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program.listener
 
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 /**
  *
@@ -18,10 +18,10 @@ class ProgramListenerAdaptor extends ProgramListener {
 
 	override def onStackPop(): Unit = ()
 
-	override def onStoragePut(key: DataWord, value: DataWord): Unit = ()
+	override def onStoragePut(key: VMWord, value: VMWord): Unit = ()
 
 	override def onStackSwap(from: Int, to: Int): Unit = ()
 
-	override def onStackPush(value: DataWord): Unit = ()
+	override def onStackPush(value: VMWord): Unit = ()
 
 }

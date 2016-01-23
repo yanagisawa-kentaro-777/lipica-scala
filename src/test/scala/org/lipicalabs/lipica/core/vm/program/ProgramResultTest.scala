@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm.program
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.kernel.EmptyAddress
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.{LogInfo, DataWord}
+import org.lipicalabs.lipica.core.vm.{LogInfo, VMWord}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -41,7 +41,7 @@ class ProgramResultTest extends Specification {
 			result.addFutureRefund(6)
 			result.futureRefund mustEqual 6
 
-			result.addDeletedAccount(DataWord.Zero)
+			result.addDeletedAccount(VMWord.Zero)
 			result.deletedAccounts.size mustEqual 1
 			result.addLog(new LogInfo(EmptyAddress, Seq.empty, ImmutableBytes.empty))
 			result.addLog(new LogInfo(EmptyAddress, Seq.empty, ImmutableBytes.empty))

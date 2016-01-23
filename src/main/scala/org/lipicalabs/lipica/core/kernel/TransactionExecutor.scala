@@ -105,7 +105,7 @@ class TransactionExecutor(
 			this.program.storage.getContractDetails(newContractAddress).foreach {
 				contractDetails => {
 					for (key <- contractDetails.storageKeys) {
-						this.program.storageSave(key, DataWord.Zero)
+						this.program.storageSave(key, VMWord.Zero)
 					}
 				}
 			}
@@ -119,7 +119,7 @@ class TransactionExecutor(
 			return
 		}
 		val targetAddress = this.tx.receiverAddress
-		this.precompiledContract = PrecompiledContracts.getContractForAddress(DataWord(targetAddress.bytes))
+		this.precompiledContract = PrecompiledContracts.getContractForAddress(VMWord(targetAddress.bytes))
 		this.precompiledContract match {
 			case Some(contract) =>
 				if (logger.isDebugEnabled) {

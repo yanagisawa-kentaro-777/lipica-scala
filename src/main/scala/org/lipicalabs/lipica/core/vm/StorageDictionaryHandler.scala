@@ -11,25 +11,25 @@ import scala.collection.mutable
  * @since 2015/11/03
  * @author YANAGISAWA, Kentaro
  */
-class StorageDictionaryHandler(ownerAddress: DataWord) {
+class StorageDictionaryHandler(ownerAddress: VMWord) {
 
 	import StorageDictionaryHandler._
 
 	private val contractAddress = ownerAddress.getDataWithoutLeadingZeros
 
 	private val ConstHashes = {
-		var storageIndex = DataWord.Zero
+		var storageIndex = VMWord.Zero
 		(0 until 5000).map(i => {
 			val digest = storageIndex.data.digest256.bytes
-			val entry = new Entry(DataWord(digest), storageIndex.data)
-			storageIndex = storageIndex + DataWord.One
+			val entry = new Entry(VMWord(digest), storageIndex.data)
+			storageIndex = storageIndex + VMWord.One
 			getMapKey(digest) -> entry
 		}).toMap
 	}
 	private val hashes = new mutable.HashMap[ImmutableBytes, Entry]
-	private val storeKeys = new mutable.HashMap[ImmutableBytes, DataWord]
+	private val storeKeys = new mutable.HashMap[ImmutableBytes, VMWord]
 
-	def vmSha3Notify(in: ImmutableBytes, out: DataWord) {
+	def vmSha3Notify(in: ImmutableBytes, out: VMWord) {
 		try {
 			hashes.put(getMapKey(out.data), new Entry(out, in))
 		} catch {
@@ -40,7 +40,7 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 		}
 	}
 
-	def vmSStoreNotify(key: DataWord, value: DataWord) {
+	def vmSStoreNotify(key: VMWord, value: VMWord) {
 		try {
 			storeKeys.put(key.data, value)
 		} catch {
@@ -273,7 +273,7 @@ class StorageDictionaryHandler(ownerAddress: DataWord) {
 object StorageDictionaryHandler {
 	private val logger: Logger = LoggerFactory.getLogger("vm")
 
-	class Entry(val hashValue: DataWord, val input: ImmutableBytes) {
+	class Entry(val hashValue: VMWord, val input: ImmutableBytes) {
 		override def toString: String = {
 			"sha3(" + input.toHexString + ") = " + hashValue
 		}

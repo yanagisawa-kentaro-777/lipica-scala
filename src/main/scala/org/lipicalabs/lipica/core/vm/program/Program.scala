@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.crypto.digest.{Digest256, DigestUtils}
 import org.lipicalabs.lipica.core.utils.{BigIntBytes, UtilConsts, ImmutableBytes, ByteUtils}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm.trace.{ProgramTrace, ProgramTraceListener}
-import org.lipicalabs.lipica.core.vm.{ManaCost, VM, DataWord, OpCode}
+import org.lipicalabs.lipica.core.vm.{ManaCost, VM, VMWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.context.{ProgramContextFactory, ProgramContextFactoryImpl, ProgramContext}
 import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAware
 import org.slf4j.LoggerFactory
@@ -60,7 +60,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 
 	def getCallDepth: Int = this.context.callDepth
 
-	private def addInternalTx(nonce: BigIntBytes, manaLimit: DataWord, senderAddress: Address, receiveAddress: Address, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
+	private def addInternalTx(nonce: BigIntBytes, manaLimit: VMWord, senderAddress: Address, receiveAddress: Address, value: BigInt, data: ImmutableBytes, note: String): InternalTransaction = {
 		if (this.transaction ne null) {
 			val senderNonce =
 				if (nonce.isEmpty) {
@@ -92,13 +92,13 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	}
 
 	/* スタックへのpush操作。 */
-	def stackPush(word: DataWord): Unit = {
+	def stackPush(word: VMWord): Unit = {
 		verifyStackOverflow(0, 1)
 		this.stack.push(word)
 	}
-	def stackPush(data: Array[Byte]): Unit = stackPush(DataWord(data))
-	def stackPushZero(): Unit = stackPush(DataWord.Zero)
-	def stackPushOne(): Unit = stackPush(DataWord.One)
+	def stackPush(data: Array[Byte]): Unit = stackPush(VMWord(data))
+	def stackPushZero(): Unit = stackPush(VMWord.Zero)
+	def stackPushOne(): Unit = stackPush(VMWord.One)
 
 	def verifyStackSize(requiredSize: Int): Unit = {
 		if (this.stack.size < requiredSize) {
@@ -115,7 +115,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	/**
 	 * スタックから値をpopして返します。
 	 */
-	def stackPop: DataWord = this.stack.pop
+	def stackPop: VMWord = this.stack.pop
 
 	/** プログラムカウンタへの操作。 */
 	def getPC: Int = this.pc
@@ -126,7 +126,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 			stop()
 		}
 	}
-	def setPC(v: DataWord): Unit = setPC(v.intValue)
+	def setPC(v: VMWord): Unit = setPC(v.intValue)
 
 	/**
 	 * 実行を１段階進めます。
@@ -163,24 +163,24 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	def memorySave(addr: Int, value: ImmutableBytes, len: Int, limited: Boolean): Unit = {
 		this.memory.write(addr, value, len, limited)
 	}
-	def memorySave(addr: DataWord, value: ImmutableBytes, limited: Boolean): Unit = {
+	def memorySave(addr: VMWord, value: ImmutableBytes, limited: Boolean): Unit = {
 		this.memory.write(addr.intValueSafe, value, value.length, limited)
 	}
-	private def memorySave(addr: DataWord, value: DataWord, limited: Boolean): Unit = {
+	private def memorySave(addr: VMWord, value: VMWord, limited: Boolean): Unit = {
 		memorySave(addr, value.data, limited)
 	}
-	def memorySave(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = false)
-	def memorySaveLimited(addr: DataWord, value: DataWord): Unit = memorySave(addr, value, limited = true)
+	def memorySave(addr: VMWord, value: VMWord): Unit = memorySave(addr, value, limited = false)
+	def memorySaveLimited(addr: VMWord, value: VMWord): Unit = memorySave(addr, value, limited = true)
 	def memorySave(addr: Int, allocSize: Int, value: ImmutableBytes): Unit = {
 		this.memory.extendAndWrite(addr, allocSize, value)
 	}
-	def memoryLoad(addr: DataWord): DataWord = {
+	def memoryLoad(addr: VMWord): VMWord = {
 		this.memory.readWord(addr.intValueSafe)
 	}
 	def memoryChunk(offset: Int, size: Int): ImmutableBytes = {
 		this.memory.read(offset, size)
 	}
-	def memoryExpand(outDataOffset: DataWord, outDataSize: DataWord): Unit = {
+	def memoryExpand(outDataOffset: VMWord, outDataSize: VMWord): Unit = {
 		allocateMemory(outDataOffset.intValue, outDataSize.intValue)
 	}
 	def allocateMemory(offset: Int, size: Int): Unit = {
@@ -198,17 +198,17 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	}
 
 	/** ストレージ操作。 */
-	def storageSave(key: DataWord, value: DataWord): Unit = {
+	def storageSave(key: VMWord, value: VMWord): Unit = {
 		this.storage.addStorageRow(getOwnerAddress.last20Bytes, key, value)
 	}
 	def storageSave(key: ImmutableBytes, value: ImmutableBytes): Unit = {
-		storageSave(DataWord(key), DataWord(value))
+		storageSave(VMWord(key), VMWord(value))
 	}
-	def storageLoad(key: DataWord): Option[DataWord] = {
+	def storageLoad(key: VMWord): Option[VMWord] = {
 		this.storage.getStorageValue(getOwnerAddress.last20Bytes, key)
 	}
 
-	def suicide(obtainerAddress: DataWord): Unit = {
+	def suicide(obtainerAddress: VMWord): Unit = {
 		val owner = getOwnerAddress.last20Bytes
 		val obtainer = obtainerAddress.last20Bytes
 		val balance = this.storage.getBalance(owner).getOrElse(UtilConsts.Zero)
@@ -216,12 +216,12 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 			logger.info("Transfer to [%s] heritage: [%s]".format(obtainer.toHexString, balance))
 		}
 
-		addInternalTx(BigIntBytes.empty, DataWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
+		addInternalTx(BigIntBytes.empty, VMWord.Zero, owner, obtainer, balance, ImmutableBytes.empty, "suicide")
 		Payment.transfer(this.storage, owner, obtainer, balance, Payment.Bequest)
 		result.addDeletedAccount(getOwnerAddress)
 	}
 
-	def createContract(value: DataWord, memStart: DataWord, memSize: DataWord): Unit = {
+	def createContract(value: VMWord, memStart: VMWord, memSize: VMWord): Unit = {
 		if (getCallDepth == MaxDepth) {
 			stackPushZero()
 			return
@@ -262,7 +262,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 		val newBalance = Payment.transfer(track, senderAddress, newAddress, endowment, Payment.ContractCreationTx)
 		//実行する。
 		val internalTx = addInternalTx(nonce, getBlockManaLimit, senderAddress, EmptyAddress, endowment, programCode, "create")
-		val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(newAddress.bytes), DataWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.context.blockStore)
+		val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, VMWord(newAddress.bytes), VMWord.Zero, manaLimit, newBalance, ImmutableBytes.empty, track, this.context.blockStore)
 
 		val programResult =
 			if (programCode.nonEmpty) {
@@ -307,7 +307,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 		this.result.addLogs(programResult.logsAsSeq)
 
 		//生成されたアドレスを、スタックにプッシュする。
-		stackPush(DataWord(newAddress.bytes))
+		stackPush(VMWord(newAddress.bytes))
 
 		//残金をリファンドする。
 		val refundMana = manaLimit.longValue - programResult.manaUsed
@@ -367,7 +367,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 
 		val programResultOption =
 			if (programCode.nonEmpty) {
-				val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, DataWord(contextAddress.bytes), message.endowment, message.mana, contextBalance, data, track, this.context.blockStore)
+				val programContext: ProgramContext = this.programContextFactory.createProgramContext(this, VMWord(contextAddress.bytes), message.endowment, message.mana, contextBalance, data, track, this.context.blockStore)
 
 				val vm = new VM
 				val program = new Program(programCode, programContext, internalTx)
@@ -501,25 +501,25 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	/**
 	 * あるアドレスに結び付けられたコードをロードして返します。
 	 */
-	def getCodeAt(address: DataWord): Option[ImmutableBytes] = {
+	def getCodeAt(address: VMWord): Option[ImmutableBytes] = {
 		this.context.repository.getCode(address.last20Bytes)
 	}
 
-	def getOwnerAddress: DataWord = this.context.ownerAddress
+	def getOwnerAddress: VMWord = this.context.ownerAddress
 
-	def getBlockHash(index: Int): DataWord = {
+	def getBlockHash(index: Int): VMWord = {
 		if ((index < this.getBlockNumber.longValue) && (256.max(this.getBlockNumber.intValue) - 256 <= index)) {
 			//最近256ブロック内である。
-			this.context.blockStore.getBlockHashByNumber(index, Digest256(getParentHash.data)).map(found => DataWord(found.bytes)).getOrElse(DataWord.Zero)
+			this.context.blockStore.getBlockHashByNumber(index, Digest256(getParentHash.data)).map(found => VMWord(found.bytes)).getOrElse(VMWord.Zero)
 		} else {
 			//古すぎるか未知。
-			DataWord.Zero
+			VMWord.Zero
 		}
 	}
 
-	def getBalance(address: DataWord): DataWord = {
+	def getBalance(address: VMWord): VMWord = {
 		val balance = this.storage.getBalance(address.last20Bytes).getOrElse(UtilConsts.Zero)
-		DataWord(ImmutableBytes.asSignedByteArray(balance))
+		VMWord(ImmutableBytes.asSignedByteArray(balance))
 	}
 
 	def getOriginAddress = this.context.originAddress
@@ -527,12 +527,12 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	def getManaPrice = this.context.manaPrice
 	def getMana = {
 		val remaining = context.manaLimit.longValue - this.result.manaUsed
-		DataWord(remaining)
+		VMWord(remaining)
 	}
 	def getCallValue = this.context.callValue
 	def getDataSize = this.context.dataSize
-	def getDataValue(index: DataWord) = this.context.getDataValue(index)
-	def getDataCopy(offset: DataWord, length: DataWord): ImmutableBytes = this.context.getDataCopy(offset, length)
+	def getDataValue(index: VMWord) = this.context.getDataValue(index)
+	def getDataCopy(offset: VMWord, length: VMWord): ImmutableBytes = this.context.getDataCopy(offset, length)
 	def getParentHash = this.context.parentHash
 	def getCoinbase = this.context.coinbase
 	def getTimestamp = this.context.timestamp
@@ -586,7 +586,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	 * 渡されたプログラムカウンタによって参照されるバイトコードが、
 	 * JUMPDEST命令であることを確認します。
 	 */
-	def verifyJumpDest(nextPC: DataWord): Either[RuntimeException, Int] = {
+	def verifyJumpDest(nextPC: VMWord): Either[RuntimeException, Int] = {
 		if (4 < nextPC.occupiedBytes) {
 			Left(Exception.badJumpDestination(-1))
 		}
@@ -674,7 +674,7 @@ object Program {
 			new OutOfManaException("Not enough mana for '%s' operation executing: opMana[%,d], programMana[%,d];".format(op, opMana, programMana))
 		}
 
-		def notEnoughOpMana(op: OpCode, opMana: DataWord, programMana: DataWord): OutOfManaException = {
+		def notEnoughOpMana(op: OpCode, opMana: VMWord, programMana: VMWord): OutOfManaException = {
 			new OutOfManaException("Not enough mana for '%s' operation executing: opMana[%,d], programMana[%,d];".format(op, opMana.value, programMana.value))
 		}
 

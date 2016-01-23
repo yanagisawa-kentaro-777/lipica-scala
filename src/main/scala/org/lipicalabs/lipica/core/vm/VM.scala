@@ -66,8 +66,8 @@ class VM {
 			var manaCost = baseManaCost
 			//このステップにおけるメモリ使用の増分に対する課金を計算する。
 			//まずWord単位で切り上げる。
-			val newMemoryWords = DataWord.countWords(newMemSize.longValue())
-			val newMemoryUsage = newMemoryWords * DataWord.NUM_BYTES
+			val newMemoryWords = VMWord.countWords(newMemSize.longValue())
+			val newMemoryUsage = newMemoryWords * VMWord.NumberOfBytes
 			//前ステップまでの実績と比べて消費メモリが増えそうなら、詳しく計算する。
 			val oldMemoryUsage = program.getMemSize
 			if (oldMemoryUsage < newMemoryUsage) {
@@ -78,7 +78,7 @@ class VM {
 			}
 			//コピー容量の課金。
 			if (0 < copySize) {
-				val copyMana = ManaCost.CopyMana * DataWord.countWords(copySize)
+				val copyMana = ManaCost.CopyMana * VMWord.countWords(copySize)
 				manaCost += copyMana
 				program.spendMana(copyMana, op.name + " (copy usage)")
 			}
@@ -135,16 +135,16 @@ class VM {
 			case Balance =>
 				(ManaCost.Balance, Zero, 0L)
 			case MStore =>
-				(op.tier.asInt, memNeeded(stack.peek, DataWord(DataWord.NUM_BYTES)), 0L)
+				(op.tier.asInt, memNeeded(stack.peek, VMWord(VMWord.NumberOfBytes)), 0L)
 			case MStore8 =>
-				(op.tier.asInt, memNeeded(stack.peek, DataWord(1)), 0L)
+				(op.tier.asInt, memNeeded(stack.peek, VMWord(1)), 0L)
 			case MLoad =>
-				(op.tier.asInt, memNeeded(stack.peek, DataWord(DataWord.NUM_BYTES)), 0L)
+				(op.tier.asInt, memNeeded(stack.peek, VMWord(VMWord.NumberOfBytes)), 0L)
 			case Return =>
 				(ManaCost.Return, memNeeded(stack.peek, stack.get(-2)), 0L)
 			case Keccak256 =>
 				val size = stack.get(-2)
-				val chunkUsed = DataWord.countWords(size.longValue)
+				val chunkUsed = VMWord.countWords(size.longValue)
 				val manaCost = ManaCost.SHA3 + (chunkUsed * ManaCost.SHA3Word)
 				(manaCost, memNeeded(stack.peek, size), 0L)
 			case CallDataCopy =>
@@ -291,9 +291,9 @@ class VM {
 				}
 				val result =
 					if (word1.value < word2.value) {
-						DataWord.One
+						VMWord.One
 					} else {
-						DataWord.Zero
+						VMWord.Zero
 					}
 				program.stackPush(result)
 				program.step()
@@ -305,9 +305,9 @@ class VM {
 				}
 				val result =
 					if (word1.sValue < word2.sValue) {
-						DataWord.One
+						VMWord.One
 					} else {
-						DataWord.Zero
+						VMWord.Zero
 					}
 				program.stackPush(result)
 				program.step()
@@ -319,9 +319,9 @@ class VM {
 				}
 				val result =
 					if (word1.sValue > word2.sValue) {
-						DataWord.One
+						VMWord.One
 					} else {
-						DataWord.Zero
+						VMWord.Zero
 					}
 				program.stackPush(result)
 				program.step()
@@ -333,9 +333,9 @@ class VM {
 				}
 				val result =
 					if (word1.value > word2.value) {
-						DataWord.One
+						VMWord.One
 					} else {
-						DataWord.Zero
+						VMWord.Zero
 					}
 				program.stackPush(result)
 				program.step()
@@ -347,9 +347,9 @@ class VM {
 				}
 				val result =
 					if ((word1 ^ word2).isZero) {
-						DataWord.One
+						VMWord.One
 					} else {
-						DataWord.Zero
+						VMWord.Zero
 					}
 				program.stackPush(result)
 				program.step()
@@ -360,9 +360,9 @@ class VM {
 				}
 				val result =
 					if (word.isZero) {
-						DataWord.One
+						VMWord.One
 					} else {
-						DataWord.Zero
+						VMWord.Zero
 					}
 				program.stackPush(result)
 				program.step()
@@ -396,9 +396,9 @@ class VM {
 				val result =
 					if (word1.value < WordLength) {
 						val temp: Byte = word2.data(word1.intValue)
-						DataWord(temp & 0xFF)
+						VMWord(temp & 0xFF)
 					} else {
-						DataWord.Zero
+						VMWord.Zero
 					}
 				if (logger.isInfoEnabled) {
 					hint = "%d".format(result.value)
@@ -424,7 +424,7 @@ class VM {
 				val len = program.stackPop
 				val buffer = program.memoryChunk(offset.intValue, len.intValue)
 				//計算する。
-				val result = DataWord(buffer.digest256.bytes)
+				val result = VMWord(buffer.digest256.bytes)
 				//TODO 未実装： StorageDictHandler
 //				if (this.storageDictHandler ne null) {
 //					storageDictHandler.vmSha3Notify(buffer, result)
@@ -504,7 +504,7 @@ class VM {
 						val address = program.stackPop
 						program.getCodeAt(address).map(_.length).getOrElse(0)
 					}
-				val result = DataWord(length)
+				val result = VMWord(length)
 				if (logger.isInfoEnabled) {
 					hint = "size: " + length
 				}
@@ -613,7 +613,7 @@ class VM {
 				val memStart = stack.pop
 				val memSize = stack.pop
 				val nTopics = op.opcode - OpCode.Log0.opcode
-				val topics = new ArrayBuffer[DataWord](nTopics)
+				val topics = new ArrayBuffer[VMWord](nTopics)
 				(0 until nTopics).foreach {
 					_ => topics.append(stack.pop)
 				}
@@ -648,7 +648,7 @@ class VM {
 				program.step()
 			case SLoad =>
 				val key = program.stackPop
-				val value = program.storageLoad(key).getOrElse(DataWord.Zero)
+				val value = program.storageLoad(key).getOrElse(VMWord.Zero)
 				if (logger.isInfoEnabled) {
 					hint = "key: " + key + " value: " + value
 				}
@@ -692,14 +692,14 @@ class VM {
 					program.step()
 				}
 			case PC =>
-				val pc = DataWord(program.getPC)
+				val pc = VMWord(program.getPC)
 				if (logger.isInfoEnabled) {
 					hint = pc.intValue.toString
 				}
 				program.stackPush(pc)
 				program.step()
 			case MSize =>
-				val memSize = DataWord(program.getMemSize)
+				val memSize = VMWord(program.getMemSize)
 				if (logger.isInfoEnabled) {
 					hint = memSize.intValue.toString
 				}
@@ -720,7 +720,7 @@ class VM {
 				if (logger.isInfoEnabled) {
 					hint = data.toHexString
 				}
-				program.stackPush(DataWord(data))
+				program.stackPush(VMWord(data))
 			case JumpDest =>
 				program.step()
 			case Create =>
@@ -737,7 +737,7 @@ class VM {
 				val codeAddress = program.stackPop
 				val value = program.stackPop
 				if (!value.isZero) {
-					mana += DataWord(ManaCost.StipendCall)
+					mana += VMWord(ManaCost.StipendCall)
 				}
 				val inDataOffset = program.stackPop
 				val inDataSize = program.stackPop
@@ -787,7 +787,7 @@ class VM {
 	/**
 	 * 命令実行に必要となる、新たな総メモリ容量を計算して返します。
 	 */
-	private def memNeeded(offset: DataWord, size: DataWord): BigInt = {
+	private def memNeeded(offset: VMWord, size: VMWord): BigInt = {
 		if (size.isZero) Zero else offset.value + size.value
 	}
 
@@ -819,7 +819,7 @@ object VM {
 	private val dumpLogger = LoggerFactory.getLogger("dump")
 
 	private val Zero = UtilConsts.Zero
-	private val WordLength = BigInt(DataWord.NUM_BYTES)
+	private val WordLength = BigInt(VMWord.NumberOfBytes)
 	private val logString = "[%s]    Op: [%s]  Mana: [%s] Deep: [%,d]  Hint: [%s]"
 
 	private val MaxMana = BigInt(Long.MaxValue)

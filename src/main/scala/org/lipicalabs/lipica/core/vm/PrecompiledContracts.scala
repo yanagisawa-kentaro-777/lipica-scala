@@ -60,9 +60,9 @@ object PrecompiledContracts {
 		override def execute(data: ImmutableBytes): ImmutableBytes = {
 			if (data eq null) {
 				val bytes = DigestUtils.ripemd160(Array.emptyByteArray)
-				ImmutableBytes.expand(bytes, 0, bytes.length, DataWord.NUM_BYTES)
+				ImmutableBytes.expand(bytes, 0, bytes.length, VMWord.NumberOfBytes)
 			} else {
-				data.ripemd160(DataWord.NUM_BYTES)
+				data.ripemd160(VMWord.NumberOfBytes)
 			}
 		}
 	}
@@ -84,14 +84,14 @@ object PrecompiledContracts {
 				val signature = ECDSASignature.fromComponents(r, s, v(31))
 				val key = ECKey.signatureToKey(h, signature.toBase64)
 				val addr = key.getAddress
-				ImmutableBytes.expand(addr.toByteArray, 0, addr.length, DataWord.NUM_BYTES)
+				ImmutableBytes.expand(addr.toByteArray, 0, addr.length, VMWord.NumberOfBytes)
 			} catch {
 				case any: Throwable => ImmutableBytes.empty
 			}
 		}
 	}
 
-	def getContractForAddress(address: DataWord): Option[PrecompiledContract] = {
+	def getContractForAddress(address: VMWord): Option[PrecompiledContract] = {
 		if (address eq null) return Some(Identity)
 
 		if (address.isHex("0000000000000000000000000000000000000000000000000000000000000001")) return Some(ECRecover)

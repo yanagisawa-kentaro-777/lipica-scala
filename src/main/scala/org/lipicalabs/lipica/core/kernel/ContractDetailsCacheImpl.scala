@@ -6,7 +6,7 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 import scala.collection.mutable
 
@@ -17,8 +17,8 @@ import scala.collection.mutable
  */
 class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetails) extends ContractDetails {
 
-	private val storageRef = new AtomicReference[mutable.Map[DataWord, DataWord]](new mutable.HashMap[DataWord, DataWord])
-	private def storage: mutable.Map[DataWord, DataWord] = this.storageRef.get
+	private val storageRef = new AtomicReference[mutable.Map[VMWord, VMWord]](new mutable.HashMap[VMWord, VMWord])
+	private def storage: mutable.Map[VMWord, VMWord] = this.storageRef.get
 
 	private val codeRef = new AtomicReference[ImmutableBytes](
 		Option(this.originalContract).map(_.code).getOrElse(ImmutableBytes.empty)
@@ -34,20 +34,20 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 	override def isDeleted: Boolean = this.isDeletedRef.get
 	override def isDeleted_=(v: Boolean): Unit = this.isDeletedRef.set(v)
 
-	override def put(key: DataWord, value: DataWord) = {
+	override def put(key: VMWord, value: VMWord) = {
 		this.synchronized {
 			this.storage.put(key, value)
 			this.isDirty = true
 		}
 	}
 
-	override def get(key: DataWord) = {
+	override def get(key: VMWord) = {
 		this.synchronized {
 			val value = this.storage.getOrElse(key,
 				if (this.originalContract eq null) {
-					DataWord.Zero
+					VMWord.Zero
 				} else {
-					val v = this.originalContract.get(key).getOrElse(DataWord.Zero)
+					val v = this.originalContract.get(key).getOrElse(VMWord.Zero)
 					this.storage.put(key, v)
 					v
 				}
@@ -74,7 +74,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 
 	override def storageContent = this.storage.toMap
 
-	override def storageContent(aKeys: Iterable[DataWord]) = {
+	override def storageContent(aKeys: Iterable[VMWord]) = {
 		aKeys.flatMap {
 			eachKey => {
 				this.storage.get(eachKey).map(v => (eachKey, v))
@@ -82,7 +82,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 		}.toMap
 	}
 
-	override def storageKeys: Set[DataWord] = {
+	override def storageKeys: Set[VMWord] = {
 		if (originalContract eq null) {
 			this.storage.keySet.toSet
 		} else {
@@ -98,7 +98,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 		}
 	}
 
-	override def put(data: Map[DataWord, DataWord]): Unit = {
+	override def put(data: Map[VMWord, VMWord]): Unit = {
 		for (entry <- data) {
 			this.storage.put(entry._1, entry._2)
 		}
@@ -146,7 +146,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 
 			decodedKeySeq.indices.foreach {
 				i => {
-					this.storage.put(DataWord(decodedKeySeq(i).bytes), DataWord(decodedValueSeq(i).bytes))
+					this.storage.put(VMWord(decodedKeySeq(i).bytes), VMWord(decodedValueSeq(i).bytes))
 				}
 			}
 			this.code = decodedCode

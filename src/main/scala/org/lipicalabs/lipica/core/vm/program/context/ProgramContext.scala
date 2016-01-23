@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.vm.program.context
 
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 /**
  * あるコードが実行される文脈・環境を表す trait です。
@@ -19,7 +19,7 @@ trait ProgramContext {
 	 *
 	 * Address op.
 	 */
-	def ownerAddress: DataWord
+	def ownerAddress: VMWord
 
 	/**
 	 * このコード実行に至る一連の処理の
@@ -27,28 +27,28 @@ trait ProgramContext {
 	 *
 	 * Origin op.
 	 */
-	def originAddress: DataWord
+	def originAddress: VMWord
 
 	/**
 	 * このコードを呼び出したトランザクション実行者もしくはコントラクトのアドレス。
 	 *
 	 * Caller op.
 	 */
-	def callerAddress: DataWord
+	def callerAddress: VMWord
 
 	/**
 	 * コントラクト自身の残高。
 	 *
 	 * Balance op.
 	 */
-	def balance: DataWord
+	def balance: VMWord
 
 	/**
 	 * 現在の実行コンテクストのマナ価格。
 	 *
 	 * ManaPrice op.
 	 */
-	def manaPrice: DataWord
+	def manaPrice: VMWord
 
 	/**
 	 * 現在の実行コンテクストのマナ消費可能容量。
@@ -56,73 +56,73 @@ trait ProgramContext {
 	 *
 	 * Mana op.
 	 */
-	def manaLimit: DataWord
+	def manaLimit: VMWord
 
 	/**
 	 * 実行対象コントラクトに振り込まれる金額。
 	 *
 	 * CallValue op.
 	 */
-	def callValue: DataWord
+	def callValue: VMWord
 
 	/**
 	 * 実行時に渡されたデータ長。
 	 *
 	 * CallDataSize op.
 	 */
-	def dataSize: DataWord
+	def dataSize: VMWord
 
 	/**
 	 * 指定されたオフセットから、１ワード分のデータをスタックに格納します。
 	 */
-	def getDataValue(indexData: DataWord): DataWord
+	def getDataValue(indexData: VMWord): VMWord
 
 	/**
 	 * 指定されたオフセットから、指定された長さのデータを返します。
 	 */
-	def getDataCopy(offsetData: DataWord, lengthData: DataWord): ImmutableBytes
+	def getDataCopy(offsetData: VMWord, lengthData: VMWord): ImmutableBytes
 
 	/**
 	 * このブロックの直前ブロックのハッシュ値を返します。
 	 *
 	 * PrevHash op.
 	 */
-	def parentHash: DataWord
+	def parentHash: VMWord
 
 	/**
 	 * このブロックの採掘者のアドレスを返します。
 	 *
 	 * Coinbase op.
 	 */
-	def coinbase: DataWord
+	def coinbase: VMWord
 
 	/**
 	  * このブロックの生成された日時（UNIX時刻）を返します。
 	 *
 	 * Timestamp op.
 	  */
-	def timestamp: DataWord
+	def timestamp: VMWord
 
 	/**
 	 * このブロックの番号を返します。
 	 *
 	 * BlockNumber op.
 	 */
-	def blockNumber: DataWord
+	def blockNumber: VMWord
 
 	/**
 	 * このブロックのDifficulty値を返します。
 	 *
 	 * Difficulty op.
 	 */
-	def difficulty: DataWord
+	def difficulty: VMWord
 
 	/**
 	 * ブロックにおけるマナ上限を返します。
 	 *
 	 * ManaLimit op.
 	 */
-	def blockManaLimit: DataWord
+	def blockManaLimit: VMWord
 
 	def callDepth: Int
 

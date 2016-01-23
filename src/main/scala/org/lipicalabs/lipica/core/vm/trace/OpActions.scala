@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.trace
 
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.trace.OpActions._
 
 import scala.collection.immutable.Queue
@@ -17,7 +17,7 @@ case class OpActions(private val stack: Queue[Action], private val memory: Queue
 		new OpActions(this.stack :+ Action(Pop), this.memory, this.storage)
 	}
 
-	def stackPush(value: DataWord): OpActions = {
+	def stackPush(value: VMWord): OpActions = {
 		val action = Action(Push).addParam("value", value)
 		new OpActions(this.stack :+ action, this.memory, this.storage)
 	}
@@ -37,12 +37,12 @@ case class OpActions(private val stack: Queue[Action], private val memory: Queue
 		new OpActions(this.stack, this.memory :+ action, this.storage)
 	}
 
-	def storagePut(key: DataWord, value: DataWord): OpActions = {
+	def storagePut(key: VMWord, value: VMWord): OpActions = {
 		val action = Action(Put).addParam("key", key).addParam("value", value)
 		new OpActions(this.stack, this.memory, this.storage :+ action)
 	}
 
-	def storageRemove(key: DataWord): OpActions = {
+	def storageRemove(key: VMWord): OpActions = {
 		val action = Action(Remove).addParam("key", key)
 		new OpActions(this.stack, this.memory, this.storage :+ action)
 	}

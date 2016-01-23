@@ -19,7 +19,7 @@ class PrecompiledContractTest extends Specification {
 
 	"test identity (1)" should {
 		"be right" in {
-			val addr = DataWord("0000000000000000000000000000000000000000000000000000000000000004")
+			val addr = VMWord("0000000000000000000000000000000000000000000000000000000000000004")
 			val contract = PrecompiledContracts.getContractForAddress(addr).get
 			val data = ImmutableBytes.parseHexString("112233445566")
 			val result = contract.execute(data)
@@ -31,7 +31,7 @@ class PrecompiledContractTest extends Specification {
 
 	"test Sha256 (1)" should {
 		"be right" in {
-			val addr = DataWord("0000000000000000000000000000000000000000000000000000000000000002")
+			val addr = VMWord("0000000000000000000000000000000000000000000000000000000000000002")
 			val contract = PrecompiledContracts.getContractForAddress(addr).get
 			val data = null
 			val result = contract.execute(data)
@@ -43,7 +43,7 @@ class PrecompiledContractTest extends Specification {
 
 	"test Sha256 (2)" should {
 		"be right" in {
-			val addr = DataWord("0000000000000000000000000000000000000000000000000000000000000002")
+			val addr = VMWord("0000000000000000000000000000000000000000000000000000000000000002")
 			val contract = PrecompiledContracts.getContractForAddress(addr).get
 			val data = ImmutableBytes.empty
 			val result = contract.execute(data)
@@ -55,7 +55,7 @@ class PrecompiledContractTest extends Specification {
 
 	"test Sha256 (3)" should {
 		"be right" in {
-			val addr = DataWord("0000000000000000000000000000000000000000000000000000000000000002")
+			val addr = VMWord("0000000000000000000000000000000000000000000000000000000000000002")
 			val contract = PrecompiledContracts.getContractForAddress(addr).get
 			val data = ImmutableBytes.parseHexString("112233")
 			val result = contract.execute(data)
@@ -67,7 +67,7 @@ class PrecompiledContractTest extends Specification {
 
 	"test ripempd160 (1)" should {
 		"be right" in {
-			val addr = DataWord("0000000000000000000000000000000000000000000000000000000000000003")
+			val addr = VMWord("0000000000000000000000000000000000000000000000000000000000000003")
 			val contract = PrecompiledContracts.getContractForAddress(addr).get
 			val data = ImmutableBytes.parseHexString("0000000000000000000000000000000000000000000000000000000000000001")
 			val result = contract.execute(data)
@@ -79,7 +79,7 @@ class PrecompiledContractTest extends Specification {
 
 	"test ec recover (1)" should {
 		"be right" in {
-			val addr = DataWord("0000000000000000000000000000000000000000000000000000000000000001")
+			val addr = VMWord("0000000000000000000000000000000000000000000000000000000000000001")
 			val contract = PrecompiledContracts.getContractForAddress(addr).get
 			val data = ImmutableBytes.parseHexString("18c547e4f7b0f325ad1e56f57e26c745b09a3e503d86e00e5255ff7f715d3d1c000000000000000000000000000000000000000000000000000000000000001c73b1693892219d736caba55bdb67216e485557ea6b6af75f37096c9aa6a5a75feeb940b1d03b21e36b0e47e79769f095fe2ab855bd91e3a38756b7d75a9c4549")
 			val result = contract.execute(data)

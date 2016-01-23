@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.{DataWord, LogInfo}
+import org.lipicalabs.lipica.core.vm.{VMWord, LogInfo}
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -22,7 +22,7 @@ class TransactionReceiptTest extends Specification {
 		"be right" in {
 			val originalTx = Transaction.decode(ImmutableBytes.parseHexString("f85f800182520894000000000000000000000000000b9331677e6ebf0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3"))
 
-			val log = LogInfo(Address160(ImmutableBytes.create(20)), Seq(DataWord.apply(7777)), ImmutableBytes.parseHexString("7777"))
+			val log = LogInfo(Address160(ImmutableBytes.create(20)), Seq(VMWord.apply(7777)), ImmutableBytes.parseHexString("7777"))
 			val receipt = TransactionReceipt(Seq(log), ImmutableBytes.asUnsignedByteArray(BigInt(999)), DigestValue.parseHexString("8888888888888888888888888888888888888888888888888888888888888888"))
 			receipt.transaction = originalTx
 			//receipt.cumulativeMana = ImmutableBytes.asUnsignedByteArray(BigInt(999))
@@ -48,7 +48,7 @@ class TransactionReceiptTest extends Specification {
 			rebuilt.postTxState mustEqual DigestValue.parseHexString("8888888888888888888888888888888888888888888888888888888888888888")
 			rebuilt.logs.size mustEqual 1
 			rebuilt.logs.head.topics.size mustEqual 1
-			rebuilt.logs.head.topics.head mustEqual DataWord(7777)
+			rebuilt.logs.head.topics.head mustEqual VMWord(7777)
 			rebuilt.logs.head.data mustEqual ImmutableBytes.parseHexString("7777")
 		}
 	}

@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.utils.UtilConsts
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.program.InternalTransaction
 
 /**
@@ -18,7 +18,7 @@ class TransactionExecutionSummary private (
 	val manaUsed: BigInt,
 	val manaLeftOver: BigInt,
 	val manaRefund: BigInt,
-	val deletedAccounts: Iterable[DataWord],
+	val deletedAccounts: Iterable[VMWord],
 	val internalTransactions: Seq[InternalTransaction],
 	val failed: Boolean
 ) {
@@ -64,8 +64,8 @@ object TransactionExecutionSummary {
 			this
 		}
 
-		private var deletedAccounts: Iterable[DataWord] = Seq.empty
-		def deletedAccounts(v: Iterable[DataWord]): Builder = {
+		private var deletedAccounts: Iterable[VMWord] = Seq.empty
+		def deletedAccounts(v: Iterable[VMWord]): Builder = {
 			this.deletedAccounts = v
 			this
 		}

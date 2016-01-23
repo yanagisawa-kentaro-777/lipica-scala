@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm.program.context
 import org.lipicalabs.lipica.core.kernel.{Block, TransactionLike}
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.program.Program
 
 /**
@@ -17,6 +17,6 @@ trait ProgramContextFactory {
 
 	def createProgramContext(tx: TransactionLike, block: Block, repository: RepositoryLike, blockStore: BlockStore): ProgramContext
 
-	def createProgramContext(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore): ProgramContext
+	def createProgramContext(program: Program, toAddress: VMWord, inValue: VMWord, inMana: VMWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore): ProgramContext
 
 }

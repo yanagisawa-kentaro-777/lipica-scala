@@ -4,7 +4,7 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes, ByteUtils}
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 /**
  * ProgramContext の実装クラスです。
@@ -15,21 +15,21 @@ import org.lipicalabs.lipica.core.vm.DataWord
  */
 class ProgramContextImpl private(
 	//トランザクションもしくはコントラクトに関する情報。
-	override val ownerAddress: DataWord,
-	override val originAddress: DataWord,
-	override val callerAddress: DataWord,
-	override val balance: DataWord,
-	override val manaPrice: DataWord,
-	override val manaLimit: DataWord,
-	override val callValue: DataWord,
+	override val ownerAddress: VMWord,
+	override val originAddress: VMWord,
+	override val callerAddress: VMWord,
+	override val balance: VMWord,
+	override val manaPrice: VMWord,
+	override val manaLimit: VMWord,
+	override val callValue: VMWord,
 	private val messageData: ImmutableBytes,
 	//最終ブロックに関する情報。
-	override val parentHash: DataWord,
-	override val coinbase: DataWord,
-	override val timestamp: DataWord,
-	override val blockNumber: DataWord,
-	override val difficulty: DataWord,
-	override val blockManaLimit: DataWord,
+	override val parentHash: VMWord,
+	override val coinbase: VMWord,
+	override val timestamp: VMWord,
+	override val blockNumber: VMWord,
+	override val difficulty: VMWord,
+	override val blockManaLimit: VMWord,
 
 	override val repository: RepositoryLike,
 	override val callDepth: Int,
@@ -41,33 +41,33 @@ class ProgramContextImpl private(
 	private val MaxMessageData = BigInt(Int.MaxValue)
 
 	/** CALLDATALOAD op. */
-	override def getDataValue(indexData: DataWord): DataWord = {
+	override def getDataValue(indexData: VMWord): VMWord = {
 		val tempIndex = indexData.value
 		val index = tempIndex.intValue()
 
 		if (ByteUtils.isNullOrEmpty(this.messageData) || (this.messageData.length <= index) || (MaxMessageData < tempIndex)) {
-			return DataWord.Zero
+			return VMWord.Zero
 		}
 
 		val size =
-			if (this.messageData.length < (index + DataWord.NUM_BYTES)) {
+			if (this.messageData.length < (index + VMWord.NumberOfBytes)) {
 				messageData.length - index
 			} else {
-				DataWord.NUM_BYTES
+				VMWord.NumberOfBytes
 			}
-		val data = new Array[Byte](DataWord.NUM_BYTES)
+		val data = new Array[Byte](VMWord.NumberOfBytes)
 		this.messageData.copyTo(index, data, 0, size)
-		DataWord(data)
+		VMWord(data)
 	}
 
 	/** CALLDATASIZE op. */
-	override def dataSize: DataWord = {
-		if (ByteUtils.isNullOrEmpty(this.messageData)) return DataWord.Zero
-		DataWord(this.messageData.length)
+	override def dataSize: VMWord = {
+		if (ByteUtils.isNullOrEmpty(this.messageData)) return VMWord.Zero
+		VMWord(this.messageData.length)
 	}
 
 	/** CALLDATACOPY */
-	override def getDataCopy(offsetData: DataWord, lengthData: DataWord): ImmutableBytes = {
+	override def getDataCopy(offsetData: VMWord, lengthData: VMWord): ImmutableBytes = {
 		val offset = offsetData.intValue
 		val len = lengthData.intValue
 
@@ -104,20 +104,20 @@ class ProgramContextImpl private(
 object ProgramContextImpl {
 
 	def apply(
-		address: DataWord,
-		origin: DataWord,
-		caller: DataWord,
-		balance: DataWord,
-		manaPrice: DataWord,
-		mana: DataWord,
-		callValue: DataWord,
+		address: VMWord,
+		origin: VMWord,
+		caller: VMWord,
+		balance: VMWord,
+		manaPrice: VMWord,
+		mana: VMWord,
+		callValue: VMWord,
 		messageData: ImmutableBytes,
-		parentHash: DataWord,
-		coinbase: DataWord,
-		timestamp: DataWord,
-		blockNumber: DataWord,
-		difficulty: DataWord,
-		blockManaLimit: DataWord,
+		parentHash: VMWord,
+		coinbase: VMWord,
+		timestamp: VMWord,
+		blockNumber: VMWord,
+		difficulty: VMWord,
+		blockManaLimit: VMWord,
 		repository: RepositoryLike,
 		callDepth: Int,
 		blockStore: BlockStore
@@ -148,11 +148,11 @@ object ProgramContextImpl {
 		blockStore: BlockStore
 	): ProgramContextImpl = {
 		new ProgramContextImpl(
-			ownerAddress = DataWord(address.bytes), originAddress = DataWord(origin.bytes), callerAddress = DataWord(caller.bytes),
-			balance = DataWord(balance), manaPrice = DataWord(manaPrice.bytes), manaLimit = DataWord(txManaLimit.bytes),
-			callValue = DataWord(callValue.bytes), messageData = messageData,
-			parentHash = DataWord(parentHash.bytes), coinbase = DataWord(coinbase.bytes), timestamp = DataWord(timestamp),
-			blockNumber = DataWord(blockNumber), difficulty = DataWord(difficulty.bytes), blockManaLimit = DataWord(blockManaLimit.bytes),
+			ownerAddress = VMWord(address.bytes), originAddress = VMWord(origin.bytes), callerAddress = VMWord(caller.bytes),
+			balance = VMWord(balance), manaPrice = VMWord(manaPrice.bytes), manaLimit = VMWord(txManaLimit.bytes),
+			callValue = VMWord(callValue.bytes), messageData = messageData,
+			parentHash = VMWord(parentHash.bytes), coinbase = VMWord(coinbase.bytes), timestamp = VMWord(timestamp),
+			blockNumber = VMWord(blockNumber), difficulty = VMWord(difficulty.bytes), blockManaLimit = VMWord(blockManaLimit.bytes),
 			repository = repository, callDepth = 0, blockStore = blockStore, byTransaction = true
 		)
 	}

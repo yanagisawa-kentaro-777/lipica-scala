@@ -2,7 +2,7 @@ package org.lipicalabs.lipica.core.kernel
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 /**
  * コントラクトの内容である、コードやストレージデータを
@@ -37,17 +37,17 @@ trait ContractDetails {
 	/**
 	 * データをストレージに保存します。
 	 */
-	def put(key: DataWord, value: DataWord): Unit
+	def put(key: VMWord, value: VMWord): Unit
 
 	/**
 	 * 渡されたデータをストレージに登録します。
 	 */
-	def put(data: Map[DataWord, DataWord]): Unit
+	def put(data: Map[VMWord, VMWord]): Unit
 
 	/**
 	 * データをストレージから読み取ります。
 	 */
-	def get(key: DataWord): Option[DataWord]
+	def get(key: VMWord): Option[VMWord]
 
 	/**
 	 * ストレージデータ全体のトップダイジェスト値を取得します。
@@ -62,17 +62,17 @@ trait ContractDetails {
 	/**
 	 * ストレージに保存されたデータを返します。
 	 */
-	def storageContent: Map[DataWord, DataWord]
+	def storageContent: Map[VMWord, VMWord]
 
 	/**
 	 * ストレージに保存されたデータのうち、条件に合致するものを返します。
 	 */
-	def storageContent(keys: Iterable[DataWord]): Map[DataWord, DataWord]
+	def storageContent(keys: Iterable[VMWord]): Map[VMWord, VMWord]
 
 	/**
 	 * ストレージに保存されているデータのキーの集合を返します。
 	 */
-	def storageKeys: Set[DataWord]
+	def storageKeys: Set[VMWord]
 
 	def syncStorage(): Unit
 

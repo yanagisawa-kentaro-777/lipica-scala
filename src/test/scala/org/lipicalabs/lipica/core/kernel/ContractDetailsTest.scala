@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.InMemoryDataSourceFactory
 import org.lipicalabs.lipica.core.datastore.datasource.{InMemoryDataSource, KeyValueDataSource}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -30,7 +30,7 @@ class ContractDetailsTest extends Specification {
 		ImmutableBytes(result)
 	}
 
-	private def randomWord: DataWord = DataWord(randomBytes(32))
+	private def randomWord: VMWord = VMWord(randomBytes(32))
 
 	"test (1)" should {
 		"be right" in {
@@ -45,15 +45,15 @@ class ContractDetailsTest extends Specification {
 			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = Address160(ImmutableBytes.createRandom(new Random(), 20))
 			contractDetails.code = code
-			contractDetails.put(DataWord(key_1), DataWord(val_1))
-			contractDetails.put(DataWord(key_2), DataWord(val_2))
+			contractDetails.put(VMWord(key_1), VMWord(val_1))
+			contractDetails.put(VMWord(key_2), VMWord(val_2))
 
 			val encoded = contractDetails.encode
 			val decodedDetails = ContractDetailsImpl.decode(encoded, new InMemoryDataSourceFactory)
 
 			code.toHexString mustEqual decodedDetails.code.toHexString
-			val_1.toHexString mustEqual decodedDetails.get(DataWord(key_1)).get.getDataWithoutLeadingZeros.toHexString
-			val_2.toHexString mustEqual decodedDetails.get(DataWord(key_2)).get.getDataWithoutLeadingZeros.toHexString
+			val_1.toHexString mustEqual decodedDetails.get(VMWord(key_1)).get.getDataWithoutLeadingZeros.toHexString
+			val_2.toHexString mustEqual decodedDetails.get(VMWord(key_2)).get.getDataWithoutLeadingZeros.toHexString
 		}
 	}
 
@@ -127,20 +127,20 @@ class ContractDetailsTest extends Specification {
 
 			code.toHexString mustEqual decodedDetails.code.toHexString
 			address.toHexString mustEqual decodedDetails.address.toHexString
-			val_0.toHexString mustEqual decodedDetails.get(DataWord(key_0)).get.data.toHexString
-			val_1.toHexString mustEqual decodedDetails.get(DataWord(key_1)).get.data.toHexString
-			val_2.toHexString mustEqual decodedDetails.get(DataWord(key_2)).get.data.toHexString
-			val_3.toHexString mustEqual decodedDetails.get(DataWord(key_3)).get.data.toHexString
-			val_4.toHexString mustEqual decodedDetails.get(DataWord(key_4)).get.data.toHexString
-			val_5.toHexString mustEqual decodedDetails.get(DataWord(key_5)).get.data.toHexString
-			val_6.toHexString mustEqual decodedDetails.get(DataWord(key_6)).get.data.toHexString
-			val_7.toHexString mustEqual decodedDetails.get(DataWord(key_7)).get.data.toHexString
-			val_8.toHexString mustEqual decodedDetails.get(DataWord(key_8)).get.data.toHexString
-			val_9.toHexString mustEqual decodedDetails.get(DataWord(key_9)).get.data.toHexString
-			val_10.toHexString mustEqual decodedDetails.get(DataWord(key_10)).get.data.toHexString
-			val_11.toHexString mustEqual decodedDetails.get(DataWord(key_11)).get.data.toHexString
-			val_12.toHexString mustEqual decodedDetails.get(DataWord(key_12)).get.data.toHexString
-			val_13.toHexString mustEqual decodedDetails.get(DataWord(key_13)).get.data.toHexString
+			val_0.toHexString mustEqual decodedDetails.get(VMWord(key_0)).get.data.toHexString
+			val_1.toHexString mustEqual decodedDetails.get(VMWord(key_1)).get.data.toHexString
+			val_2.toHexString mustEqual decodedDetails.get(VMWord(key_2)).get.data.toHexString
+			val_3.toHexString mustEqual decodedDetails.get(VMWord(key_3)).get.data.toHexString
+			val_4.toHexString mustEqual decodedDetails.get(VMWord(key_4)).get.data.toHexString
+			val_5.toHexString mustEqual decodedDetails.get(VMWord(key_5)).get.data.toHexString
+			val_6.toHexString mustEqual decodedDetails.get(VMWord(key_6)).get.data.toHexString
+			val_7.toHexString mustEqual decodedDetails.get(VMWord(key_7)).get.data.toHexString
+			val_8.toHexString mustEqual decodedDetails.get(VMWord(key_8)).get.data.toHexString
+			val_9.toHexString mustEqual decodedDetails.get(VMWord(key_9)).get.data.toHexString
+			val_10.toHexString mustEqual decodedDetails.get(VMWord(key_10)).get.data.toHexString
+			val_11.toHexString mustEqual decodedDetails.get(VMWord(key_11)).get.data.toHexString
+			val_12.toHexString mustEqual decodedDetails.get(VMWord(key_12)).get.data.toHexString
+			val_13.toHexString mustEqual decodedDetails.get(VMWord(key_13)).get.data.toHexString
 		}
 	}
 
@@ -149,7 +149,7 @@ class ContractDetailsTest extends Specification {
 			val address = Address(randomBytes(20))
 			val code = randomBytes(512)
 
-			val elements = new mutable.HashMap[DataWord, DataWord]
+			val elements = new mutable.HashMap[VMWord, VMWord]
 			val externalStorage = new InMemoryDataSource
 
 			val original = new ContractDetailsImpl(new InMemoryDataSourceFactory)
@@ -191,7 +191,7 @@ class ContractDetailsTest extends Specification {
 			val address = Address(randomBytes(20))
 			val code = randomBytes(512)
 
-			val elements = new mutable.HashMap[DataWord, DataWord]
+			val elements = new mutable.HashMap[VMWord, VMWord]
 			val externalStorage = new InMemoryDataSource
 
 			val original = new ContractDetailsImpl(new InMemoryDataSourceFactory)

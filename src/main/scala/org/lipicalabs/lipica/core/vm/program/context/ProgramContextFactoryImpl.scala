@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 import org.lipicalabs.lipica.core.kernel.{Blockchain, Block, TransactionLike}
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, BlockStore}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.lipicalabs.lipica.core.vm.program.Program
 import org.slf4j.LoggerFactory
 
@@ -48,12 +48,12 @@ class ProgramContextFactoryImpl extends ProgramContextFactory {
 		result
 	}
 
-	override def createProgramContext(program: Program, toAddress: DataWord, inValue: DataWord, inMana: DataWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore) = {
+	override def createProgramContext(program: Program, toAddress: VMWord, inValue: VMWord, inMana: VMWord, balanceInt: BigInt, dataIn: ImmutableBytes, repository: RepositoryLike, blockStore: BlockStore) = {
 		val address = toAddress
 		val origin = program.getOriginAddress
 		val caller = program.getOwnerAddress
 
-		val balance = DataWord(balanceInt)
+		val balance = VMWord(balanceInt)
 		val manaPrice = program.getManaPrice
 		val mana = inMana
 		val callValue = inValue

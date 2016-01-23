@@ -5,7 +5,7 @@ import org.lipicalabs.lipica.core.kernel.{Address160, Address, ContractDetails, 
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSource, InMemoryDataSource}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
@@ -31,7 +31,7 @@ class ContractDetailsStoreTest extends Specification {
 			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
-			contractDetails.put(DataWord(key), DataWord(value))
+			contractDetails.put(VMWord(key), VMWord(value))
 
 			dds.update(contractKey, contractDetails)
 			val loaded = dds.get(contractKey).get
@@ -61,7 +61,7 @@ class ContractDetailsStoreTest extends Specification {
 			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
-			contractDetails.put(DataWord(key), DataWord(value))
+			contractDetails.put(VMWord(key), VMWord(value))
 
 			dds.update(contractKey, contractDetails)
 			val loaded = dds.get(contractKey).get
@@ -92,7 +92,7 @@ class ContractDetailsStoreTest extends Specification {
 			val contractDetails = new ContractDetailsImpl(new InMemoryDataSourceFactory)
 			contractDetails.address = randomAddress
 			contractDetails.code = code
-			contractDetails.put(DataWord(key), DataWord(value))
+			contractDetails.put(VMWord(key), VMWord(value))
 
 			dds.update(contractKey, contractDetails)
 			val loaded = dds.get(contractKey).get
@@ -162,8 +162,8 @@ class ContractDetailsStoreTest extends Specification {
 		ImmutableBytes(result)
 	}
 
-	private def randomDataWord: DataWord = {
-		DataWord(randomBytes(32))
+	private def randomDataWord: VMWord = {
+		VMWord(randomBytes(32))
 	}
 
 	private def randomAddress: Address = {

@@ -5,7 +5,7 @@ import java.io.Closeable
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Address, Block, AccountState, ContractDetails}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 import scala.collection.mutable
 
@@ -82,17 +82,17 @@ trait RepositoryLike extends Closeable {
 	/**
 	 * 指定されたアカウントに対して、キーと値の組み合わせを登録します。
 	 */
-	def addStorageRow(address: Address, key: DataWord, value: DataWord): Unit
+	def addStorageRow(address: Address, key: VMWord, value: VMWord): Unit
 
 	/**
 	 * 指定されたアカウントにおいて、キーに対応する値を取得して返します。
 	 */
-	def getStorageValue(address: Address, key: DataWord): Option[DataWord]
+	def getStorageValue(address: Address, key: VMWord): Option[VMWord]
 
 	/**
 	 * 指定されたアカウントにおいて、キー（複数）に対応する「キー・値ペアの連想配列」を取得して返します。
 	 */
-	def getStorageContent(address: Address, keys: Iterable[DataWord]): Map[DataWord, DataWord]
+	def getStorageContent(address: Address, keys: Iterable[VMWord]): Map[VMWord, VMWord]
 
 	/**
 	 * 指定されたアカウントの残高を返します。

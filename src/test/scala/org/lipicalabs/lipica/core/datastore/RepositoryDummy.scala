@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.datastore
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 
 import scala.collection.mutable
 
@@ -51,11 +51,11 @@ class RepositoryDummy extends RepositoryImpl(new InMemoryDataSourceFactory) {
 		getAccountState(address).map(_.balance)
 	}
 
-	override def getStorageValue(address: Address, key: DataWord) = {
+	override def getStorageValue(address: Address, key: VMWord) = {
 		getContractDetails(address).flatMap(_.get(key))
 	}
 
-	override def addStorageRow(address: Address, key: DataWord, value: DataWord) = {
+	override def addStorageRow(address: Address, key: VMWord, value: VMWord) = {
 		val details = getContractDetails(address).getOrElse {
 			createAccount(address)
 			getContractDetails(address).get

@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.datastore
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes}
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -156,14 +156,14 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 	}
 
-	override def addStorageRow(address: Address, key: DataWord, value: DataWord) = {
+	override def addStorageRow(address: Address, key: VMWord, value: VMWord) = {
 		if (logger.isTraceEnabled) {
 			logger.trace("<RepositoryTrack> Add storage row. Address: [%s], Key: [%s], Value: [%s]".format(address.toHexString, key.toHexString, value.toHexString))
 		}
 		getContractDetails(address).foreach(_.put(key, value))
 	}
 
-	override def getStorageValue(address: Address, key: DataWord) = getContractDetails(address).flatMap(_.get(key))
+	override def getStorageValue(address: Address, key: VMWord) = getContractDetails(address).flatMap(_.get(key))
 
 	override def getAccountKeys = throw new UnsupportedOperationException
 
@@ -211,7 +211,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 	}
 
-	override def getStorageContent(address: Address, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
+	override def getStorageContent(address: Address, keys: Iterable[VMWord]): Map[VMWord, VMWord] = {
 		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 

@@ -14,15 +14,15 @@ import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
  * @since 2015, Oct. 17
  * @author YANAGISAWA, Kentaro
  */
-class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
+class VMWord private(val data: ImmutableBytes) extends Comparable[VMWord] {
 
-	import DataWord._
+	import VMWord._
 
 	/**
 	 * 末尾20バイトを返します。
 	 */
 	def last20Bytes: Address = {
-		Address160(this.data.copyOfRange(NUM_BYTES - 20, data.length))
+		Address160(this.data.copyOfRange(NumberOfBytes - 20, data.length))
 	}
 
 	/**
@@ -114,53 +114,53 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 		true
 	}
 
-	def `&`(another: DataWord): DataWord = {
-		val result = new Array[Byte](NUM_BYTES)
+	def `&`(another: VMWord): VMWord = {
+		val result = new Array[Byte](NumberOfBytes)
 		this.data.indices.foreach {
 			i => {
 				result(i) = (this.data(i) & another.data(i)).toByte
 			}
 		}
-		DataWord(result)
+		VMWord(result)
 	}
 
-	def `|`(another: DataWord): DataWord = {
-		val result = new Array[Byte](NUM_BYTES)
+	def `|`(another: VMWord): VMWord = {
+		val result = new Array[Byte](NumberOfBytes)
 		this.data.indices.foreach {
 			i => {
 				result(i) = (this.data(i) | another.data(i)).toByte
 			}
 		}
-		DataWord(result)
+		VMWord(result)
 	}
 
 	/**
 	 * XOR。
 	 */
-	def `^`(another: DataWord): DataWord = {
-		val result = new Array[Byte](NUM_BYTES)
+	def `^`(another: VMWord): VMWord = {
+		val result = new Array[Byte](NumberOfBytes)
 		this.data.indices.foreach {
 			i => {
 				result(i) = (this.data(i) ^ another.data(i)).toByte
 			}
 		}
-		DataWord(result)
+		VMWord(result)
 	}
 
 	/**
 	 * １の補数（＝ビット反転）。
 	 */
 	def unary_~ = {
-		DataWord(MaxValue - this.value)
+		VMWord(MaxValue - this.value)
 	}
 
 	/**
 	 * 加算。
 	 */
-	def `+`(another: DataWord): DataWord = {
-		val result = new Array[Byte](NUM_BYTES)
+	def `+`(another: VMWord): VMWord = {
+		val result = new Array[Byte](NumberOfBytes)
 
-		var i = NUM_BYTES - 1
+		var i = NumberOfBytes - 1
 		var overflow = 0
 		while (0 <= i) {
 			val v = (this.data(i) & 0xff) + (another.data(i) & 0xff) + overflow
@@ -168,43 +168,43 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 			overflow = v >>> 8
 			i -= 1
 		}
-		DataWord(result)
+		VMWord(result)
 	}
 
 	/**
 	 * 乗算。
 	 */
-	def `*`(another: DataWord): DataWord = {
+	def `*`(another: VMWord): VMWord = {
 		//TODO 性能。
 		val result = this.value * another.value
-		DataWord(result & MaxValue)
+		VMWord(result & MaxValue)
 	}
 
 	/**
 	 * 減算。
 	 */
-	def `-`(another: DataWord): DataWord = {
+	def `-`(another: VMWord): VMWord = {
 		//TODO 性能。
 		val result = this.value - another.value
-		DataWord(result & MaxValue)
+		VMWord(result & MaxValue)
 	}
 
 	/**
 	 * 整数除算。
 	 */
-	def `/`(another: DataWord): DataWord = {
+	def `/`(another: VMWord): VMWord = {
 		//TODO 性能。
 		if (another.isZero) {
 			return Zero
 		}
 		val result = this.value / another.value
-		DataWord(result & MaxValue)
+		VMWord(result & MaxValue)
 	}
 
 	/**
 	 * 符号付き整数除算。
 	 */
-	def sDiv(another: DataWord): DataWord = {
+	def sDiv(another: VMWord): VMWord = {
 		//TODO 性能。
 		if (another.isZero) {
 			return Zero
@@ -212,26 +212,26 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 		val dividend = this.sValue
 		val divisor = another.sValue
 		val result = dividend / divisor
-		val array = ByteUtils.asSignedByteArray(result & MaxValue, NUM_BYTES)
-		DataWord(array)
+		val array = ByteUtils.asSignedByteArray(result & MaxValue, NumberOfBytes)
+		VMWord(array)
 	}
 
 	/**
 	 * 剰余演算。
 	 */
-	def `%`(another: DataWord): DataWord = {
+	def `%`(another: VMWord): VMWord = {
 		//TODO 性能。
 		if (another.isZero) {
 			return Zero
 		}
 		val result = this.value % another.value
-		DataWord(result & MaxValue)
+		VMWord(result & MaxValue)
 	}
 
 	/**
 	 * 符号付き剰余演算。
 	 */
-	def sMod(another: DataWord): DataWord = {
+	def sMod(another: VMWord): VMWord = {
 		//TODO 性能。
 		if (another.isZero) {
 			return Zero
@@ -239,22 +239,22 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 		val dividend = this.sValue
 		val divisor = another.sValue
 		val result = dividend % divisor
-		val array = ByteUtils.asSignedByteArray(result & MaxValue, NUM_BYTES)
-		DataWord(array)
+		val array = ByteUtils.asSignedByteArray(result & MaxValue, NumberOfBytes)
+		VMWord(array)
 	}
 
 	/**
 	 * べき乗演算。
 	 */
-	def exp(another: DataWord): DataWord = {
+	def exp(another: VMWord): VMWord = {
 		//TODO 性能。
-		DataWord(this.value.modPow(another.value, MAX_PLUS_ONE))
+		VMWord(this.value.modPow(another.value, MAX_PLUS_ONE))
 	}
 
 	/**
 	 * 加算＆剰余演算。
 	 */
-	def addMod(another1: DataWord, another2: DataWord): DataWord = {
+	def addMod(another1: VMWord, another2: VMWord): VMWord = {
 		if (another2.isZero) {
 			return Zero
 		}
@@ -264,15 +264,15 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 	/**
 	 * 乗算＆剰余演算。
 	 */
-	def mulMod(another1: DataWord, another2: DataWord): DataWord = {
+	def mulMod(another1: VMWord, another2: VMWord): VMWord = {
 		if (another2.isZero) {
 			return Zero
 		}
 		(this * another1) % another2
 	}
 
-	def signExtend(k: Int): DataWord = {
-		if ((k < 0) || (NUM_BYTES <= k)) {
+	def signExtend(k: Int): VMWord = {
+		if ((k < 0) || (NumberOfBytes <= k)) {
 			throw new IndexOutOfBoundsException
 		}
 		val mask: Byte =
@@ -282,12 +282,12 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 				0
 			}
 		val newArray = this.data.toByteArray
-		((NUM_BYTES - 1) until k by -1).foreach {
+		((NumberOfBytes - 1) until k by -1).foreach {
 			i => {
 				newArray(newArray.length - 1 - i) = mask
 			}
 		}
-		new DataWord(ImmutableBytes(newArray))
+		new VMWord(ImmutableBytes(newArray))
 	}
 
 	def occupiedBytes: Int = {
@@ -297,21 +297,21 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 			0
 		} else {
 			//ゼロでない最初のバイトから終端までが、専有されているバイトである。
-			NUM_BYTES - idx
+			NumberOfBytes - idx
 		}
 	}
 
 	override def equals(any: Any): Boolean = {
 		any match {
 			case null => false
-			case another: DataWord => this.data == another.data
+			case another: VMWord => this.data == another.data
 			case _ => false
 		}
 	}
 
 	override def hashCode: Int = this.data.hashCode
 
-	override def compareTo(another: DataWord): Int = {
+	override def compareTo(another: VMWord): Int = {
 		this.data compareTo another.data
 	}
 
@@ -338,66 +338,66 @@ class DataWord private(val data: ImmutableBytes) extends Comparable[DataWord] {
 
 }
 
-object DataWord {
+object VMWord {
 
-	val NUM_BYTES = 32
-	val Zero = DataWord.apply(new Array[Byte](NUM_BYTES))
-	val One = DataWord(1)
-	private val MAX_PLUS_ONE: BigInt = BigInt(2).pow(NUM_BYTES * 8)
+	val NumberOfBytes = 32
+	val Zero = VMWord.apply(new Array[Byte](NumberOfBytes))
+	val One = VMWord(1)
+	private val MAX_PLUS_ONE: BigInt = BigInt(2).pow(NumberOfBytes * 8)
 	val MaxValue: BigInt = MAX_PLUS_ONE - UtilConsts.One
 
 	def wrap(src: Array[Byte]): ImmutableBytes = {
 		if (src eq null) {
-			ImmutableBytes.create(NUM_BYTES)
-		} else if (src.length <= NUM_BYTES) {
-			ImmutableBytes.expand(src, 0, src.length, NUM_BYTES)
+			ImmutableBytes.create(NumberOfBytes)
+		} else if (src.length <= NumberOfBytes) {
+			ImmutableBytes.expand(src, 0, src.length, NumberOfBytes)
 		} else {
-			throw new IllegalArgumentException("Byte array too long: %d < %d".format(NUM_BYTES, src.length))
+			throw new IllegalArgumentException("Byte array too long: %d < %d".format(NumberOfBytes, src.length))
 		}
 	}
 
-	def apply(data: ImmutableBytes): DataWord = {
+	def apply(data: ImmutableBytes): VMWord = {
 		if ((data eq null) || data.isEmpty) {
 			Zero
-		} else if (data.length == NUM_BYTES) {
-			new DataWord(data)
+		} else if (data.length == NumberOfBytes) {
+			new VMWord(data)
 		} else {
-			new DataWord(wrap(data.toByteArray))
+			new VMWord(wrap(data.toByteArray))
 		}
 	}
 
-	def apply(src: Array[Byte]): DataWord = new DataWord(wrap(src))
+	def apply(src: Array[Byte]): VMWord = new VMWord(wrap(src))
 
-	def apply(buffer: ByteBuffer): DataWord = DataWord.apply(buffer.array)
+	def apply(buffer: ByteBuffer): VMWord = VMWord.apply(buffer.array)
 
-	def apply(value: Int): DataWord = {
-		DataWord(ByteBuffer.allocate(4).putInt(value))
+	def apply(value: Int): VMWord = {
+		VMWord(ByteBuffer.allocate(4).putInt(value))
 	}
 
-	def apply(value: Long): DataWord = {
-		DataWord(ByteBuffer.allocate(8).putLong(value))
+	def apply(value: Long): VMWord = {
+		VMWord(ByteBuffer.allocate(8).putLong(value))
 	}
 
-	def apply(s: String): DataWord = {
-		DataWord(Hex.decodeHex(s.toCharArray))
+	def apply(s: String): VMWord = {
+		VMWord(Hex.decodeHex(s.toCharArray))
 	}
 
-	def apply(value: BigInt): DataWord = {
-		DataWord(ByteUtils.asUnsignedByteArray(value))
+	def apply(value: BigInt): VMWord = {
+		VMWord(ByteUtils.asUnsignedByteArray(value))
 	}
 
 	/**
 	 * 渡されたバイト数が、何ワードを消費するか計算して返します。
 	 */
 	def countWords(bytes: Int): Int = {
-		(bytes + NUM_BYTES - 1) / NUM_BYTES
+		(bytes + NumberOfBytes - 1) / NumberOfBytes
 	}
 
 	/**
 	 * 渡されたバイト数が、何ワードを消費するか計算して返します。
 	 */
 	def countWords(bytes: Long): Long = {
-		(bytes + NUM_BYTES - 1) / NUM_BYTES
+		(bytes + NumberOfBytes - 1) / NumberOfBytes
 	}
 
 }

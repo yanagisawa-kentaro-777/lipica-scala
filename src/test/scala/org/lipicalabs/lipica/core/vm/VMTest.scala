@@ -541,7 +541,7 @@ class VMTest extends Specification with BeforeExample {
 		val operation = (OpCode.Swap1.opcode + n - 1).toByte
 
 		val programCode = new StringBuilder
-		val top = DataWord(0x10 + n).toString
+		val top = VMWord(0x10 + n).toString
 		(n to 0 by -1).foreach {
 			i => {
 				programCode.append("60" + ImmutableBytes.fromOneByte((0x10 + i).toByte).toHexString)
@@ -680,7 +680,7 @@ class VMTest extends Specification with BeforeExample {
 			(0 until 3).foreach {
 				_ => vm.step(program)
 			}
-			val value = program.storage.getStorageValue(kernel.Address(invoke.ownerAddress.getDataWithoutLeadingZeros), DataWord(expectedKey)).get
+			val value = program.storage.getStorageValue(kernel.Address(invoke.ownerAddress.getDataWithoutLeadingZeros), VMWord(expectedKey)).get
 			value.data.toHexString mustEqual expectedValue
 		}
 	}
@@ -765,7 +765,7 @@ class VMTest extends Specification with BeforeExample {
 				}
 
 				program.isStopped mustEqual true
-				val key = DataWord(ImmutableBytes.parseHexString(s_expected_key))
+				val key = VMWord(ImmutableBytes.parseHexString(s_expected_key))
 				val value = program.storage.getStorageValue(kernel.Address(program.getOwnerAddress.data), key).get
 				value.data.toHexString mustEqual s_expected_val
 				ko

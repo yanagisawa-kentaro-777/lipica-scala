@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.vm.program
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
-import org.lipicalabs.lipica.core.vm.{CallCreate, LogInfo, DataWord}
+import org.lipicalabs.lipica.core.vm.{CallCreate, LogInfo, VMWord}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -21,7 +21,7 @@ class ProgramResult {
 	private var _hReturn = ImmutableBytes.empty
 	private var _exception: RuntimeException = null
 
-	private val _deletedAccounts: mutable.Buffer[DataWord] = new ArrayBuffer[DataWord]
+	private val _deletedAccounts: mutable.Buffer[VMWord] = new ArrayBuffer[VMWord]
 	private val _internalTransactions: mutable.Buffer[InternalTransaction] = new ArrayBuffer[InternalTransaction]
 	private val _logsBuffer: mutable.Buffer[LogInfo] = new ArrayBuffer[LogInfo]
 
@@ -70,11 +70,11 @@ class ProgramResult {
 	}
 	def exception: RuntimeException = this._exception
 
-	def deletedAccounts: Seq[DataWord] = this._deletedAccounts.toSeq
-	def addDeletedAccount(address: DataWord): Unit = {
+	def deletedAccounts: Seq[VMWord] = this._deletedAccounts.toSeq
+	def addDeletedAccount(address: VMWord): Unit = {
 		this._deletedAccounts.append(address)
 	}
-	def addDeletedAccounts(accounts: Iterable[DataWord]): Unit = {
+	def addDeletedAccounts(accounts: Iterable[VMWord]): Unit = {
 		this._deletedAccounts ++= accounts
 	}
 	def clearDeletedAccounts(): Unit = this._deletedAccounts.clear()
@@ -94,7 +94,7 @@ class ProgramResult {
 	}
 
 	def internalTransactions: Seq[InternalTransaction] = this._internalTransactions.toSeq
-	def addInternalTransaction(parentHash: DigestValue, deep: Int, nonce: BigIntBytes, manaPrice: DataWord, manaLimit: DataWord, senderAddress: Address, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes, note: String): InternalTransaction = {
+	def addInternalTransaction(parentHash: DigestValue, deep: Int, nonce: BigIntBytes, manaPrice: VMWord, manaLimit: VMWord, senderAddress: Address, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes, note: String): InternalTransaction = {
 		val index = this._internalTransactions.size
 		val result = new InternalTransaction(parentHash, deep, index, nonce, manaPrice, manaLimit, senderAddress, receiveAddress, value, data, note)
 		this._internalTransactions.append(result)

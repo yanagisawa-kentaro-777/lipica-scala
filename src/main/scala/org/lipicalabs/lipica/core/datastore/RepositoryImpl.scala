@@ -8,7 +8,7 @@ import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.datastore.datasource.{KeyValueDataSourceFactory, InMemoryDataSource, KeyValueDataSource}
 import org.lipicalabs.lipica.core.trie.SecureTrie
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.DataWord
+import org.lipicalabs.lipica.core.vm.VMWord
 import org.slf4j.{LoggerFactory, Logger}
 
 import scala.collection.mutable
@@ -215,11 +215,11 @@ class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSour
 		getAccountState(address).map(_.balance)
 	}
 
-	override def getStorageValue(address: Address, key: DataWord): Option[DataWord] = {
+	override def getStorageValue(address: Address, key: VMWord): Option[VMWord] = {
 		getContractDetails(address).flatMap(_.get(key))
 	}
 
-	override def getStorageContent(address: Address, keys: Iterable[DataWord]): Map[DataWord, DataWord] = {
+	override def getStorageContent(address: Address, keys: Iterable[VMWord]): Map[VMWord, VMWord] = {
 		getContractDetails(address).map(_.storageContent(keys)).getOrElse(Map.empty)
 	}
 
@@ -231,7 +231,7 @@ class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSour
 		}
 	}
 
-	override def addStorageRow(address: Address, key: DataWord, value: DataWord): Unit = {
+	override def addStorageRow(address: Address, key: VMWord, value: VMWord): Unit = {
 		val details = getContractDetails(address).getOrElse {
 			createAccount(address)
 			getContractDetails(address).get

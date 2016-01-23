@@ -41,8 +41,8 @@ class VMTest3 extends Specification with BeforeExample {
 				 stop
 			 */
 
-			val key1 = DataWord(999)
-			val value1 = DataWord(3)
+			val key1 = VMWord(999)
+			val value1 = VMWord(3)
 
 			// Set contract into Database
 			val callerAddr = Address.parseHexString("cd2a3d9f938e13cd947ec05abc7fe734df8dd826")

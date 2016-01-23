@@ -6,7 +6,7 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{RepositoryTrackLike, Repository}
 import org.lipicalabs.lipica.core.kernel.ContractDetails
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
-import org.lipicalabs.lipica.core.vm.{DataWord, OpCode}
+import org.lipicalabs.lipica.core.vm.{VMWord, OpCode}
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContext
 import org.slf4j.LoggerFactory
 
@@ -74,7 +74,7 @@ class ProgramTrace(private val programContext: ProgramContext) {
 		this
 	}
 
-	def addOp(code: Byte, pc: Int, deep: Int, mana: DataWord, actions: OpActions): Op = {
+	def addOp(code: Byte, pc: Int, deep: Int, mana: VMWord, actions: OpActions): Op = {
 		val op = new Op
 		op.actions = actions
 		op.code = OpCode.code(code).orNull
