@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.kernel
 
+import java.util.concurrent.atomic.AtomicLong
+
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, RepositoryTrackLike, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
@@ -38,7 +40,12 @@ class TransactionExecutor(
 	def localCall: Boolean = this._localCall
 	def localCall_=(v: Boolean): Unit = this._localCall = v
 
+	private val startNanosRef = new AtomicLong(0L)
+
 	def init(): Unit = {
+		//実行開始日時。
+		this.startNanosRef.set(System.nanoTime)
+
 		if (this.localCall) {
 			this.readyToExecute = true
 			return
@@ -216,7 +223,7 @@ class TransactionExecutor(
 		if (this.result ne null) {
 			this.result.addFutureRefund(this.result.deletedAccounts.size * ManaCost.SuicideRefund)
 			val manaRefund = this.result.futureRefund min (this.result.manaUsed / 2)
-			val address = if (this.tx.isContractCreation) this.tx.contractAddress.get else this.tx.receiverAddress
+			//val address = if (this.tx.isContractCreation) this.tx.contractAddress.get else this.tx.receiverAddress
 			this.endMana += manaRefund
 
 			summaryBuilder.manaUsed(BigInt(this.result.manaUsed)).manaRefund(BigInt(manaRefund)).
@@ -251,6 +258,9 @@ class TransactionExecutor(
 			saveProgramTrace(this.tx.hash.toHexString, trace)
 			this.listener.onVMTraceCreated(this.tx.hash.toHexString, trace)
 		}
+
+		val endNanos = System.nanoTime
+		txRecordLogger.info("%d,%s,%d,%d".format(currentBlock.blockNumber, tx.hash, this.manaUsed, endNanos - this.startNanosRef.get))
 	}
 
 	private def saveProgramTrace(txHash: String, content: String): Unit = {
@@ -265,4 +275,5 @@ class TransactionExecutor(
 
 object TransactionExecutor {
 	private val logger = LoggerFactory.getLogger("execute")
+	private val txRecordLogger = LoggerFactory.getLogger("tx_record")
 }

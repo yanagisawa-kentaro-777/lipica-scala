@@ -104,6 +104,20 @@
 			<MaxFileSize>150MB</MaxFileSize>
 		</triggeringPolicy>
 	</appender>
+	<appender name="TX_RECORD" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./work/logs/tx_rec.csv</File>
+		<Append>true</Append>
+		<encoder>
+			<pattern>%msg %n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>21</maxIndex>
+			<FileNamePattern>./work/logs/tx_rec%i.log</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>150MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
 	<appender name="ERRORS" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<File>./work/logs/errors.log</File>
 		<Append>true</Append>
@@ -157,6 +171,9 @@
 	</logger>
 	<logger name="trie" level="INFO" additivity="false">
 		<appender-ref ref="DATASTORE_TRACE"/>
+	</logger>
+	<logger name="tx_record" level="INFO" additivity="false">
+		<appender-ref ref="TX_RECORD"/>
 	</logger>
 	<logger name="wallet" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>

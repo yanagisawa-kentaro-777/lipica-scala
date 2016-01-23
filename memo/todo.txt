@@ -2,7 +2,6 @@
 ・secp256k1 について学ぶ。
 ・mdc = modification detection code
 ・mac = message authentication code
-・pending transaction の意味は？
 
 ０、不具合
 
@@ -13,10 +12,10 @@
 
 ２、自前ノード間での動作＆トランザクション実行
 ・miningの具体的な方法を実装する。
+・walletを実装する。
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-
 ・フロントエンドを整備する。
 
 ・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
@@ -40,19 +39,12 @@ ethashを学ぶと、mixhashがわかる。
 
 git flowを入れる。
 
-https://github.com/ethereum/tests を活用した自動テストの実行方法を考える。
 
 BlockchainImplの精緻なテスト。
-
-StorageDictionary関連は、よく意味がわかっていないので後回しとする。
 VM関連のデバッグ用出力（ProgramTrace等）。
 RepositoryImplのデバッグ用出力。
 TransactionExecutorのデバッグ用出力。
 LpcHandlerのデバッグ用出力。
 PeersPoolのデバッグ用出力。
 
-
 依存先およびライセンスをまとめる。
-楕円曲線暗号について調べる。
-
-sbtによるleveldbのテストの問題？
