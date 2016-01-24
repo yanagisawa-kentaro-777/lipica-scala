@@ -100,6 +100,8 @@ public class ECKey implements Serializable {
     transient private byte[] pubKeyHash;
     transient private byte[] nodeId;
 
+    private final boolean compressed;
+
     /**
      * Generates an entirely new keypair. Point compression is used so the resulting public key will be 33 bytes
      * (32 for the co-ordinate and 1 byte to represent the y bit).
@@ -123,13 +125,15 @@ public class ECKey implements Serializable {
         ECPublicKeyParameters pubParams = (ECPublicKeyParameters) keypair.getPublic();
         priv = privParams.getD();
         pub = CURVE.getCurve().decodePoint(pubParams.getQ().getEncoded(true));
+        this.compressed = true;
     }
 
-    public ECKey(BigInteger priv, ECPoint pub) {
+    public ECKey(BigInteger priv, ECPoint pub, boolean aCompressed) {
         this.priv = priv;
         if (pub == null)
             throw new IllegalArgumentException("Public key may not be null");
         this.pub = pub;
+        this.compressed = aCompressed;
     }
 
     /**
@@ -154,7 +158,7 @@ public class ECKey implements Serializable {
      * @return  -
      */
     public static ECKey fromPrivate(BigInteger privKey) {
-        return new ECKey(privKey, compressPoint(CURVE.getG().multiply(privKey)));
+        return new ECKey(privKey, compressPoint(CURVE.getG().multiply(privKey)), true);
     }
 
     /**
@@ -177,7 +181,7 @@ public class ECKey implements Serializable {
      * @return -
      */
     public static ECKey fromPublicOnly(byte[] pub) {
-        return new ECKey(null, CURVE.getCurve().decodePoint(pub));
+        return  new ECKey(null, compressPoint(CURVE.getCurve().decodePoint(pub)), true);
     }
 
     /**
@@ -188,7 +192,7 @@ public class ECKey implements Serializable {
      */
     public ECKey decompress() {
         if (isCompressed()) {
-            return new ECKey(this.priv, CURVE.getCurve().decodePoint(this.pub.getEncoded(false)));
+            return new ECKey(this.priv, CURVE.getCurve().decodePoint(this.pub.getEncoded(false)), false);
         } else {
             return this;
         }
@@ -226,7 +230,7 @@ public class ECKey implements Serializable {
      * @return  -
      */
     public byte[] getPubKey() {
-        return pub.getEncoded();
+        return pub.getEncoded(this.compressed);
     }
 
     /**
@@ -260,7 +264,7 @@ public class ECKey implements Serializable {
      * @return  -
      */
     public boolean isCompressed() {
-        return this.pub.isCompressed();
+        return this.compressed;
     }
 
     public String toString() {
