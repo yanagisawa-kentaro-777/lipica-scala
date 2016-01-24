@@ -108,7 +108,7 @@ class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSour
 				logger.debug("<RepositoryImpl> Deleted: [%s]".format(address.toHexString))
 			} else if (contractDetails.isDirty) {
 				logger.debug("<RepositoryImpl> Updating: [%s]".format(address.toHexString))
-				val contractDetailsCache = contractDetails.asInstanceOf[ContractDetailsCacheImpl]
+				val contractDetailsCache = contractDetails.asInstanceOf[ContractDetailsCache]
 				if (contractDetailsCache.originalContract eq null) {
 					contractDetailsCache.originalContract = new ContractDetailsImpl(this.dataSourceFactory)
 					contractDetailsCache.originalContract.address = address
@@ -337,7 +337,7 @@ class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSour
 		val account = getAccountState(address).map(_.createClone).getOrElse(new AccountState())
 		cacheAccounts.put(address, account)
 
-		val details = new ContractDetailsCacheImpl(getContractDetails(address).orNull)
+		val details = new ContractDetailsCache(getContractDetails(address).orNull)
 		cacheDetails.put(address, details)
 	}
 

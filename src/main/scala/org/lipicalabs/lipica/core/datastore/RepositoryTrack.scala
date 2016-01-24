@@ -30,7 +30,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		val accountState = new AccountState
 		this.cacheAccounts.put(address, accountState)
 
-		val contractDetails = new ContractDetailsCacheImpl(null)
+		val contractDetails = new ContractDetailsCache(null)
 		contractDetails.isDirty = true
 		this.cacheDetails.put(address, contractDetails)
 
@@ -81,7 +81,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 					(this.cacheAccounts.get(address).get, this.cacheDetails.get(address).get)
 			}
 		aCacheAccounts.put(address, account.createClone)
-		aCacheDetails.put(address, new ContractDetailsCacheImpl(details))
+		aCacheDetails.put(address, new ContractDetailsCache(details))
 	}
 
 	override def delete(address: Address) = {
@@ -174,7 +174,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 	override def commit() = {
 		if (this.cacheAccounts.nonEmpty || this.cacheDetails.nonEmpty) {
 			for (details <- this.cacheDetails.values) {
-				details.asInstanceOf[ContractDetailsCacheImpl].commit()
+				details.asInstanceOf[ContractDetailsCache].commit()
 			}
 			this.repository.updateBatch(this.cacheAccounts, this.cacheDetails)
 			this.cacheAccounts.clear()
@@ -202,7 +202,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		}
 		for (each <- contractDetails) {
 			val hash = each._1
-			val contractDetailsCache = each._2.asInstanceOf[ContractDetailsCacheImpl]
+			val contractDetailsCache = each._2.asInstanceOf[ContractDetailsCache]
 			if (Option(contractDetailsCache.originalContract).exists(original => !original.isInstanceOf[ContractDetailsImpl])) {
 				this.cacheDetails.put(hash, contractDetailsCache.originalContract)
 			} else {

@@ -11,11 +11,17 @@ import org.lipicalabs.lipica.core.vm.VMWord
 import scala.collection.mutable
 
 /**
+ * ContractDetails への更新を、メモリ上でバッファするためのクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/09 21:41
  * YANAGISAWA, Kentaro
  */
-class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetails) extends ContractDetails {
+class ContractDetailsCache(_originalContract: ContractDetails) extends ContractDetails {
+
+	private val originalContractRef: AtomicReference[ContractDetails] = new AtomicReference[ContractDetails](_originalContract)
+	private[core] def originalContract: ContractDetails = this.originalContractRef.get
+	private[core] def originalContract_=(v: ContractDetails) = this.originalContractRef.set(v)
 
 	private val storageRef = new AtomicReference[mutable.Map[VMWord, VMWord]](new mutable.HashMap[VMWord, VMWord])
 	private def storage: mutable.Map[VMWord, VMWord] = this.storageRef.get
@@ -110,7 +116,7 @@ class ContractDetailsCacheImpl(private[core] var originalContract: ContractDetai
 
 	override def createClone: ContractDetails = {
 		this.synchronized {
-			val result = new ContractDetailsCacheImpl(this.originalContract)
+			val result = new ContractDetailsCache(this.originalContract)
 			val storageClone = this.storage.clone()
 
 			result.code = this.code
