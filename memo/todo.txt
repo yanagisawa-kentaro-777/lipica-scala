@@ -19,8 +19,6 @@
 ・フロントエンドを整備する。
 ・ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
 
-・MessageCodecの方のECKeyはfalseで良いだろう。（64バイト）
-
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
 ・logging、refactor、comment。（不具合追跡用）
