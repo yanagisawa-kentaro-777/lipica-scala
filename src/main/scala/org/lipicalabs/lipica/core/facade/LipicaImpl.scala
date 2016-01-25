@@ -180,6 +180,7 @@ class LipicaImpl extends Lipica {
 		//DataSourceをクローズする。
 		DataSourcePool.closeAll()
 		ComponentFactory.dataSources.values.foreach(MiscUtils.closeIfNotNull)
+		MiscUtils.closeIfNotNull(ComponentFactory.dataStoreResource)
 
 		logger.info("<Lipica> Shut down complete.")
 	}

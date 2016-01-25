@@ -32,6 +32,8 @@ class ComponentsMotherboard extends Closeable {
 
 	import ComponentsMotherboard._
 
+	private val dataStoreResource: Closeable = ComponentFactory.dataStoreResource
+
 	val blockStore: BlockStore = ComponentFactory.createBlockStore
 
 	val repository: Repository = ComponentFactory.createRepository
@@ -147,6 +149,7 @@ class ComponentsMotherboard extends Closeable {
 		MiscUtils.closeIfNotNull(this.repository)
 		MiscUtils.closeIfNotNull(this.blockStore)
 		MiscUtils.closeIfNotNull(this.blockchain)
+		MiscUtils.closeIfNotNull(this.dataStoreResource)
 	}
 }
 
