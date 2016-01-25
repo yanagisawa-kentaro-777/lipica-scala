@@ -3,11 +3,12 @@ package org.lipicalabs.lipica.core.datastore.datasource
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
-import org.iq80.leveldb.{CompressionType, DB, Options}
+import org.iq80.leveldb.{DBException, CompressionType, DB, Options}
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 /**
@@ -83,11 +84,28 @@ class LevelDbDataSource(_name: String, private val options: Options) extends Key
 	}
 
 	override def get(key: ImmutableBytes): Option[ImmutableBytes] = {
-		val result = this.db.get(key.toByteArray)
-		if (result eq null) {
-			None
-		} else {
-			Some(ImmutableBytes(result))
+		privateGet(key, 0)
+	}
+
+	@tailrec
+	private def privateGet(key: ImmutableBytes, count: Int): Option[ImmutableBytes] = {
+		try {
+			val result = this.db.get(key.toByteArray)
+			if (result eq null) {
+				None
+			} else {
+				Some(ImmutableBytes(result))
+			}
+		} catch {
+			case e: DBException =>
+				//Windows版leveldb固有のバグを避けるための方便。
+				if (count < 3) {
+					//少し待って再試行する。
+					Thread.sleep(7L)
+					privateGet(key, count + 1)
+				} else {
+					throw e
+				}
 		}
 	}
 

@@ -531,12 +531,18 @@ class VM {
 						//コードの範囲内に収まっている。
 						length
 					}
-				val result =
-					if (codeOffset < fullCode.length) {
-						fullCode.copyOfRange(codeOffset, codeOffset + sizeToBeCopied)
-					} else {
-						ImmutableBytes.create(length)
-					}
+				//指定された長さ分、容量は確保し、その中にコピー可能なコードをコピーする。
+				//コピー可能な長さが指定されたよりも短かったら、末尾がzero paddedされることになる。
+				//末尾のpadding分も、メモリ容量は消費され、課金される。
+				val copiedCode = new Array[Byte](length)
+				fullCode.copyTo(codeOffset, copiedCode, 0, sizeToBeCopied)
+				val result = ImmutableBytes(copiedCode)
+//				val result =
+//					if (codeOffset < fullCode.length) {
+//						fullCode.copyOfRange(codeOffset, codeOffset + sizeToBeCopied)
+//					} else {
+//						ImmutableBytes.create(length)
+//					}
 				if (logger.isInfoEnabled) {
 					hint = "code: " + result.toHexString
 				}

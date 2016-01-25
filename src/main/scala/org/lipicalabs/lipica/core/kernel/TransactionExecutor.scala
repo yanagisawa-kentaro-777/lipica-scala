@@ -260,7 +260,8 @@ class TransactionExecutor(
 		}
 
 		val endNanos = System.nanoTime
-		txRecordLogger.info("%d,%s,%d,%d".format(currentBlock.blockNumber, tx.hash, this.manaUsed, endNanos - this.startNanosRef.get))
+		val endTimestamp = System.currentTimeMillis
+		txRecordLogger.info("%d,%s,%d,%d,%d".format(currentBlock.blockNumber, tx.hash, this.manaUsed, endNanos - this.startNanosRef.get, endTimestamp))
 	}
 
 	private def saveProgramTrace(txHash: String, content: String): Unit = {
