@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery.message
 import java.net.{InetAddress, InetSocketAddress}
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
@@ -48,7 +48,7 @@ class PingMessage extends AbstractPeerDiscoveryMessage {
 
 object PingMessage {
 
-	def create(srcAddress: InetSocketAddress, destAddress: InetSocketAddress,  privateKey: ECKey): PingMessage = {
+	def create(srcAddress: InetSocketAddress, destAddress: InetSocketAddress,  privateKey: ECKeyPair): PingMessage = {
 		val expiration = (System.currentTimeMillis / 1000L) + 60L
 
 		val encodedSrcAddress = RBACCodec.Encoder.encode(srcAddress.getAddress.getAddress)

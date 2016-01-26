@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECKeyLike, ECDSASignature}
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 import org.spongycastle.math.ec.ECPoint
 
@@ -10,7 +10,7 @@ import org.spongycastle.math.ec.ECPoint
  * @since 2015/12/17
  * @author YANAGISAWA, Kentaro
  */
-class AuthInitiateMessage(val signature: ECKey.ECDSASignature, val ephemeralPublicHash: ImmutableBytes, val publicKey: ECPoint, val nonce: ImmutableBytes, val isTokenUsed: Boolean) {
+class AuthInitiateMessage(val signature: ECDSASignature, val ephemeralPublicHash: ImmutableBytes, val publicKey: ECPoint, val nonce: ImmutableBytes, val isTokenUsed: Boolean) {
 
 	def encode: Array[Byte] = {
 		val rsigPad = new Array[Byte](32)
@@ -56,7 +56,7 @@ object AuthInitiateMessage {
 		offset += 32
 		val v = wire(offset) + 27
 		offset += 1
-		val signature = ECKey.ECDSASignature.fromComponents(r, s, v.toByte)
+		val signature = ECDSASignature(r, s, v.toByte)
 		val ephemeralPublicHash = new Array[Byte](32)
 		System.arraycopy(wire, offset, ephemeralPublicHash, 0, 32)
 		val immutableEphemeralPublicHash = ImmutableBytes(ephemeralPublicHash)
@@ -66,7 +66,7 @@ object AuthInitiateMessage {
 		System.arraycopy(wire, offset, bytes, 1, 64)
 		offset += 64
 		bytes(0) = 0x04
-		val publicKey = ECKey.CURVE.getCurve.decodePoint(bytes)
+		val publicKey = ECKeyLike.CURVE.getCurve.decodePoint(bytes)
 		val nonce = new Array[Byte](32)
 		System.arraycopy(wire, offset, nonce, 0, 32)
 		val immutableNonce = ImmutableBytes(nonce)

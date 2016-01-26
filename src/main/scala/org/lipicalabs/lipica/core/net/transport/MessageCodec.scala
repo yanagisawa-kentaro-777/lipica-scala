@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.net.transport
 
 import java.net.InetSocketAddress
+import java.security.SecureRandom
 import java.util
 
 import com.google.common.io.ByteStreams
@@ -8,7 +9,8 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
 import io.netty.handler.codec.ByteToMessageCodec
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.crypto.{ECIESCoder, ECKey}
+import org.lipicalabs.lipica.core.crypto.ECIESCoder
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECPublicKey, ECKeyPair}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
@@ -40,7 +42,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	def frameCodec: FrameCodec = this._frameCodec
 
 	private var _myKey = NodeProperties.CONFIG.privateKey
-	def myKey: ECKey = this._myKey
+	def myKey: ECKeyPair = this._myKey
 
 	private var _nodeId: NodeId = null
 	def nodeId: NodeId = this._nodeId
@@ -89,7 +91,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 			} else {
 				//受動的な応答者側（＝サーバー側）。
 				_handshake = EncryptionHandshake.createResponder
-				_nodeId = NodeId(myKey.getNodeId)
+				_nodeId = myKey.toNodeId
 			}
 		}
 	}
@@ -100,12 +102,12 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private def initiate(ctx: ChannelHandlerContext): Unit = {
 		loggerNet.info("<MessageCodec> Transport activated.")
 
-		this._nodeId = NodeId(myKey.getNodeId)
+		this._nodeId = myKey.toNodeId
 		//相手ノードの公開鍵を構築する。
 		val remotePublicBytes = new Array[Byte](remoteNodeId.length + 1)
 		remoteNodeId.bytes.copyTo(0, remotePublicBytes, 1, remoteNodeId.length)
 		remotePublicBytes(0) = 0x04//uncomporessed.
-		val remotePublicKeyPoint = ECKey.fromPublicOnly(remotePublicBytes).getPubKeyPoint
+		val remotePublicKeyPoint = ECPublicKey.fromPublicOnly(remotePublicBytes).publicKeyPoint
 
 		//相手ノードに送信するセッション確立要求メッセージを生成する。
 		this._handshake = EncryptionHandshake.createInitiator(remotePublicKeyPoint)
@@ -376,7 +378,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	}
 
 	def generateTemporaryKey(): Unit = {
-		this._myKey = new ECKey().decompress
+		this._myKey = ECKeyPair(new SecureRandom).decompress
 	}
 }
 

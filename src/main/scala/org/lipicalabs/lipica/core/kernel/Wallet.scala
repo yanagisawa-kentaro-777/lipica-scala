@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
-import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.crypto.scrypt.SCrypt
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
@@ -38,15 +38,15 @@ class Wallet {
 	def addNewAccount(): Unit = {
 		val account = new Account
 		account.init()
-		val address = account.ecKey.getAddress
+		val address = account.ecKey.toAddress
 		this.rows.put(address, account)
 		notifyListeners()
 	}
 
 	def importKey(privateKey: ImmutableBytes): Unit = {
 		val account = new Account
-		account.init(ECKey.fromPrivate(privateKey.toPositiveBigInt.bigInteger))
-		val address = account.ecKey.getAddress
+		account.init(ECKeyPair.fromPrivateKey(privateKey.toPositiveBigInt.bigInteger))
+		val address = account.ecKey.toAddress
 		this.rows.put(address, account)
 		notifyListeners()
 	}

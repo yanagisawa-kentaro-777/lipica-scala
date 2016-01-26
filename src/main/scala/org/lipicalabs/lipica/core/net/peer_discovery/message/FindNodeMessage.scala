@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.message
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
@@ -33,7 +33,7 @@ class FindNodeMessage extends AbstractPeerDiscoveryMessage {
 
 object FindNodeMessage {
 
-	def create(target: NodeId, privateKey: ECKey): FindNodeMessage = {
+	def create(target: NodeId, privateKey: ECKeyPair): FindNodeMessage = {
 		val expiration = (System.currentTimeMillis / 1000L) + 60L
 
 		val encodedTarget = RBACCodec.Encoder.encode(target)

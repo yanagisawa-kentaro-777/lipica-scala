@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.net.peer_discovery.message
 import java.net.InetSocketAddress
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 
 /**
@@ -38,7 +38,7 @@ class PongMessage extends AbstractPeerDiscoveryMessage {
 
 object PongMessage {
 
-	def create(token: ImmutableBytes, address: InetSocketAddress, privateKey: ECKey): PongMessage = {
+	def create(token: ImmutableBytes, address: InetSocketAddress, privateKey: ECKeyPair): PongMessage = {
 		val expiration = (System.currentTimeMillis / 1000L) + 60L
 
 		val encodedAddress = RBACCodec.Encoder.encode(address.getAddress.getAddress)
@@ -57,7 +57,7 @@ object PongMessage {
 		pong
 	}
 
-	def create(token: ImmutableBytes, privateKey: ECKey): PongMessage = {
+	def create(token: ImmutableBytes, privateKey: ECKeyPair): PongMessage = {
 		val expiration = (System.currentTimeMillis / 1000L) + 60L
 
 		val encodedToken = RBACCodec.Encoder.encode(token)

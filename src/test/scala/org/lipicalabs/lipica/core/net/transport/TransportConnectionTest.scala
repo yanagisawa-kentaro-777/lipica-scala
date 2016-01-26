@@ -4,7 +4,7 @@ import java.io.{DataInputStream, ByteArrayInputStream, PipedOutputStream, PipedI
 import java.security.SecureRandom
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
@@ -30,10 +30,10 @@ class TransportConnectionTest extends Specification {
 	private var fromOut: PipedOutputStream = null
 
 	private def init(): Unit = {
-		val remoteKey = new ECKey().decompress
-		val myKey = new ECKey().decompress
+		val remoteKey = ECKeyPair(new SecureRandom()).decompress
+		val myKey = ECKeyPair(new SecureRandom()).decompress
 
-		this.initiator = EncryptionHandshake.createInitiator(remoteKey.getPubKeyPoint)
+		this.initiator = EncryptionHandshake.createInitiator(remoteKey.publicKeyPoint)
 		this.responder = EncryptionHandshake.createResponder
 
 		val initiate = this.initiator.createAuthInitiate(myKey)

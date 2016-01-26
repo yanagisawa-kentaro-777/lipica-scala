@@ -12,7 +12,7 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
 import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.lipicalabs.lipica.utils.MiscUtils
@@ -56,7 +56,7 @@ trait NodePropertiesLike {
 	def txOutdatedThreshold: Int
 
 	def networkId: Int
-	def privateKey: ECKey
+	def privateKey: ECKeyPair
 	def nodeId: NodeId
 	def externalAddress: String
 	def bindAddress: String
@@ -175,12 +175,12 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 	 */
 	override def networkId: Int = this.config.getInt("node.network.id")
 
-	private val privateKeyRef = new AtomicReference[ECKey](null)
+	private val privateKeyRef = new AtomicReference[ECKeyPair](null)
 	/**
 	 * 自ノードの秘密鍵です。
 	 */
 	@tailrec
-	override final def privateKey: ECKey = {
+	override final def privateKey: ECKeyPair = {
 		val result = this.privateKeyRef.get
 		if (result ne null) {
 			return result
@@ -203,7 +203,7 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 				} else {
 					Hex.decodeHex(hex.toCharArray)
 				}
-			this.privateKeyRef.set(ECKey.fromPrivate(keyBytes).decompress)
+			this.privateKeyRef.set(ECKeyPair.fromPrivateKey(keyBytes).decompress)
 		}
 		//再帰的自己呼び出し。
 		this.privateKey
@@ -213,7 +213,7 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 	 * 「ネットワーク」内における自ノードの一意識別子です。
 	 * その内容は、自ノードの秘密鍵に対応する公開鍵です。
 	 */
-	override def nodeId: NodeId = NodeId(privateKey.getNodeId)
+	override def nodeId: NodeId = privateKey.toNodeId
 
 	/**
 	 * 他ノードに対して宣伝する、自ノードの体外部アドレスです。
@@ -342,7 +342,7 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 
 	override def isPublicHomeNode: Boolean = true
 
-	override def nodeId: NodeId = NodeId(privateKey.getNodeId)
+	override def nodeId: NodeId = privateKey.toNodeId
 
 	override def cacheFlushMemory: Double = 0.7d
 
@@ -352,8 +352,8 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 
 	override def isSyncEnabled: Boolean = true
 
-	override def privateKey: ECKey = {
-		ECKey.fromPrivate(Hex.decodeHex("a43d867f16238b897428705cec855b0c5b0ddf3319c1b18f7a00915db83155d9".toCharArray)).decompress
+	override def privateKey: ECKeyPair = {
+		ECKeyPair.fromPrivateKey(Hex.decodeHex("a43d867f16238b897428705cec855b0c5b0ddf3319c1b18f7a00915db83155d9".toCharArray)).decompress
 	}
 
 	override def externalAddress: String = "127.0.0.1"

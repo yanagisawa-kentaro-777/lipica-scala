@@ -42,6 +42,8 @@ object NodeId {
 
 	val empty: NodeId = new NodeId(ImmutableBytes.empty)
 
+	val NumBytes = 64
+
 	def apply(bytes: ImmutableBytes): NodeId = {
 		new NodeId(bytes)
 	}

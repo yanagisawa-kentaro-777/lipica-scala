@@ -1,10 +1,8 @@
 package org.lipicalabs.lipica.core.kernel
 
 import java.math.BigInteger
-import java.security.SignatureException
 
-import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECKeyPair, ECPublicKey, ECDSASignature}
 import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
@@ -116,10 +114,10 @@ trait TransactionLike {
 		Some(DigestUtils.computeNewAddress(this.senderAddress, this.nonce))
 	}
 
-	def getKey: Option[ECKey] = {
+	def getKey: Option[ECPublicKey] = {
 		val hash = rawHash
-		this.signatureOption.map {
-			signature => ECKey.recoverFromSignature(signature.v, signature, hash.toByteArray, true)
+		this.signatureOption.flatMap {
+			signature => ECPublicKey.recoverFromSignature(signature.v, signature, hash.toByteArray, compressed = true)
 		}
 	}
 
@@ -217,12 +215,12 @@ class UnsignedTransaction(
 	override def senderAddress: Address = {
 		try {
 			if (this._sendAddress eq null) {
-				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
-				this._sendAddress = key.getAddress
+				val key = ECPublicKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64).get
+				this._sendAddress = key.toAddress
 			}
 			this._sendAddress
 		} catch {
-			case e: SignatureException =>
+			case e: Exception =>
 				logger.error(e.getMessage, e)
 				EmptyAddress
 		}
@@ -231,7 +229,7 @@ class UnsignedTransaction(
 	private var signature: ECDSASignature = null
 	def sign(privateKeyBytes: ImmutableBytes): Unit = {
 		val hash = this.rawHash
-		val key = ECKey.fromPrivate(privateKeyBytes.toByteArray).decompress
+		val key = ECKeyPair.fromPrivateKey(privateKeyBytes.toByteArray).decompress
 		this.signature = key.sign(hash.toByteArray)
 		this.encoded = null
 	}
@@ -274,12 +272,12 @@ class SignedTransaction(
 	override def senderAddress: Address = {
 		try {
 			if (this._sendAddress eq null) {
-				val key = ECKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64)
-				this._sendAddress = key.getAddress
+				val key = ECPublicKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64).get
+				this._sendAddress = key.toAddress
 			}
 			this._sendAddress
 		} catch {
-			case e: SignatureException =>
+			case e: Exception =>
 				logger.error(e.getMessage, e)
 				EmptyAddress
 		}
@@ -313,7 +311,7 @@ class EncodedTransaction(private var encodedBytes: ImmutableBytes, private val i
 					val v = items(6).bytes(0)
 					val r = items(7).bytes
 					val s = items(8).bytes
-					val signature = ECDSASignature.fromComponents(r.toByteArray, s.toByteArray, v)
+					val signature = ECDSASignature(r.toByteArray, s.toByteArray, v)
 					new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 				} else {
 					logger.debug("RBAC encoded tx is not signed!")
@@ -378,8 +376,7 @@ object Transaction {
 	}
 
 	def apply(nonce: BigIntBytes, manaPrice: BigIntBytes, manaLimit: BigIntBytes, receiveAddress: Address, value: BigIntBytes, data: ImmutableBytes, r: ImmutableBytes, s: ImmutableBytes, v: Byte): TransactionLike = {
-		val signature: ECKey.ECDSASignature = new ECKey.ECDSASignature(r.toSignedBigInteger, s.toSignedBigInteger)
-		signature.v = v
+		val signature = ECDSASignature(r, s, v)
 		new SignedTransaction(nonce, value, receiveAddress, manaPrice, manaLimit, data, signature)
 	}
 

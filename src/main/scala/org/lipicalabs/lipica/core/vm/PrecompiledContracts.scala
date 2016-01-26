@@ -1,8 +1,7 @@
 package org.lipicalabs.lipica.core.vm
 
-import org.lipicalabs.lipica.core.crypto.ECKey.ECDSASignature
-import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECPublicKey, ECDSASignature}
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
@@ -81,9 +80,9 @@ object PrecompiledContracts {
 				data.copyTo(64, r, 0, 32)
 				val sLength: Int = if (data.length < 128) data.length - 96 else 32
 				data.copyTo(96, s, 0, sLength)
-				val signature = ECDSASignature.fromComponents(r, s, v(31))
-				val key = ECKey.signatureToKey(h, signature.toBase64)
-				val addr = key.getAddress
+				val signature = ECDSASignature(r, s, v(31))
+				val key = ECPublicKey.signatureToKey(h, signature.toBase64).get
+				val addr = key.toAddress
 				ImmutableBytes.expand(addr.toByteArray, 0, addr.length, VMWord.NumberOfBytes)
 			} catch {
 				case any: Throwable => ImmutableBytes.empty

@@ -3,7 +3,7 @@ package org.lipicalabs.lipica.core.kernel
 import java.security.SecureRandom
 import java.util
 
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECKeyPair, ECKeyLike}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.UtilConsts
 
@@ -16,26 +16,26 @@ class Account {
 
 	import scala.collection.JavaConversions._
 
-	private var _ecKey: ECKey = null
+	private var _ecKey: ECKeyLike = null
 	private var _address: Address = EmptyAddress
 
 	private val _pendingTransactions = asScalaSet(java.util.Collections.synchronizedSet(new util.HashSet[TransactionLike]))
 
 	def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
-	def init(aKey: ECKey): Unit = {
+	def init(aKey: ECKeyLike): Unit = {
 		this._ecKey = aKey
-		this._address = this._ecKey.getAddress
+		this._address = this._ecKey.toAddress
 	}
 
 	def init(): Unit = {
-		init(new ECKey(new SecureRandom))
+		init(ECKeyPair(new SecureRandom))
 	}
 
 	def address: Address = this._address
 	def address_=(v: Address): Unit = this._address = v
 
-	def ecKey: ECKey = this._ecKey
+	def ecKey: ECKeyLike = this._ecKey
 
 	def pendingTransactions: Set[TransactionLike] = this._pendingTransactions.toSet
 

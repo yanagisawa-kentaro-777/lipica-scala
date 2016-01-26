@@ -3,8 +3,8 @@ package org.lipicalabs.lipica.core.net.peer_discovery.message
 import java.security.SignatureException
 import java.util
 
-import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECKeyPair, ECDSASignature, ECPublicKey}
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
@@ -47,8 +47,7 @@ abstract class AbstractPeerDiscoveryMessage {
 	def nodeId: NodeId = {
 		this.key match {
 			case Right(k) =>
-				val publicKey = ImmutableBytes(k.getPubKey)
-				NodeId(publicKey.copyOfRange(1, 65))
+				k.toNodeId
 			case Left(e) =>
 				NodeId.empty
 		}
@@ -57,7 +56,7 @@ abstract class AbstractPeerDiscoveryMessage {
 	/**
 	 * このメッセージに含まれる署名から、署名者の公開鍵を復元して返します。
 	 */
-	private def key: Either[Throwable, ECKey] = {
+	private def key: Either[Throwable, ECPublicKey] = {
 		try {
 			val r = this.signature.copyOfRange(0, 32)
 			val s = this.signature.copyOfRange(32, 64)
@@ -66,11 +65,11 @@ abstract class AbstractPeerDiscoveryMessage {
 				case 1 => 28
 				case b => b
 			}
-			val generatedSignature = ECKey.ECDSASignature.fromComponents(r.toByteArray, s.toByteArray, v)
+			val generatedSignature = ECDSASignature(r.toByteArray, s.toByteArray, v)
 			val messageHash = DigestUtils.digest256(util.Arrays.copyOfRange(this._wire, 97, this._wire.length))
 
 			//署名から公開鍵を生成して返す。
-			Right(ECKey.signatureToKey(messageHash, generatedSignature.toBase64))
+			Right(ECPublicKey.signatureToKey(messageHash, generatedSignature.toBase64).get)
 		} catch {
 			case e: SignatureException =>
 				ErrorLogger.logger.warn("<TransportMessage> Signature exception.", e)
@@ -96,7 +95,7 @@ abstract class AbstractPeerDiscoveryMessage {
 object AbstractPeerDiscoveryMessage {
 	private val logger = LoggerFactory.getLogger("net")
 
-	def encode[T <: AbstractPeerDiscoveryMessage](messageType: Array[Byte], data: ImmutableBytes, privateKey: ECKey): T = {
+	def encode[T <: AbstractPeerDiscoveryMessage](messageType: Array[Byte], data: ImmutableBytes, privateKey: ECKeyPair): T = {
 		if (logger.isDebugEnabled) {
 			logger.debug("<TransportMessage> Encoding: %d".format(messageType.head))
 		}
@@ -110,8 +109,8 @@ object AbstractPeerDiscoveryMessage {
 		val signature = privateKey.sign(forSig)
 		signature.v = (signature.v - 27).toByte
 
-		val rPart = ByteUtils.bigIntegerToBytes(signature.r, 32)
-		val sPart = ByteUtils.bigIntegerToBytes(signature.s, 32)
+		val rPart = ByteUtils.bigIntegerToBytes(signature.r.bigInteger, 32)
+		val sPart = ByteUtils.bigIntegerToBytes(signature.s.bigInteger, 32)
 		val signatureBytes = rPart ++ sPart ++ Array[Byte](signature.v)
 
 		//MDC（modification detection code）を計算する。

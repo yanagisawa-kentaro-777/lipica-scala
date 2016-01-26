@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.vm.program.context
 
-import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.datastore.{Repository, RepositoryDummy, BlockStoreDummy, BlockStore}
 import org.lipicalabs.lipica.core.kernel.Address
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
@@ -34,13 +34,13 @@ class ProgramContextMockImpl(private val msgData: ImmutableBytes) extends Progra
 
 	override def originAddress: VMWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("horse".getBytes)
-		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
+		val addr = ECKeyPair.fromPrivateKey(cowPrivKey).toAddress
 		VMWord(addr.bytes)
 	}
 
 	override def callerAddress: VMWord = {
 		val cowPrivKey: Array[Byte] = DigestUtils.digest256("monkey".getBytes)
-		val addr = ECKey.fromPrivate(cowPrivKey).getAddress
+		val addr = ECKeyPair.fromPrivateKey(cowPrivKey).toAddress
 		VMWord(addr.bytes)
 	}
 

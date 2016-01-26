@@ -1,6 +1,7 @@
 package org.lipicalabs.lipica.core.crypto;
 
 import com.google.common.base.Throwables;
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyLike$;
 import org.spongycastle.crypto.*;
 import org.spongycastle.crypto.agreement.ECDHBasicAgreement;
 import org.spongycastle.crypto.digests.SHA256Digest;
@@ -17,11 +18,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import static org.lipicalabs.lipica.core.crypto.ECKey.CURVE;
 
 public class ECIESCoder {
 
     public static final int KEY_SIZE = 128;
+
+    private static final ECDomainParameters curve = ECKeyLike$.MODULE$.CURVE();
 
 
     public static byte[] decrypt(BigInteger privKey, byte[] cipher) throws IOException, InvalidCipherTextException {
@@ -29,10 +31,10 @@ public class ECIESCoder {
         byte[] plaintext;
 
         ByteArrayInputStream is = new ByteArrayInputStream(cipher);
-        byte[] ephemBytes = new byte[2*((ECKey.CURVE.getCurve().getFieldSize()+7)/8) + 1];
+        byte[] ephemBytes = new byte[2*((curve.getCurve().getFieldSize()+7)/8) + 1];
 
         is.read(ephemBytes);
-        ECPoint ephem = ECKey.CURVE.getCurve().decodePoint(ephemBytes);
+        ECPoint ephem = curve.getCurve().decodePoint(ephemBytes);
         byte[] IV = new byte[KEY_SIZE /8];
         is.read(IV);
         byte[] cipherBody = new byte[is.available()];
@@ -61,7 +63,7 @@ public class ECIESCoder {
         ParametersWithIV parametersWithIV =
                 new ParametersWithIV(p, IV);
 
-        iesEngine.init(false, new ECPrivateKeyParameters(prv, CURVE), new ECPublicKeyParameters(ephem, CURVE), parametersWithIV);
+        iesEngine.init(false, new ECPrivateKeyParameters(prv, curve), new ECPublicKeyParameters(ephem, curve), parametersWithIV);
 
         return iesEngine.processBlock(cipher, 0, cipher.length);
     }
@@ -71,7 +73,7 @@ public class ECIESCoder {
 
         ECKeyPairGenerator eGen = new ECKeyPairGenerator();
         SecureRandom random = new SecureRandom();
-        KeyGenerationParameters gParam = new ECKeyGenerationParameters(CURVE, random);
+        KeyGenerationParameters gParam = new ECKeyGenerationParameters(curve, random);
 
         eGen.init(gParam);
 
@@ -84,12 +86,12 @@ public class ECIESCoder {
         IESEngine iesEngine = makeIESEngine(true, toPub, prv, IV);
 
 
-        ECKeyGenerationParameters keygenParams = new ECKeyGenerationParameters(CURVE, random);
+        ECKeyGenerationParameters keygenParams = new ECKeyGenerationParameters(curve, random);
         ECKeyPairGenerator generator = new ECKeyPairGenerator();
         generator.init(keygenParams);
 
         ECKeyPairGenerator gen = new ECKeyPairGenerator();
-        gen.init(new ECKeyGenerationParameters(ECKey.CURVE, random));
+        gen.init(new ECKeyGenerationParameters(curve, random));
 
         byte[] cipher;
         try {
@@ -124,7 +126,7 @@ public class ECIESCoder {
         IESParameters p = new IESWithCipherParameters(d, e, KEY_SIZE, KEY_SIZE);
         ParametersWithIV parametersWithIV = new ParametersWithIV(p, IV);
 
-        iesEngine.init(isEncrypt, new ECPrivateKeyParameters(prv, CURVE), new ECPublicKeyParameters(pub, CURVE), parametersWithIV);
+        iesEngine.init(isEncrypt, new ECPrivateKeyParameters(prv, curve), new ECPublicKeyParameters(pub, curve), parametersWithIV);
         return iesEngine;
     }
 

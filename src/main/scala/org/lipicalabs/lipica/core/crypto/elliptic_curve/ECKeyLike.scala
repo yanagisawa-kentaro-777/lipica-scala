@@ -9,7 +9,7 @@ import org.apache.commons.codec.binary.Hex
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.kernel.{Address160, Address}
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
-import org.lipicalabs.lipica.core.utils.{UtilConsts, ByteUtils}
+import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts, ByteUtils}
 import org.spongycastle.asn1.sec.SECNamedCurves
 import org.spongycastle.asn1.x9.{X9IntegerConverter, X9ECParameters}
 import org.spongycastle.crypto.digests.SHA256Digest
@@ -28,7 +28,7 @@ import org.spongycastle.util.encoders.Base64
  */
 trait ECKeyLike {
 
-	def pub: ECPoint
+	def publicKeyPoint: ECPoint
 
 	def isCompressed: Boolean
 
@@ -38,7 +38,7 @@ trait ECKeyLike {
 	 * このオブジェクトの公開鍵に基づいて、アドレスを生成して返します。
 	 */
 	def toAddress: Address = {
-		val publicKeyBytes = this.pub.getEncoded(false)
+		val publicKeyBytes = this.publicKeyPoint.getEncoded(false)
 		val pubKeyHash = DigestUtils.digest256omit12Bytes(java.util.Arrays.copyOfRange(publicKeyBytes, 1, publicKeyBytes.length))
 		Address160(pubKeyHash)
 	}
@@ -47,18 +47,18 @@ trait ECKeyLike {
 	 * このオブジェクトの公開鍵に基づいて、ノードIDを生成して返します。
 	 */
 	def toNodeId: NodeId = {
-		val nodeIdWithFormat = this.pub.getEncoded(true)
-		val result = new Array[Byte](nodeIdWithFormat.length - 1)
+		val nodeIdWithFormat = this.publicKeyPoint.getEncoded(false)
+		val result = new Array[Byte](NodeId.NumBytes)
 		System.arraycopy(nodeIdWithFormat, 1, result, 0, result.length)
 		NodeId(result)
 	}
 
 	override def hashCode: Int = {
-		java.util.Arrays.hashCode(this.pub.getEncoded(true))
+		java.util.Arrays.hashCode(this.publicKeyPoint.getEncoded(false))
 	}
 
 	override def toString: String = {
-		Hex.encodeHexString(this.pub.getEncoded(false))
+		Hex.encodeHexString(this.publicKeyPoint.getEncoded(false))
 	}
 
 }
@@ -71,33 +71,45 @@ object ECKeyLike {
 	val CURVE = new ECDomainParameters(params.getCurve, params.getG, params.getN, params.getH)
 	val HALF_CURVE_ORDER = BigInt(params.getN.shiftRight(1))
 
-	/**
-	 * 渡された擬似乱数生成器を使って、新たなEC鍵ペアを生成して返します。
-	 */
-	def apply(random: SecureRandom): ECKeyPair = {
-		val generator = new ECKeyPairGenerator
-		val keygenParams = new ECKeyGenerationParameters(CURVE, random)
-		generator.init(keygenParams)
-		val keypair = generator.generateKeyPair
-		val privParams = keypair.getPrivate.asInstanceOf[ECPrivateKeyParameters]
-		val pubParams = keypair.getPublic.asInstanceOf[ECPublicKeyParameters]
-		val privateKey = privParams.getD
-		val publicKey = CURVE.getCurve.decodePoint(pubParams.getQ.getEncoded(true))
-		new ECKeyPair(publicKey, privateKey, isCompressed = true)
+	private[elliptic_curve] def compressPoint(uncompressed : ECPoint): ECPoint = {
+		CURVE.getCurve.decodePoint(uncompressed.getEncoded(true))
 	}
 
-	/**
-	 * 渡された秘密鍵から、鍵ペアを生成して返します。
-	 */
-	def fromPrivate(privateKey: BigInt): ECKeyPair = {
-		new ECKeyPair(compressPoint(CURVE.getG.multiply(privateKey.bigInteger)), privateKey, isCompressed = true)
+	private[elliptic_curve] def decompressKey (xBN : BigInt, yBit : Boolean): ECPoint = {
+		val x9 = new X9IntegerConverter
+		val compEnc = x9.integerToBytes(xBN.bigInteger, 1 + x9.getByteLength(CURVE.getCurve))
+		compEnc(0) = (if (yBit) 0x03 else 0x02).toByte
+		CURVE.getCurve.decodePoint(compEnc)
 	}
 
-	/**
-	 * 渡された秘密鍵から、鍵ペアを生成して返します。
-	 */
-	def fromPrivate(privateKey: Array[Byte]): ECKeyPair = fromPrivate(BigInt(1, privateKey))
+}
 
+
+/**
+ * 非対称鍵暗号の一種である楕円曲線暗号の
+ * 「公開鍵」をモデル化したクラスです。
+ *
+ * @since 2016/01/24
+ * @author YANAGISAWA, Kentaro
+ */
+
+class ECPublicKey private[elliptic_curve](override val publicKeyPoint: ECPoint, override val isCompressed: Boolean) extends ECKeyLike {
+	import ECKeyLike._
+
+	override def decompress: ECPublicKey = new ECPublicKey(CURVE.getCurve.decodePoint(this.publicKeyPoint.getEncoded(false)), isCompressed = false)
+
+	override def equals(o: Any): Boolean = {
+		try {
+			val another = o.asInstanceOf[ECPublicKey]
+			(this.publicKeyPoint == another.publicKeyPoint) && (this.isCompressed == another.isCompressed)
+		} catch {
+			case e: Throwable => false
+		}
+	}
+}
+
+object ECPublicKey {
+	import ECKeyLike._
 	/**
 	 * 渡された秘密鍵から、公開鍵オブジェクトを生成して返します。
 	 * 公開鍵オブジェクトは署名の検証をすることはできますが、
@@ -107,6 +119,9 @@ object ECKeyLike {
 		new ECPublicKey(compressPoint(CURVE.getCurve.decodePoint(publicKey)), isCompressed = true)
 	}
 
+	/**
+	 * 渡された署名から、公開鍵を復元して返します。
+	 */
 	def recoverFromSignature(recId: Int, sig: ECDSASignature, messageHash: Array[Byte], compressed: Boolean): Option[ECPublicKey] = {
 		val n = BigInt(CURVE.getN)
 		val i = BigInt(recId.toLong / 2)
@@ -125,7 +140,7 @@ object ECKeyLike {
 		}
 		// Compressed keys require you to know an extra bit of data about the y-coord as there are two possibilities.
 		// So it's encoded in the recId.
-		val R = ECKeyLike.decompressKey(x, (recId & 1) == 1)
+		val R = decompressKey(x, (recId & 1) == 1)
 		//   1.4. If nR != point at infinity, then do another iteration of Step 1 (callers responsibility).
 		if (!R.multiply(n.bigInteger).isInfinity) {
 			return None
@@ -148,9 +163,12 @@ object ECKeyLike {
 		val srInv = (rInv * sig.s) % n
 		val eInvrInv = (rInv * eInv) % n
 		val q = ECAlgorithms.sumOfTwoMultiplies(CURVE.getG, eInvrInv.bigInteger, R, srInv.bigInteger).asInstanceOf[ECPoint.Fp]
-		Option(ECKeyLike.fromPublicOnly(q.getEncoded(compressed)))
+		Option(ECPublicKey.fromPublicOnly(q.getEncoded(compressed)))
 	}
 
+	/**
+	 * 渡された署名から、公開鍵を復元して返します。
+	 */
 	def signatureToKey(messageHash: Array[Byte], signatureBase64: String): Option[ECPublicKey] = {
 		val signatureEncoded = Base64.decode(signatureBase64)
 		if (signatureEncoded.length < 65) {
@@ -171,35 +189,9 @@ object ECKeyLike {
 			header -= 4
 		}
 		val recId = header - 27
-		ECKeyLike.recoverFromSignature(recId, sig, messageHash, compressed)
+		recoverFromSignature(recId, sig, messageHash, compressed)
 	}
 
-	private def compressPoint(uncompressed : ECPoint): ECPoint = {
-		CURVE.getCurve.decodePoint(uncompressed.getEncoded(true))
-	}
-
-	private def decompressKey (xBN : BigInt, yBit : Boolean): ECPoint = {
-		val x9 = new X9IntegerConverter
-		val compEnc = x9.integerToBytes(xBN.bigInteger, 1 + x9.getByteLength(CURVE.getCurve))
-		compEnc(0) = (if (yBit) 0x03 else 0x02).toByte
-		CURVE.getCurve.decodePoint(compEnc)
-	}
-
-}
-
-
-/**
- * 非対称鍵暗号の一種である楕円曲線暗号の
- * 「公開鍵」をモデル化したクラスです。
- *
- * @since 2016/01/24
- * @author YANAGISAWA, Kentaro
- */
-
-class ECPublicKey private[elliptic_curve](override val pub: ECPoint, override val isCompressed: Boolean) extends ECKeyLike {
-	import ECKeyLike._
-
-	override def decompress: ECKeyLike = new ECPublicKey(CURVE.getCurve.decodePoint(this.pub.getEncoded(false)), isCompressed = false)
 }
 
 /**
@@ -209,19 +201,19 @@ class ECPublicKey private[elliptic_curve](override val pub: ECPoint, override va
  * @since 2016/01/24
  * @author YANAGISAWA, Kentaro
  */
-class ECKeyPair private[elliptic_curve](override val pub: ECPoint, val privateKey: BigInt, override val isCompressed: Boolean) extends ECKeyLike {
+class ECKeyPair private[elliptic_curve](override val publicKeyPoint: ECPoint, val privateKey: BigInt, override val isCompressed: Boolean) extends ECKeyLike {
 	import ECKeyLike._
 
-	override def decompress: ECKeyLike = {
-		new ECKeyPair(CURVE.getCurve.decodePoint(this.pub.getEncoded(false)), this.privateKey, isCompressed = false)
+	override def decompress: ECKeyPair = {
+		new ECKeyPair(CURVE.getCurve.decodePoint(this.publicKeyPoint.getEncoded(false)), this.privateKey, isCompressed = false)
 	}
 
 	def sign(input: Array[Byte]): ECDSASignature = {
 		val sig = privateSign(input)
 		(0 until 4).foreach {
 			i => {
-				val publicKeyOption = ECKeyLike.recoverFromSignature(i, sig, input, isCompressed)
-				if (publicKeyOption.contains(this.pub)) {
+				val publicKeyOption = ECPublicKey.recoverFromSignature(i, sig, input, isCompressed)
+				if (publicKeyOption.exists(_.publicKeyPoint == this.publicKeyPoint)) {
 					sig.v = (i + 27 + (if (this.isCompressed) 4 else 0)).toByte
 					return sig
 				}
@@ -237,6 +229,50 @@ class ECKeyPair private[elliptic_curve](override val pub: ECPoint, val privateKe
 		val components: Array[BigInteger] = signer.generateSignature(input)
 		new ECDSASignature(components(0), components(1)).toCanonicalized
 	}
+
+	override def equals(o: Any): Boolean = {
+		try {
+			val another = o.asInstanceOf[ECKeyPair]
+			(this.publicKeyPoint == another.publicKeyPoint) &&
+				(this.privateKey == another.privateKey) &&
+				(this.isCompressed == another.isCompressed)
+		} catch {
+			case e: Throwable => false
+		}
+	}
+
+}
+
+object ECKeyPair {
+	import ECKeyLike._
+
+	/**
+	 * 渡された擬似乱数生成器を使って、新たなEC鍵ペアを生成して返します。
+	 */
+	def apply(random: SecureRandom): ECKeyPair = {
+		val generator = new ECKeyPairGenerator
+		val keygenParams = new ECKeyGenerationParameters(ECKeyLike.CURVE, random)
+		generator.init(keygenParams)
+		val keypair = generator.generateKeyPair
+		val privParams = keypair.getPrivate.asInstanceOf[ECPrivateKeyParameters]
+		val pubParams = keypair.getPublic.asInstanceOf[ECPublicKeyParameters]
+		val privateKey = privParams.getD
+		val publicKey = ECKeyLike.CURVE.getCurve.decodePoint(pubParams.getQ.getEncoded(true))
+		new ECKeyPair(publicKey, privateKey, isCompressed = true)
+	}
+
+	/**
+	 * 渡された秘密鍵から、鍵ペアを生成して返します。
+	 */
+	def fromPrivateKey(privateKey: BigInt): ECKeyPair = {
+		new ECKeyPair(compressPoint(CURVE.getG.multiply(privateKey.bigInteger)), privateKey, isCompressed = true)
+	}
+
+	/**
+	 * 渡された秘密鍵から、鍵ペアを生成して返します。
+	 */
+	def fromPrivateKey(privateKey: Array[Byte]): ECKeyPair = fromPrivateKey(BigInt(1, privateKey))
+
 }
 
 /**
@@ -283,6 +319,12 @@ object ECDSASignature {
 
 	def apply(r: Array[Byte], s: Array[Byte], v: Byte): ECDSASignature = {
 		val result = new ECDSASignature(BigInt(1, r), BigInt(1, s))
+		result.v = v
+		result
+	}
+
+	def apply(r: ImmutableBytes, s: ImmutableBytes, v: Byte): ECDSASignature = {
+		val result = new ECDSASignature(r.toPositiveBigInt, s.toPositiveBigInt)
 		result.v = v
 		result
 	}

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.message
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
@@ -35,7 +35,7 @@ class NeighborsMessage extends AbstractPeerDiscoveryMessage {
 
 object NeighborsMessage {
 
-	def create(nodes: Seq[Node], privateKey: ECKey): NeighborsMessage = {
+	def create(nodes: Seq[Node], privateKey: ECKeyPair): NeighborsMessage = {
 		val expiration = (System.currentTimeMillis / 1000L) + 60L
 
 		val encodedNodes = nodes.map(_.toEncodedBytes)

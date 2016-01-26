@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.net.transport
 
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyLike
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.spongycastle.math.ec.ECPoint
 
@@ -40,7 +40,7 @@ object AuthResponseMessage {
 		offset += 64
 		bytes(0) = 0x04
 
-		val ephemeralPublicKey = ECKey.CURVE.getCurve.decodePoint(bytes)
+		val ephemeralPublicKey = ECKeyLike.CURVE.getCurve.decodePoint(bytes)
 		val nonce = new Array[Byte](32)
 		System.arraycopy(wire, offset, nonce, 0, 32)
 		val immutableNonce = ImmutableBytes(nonce)

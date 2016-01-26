@@ -8,7 +8,7 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
 import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.datastore.datasource.KeyValueDataSource
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeStatistics.Persistent
@@ -32,7 +32,7 @@ import scala.collection.{JavaConversions, mutable}
  * 2015/12/13 12:58
  * YANAGISAWA, Kentaro
  */
-class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValueDataSource) {
+class NodeManager(val table: NodeTable, val key: ECKeyPair, val dataSource: KeyValueDataSource) {
 	import JavaConversions._
 	import NodeManager._
 

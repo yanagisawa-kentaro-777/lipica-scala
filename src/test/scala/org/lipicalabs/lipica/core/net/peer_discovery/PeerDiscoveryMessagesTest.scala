@@ -4,7 +4,7 @@ import java.math.BigInteger
 import java.net.{InetAddress, InetSocketAddress}
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.crypto.ECKey
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.net.peer_discovery.message._
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
@@ -24,7 +24,7 @@ class PeerDiscoveryMessagesTest extends Specification {
 			val message1 = new PingMessage
 			message1.address = InetAddress.getByName("192.168.100.0")
 			message1.port = 32000
-			val key = ECKey.fromPrivate(BigInteger.TEN)
+			val key = ECKeyPair.fromPrivateKey(BigInteger.TEN)
 			val address = new InetSocketAddress(message1.address, message1.port)
 			val message2 = PingMessage.create(address, address, key)
 
@@ -46,7 +46,7 @@ class PeerDiscoveryMessagesTest extends Specification {
 
 			val message1: PongMessage = AbstractPeerDiscoveryMessage.decode(wire).right.get
 
-			val key = ECKey.fromPrivate(BigInteger.TEN)
+			val key = ECKeyPair.fromPrivateKey(BigInteger.TEN)
 			val message2 = PongMessage.create(message1.token, key)
 			val message3: PongMessage = AbstractPeerDiscoveryMessage.decode(message2.packet).right.get
 
@@ -61,7 +61,7 @@ class PeerDiscoveryMessagesTest extends Specification {
 
 			val message1: FindNodeMessage = AbstractPeerDiscoveryMessage.decode(wire).right.get
 
-			val key = ECKey.fromPrivate(BigInteger.TEN)
+			val key = ECKeyPair.fromPrivateKey(BigInteger.TEN)
 			val message2 = FindNodeMessage.create(message1.target, key)
 			val message3: FindNodeMessage = AbstractPeerDiscoveryMessage.decode(message2.packet).right.get
 
@@ -77,7 +77,7 @@ class PeerDiscoveryMessagesTest extends Specification {
 
 			val message1: NeighborsMessage = AbstractPeerDiscoveryMessage.decode(wire).right.get
 
-			val key = ECKey.fromPrivate(BigInteger.TEN)
+			val key = ECKeyPair.fromPrivateKey(BigInteger.TEN)
 			val message2 = NeighborsMessage.create(message1.nodes, key)
 			val message3: NeighborsMessage = AbstractPeerDiscoveryMessage.decode(message2.packet).right.get
 

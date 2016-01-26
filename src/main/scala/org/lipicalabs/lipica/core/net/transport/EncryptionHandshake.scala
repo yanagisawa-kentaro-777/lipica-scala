@@ -2,8 +2,9 @@ package org.lipicalabs.lipica.core.net.transport
 
 import java.security.SecureRandom
 
-import org.lipicalabs.lipica.core.crypto.{ECIESCoder, ECKey}
+import org.lipicalabs.lipica.core.crypto.ECIESCoder
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECPublicKey, ECKeyPair}
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 import org.spongycastle.crypto.digests.KeccakDigest
 import org.spongycastle.math.ec.ECPoint
@@ -27,7 +28,7 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	/**
 	 * 自ノードの一時鍵。
 	 */
-	private val ephemeralKey: ECKey = new ECKey(this.random)
+	private val ephemeralKey: ECKeyPair = ECKeyPair(this.random)
 
 	/**
 	 * 対向ノードの公開鍵。
@@ -63,16 +64,16 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	 * 渡された鍵ペアを自ノードの鍵ペアとして、
 	 * セッション確立要求メッセージを作成します。
 	 */
-	def createAuthInitiate(key: ECKey): AuthInitiateMessage = createAuthInitiate(null, key)
+	def createAuthInitiate(key: ECKeyPair): AuthInitiateMessage = createAuthInitiate(null, key)
 
 	/**
 	 * 渡された鍵ペアを自ノードの鍵ペアとして、
 	 * セッション確立要求メッセージを作成します。
 	 */
-	def createAuthInitiate(aToken: Array[Byte], myKey: ECKey): AuthInitiateMessage = {
+	def createAuthInitiate(aToken: Array[Byte], myKey: ECKeyPair): AuthInitiateMessage = {
 		val (isToken, token) =
 			if (aToken eq null) {
-				val secretScalar = this.remotePublicKey.multiply(myKey.getPrivKey).normalize.getXCoord.toBigInteger
+				val secretScalar = this.remotePublicKey.multiply(myKey.privateKey.bigInteger).normalize.getXCoord.toBigInteger
 				(false, ByteUtils.bigIntegerToBytes(secretScalar, NonceSize))
 			} else {
 				(true, aToken)
@@ -81,11 +82,11 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 		val signed = xor(token, nonce.toByteArray)
 		val signature = this.ephemeralKey.sign(signed)
 		val isTokenUsed = isToken
-		val dataSlice = java.util.Arrays.copyOfRange(this.ephemeralKey.getPubKeyPoint.getEncoded(false), 1, 1 + 64)
+		val dataSlice = java.util.Arrays.copyOfRange(this.ephemeralKey.publicKeyPoint.getEncoded(false), 1, 1 + 64)
 		//一時キーのハッシュ値。
 		val ephemeralPublicHash = ImmutableBytes(DigestUtils.digest256(dataSlice))
 		//自ノードの公開鍵。
-		val publicKey = myKey.getPubKeyPoint
+		val publicKey = myKey.publicKeyPoint
 
 		new AuthInitiateMessage(signature, ephemeralPublicHash, publicKey, nonce, isTokenUsed)
 	}
@@ -100,8 +101,8 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	/**
 	 * 渡された暗号化バイト列を、セッション確立要求メッセージに復号して返します。
 	 */
-	def decryptAuthInitiate(encryptedBytes: Array[Byte], myKey: ECKey): AuthInitiateMessage = {
-		val plainBytes = ECIESCoder.decrypt(myKey.getPrivKey, encryptedBytes)
+	def decryptAuthInitiate(encryptedBytes: Array[Byte], myKey: ECKeyPair): AuthInitiateMessage = {
+		val plainBytes = ECIESCoder.decrypt(myKey.privateKey.bigInteger, encryptedBytes)
 		AuthInitiateMessage.decode(plainBytes)
 	}
 
@@ -115,8 +116,8 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	/**
 	 * 渡された暗号化バイト列を、応答メッセージに復号して返します。
 	 */
-	def decryptAuthResponse(encryptedBytes: Array[Byte], myKey: ECKey): AuthResponseMessage = {
-		val plainBytes = ECIESCoder.decrypt(myKey.getPrivKey, encryptedBytes)
+	def decryptAuthResponse(encryptedBytes: Array[Byte], myKey: ECKeyPair): AuthResponseMessage = {
+		val plainBytes = ECIESCoder.decrypt(myKey.privateKey.bigInteger, encryptedBytes)
 		AuthResponseMessage.decode(plainBytes)
 	}
 
@@ -124,7 +125,7 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	 * 対向ノードから受信したセッション確立要求を解釈して
 	 * 秘密情報を合意し、応答メッセージを生成して返します。
 	 */
-	def handleAuthInitiate(initiatePacket: Array[Byte], key: ECKey): Array[Byte] = {
+	def handleAuthInitiate(initiatePacket: Array[Byte], key: ECKeyPair): Array[Byte] = {
 		val response = makeResponse(initiatePacket, key)
 		val responsePacket = encryptAuthResponse(response)
 		this._secrets = agreeSecrets(initiatePacket, responsePacket)
@@ -135,7 +136,7 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	 * 対向ノードから受信した応答メッセージを解釈して
 	 * 秘密情報を合意し、応答メッセージを生成して返します。
 	 */
-	def handleAuthResponse(myKey: ECKey, initiatePacket: Array[Byte], responsePacket: Array[Byte]): AuthResponseMessage = {
+	def handleAuthResponse(myKey: ECKeyPair, initiatePacket: Array[Byte], responsePacket: Array[Byte]): AuthResponseMessage = {
 		val response = decryptAuthResponse(responsePacket, myKey)
 		this._remoteEphemeralKey = response.ephemeralPublicKey
 		this._responderNonce = response.nonce
@@ -146,7 +147,7 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	/**
 	 * 渡されたセッション確立要求に対する応答メッセージを生成して返します。
 	 */
-	private def makeResponse(initiatePacket: Array[Byte], key: ECKey): AuthResponseMessage = {
+	private def makeResponse(initiatePacket: Array[Byte], key: ECKeyPair): AuthResponseMessage = {
 		val initiate = decryptAuthInitiate(initiatePacket, key)
 		makeResponse(initiate, key)
 	}
@@ -154,18 +155,18 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	/**
 	 * 渡されたセッション確立要求に対する応答メッセージを生成して返します。
 	 */
-	def makeResponse(initiateMessage: AuthInitiateMessage, key: ECKey): AuthResponseMessage = {
+	def makeResponse(initiateMessage: AuthInitiateMessage, key: ECKeyPair): AuthResponseMessage = {
 		this._initiatorNonce = initiateMessage.nonce
 		this._remotePublicKey = initiateMessage.publicKey
 
-		val secretScalar = this.remotePublicKey.multiply(key.getPrivKey).normalize().getXCoord.toBigInteger
+		val secretScalar = this.remotePublicKey.multiply(key.privateKey.bigInteger).normalize().getXCoord.toBigInteger
 		val token = ByteUtils.bigIntegerToBytes(secretScalar, NonceSize)
 		val signed = xor(token, this.initiatorNonce.toByteArray)
 
-		val ephemeral = ECKey.recoverFromSignature(recIdFromSignatureV(initiateMessage.signature.v), initiateMessage.signature, signed, false)
-		this._remoteEphemeralKey = ephemeral.getPubKeyPoint
+		val ephemeral = ECPublicKey.recoverFromSignature(recIdFromSignatureV(initiateMessage.signature.v), initiateMessage.signature, signed, compressed = false).get
+		this._remoteEphemeralKey = ephemeral.publicKeyPoint
 
-		new AuthResponseMessage(this.ephemeralKey.getPubKeyPoint, this.responderNonce, initiateMessage.isTokenUsed)
+		new AuthResponseMessage(this.ephemeralKey.publicKeyPoint, this.responderNonce, initiateMessage.isTokenUsed)
 	}
 
 	/**
@@ -173,7 +174,7 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	 * 暗号化のための共通鍵を合意します。
 	 */
 	def agreeSecrets(initiatePacket: Array[Byte], responsePacket: Array[Byte]): Secrets = {
-		val secretScalar = this.remoteEphemeralKey.multiply(ephemeralKey.getPrivKey).normalize.getXCoord.toBigInteger
+		val secretScalar = this.remoteEphemeralKey.multiply(ephemeralKey.privateKey.bigInteger).normalize.getXCoord.toBigInteger
 		val agreedSecret = ByteUtils.bigIntegerToBytes(secretScalar, SecretSize)
 		val data1 = (responderNonce ++ initiatorNonce).toByteArray
 		val data2 = agreedSecret ++ DigestUtils.digest256(data1)
