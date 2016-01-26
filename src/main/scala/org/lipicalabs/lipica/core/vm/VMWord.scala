@@ -8,8 +8,8 @@ import org.lipicalabs.lipica.core.kernel.{Address160, Address}
 import org.lipicalabs.lipica.core.utils.{UtilConsts, ImmutableBytes, ByteUtils}
 
 /**
- * Lipica の VM における１ワードである
- * 32バイト＝256ビットの不変の数値を表すクラスです。
+ * VM における１ワードである
+ * 32バイト＝256ビットの不変の値を表すクラスです。
  *
  * @since 2015, Oct. 17
  * @author YANAGISAWA, Kentaro
@@ -27,7 +27,6 @@ class VMWord private(val data: ImmutableBytes) extends Comparable[VMWord] {
 
 	/**
 	 * 先頭のゼロを剥ぎとったバイト列を返します。
-	 * @return
 	 */
 	def getDataWithoutLeadingZeros: ImmutableBytes = ByteUtils.stripLeadingZeroes(this.data)
 
@@ -44,7 +43,7 @@ class VMWord private(val data: ImmutableBytes) extends Comparable[VMWord] {
 	/**
 	 * この値の256ビットダイジェスト値を返します。
 	 */
-	def computeDigest256OfData: DigestValue = this.data.digest256
+	def calculateDigest256: DigestValue = this.data.digest256
 
 	/**
 	 * この値をInt値として返します。
@@ -103,7 +102,6 @@ class VMWord private(val data: ImmutableBytes) extends Comparable[VMWord] {
 			result
 		}
 	}
-
 
 	def isZero: Boolean = {
 		this.data.indices.foreach {

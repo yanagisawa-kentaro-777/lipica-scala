@@ -7,7 +7,6 @@ import org.lipicalabs.lipica.core.kernel.ImportResult.{ImportedBest, NoParent, I
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{RepositoryTrackLike, Repository, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
-import org.lipicalabs.lipica.core.facade.components.AdminInfo
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes, UtilConsts}
 import org.lipicalabs.lipica.core.validator.block_header_rules.BlockHeaderValidator
 import org.lipicalabs.lipica.core.validator.block_rules.{UnclesRule, BlockValidator, TxReceiptTrieRootCalculator, LogBloomFilterCalculator}
@@ -38,7 +37,6 @@ class BlockchainImpl(
 	private val blockStore: BlockStore,
 	_repository: Repository,
 	private val wallet: Wallet,
-	private val adminInfo: AdminInfo,
 	private val listener: LipicaListener,
 	private val blockValidator: BlockValidator,
 	private val blockHeaderValidator: BlockHeaderValidator,
@@ -154,7 +152,6 @@ class BlockchainImpl(
 					val result = append(block)
 					if (result == ConsensusBreak) {
 						//TODO 乱暴すぎるが。
-						this.adminInfo.lostConsensus()
 						System.exit(1)
 					}
 					result
@@ -173,7 +170,6 @@ class BlockchainImpl(
 					val result = append(block)
 					if (result == ConsensusBreak) {
 						//TODO 乱暴すぎるが。
-						this.adminInfo.lostConsensus()
 						System.exit(1)
 					}
 					result

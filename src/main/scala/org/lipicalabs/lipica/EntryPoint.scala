@@ -17,37 +17,64 @@ import org.slf4j.LoggerFactory
  * YANAGISAWA, Kentaro
  */
 object EntryPoint {
+
 	private val logger = LoggerFactory.getLogger("general")
 
-	private val isShutdownRef = new AtomicBoolean(false)
-	def isShutdown: Boolean = this.isShutdownRef.get
-
+	/**
+	 * エントリーポイント。
+	 * @param args １個目の引数に、設定ファイルのパスを表す文字列が必要。
+	 */
 	def main(args: Array[String]): Unit = {
 		startup(args)
 	}
 
+	private val isStartedRef = new AtomicBoolean(false)
+	private def isStarted: Boolean = this.isStartedRef.get
+
+	/**
+	 * ノードおよびAPIサーバーを起動します。
+	 */
 	def startup(args: Array[String]): Unit = {
-		//設定オブジェクトを生成する。
-		val configFilePath = args(0).trim
-		NodeProperties.loadFromFile(Paths.get(configFilePath))
-
-		//ノード本体を起動する。
-		Lipica.startup()
-
-		//REST APIサーバーを起動する。
-		val config = NodeProperties.CONFIG
-		if (config.restApiEnabled) {
-			val webBindAddress = new InetSocketAddress(config.restApiBindAddress, config.restApiBindPort)
-			RestApiServer.startup(webBindAddress)
+		if (args.isEmpty) {
+			throw new IllegalArgumentException("You need at least one argument: Config file path.")
 		}
 
-		//ShutdownHookを登録する。
-		Runtime.getRuntime.addShutdownHook(new Thread() {
-			override def run(): Unit = shutdown()
-		})
+		this.synchronized {
+			if (this.isStarted) {
+				return
+			}
+			logger.info("<EntryPoint> STARTING UP.")
+
+			//設定オブジェクトを生成する。
+			val configFilePath = args(0).trim
+			NodeProperties.loadFromFile(Paths.get(configFilePath))
+
+			//ノード本体を起動する。
+			Lipica.startup()
+
+			//REST APIサーバーを起動する。
+			val config = NodeProperties.CONFIG
+			if (config.restApiEnabled) {
+				val webBindAddress = new InetSocketAddress(config.restApiBindAddress, config.restApiBindPort)
+				RestApiServer.startup(webBindAddress)
+			}
+
+			//ShutdownHookを登録する。
+			Runtime.getRuntime.addShutdownHook(new Thread() {
+				override def run(): Unit = EntryPoint.shutdown()
+			})
+
+			this.isStartedRef.set(true)
+			logger.info("<EntryPoint> STARTUP COMPLETE.")
+		}
 	}
 
+	private val isShutdownRef = new AtomicBoolean(false)
+	def isShutdown: Boolean = this.isShutdownRef.get
 
+	/**
+	 * ノードおよびAPIサーバーの動作を停止させます。
+	 */
 	def shutdown(): Unit = {
 		this.synchronized {
 			if (this.isShutdown) {

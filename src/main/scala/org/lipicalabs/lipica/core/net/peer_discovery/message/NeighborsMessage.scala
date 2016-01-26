@@ -3,7 +3,6 @@ package org.lipicalabs.lipica.core.net.peer_discovery.message
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.peer_discovery.Node
-import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
@@ -11,7 +10,7 @@ import org.lipicalabs.lipica.core.utils.ByteUtils
  * 2015/12/15 19:44
  * YANAGISAWA, Kentaro
  */
-class NeighborsMessage extends TransportMessage {
+class NeighborsMessage extends AbstractPeerDiscoveryMessage {
 
 	private var _nodes: Seq[Node] = null
 	def nodes: Seq[Node] = this._nodes
@@ -46,7 +45,7 @@ object NeighborsMessage {
 		val messageType = Array[Byte](4)
 		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedNodesSeq, encodedExpiration))
 
-		val result: NeighborsMessage = TransportMessage.encode(messageType, data, privateKey)
+		val result: NeighborsMessage = AbstractPeerDiscoveryMessage.encode(messageType, data, privateKey)
 		result._nodes = nodes
 		result._expiration = expiration
 		result

@@ -11,15 +11,25 @@ import org.scalatra.ScalatraServlet
 import org.scalatra._
 
 /**
+ * REST APIの呼び出しを処理する Servlet の実装です。
+ *
+ * （現状はまったくAPIらしくなく、テキストファイルで情報を返す挙動になっていますが。）
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/28 13:49
  * YANAGISAWA, Kentaro
  */
 class RestApiServlet extends ScalatraServlet {
 
+	/**
+	 * 現在の自ノードの状態について、
+	 * なんとなく知りたいことをテキストで返します。
+	 * （こういうのはAPIと言わない。）
+	 */
 	get("/:apiVersion/node/status") {
+		val lipica = Lipica.instance
 		val componentsMotherboard = ComponentsMotherboard.instance
-		val startedUnixMillis = componentsMotherboard.adminInfo.startupTimeStamp
+		val startedUnixMillis = lipica.startupTimestamp
 		val startedTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z").format(startedUnixMillis)
 
 		val blockchain = componentsMotherboard.blockchain
@@ -78,6 +88,10 @@ class RestApiServlet extends ScalatraServlet {
 		Ok(body)
 	}
 
+	/**
+	 * 現在の自ノードで動作するスレッドの一覧をテキストで返します。
+	 * （こういうのはAPIと言わない。）
+	 */
 	get("/:apiVersion/node/status/threads") {
 		val threads = MiscUtils.allThreads.toSeq.sortWith((t1, t2) => t1.getName.compareTo(t2.getName) < 0)
 		val body = "Number of threads: %,d\n\n%s\n\n".format(threads.size, threads.map(_.getName).mkString("\n"))
@@ -85,12 +99,21 @@ class RestApiServlet extends ScalatraServlet {
 		Ok(body)
 	}
 
+	/**
+	 * 現在の自ノードのメモリ消費状況をテキストで返します。
+	 * （こういうのはAPIと言わない。）
+	 */
 	get("/:apiVersion/node/status/memory") {
 		val body = renderMemoryInfo
 		status = 200
 		Ok(body)
 	}
 
+	/**
+	 * このプロセスで GC を実行します。
+	 * （メモリリーク疑惑があった場合のデバッグ用。）
+	 * （こういうのはAPIと言わない。）
+	 */
 	get("/:apiVersion/node/status/memory/gc") {
 		val runtime = Runtime.getRuntime
 		runtime.gc()
@@ -100,9 +123,14 @@ class RestApiServlet extends ScalatraServlet {
 		Ok(body)
 	}
 
+	/**
+	 * 自ノードの動作を終了させます。
+	 * （ブラウザから簡単に実行できるように GET にしている。）
+	 */
 	get("/:apiVersion/node/stop") {
 		val task = new Runnable {
 			override def run() = {
+				//このリクエストの処理が完了するように、しばらく待ってからシャットダウンする。
 				Thread.sleep(3000L)
 				EntryPoint.shutdown()
 			}

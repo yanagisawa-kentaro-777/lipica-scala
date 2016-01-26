@@ -9,7 +9,11 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Lipica VMを表すクラスです。
+ * メモリとkey-value型の永続的記憶領域を持つ、
+ * 単純なスタックマシンであるVMを表すクラスです。
+ *
+ * コントラクトのコード呼び出しは、
+ * このVM上におけるバイトコードの実行として操作的意味論を与えられています。
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
@@ -21,6 +25,9 @@ class VM {
 	/** このVM上で実行されたステップ数のカウンタ。 */
 	private var vmCounter: Long = 0L
 
+	/**
+	 * このインスタンス上で、渡されたプログラムを実行します。
+	 */
 	def play(program: Program): Unit = {
 		try {
 			while (!program.isStopped) {
@@ -36,7 +43,7 @@ class VM {
 		}
 	}
 
-	def step(program: Program): Unit = {
+	private[vm] def step(program: Program): Unit = {
 		if (NodeProperties.CONFIG.vmTrace) {
 			program.saveOpTrace()
 		}
@@ -96,10 +103,6 @@ class VM {
 				logger.info(logString.format("[%5s]".format(program.getPC), "%-12s".format(op.name), program.getMana.longValue, program.getCallDepth, hint))
 			}
 			vmCounter += 1
-
-//			if ((vmCounter % 10) == 0) {
-//				Thread.`yield`()
-//			}
 		} catch {
 			case e: RuntimeException =>
 				if (logger.isInfoEnabled) {

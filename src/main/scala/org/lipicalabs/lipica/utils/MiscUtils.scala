@@ -5,12 +5,20 @@ import java.io.Closeable
 import scala.annotation.tailrec
 
 /**
+ * 便利関数の置き場所。
  *
  * @since 2016/01/11
  * @author YANAGISAWA, Kentaro
  */
 object MiscUtils {
 
+	/**
+	 * 渡された文字列が null もしくは空文字列である場合に真を返します。
+	 *
+	 * @param s 判定対象文字列。
+	 * @param trim 判定前に trim するか否か。判定対象が null だったら、当然 trim しません。
+	 * @return null もしくは空文字列の場合に真、そうでなければ偽。
+	 */
 	def isNullOrEmpty(s: String, trim: Boolean): Boolean = {
 		if (s eq null) {
 			return true
@@ -22,6 +30,12 @@ object MiscUtils {
 		}
 	}
 
+	/**
+	 * 渡されたリソースをクローズします。
+	 * クローズ時に送出された例外は無視します。
+	 *
+	 * @param resource クローズ対象。
+	 */
 	def closeIfNotNull(resource: Closeable): Unit = {
 		if (resource eq null) {
 			return

@@ -10,6 +10,9 @@ import org.lipicalabs.lipica.core.net.swarm.bzz.BzzHandler
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * あるノードが対応している「プロトコル」と「バージョン」の
+ * 組み合わせを表現するタプルクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/30 20:31
  * YANAGISAWA, Kentaro
@@ -36,9 +39,9 @@ case class Capability(name: String, version: Byte) extends Comparable[Capability
 
 object Capability {
 	val P2P = "p2p"
-	val LPC = "eth"//TODO 互換性のため。
-	val SHH = "shh"//TODO 互換性のため。
-	val BZZ = "bzz"//TODO 互換性のため。
+	val LPC = "eth"
+	val SHH = "shh"
+	val BZZ = "bzz"
 
 	private val lpcVersions = LpcVersion.SupportedVersions.map(v => Capability(LPC, v.toByte))
 

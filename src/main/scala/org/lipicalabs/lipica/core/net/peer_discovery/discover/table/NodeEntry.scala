@@ -1,7 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
-import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 
 /**

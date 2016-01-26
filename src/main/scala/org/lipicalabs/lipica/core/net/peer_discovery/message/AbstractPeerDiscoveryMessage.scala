@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.transport
+package org.lipicalabs.lipica.core.net.peer_discovery.message
 
 import java.security.SignatureException
 import java.util
@@ -6,22 +6,28 @@ import java.util
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
-import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PongMessage, PingMessage}
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
 /**
+ * ノードディスカバリープロトコルにおけるメッセージの実装基底クラスです。
+ *
+ * 署名やMDC等、セキュアなトランスポート層の問題を取扱います。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/15 13:19
  * YANAGISAWA, Kentaro
  */
-class TransportMessage {
+abstract class AbstractPeerDiscoveryMessage {
 
-	protected val logger = TransportMessage.logger
+	protected val logger = AbstractPeerDiscoveryMessage.logger
 
 	private var _wire: Array[Byte] = null
 	def packet: Array[Byte] = this._wire
 
+	/**
+	 * modification detection code.
+	 */
 	private var _mdc: ImmutableBytes = null
 	def mdc: ImmutableBytes = this._mdc
 
@@ -34,7 +40,24 @@ class TransportMessage {
 	private var _data: ImmutableBytes = null
 	def data: ImmutableBytes = this._data
 
-	def key: Either[Throwable, ECKey] = {
+	/**
+	 * このメッセージに含まれる署名から、送信元ノードのノードIDを復元して返します。
+	 * ノードIDは、楕円曲線暗号における公開鍵です。
+	 */
+	def nodeId: NodeId = {
+		this.key match {
+			case Right(k) =>
+				val publicKey = ImmutableBytes(k.getPubKey)
+				NodeId(publicKey.copyOfRange(1, 65))
+			case Left(e) =>
+				NodeId.empty
+		}
+	}
+
+	/**
+	 * このメッセージに含まれる署名から、署名者の公開鍵を復元して返します。
+	 */
+	private def key: Either[Throwable, ECKey] = {
 		try {
 			val r = this.signature.copyOfRange(0, 32)
 			val s = this.signature.copyOfRange(32, 64)
@@ -60,30 +83,20 @@ class TransportMessage {
 		}
 	}
 
-	def nodeId: NodeId = {
-		this.key match {
-			case Right(k) =>
-				val publicKey = ImmutableBytes(k.getPubKey)
-				NodeId(publicKey.copyOfRange(1, 65))
-			case Left(e) =>
-				NodeId.empty
-		}
-	}
-
 	protected def parse(wire: Array[Byte]): Unit = {
 		//override用。
 	}
 
 	override def toString: String = {
-		"{mdc=%s, signature=%s, type=%s, data=%s}".format(this.mdc, this.signature, this.messageType, this.data)
+		"{MDC=%s, Signature=%s, Type=%s, DataLength=%,d}".format(this.mdc, this.signature, this.messageType, this.data.length)
 	}
 
 }
 
-object TransportMessage {
+object AbstractPeerDiscoveryMessage {
 	private val logger = LoggerFactory.getLogger("net")
 
-	def encode[T <: TransportMessage](messageType: Array[Byte], data: ImmutableBytes, privateKey: ECKey): T = {
+	def encode[T <: AbstractPeerDiscoveryMessage](messageType: Array[Byte], data: ImmutableBytes, privateKey: ECKey): T = {
 		if (logger.isDebugEnabled) {
 			logger.debug("<TransportMessage> Encoding: %d".format(messageType.head))
 		}
@@ -101,7 +114,7 @@ object TransportMessage {
 		val sPart = ByteUtils.bigIntegerToBytes(signature.s, 32)
 		val signatureBytes = rPart ++ sPart ++ Array[Byte](signature.v)
 
-		//MDCを計算する。
+		//MDC（modification detection code）を計算する。
 		val dataBytes = data.toByteArray
 		val digest = signatureBytes ++ messageType ++ dataBytes
 		val mdc = DigestUtils.digest256(digest)
@@ -117,7 +130,7 @@ object TransportMessage {
 		result.asInstanceOf[T]
 	}
 
-	def decode[T <: TransportMessage](wire: Array[Byte]): Either[Throwable, T] = {
+	def decode[T <: AbstractPeerDiscoveryMessage](wire: Array[Byte]): Either[Throwable, T] = {
 		try {
 			if (wire.length < 98) {
 				throw new IllegalArgumentException("Message too short %,d < %,d".format(wire.length, 98))
@@ -129,9 +142,8 @@ object TransportMessage {
 			if (logger.isDebugEnabled) {
 				logger.debug("<TransportMessage> Decoding: %d".format(messageType.head))
 			}
-
 			val data = util.Arrays.copyOfRange(wire, 98, wire.length)
-
+			//MDC（modification detection code）の答え合わせをする。
 			val mdcCheck = DigestUtils.digest256(util.Arrays.copyOfRange(wire, 32, wire.length))
 			if (!util.Arrays.equals(mdc, mdcCheck)) {
 				throw new IllegalArgumentException("MDC check failed.")
@@ -151,7 +163,7 @@ object TransportMessage {
 		}
 	}
 
-	private def createMessage(messageType: Byte): TransportMessage = {
+	private def createMessage(messageType: Byte): AbstractPeerDiscoveryMessage = {
 		messageType match {
 			case 1 => new PingMessage
 			case 2 => new PongMessage

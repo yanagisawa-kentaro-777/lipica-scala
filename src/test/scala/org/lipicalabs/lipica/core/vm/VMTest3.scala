@@ -19,10 +19,10 @@ import org.specs2.specification.BeforeExample
 class VMTest3 extends Specification with BeforeExample {
 	sequential
 
-	private var invoke = new ProgramContextMockImpl(null)
+	private var context = new ProgramContextMockImpl(null)
 
 	override def before: scala.Any = {
-		this.invoke = new ProgramContextMockImpl(null)
+		this.context = new ProgramContextMockImpl(null)
 	}
 
 	"test (1)" should {

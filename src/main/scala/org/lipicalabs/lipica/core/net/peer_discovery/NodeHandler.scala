@@ -7,7 +7,7 @@ import java.util.concurrent.{ScheduledExecutorService, TimeUnit}
 
 import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryEvent
-import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PingMessage, PongMessage}
+import org.lipicalabs.lipica.core.net.peer_discovery.message._
 import org.lipicalabs.lipica.core.net.transport._
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
@@ -209,7 +209,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 		this.nodeStatistics.discoverOutFind.add
 	}
 
-	private def sendMessage(message: TransportMessage): Unit = {
+	private def sendMessage(message: AbstractPeerDiscoveryMessage): Unit = {
 		this.nodeManager.sendOutbound(new DiscoveryEvent(message, inetSocketAddress))
 	}
 

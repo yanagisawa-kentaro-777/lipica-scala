@@ -16,14 +16,14 @@ import org.slf4j.LoggerFactory
  * ネットワークと NodeManager との橋渡し役を務めるクラスです。
  *
  * 送信すべきメッセージをUDPデータグラムに変換して netty に渡します。
- * （つまり、PacketDecoder の逆側です。）
+ * （つまり、PacketDecoder の逆方向の流れを担当します。）
  *
  * Created by IntelliJ IDEA.
  * 2015/12/21 10:54
  * YANAGISAWA, Kentaro
  */
-class MessageHandler(private val channel: NioDatagramChannel, private val nodeManager: NodeManager)  extends SimpleChannelInboundHandler[DiscoveryEvent] {
-	import MessageHandler._
+class MessageEncoder(private val channel: NioDatagramChannel, private val nodeManager: NodeManager)  extends SimpleChannelInboundHandler[DiscoveryEvent] {
+	import MessageEncoder._
 
 	override def channelActive(ctx: ChannelHandlerContext): Unit = {
 		this.nodeManager.channelActivated()
@@ -33,7 +33,7 @@ class MessageHandler(private val channel: NioDatagramChannel, private val nodeMa
 		this.nodeManager.handleInbound(event)
 	}
 
-	def accept(event: DiscoveryEvent): Unit = {
+	def send(event: DiscoveryEvent): Unit = {
 		val address = event.address
 		//println("Sending: %s to %s".format(event.message.messageType, address))
 		sendPacket(event.message.packet, address)
@@ -55,6 +55,6 @@ class MessageHandler(private val channel: NioDatagramChannel, private val nodeMa
 
 }
 
-object MessageHandler {
+object MessageEncoder {
 	private val logger = LoggerFactory.getLogger("discovery")
 }

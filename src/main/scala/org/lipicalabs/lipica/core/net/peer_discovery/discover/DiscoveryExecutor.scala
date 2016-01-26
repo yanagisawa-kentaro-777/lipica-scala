@@ -7,6 +7,8 @@ import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.KademliaOptions
 
 /**
+ * ノードディスカバリのための定期実行処理を実行するクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/20 15:24
  * YANAGISAWA, Kentaro

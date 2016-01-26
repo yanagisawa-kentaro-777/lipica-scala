@@ -1,15 +1,19 @@
 package org.lipicalabs.lipica.core.facade.components
 
 import java.io.Closeable
+import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
+import org.lipicalabs.lipica.core.concurrent.{CountingThreadFactory, ExecutorPool}
+import org.lipicalabs.lipica.core.datastore.datasource.DataSourcePool
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
 import org.lipicalabs.lipica.core.datastore._
 import org.lipicalabs.lipica.core.facade.listener.{CompositeLipicaListener, LipicaListener}
-import org.lipicalabs.lipica.core.net.endpoint.PeerClient
+import org.lipicalabs.lipica.core.net.endpoint.{PeerServer, PeerClient}
 import org.lipicalabs.lipica.core.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
@@ -21,14 +25,16 @@ import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
 /**
- * 自ノード全体においてシングルトンな、
- * 重要なコンポーネントのインスタンスを保持する配線基板のようなクラスです。
+ * 自ノードにおける、重要なシングルトンコンポーネントの
+ * インスタンスを保持する、配線基板のようなクラスです。
+ *
+ * 当然、このクラスのインスタンスも自ノードで一個です。
  *
  * Created by IntelliJ IDEA.
  * 2015/11/21 16:08
  * YANAGISAWA, Kentaro
  */
-class ComponentsMotherboard extends Closeable {
+class ComponentsMotherboard {
 
 	import ComponentsMotherboard._
 
@@ -40,8 +46,6 @@ class ComponentsMotherboard extends Closeable {
 
 	val wallet: Wallet = ComponentFactory.createWallet
 
-	val adminInfo: AdminInfo = ComponentFactory.createAdminInfo
-
 	val listener: CompositeLipicaListener = ComponentFactory.createListener
 
 	val blockValidator = ComponentFactory.createBlockValidator
@@ -50,7 +54,7 @@ class ComponentsMotherboard extends Closeable {
 
 	val parentHeaderValidator = ComponentFactory.createParentHeaderValidator
 
-	val blockchain: Blockchain = new BlockchainImpl(this.blockStore, this.repository, this.wallet, this.adminInfo, this.listener, this.blockValidator, this.blockHeaderValidator, this.parentHeaderValidator)
+	val blockchain: Blockchain = new BlockchainImpl(this.blockStore, this.repository, this.wallet, this.listener, this.blockValidator, this.blockHeaderValidator, this.parentHeaderValidator)
 
 	val peerDiscovery: PeerDiscovery = ComponentFactory.createPeerDiscovery
 
@@ -68,17 +72,30 @@ class ComponentsMotherboard extends Closeable {
 
 	val programContextFactory: ProgramContextFactory = ComponentFactory.createProgramContextFactory
 
-	val blockLoader: BlockLoader = new BlockLoader
+	val blockLoader: BlocksLoader = new BlocksLoader
 
-	def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
+	private val peerServer: PeerServer = new PeerServer
+	private def startPeerServer(): Unit = {
+		val bindPort = NodeProperties.CONFIG.bindPort
+		if (0 < bindPort) {
+			val socketAddress = new InetSocketAddress(NodeProperties.CONFIG.bindAddress, bindPort)
+			Executors.newSingleThreadExecutor(new CountingThreadFactory("front-server")).submit(new Runnable {
+				override def run(): Unit = {
+					peerServer.start(socketAddress)
+				}
+			})
+		}
+	}
 
-	def startPeerDiscovery(): Unit = {
+	private def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
+
+	private def startPeerDiscovery(): Unit = {
 		if (!this.peerDiscovery.isStarted) {
 			this.peerDiscovery.start()
 		}
 	}
 
-	def stopPeerDiscovery(): Unit = {
+	private def stopPeerDiscovery(): Unit = {
 		if (this.peerDiscovery.isStarted) {
 			this.peerDiscovery.stop()
 		}
@@ -87,8 +104,7 @@ class ComponentsMotherboard extends Closeable {
 	private val clientRef = new AtomicReference[PeerClient](null)
 	def client: PeerClient = this.clientRef.get
 
-
-	def init(): Unit = {
+	private def startup(): Unit = {
 		this.blockchain.asInstanceOf[BlockchainImpl].programContextFactory = this.programContextFactory
 		this.programContextFactory.asInstanceOf[ProgramContextFactoryImpl].blockchain = this.blockchain
 
@@ -101,12 +117,13 @@ class ComponentsMotherboard extends Closeable {
 		this.blockLoader.loadBlocks(this.blockchain)
 
 		this.clientRef.set(new PeerClient)
+		startPeerServer()
 
 		this.udpListener.start()
 		this.syncManager.start()
 	}
 
-	def loadBlockchain(): Unit = {
+	private def loadBlockchain(): Unit = {
 //		if (!SystemProperties.CONFIG.databaseReset) {
 //			this.blockStore.load()
 //		}
@@ -138,17 +155,21 @@ class ComponentsMotherboard extends Closeable {
 		}
 	}
 
-	def flush(): Unit = {
-		this.repository.flush()
-		this.blockStore.flush()
-	}
-
-	override def close(): Unit = {
+	private[facade] def shutdown(): Unit = {
 		stopPeerDiscovery()
-		flush()
+		//動作中の ExecutorService 類を停止させる。
+		ExecutorPool.instance.close()
+		//Repository および BlockStore を flush する。
+		this.blockchain.flush()
+
+		//各種データストアをクローズする。
 		MiscUtils.closeIfNotNull(this.repository)
 		MiscUtils.closeIfNotNull(this.blockStore)
 		MiscUtils.closeIfNotNull(this.blockchain)
+
+		//各種データストアをクローズする。
+		DataSourcePool.closeAll()
+		ComponentFactory.dataSources.values.foreach(MiscUtils.closeIfNotNull)
 		MiscUtils.closeIfNotNull(this.dataStoreResource)
 	}
 }
@@ -160,7 +181,7 @@ object ComponentsMotherboard {
 
 	private def createWorldManager: ComponentsMotherboard = {
 		val result = new ComponentsMotherboard
-		result.init()
+		result.startup()
 		result
 	}
 

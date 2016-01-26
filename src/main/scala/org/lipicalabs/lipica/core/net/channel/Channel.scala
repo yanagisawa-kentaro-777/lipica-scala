@@ -80,9 +80,9 @@ class Channel {
 
 		if (aDiscoveryMode) {
 			//reputationに影響しないように、匿名化する。
-			this.messageCodec.generateTempKey()
+			this.messageCodec.generateTemporaryKey()
 		}
-		this.messageCodec.setRemoteNodeId(remoteNodeId, this)
+		this.messageCodec.assignRemoteNodeId(remoteNodeId, this)
 
 		this.p2pHandler.messageQueue = this.messageQueue
 		this.messageCodec.setP2PMessageFactory(new P2PMessageFactory)

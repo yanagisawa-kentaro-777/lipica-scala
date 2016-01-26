@@ -23,7 +23,7 @@ case class LogInfo(address: Address, topics: Seq[VMWord], data: ImmutableBytes) 
 	def createBloomFilter: BloomFilter = {
 		var result = BloomFilter.createFromDigest(address.bytes.digest256)
 		for (eachTopic <- this.topics) {
-			result = result | BloomFilter.createFromDigest(eachTopic.computeDigest256OfData)
+			result = result | BloomFilter.createFromDigest(eachTopic.calculateDigest256)
 		}
 		result
 	}

@@ -5,7 +5,6 @@ import java.security.SecureRandom
 
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.transport.FrameCodec.Frame
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification
@@ -24,7 +23,6 @@ class TransportConnectionTest extends Specification {
 	private var rCodec: FrameCodec = null
 	private var initiator: EncryptionHandshake = null
 	private var responder: EncryptionHandshake = null
-	private var iMessage: HandshakeMessage = null
 
 	private var to: PipedInputStream = null
 	private var toOut: PipedOutputStream = null
@@ -38,7 +36,7 @@ class TransportConnectionTest extends Specification {
 		this.initiator = EncryptionHandshake.createInitiator(remoteKey.getPubKeyPoint)
 		this.responder = EncryptionHandshake.createResponder
 
-		val initiate = this.initiator.createAuthInitiate(null, myKey)
+		val initiate = this.initiator.createAuthInitiate(myKey)
 		val initiatePacket = this.initiator.encryptAuthInitiate(initiate)
 		val responsePacket = this.responder.handleAuthInitiate(initiatePacket, remoteKey)
 		this.initiator.handleAuthResponse(myKey, initiatePacket, responsePacket)
@@ -52,28 +50,6 @@ class TransportConnectionTest extends Specification {
 		this.rCodec = new FrameCodec(this.responder.secrets)
 
 		val nodeId = ImmutableBytes(Array[Byte](1, 2, 3, 4))
-		this.iMessage = new HandshakeMessage(
-			123,
-			"abcd",
-			Seq(new Capability("zz", 1), new Capability("yy", 3)),
-			3333,
-			nodeId
-		)
-	}
-
-	"HandshakeMessage" should {
-		"be right" in {
-			init()
-
-			val wire = this.iMessage.encode
-			val rebuilt = HandshakeMessage.decode(wire)
-
-			rebuilt.version mustEqual 123
-			rebuilt.name mustEqual "abcd"
-			rebuilt.listenPort mustEqual 3333
-			rebuilt.nodeId mustEqual this.iMessage.nodeId
-			rebuilt.capabilities mustEqual this.iMessage.capabilities
-		}
 	}
 
 	"Frame" should {
@@ -93,25 +69,6 @@ class TransportConnectionTest extends Specification {
 			originalFrame.frameType mustEqual readFrame.frameType
 			originalFrame.size mustEqual readFrame.size
 			readPayload mustEqual originalPayload
-		}
-	}
-
-	"Handshake" should {
-		"be right" in {
-			init()
-
-			val iConn = new TransportConnection(this.initiator.secrets, this.from, this.toOut)
-			val rConn = new TransportConnection(this.responder.secrets, this.to, this.fromOut)
-
-			iConn.sendProtocolHandshake(this.iMessage)
-			rConn.handleNextMessage()
-
-			val receivedMessage = rConn.getHandshakeMessage
-			receivedMessage.version mustEqual 123
-			receivedMessage.name mustEqual "abcd"
-			receivedMessage.listenPort mustEqual 3333
-			receivedMessage.nodeId mustEqual this.iMessage.nodeId
-			receivedMessage.capabilities mustEqual this.iMessage.capabilities
 		}
 	}
 

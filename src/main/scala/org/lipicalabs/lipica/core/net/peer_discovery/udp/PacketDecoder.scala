@@ -5,8 +5,8 @@ import java.util
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.MessageToMessageDecoder
-import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.DiscoveryEvent
+import org.lipicalabs.lipica.core.net.peer_discovery.message.AbstractPeerDiscoveryMessage
 import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
  * ネットワークと NodeManager との橋渡し役を務めるクラスです。
  *
  * 受信したUDPデータグラムをメッセージに変換して netty のパイプラインに渡します。
- * （つまり、MessageHandlerの逆側です。）
+ * （つまり、MessageEncoder の逆方向の流れを担当します。）
  *
  * Created by IntelliJ IDEA.
  * 2015/12/22 15:47
@@ -29,7 +29,7 @@ class PacketDecoder extends MessageToMessageDecoder[DatagramPacket] {
 		val buf = packet.content
 		val encoded = new Array[Byte](buf.readableBytes)
 		buf.readBytes(encoded)
-		val decodedOrError: Either[Throwable, TransportMessage] = TransportMessage.decode(encoded)
+		val decodedOrError: Either[Throwable, AbstractPeerDiscoveryMessage] = AbstractPeerDiscoveryMessage.decode(encoded)
 		decodedOrError match {
 			case Right(message) =>
 				val event = new DiscoveryEvent(message, packet.sender)

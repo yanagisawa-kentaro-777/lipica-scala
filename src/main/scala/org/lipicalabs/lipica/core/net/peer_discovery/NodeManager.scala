@@ -15,7 +15,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.NodeStatistics.Persistent
 import org.lipicalabs.lipica.core.net.peer_discovery.discover._
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.NodeTable
 import org.lipicalabs.lipica.core.net.peer_discovery.message.{FindNodeMessage, NeighborsMessage, PingMessage, PongMessage}
-import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageHandler
+import org.lipicalabs.lipica.core.net.peer_discovery.udp.MessageEncoder
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory
 
@@ -40,9 +40,9 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 
 	val peerConnectionExaminer: PeerConnectionExaminer = new PeerConnectionExaminer
 
-	private val messageSenderRef: AtomicReference[MessageHandler] = new AtomicReference[MessageHandler](null)
-	def messageSender_=(v: MessageHandler): Unit = this.messageSenderRef.set(v)
-	def messageSender: MessageHandler = this.messageSenderRef.get
+	private val messageSenderRef: AtomicReference[MessageEncoder] = new AtomicReference[MessageEncoder](null)
+	def messageSender_=(v: MessageEncoder): Unit = this.messageSenderRef.set(v)
+	def messageSender: MessageEncoder = this.messageSenderRef.get
 
 	private val nodeHandlerMap: mutable.Map[String, NodeHandler] = mapAsScalaConcurrentMap(new ConcurrentHashMap[String, NodeHandler])
 
@@ -56,12 +56,6 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 	private val discoveryEnabled = NodeProperties.CONFIG.peerDiscoveryEnabled
 
 	private val listeners: mutable.Map[DiscoverListener, ListenerHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[DiscoverListener, ListenerHandler])
-
-//	private val dbRef: AtomicReference[DB] = new AtomicReference[DB](null)
-//	private def db: DB = this.dbRef.get
-//
-//	private val nodeStatsDBRef: AtomicReference[HTreeMap[Node, NodeStatistics.Persistent]] = new AtomicReference[HTreeMap[Node, Persistent]](null)
-//	private def nodeStatsDB: HTreeMap[Node, NodeStatistics.Persistent] = this.nodeStatsDBRef.get
 
 	private val isInitDoneRef = new AtomicBoolean(false)
 	def isInitDone: Boolean = this.isInitDoneRef.get
@@ -197,7 +191,7 @@ class NodeManager(val table: NodeTable, val key: ECKey, val dataSource: KeyValue
 
 	def sendOutbound(event: DiscoveryEvent): Unit = {
 		if (this.discoveryEnabled) {
-			this.messageSender.accept(event)
+			this.messageSender.send(event)
 		}
 	}
 
@@ -303,8 +297,6 @@ object NodeManager {
 		val table = new NodeTable(homeNode, NodeProperties.CONFIG.isPublicHomeNode)
 		new NodeManager(table, key, dataSource)
 	}
-
-
 
 	private val BestDifficultyComparator = new Comparator[NodeHandler] {
 		override def compare(n1: NodeHandler, n2: NodeHandler): Int = {

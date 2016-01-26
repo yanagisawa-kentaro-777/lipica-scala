@@ -3,7 +3,6 @@ package org.lipicalabs.lipica.core.net.peer_discovery.message
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
-import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
@@ -11,7 +10,7 @@ import org.lipicalabs.lipica.core.utils.ByteUtils
  * 2015/12/15 19:19
  * YANAGISAWA, Kentaro
  */
-class FindNodeMessage extends TransportMessage {
+class FindNodeMessage extends AbstractPeerDiscoveryMessage {
 
 	private var _target: NodeId = null
 	def target: NodeId = this._target
@@ -43,7 +42,7 @@ object FindNodeMessage {
 		val messageType = Array[Byte](3)
 		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedTarget, encodedExpiration))
 
-		val result: FindNodeMessage = TransportMessage.encode(messageType, data, privateKey)
+		val result: FindNodeMessage = AbstractPeerDiscoveryMessage.encode(messageType, data, privateKey)
 		result._target = target
 		result._expiration = expiration
 		result

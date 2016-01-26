@@ -4,14 +4,6 @@
 ・mac = message authentication code
 
 ０、不具合
-leveldbの問題。
-org.iq80.leveldb.DBException: IO error: D:\work\20160114\lipica\work\database\contract_dtl_storage\de0b295669a9fd93d5f28d9ec85e40f4cb697bae\000008.sst: Could not create random access file.
-https://github.com/fusesource/leveldbjni/issues/28
-
-BDB化すればWindowsでもOK？
-http://www.oracle.com/technetwork/jp/database/berkeleydb/je-faq-086588-ja.html
-http://www.oracle.com/technetwork/database/berkeleydb/downloads/maven-087630.html
-http://mvnrepository.com/artifact/com.sleepycat/je/5.0.73
 
 １、既存環境との完全同期
 ・CallTransactionの変更に追随する。
@@ -24,12 +16,14 @@ http://mvnrepository.com/artifact/com.sleepycat/je/5.0.73
 ・実データを見ながらのほうがいいかもしれない。
 
 ３、整備
-・フロントエンドを整備する。
+
 ・ECKeyを実装し直す。（ECの仕様とシステムの仕様を両方よく検討する必要がある。）
+・通信方面のコメント。
 ・トランザクション署名の検証。
 
+・テストを整備。
 ・著作権表記
-・依存先バージョン
+・依存先のバージョン
 
 ・アウトラインログを作る。
 ・refactorする。（init() や start() の整備。future化。）
@@ -41,11 +35,7 @@ http://mvnrepository.com/artifact/com.sleepycat/je/5.0.73
 ・nullを排除する。
 ・ImmutableBytes#toByteArray を排除する。
 
-とにかく yellow paper を熟読すること。
-ethashを学ぶと、mixhashがわかる。
-
 git flowを入れる。
-
 
 BlockchainImplの精緻なテスト。
 VM関連のデバッグ用出力（ProgramTrace等）。
@@ -53,4 +43,3 @@ RepositoryImplのデバッグ用出力。
 TransactionExecutorのデバッグ用出力。
 LpcHandlerのデバッグ用出力。
 PeersPoolのデバッグ用出力。
-

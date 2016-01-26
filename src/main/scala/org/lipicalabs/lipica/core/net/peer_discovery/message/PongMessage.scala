@@ -4,7 +4,6 @@ import java.net.InetSocketAddress
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 
 /**
@@ -12,7 +11,7 @@ import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
  * 2015/12/15 18:21
  * YANAGISAWA, Kentaro
  */
-class PongMessage extends TransportMessage {
+class PongMessage extends AbstractPeerDiscoveryMessage {
 
 	private var _token: ImmutableBytes = null
 	def token: ImmutableBytes = this._token
@@ -52,7 +51,7 @@ object PongMessage {
 		val messageType = Array[Byte](2)
 		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedDest, encodedToken, encodedExpiration))
 
-		val pong: PongMessage = TransportMessage.encode(messageType, data, privateKey)
+		val pong: PongMessage = AbstractPeerDiscoveryMessage.encode(messageType, data, privateKey)
 		pong._token = token
 		pong._expiration = expiration
 		pong
@@ -67,7 +66,7 @@ object PongMessage {
 		val messageType = Array[Byte](2)
 		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedToken, encodedExpiration))
 
-		val pong: PongMessage = TransportMessage.encode(messageType, data, privateKey)
+		val pong: PongMessage = AbstractPeerDiscoveryMessage.encode(messageType, data, privateKey)
 		pong._token = token
 		pong._expiration = expiration
 		pong

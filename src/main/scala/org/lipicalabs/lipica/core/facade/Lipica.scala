@@ -1,54 +1,94 @@
 package org.lipicalabs.lipica.core.facade
 
-import java.io.Closeable
 import java.math.BigInteger
-import java.net.InetSocketAddress
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicReference
 
-import org.lipicalabs.lipica.core.kernel.{CallTransaction, TransactionLike}
+import org.lipicalabs.lipica.core.datastore.RepositoryLike
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
+import org.lipicalabs.lipica.core.kernel.{Blockchain, CallTransaction, TransactionLike}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
-import org.lipicalabs.lipica.core.facade.components.AdminInfo
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
-import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node, PeerInfo}
-import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 
 /**
+ * 「自ノード」を定義する trait です。
+ * 外部アプリケーションから自ノードへの操作や照会等は、
+ * この trait の実装を通じて行うべきものです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/02 20:50
  * YANAGISAWA, Kentaro
  */
-trait Lipica extends Closeable {
-
-	def findOnlinePeer(exclude: Set[PeerInfo]): Option[PeerInfo]
+trait Lipica {
 
 	/**
-	 * Peerが発見されるまでブロックします。
+	 * 起動された日時を表すUNIX時刻（ミリ秒）を返します。
 	 */
-	def awaitOnlinePeer: PeerInfo
+	def startupTimestamp: Long
 
-	def getPeers: Set[PeerInfo]
+	/**
+	 * ノードを起動します。
+	 */
+	def startup(): Unit
 
+	/**
+	 * ノードを終了します。
+	 * 終了したノードを再度起動することはできません。
+	 */
+	def shutdown(): Unit
+
+	/**
+	 * 自ノード内の重要なシングルトンコンポーネントのインスタンスを
+	 * 保持する「配線基板」のインスタンスを返します。
+	 */
+	def componentsMotherboard: ComponentsMotherboard
+
+	/**
+	 * P2Pネットワークに接続可能なクライアントモジュールを返します。
+	 */
 	def client: PeerClient
 
-	def startPeerDiscovery(): Unit
+	/**
+	 * 自ノードのブロックチェーンを返します。
+	 * （返されるインターフェイスを制限すべき。）
+	 */
+	def blockchain: Blockchain
 
-	def stopPeerDiscovery(): Unit
+	/**
+	 * 自ノードの状態を管理するリポジトリを返します。
+	 * （返されるインターフェイスを制限すべき。）
+	 */
+	def repository: RepositoryLike
 
-	def connect(address: InetSocketAddress, remoteNodeId: NodeId)
-
-	def getBlockchain: BlockchainIF
-
+	/**
+	 * イベントリスナを追加登録します。
+	 */
 	def addListener(listener: LipicaListener): Unit
 
-	override def close(): Unit
+	/**
+	 * 未確定のトランザクションの集合を返します。
+	 */
+	def pendingTransactions: Set[TransactionLike]
 
-	def callConstantFunction(receiveAddress: String, function: CallTransaction.Function, funcArgs: Any*): Option[ProgramResult]
+	/**
+	 * 最近のトランザクションにおけるマナ価格の実績に基いて、
+	 * おおむね妥当だと思われるマナ価格を計算して返します。
+	 *
+	 * 25%程度のトランザクションが、
+	 * この価格かそれ以下で実行されている実績値です。
+	 * より確実に優先的に実行してもらいたい場合には、20%程度割増すると良いでしょう。
+	 */
+	def recentManaPrice: Long
+
+	/**
+	 * 指定された番号のブロックを処理した後でノードの動作を停止します。
+	 * （デバッグ用の機能です。）
+	 */
+	def exitOn(number: Long)
 
 	/**
 	 * Factory for general transaction
-	 *
 	 *
 	 * @param nonce - アカウントによって実行されたトランザクション数。
 	 * @param manaPrice - 手数料の相場。
@@ -60,33 +100,12 @@ trait Lipica extends Closeable {
 	 */
 	def createTransaction(nonce: BigInteger, manaPrice: BigInteger, mana: BigInteger, receiveAddress: Array[Byte], value: BigInteger, data: Array[Byte]): TransactionLike
 
-	def submitTransaction(tx: TransactionLike): Future[TransactionLike]
-
-	def getRepository: RepositoryIF
-
-	def init(): Unit
-
-	def getSnapshotTo(root: Array[Byte]): RepositoryIF
-
-	def getAdminInfo: AdminInfo
-
-	def getChannelManager: ChannelManager
-
-	def getPendingTransactions: Set[TransactionLike]
-
 	/**
-	 * 最近のトランザクションにおけるマナ価格の実績に基いて、
-	 * おおむね妥当だと思われるマナ価格を計算して返します。
-	 *
-	 * 25%程度のトランザクションが、
-	 * この価格かそれ以下で実行されている実績値です。
-	 * より確実に優先的に実行してもらいたい場合には、20%程度割増すると良いでしょう。
+	 * トランザクションを呼び出します。
 	 */
-	def getManaPrice: Long
+	def callConstantFunction(receiveAddress: String, function: CallTransaction.Function, funcArgs: Any*): Option[ProgramResult]
 
-	def exitOn(number: Long)
-
-	def shutdown(): Unit
+	def submitTransaction(tx: TransactionLike): Future[TransactionLike]
 
 }
 
@@ -96,7 +115,11 @@ object Lipica {
 
 	def instance: Lipica = this.instanceRef.get
 
-
+	/**
+	 * 唯一のインスタンスを生成し、起動します。
+	 * このメソッドを呼び出した後で、
+	 * instance メソッドによってインスタンスを取得できるようになります。
+	 */
 	def startup(): Unit = {
 		this.synchronized {
 			if (Option(this.instanceRef.get).isDefined) {
@@ -104,15 +127,22 @@ object Lipica {
 			}
 
 			val result = new LipicaImpl
-			result.init()
+			result.startup()
 			this.instanceRef.set(result)
 			result
 		}
 	}
 
+	/**
+	 * 存在するインスタンスを終了させます。
+	 *
+	 * このメソッドを呼び出した後では、
+	 * 再度 startup() を呼び出すことができます。
+	 */
 	def shutdown(): Unit = {
 		this.synchronized {
 			Option(this.instanceRef.get).foreach(_.shutdown())
+			this.instanceRef.set(null)
 		}
 	}
 

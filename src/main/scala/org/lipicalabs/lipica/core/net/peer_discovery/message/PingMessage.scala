@@ -4,7 +4,6 @@ import java.net.{InetAddress, InetSocketAddress}
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.crypto.ECKey
-import org.lipicalabs.lipica.core.net.transport.TransportMessage
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
@@ -12,7 +11,7 @@ import org.lipicalabs.lipica.core.utils.ByteUtils
  * 2015/12/15 15:14
  * YANAGISAWA, Kentaro
  */
-class PingMessage extends TransportMessage {
+class PingMessage extends AbstractPeerDiscoveryMessage {
 
 	private var _address: InetAddress = null
 	def address: InetAddress = this._address
@@ -68,7 +67,7 @@ object PingMessage {
 
 		val data = RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedVersion, fromSeq, toSeq, encodedExpiration))
 
-		val result: PingMessage = TransportMessage.encode(messageType, data, privateKey)
+		val result: PingMessage = AbstractPeerDiscoveryMessage.encode(messageType, data, privateKey)
 		result._expiration = expiration
 		result._address = srcAddress.getAddress
 		result._port = srcAddress.getPort

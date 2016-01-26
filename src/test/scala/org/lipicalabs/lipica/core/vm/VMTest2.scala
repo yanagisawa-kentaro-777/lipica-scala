@@ -20,23 +20,23 @@ import org.specs2.specification.BeforeExample
 class VMTest2 extends Specification with BeforeExample {
 	sequential
 
-	private var invoke = new ProgramContextMockImpl(null)
+	private var context = new ProgramContextMockImpl(null)
 
 	override def before: scala.Any = {
 		val ownerAddress = Address.parseHexString("77045E71A7A2C50903D88E564CD72FAB11E82051")
 		val msgData = ImmutableBytes.parseHexString("00000000000000000000000000000000000000000000000000000000000000A1" + "00000000000000000000000000000000000000000000000000000000000000B1")
 
-		invoke = new ProgramContextMockImpl(msgData)
-		invoke.setOwnerAddress(ownerAddress)
+		context = new ProgramContextMockImpl(msgData)
+		context.setOwnerAddress(ownerAddress)
 
-		invoke.repository.createAccount(ownerAddress)
-		invoke.repository.addBalance(ownerAddress, BigInt(1000L))
+		context.repository.createAccount(ownerAddress)
+		context.repository.addBalance(ownerAddress, BigInt(1000L))
 	}
 
 	"calldatasize (1)" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("36"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("36"), context)
 			val expected = "0000000000000000000000000000000000000000000000000000000000000040"
 
 			vm.step(program)
@@ -48,7 +48,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"calldataload (1)" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("600035"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("600035"), context)
 			val expected = "00000000000000000000000000000000000000000000000000000000000000A1"
 
 			(0 until 2).foreach {
@@ -62,7 +62,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"calldatacopy (1)" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("60206000600037"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("60206000600037"), context)
 			val expected = "00000000000000000000000000000000000000000000000000000000000000A1"
 
 			(0 until 4).foreach {
@@ -76,7 +76,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"address (1)" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("30"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("30"), context)
 			val expected = "00000000000000000000000077045E71A7A2C50903D88E564CD72FAB11E82051"
 
 			(0 until 1).foreach {
@@ -90,7 +90,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"balance (1)" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("3031"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("3031"), context)
 			val expected = "00000000000000000000000000000000000000000000000000000000000003E8"
 
 			(0 until 2).foreach {
@@ -104,7 +104,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"origin" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("32"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("32"), context)
 			val expected = "00000000000000000000000013978AEE95F38490E9769C39B2773ED763D9CD5F"
 
 			(0 until 1).foreach {
@@ -118,7 +118,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"caller" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("33"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("33"), context)
 			val expected = "000000000000000000000000885F93EED577F2FC341EBB9A5C9B2CE4465D96C4"
 
 			(0 until 1).foreach {
@@ -132,7 +132,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"callvalue" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("34"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("34"), context)
 			val expected = "0000000000000000000000000000000000000000000000000DE0B6B3A7640000"
 
 			(0 until 1).foreach {
@@ -146,7 +146,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"sha3 (1)" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("60016000536001600020"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("60016000536001600020"), context)
 			val expected = "5FE7F977E71DBA2EA1A68E21057BEEBB9BE2AC30C6410AA38D4F3FBE41DCFFD2"
 
 			(0 until 6).foreach {
@@ -160,7 +160,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"blockhash" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("600140"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("600140"), context)
 			val expected = "C89EFDAA54C0F20C7ADF612882DF0950F5A951637E0307CDCB4C672F298B8BC6"
 
 			(0 until 2).foreach {
@@ -174,7 +174,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"coinbase" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("41"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("41"), context)
 			val expected = "000000000000000000000000E559DE5527492BCB42EC68D07DF0742A98EC3F1E"
 
 			(0 until 1).foreach {
@@ -188,7 +188,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"timestamp" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("42"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("42"), context)
 			val expected = "000000000000000000000000000000000000000000000000000000005387FE24"
 
 			(0 until 1).foreach {
@@ -202,7 +202,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"number" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("43"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("43"), context)
 			val expected = "0000000000000000000000000000000000000000000000000000000000000021"
 
 			(0 until 1).foreach {
@@ -216,7 +216,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"difficulty" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("44"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("44"), context)
 			val expected = "00000000000000000000000000000000000000000000000000000000003ED290"
 
 			(0 until 1).foreach {
@@ -230,7 +230,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"mana price" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("3A"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("3A"), context)
 			val expected = "000000000000000000000000000000000000000000000000000009184E72A000"
 
 			(0 until 1).foreach {
@@ -258,7 +258,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"mana limit" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("45"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("45"), context)
 			val expected = "00000000000000000000000000000000000000000000000000000000000F4240"
 
 			(0 until 1).foreach {
@@ -272,7 +272,7 @@ class VMTest2 extends Specification with BeforeExample {
 	"invalid op" should {
 		"be right" in {
 			val vm = new VM
-			val program = new Program(ImmutableBytes.parseHexString("60012F6002"), invoke)
+			val program = new Program(ImmutableBytes.parseHexString("60012F6002"), context)
 			val expected = "0000000000000000000000000000000000000000000000000000000000000001"
 
 			try {

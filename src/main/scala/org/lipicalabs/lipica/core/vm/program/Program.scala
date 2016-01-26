@@ -11,6 +11,8 @@ import org.lipicalabs.lipica.core.vm.program.listener.ProgramListenerAware
 import org.slf4j.LoggerFactory
 
 /**
+ * VM上で実行される１個のプログラムを表すクラスです。
+ * １個のプログラムは、任意個の OpCode を含みます。
  *
  * @since 2015/10/24
  * @author YANAGISAWA, Kentaro
@@ -375,7 +377,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 				val localResult = program.result
 
 				this.trace.mergeToThis(program.trace)
-				this.result.mergeToThis(localResult, mergeLogs = true)//TODO 仕様不明。
+				this.result.mergeToThis(localResult, mergeLogs = true)//TODO 仕様に不明点あり。
 
 				if (localResult.exception ne null) {
 					//エラーが発生した。
@@ -549,9 +551,6 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 	def fullTrace(): Unit = {
 		//TODO 未実装：fullTrace
 	}
-
-	//TODO stringify multiline
-	//TODO stringify(not used)
 
 	/**
 	 * 現在のプログラムカウンタにおける文脈情報を、

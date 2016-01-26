@@ -34,6 +34,8 @@ import org.spongycastle.crypto.InvalidCipherTextException
 class MessageCodec extends ByteToMessageCodec[Message] {
 	import MessageCodec._
 
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+
 	private var _frameCodec: FrameCodec = null
 	def frameCodec: FrameCodec = this._frameCodec
 
@@ -63,8 +65,6 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _isHandshakeDone: Boolean = false
 	def isHandshakeDone: Boolean = this._isHandshakeDone
 
-	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
-
 	private var _p2pMessageFactory: MessageFactory = null
 	def setP2PMessageFactory(v: MessageFactory): Unit = this._p2pMessageFactory = v
 
@@ -83,36 +83,48 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		override def channelActive(ctx: ChannelHandlerContext): Unit = {
 			channel.inetSocketAddress = ctx.channel.remoteAddress.asInstanceOf[InetSocketAddress]
 			if (remoteNodeId.length == 64) {
+				//相手を特定したセッション開始者側（＝クライアント側）。
 				channel.assignNode(remoteNodeId)
 				initiate(ctx)
 			} else {
+				//受動的な応答者側（＝サーバー側）。
 				_handshake = EncryptionHandshake.createResponder
 				_nodeId = NodeId(myKey.getNodeId)
 			}
 		}
 	}
 
-	def initiate(ctx: ChannelHandlerContext): Unit = {
+	/**
+	 * クライアントとして、新たなセッションを開始しようとします。
+	 */
+	private def initiate(ctx: ChannelHandlerContext): Unit = {
 		loggerNet.info("<MessageCodec> Transport activated.")
 
 		this._nodeId = NodeId(myKey.getNodeId)
+		//相手ノードの公開鍵を構築する。
 		val remotePublicBytes = new Array[Byte](remoteNodeId.length + 1)
 		remoteNodeId.bytes.copyTo(0, remotePublicBytes, 1, remoteNodeId.length)
 		remotePublicBytes(0) = 0x04//uncomporessed.
 		val remotePublicKeyPoint = ECKey.fromPublicOnly(remotePublicBytes).getPubKeyPoint
+
+		//相手ノードに送信するセッション確立要求メッセージを生成する。
 		this._handshake = EncryptionHandshake.createInitiator(remotePublicKeyPoint)
 		val initiateMessage = handshake.createAuthInitiate(myKey)
 		this._initiatePacket = handshake.encryptAuthInitiate(initiateMessage)
 
+		//セッション確立要求メッセージをネットワークに送信する。
 		val byteBuff = ctx.alloc.buffer(initiatePacket.length)
 		byteBuff.writeBytes(this.initiatePacket)
 		ctx.writeAndFlush(byteBuff).sync()
-
+		//動作統計情報を更新する。
 		channel.nodeStatistics.transportAuthMessageSent.add
 
 		loggerNet.info("<MessageCodec> To: %s, Sent: %s".format(ctx.channel.remoteAddress, initiateMessage))
 	}
 
+	/**
+	 * 渡されたメッセージをネットワークに送信します。
+	 */
 	override def encode(ctx: ChannelHandlerContext, message: Message, out: ByteBuf): Unit = {
 		val output = "To: %s, Sending: %s".format(ctx.channel.remoteAddress, message)
 		componentsMotherboard.listener.trace(output)
@@ -124,8 +136,10 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		}
 		val code  = getCode(message.command)
 		val frame = new Frame(code, encoded.toByteArray)
-		this._frameCodec.writeFrame(frame, out)
-		this._channel.nodeStatistics.transportOutMessages.add
+		//暗号化やMACの処理は、FrameCodec に移譲する。
+		this.frameCodec.writeFrame(frame, out)
+		//動作統計情報を更新する。
+		this.channel.nodeStatistics.transportOutMessages.add
 	}
 
 	override def decode(ctx: ChannelHandlerContext, in: ByteBuf, out: util.List[AnyRef]): Unit = {
@@ -134,12 +148,14 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		if (loggerWire.isDebugEnabled) {
 			loggerWire.debug("<MessageCodec> Received packet bytes: %,d".format(in.readableBytes))
 		}
-		if (!this._isHandshakeDone) {
+		if (!this.isHandshakeDone) {
 			if (loggerWire.isDebugEnabled) {
 				loggerWire.debug("<MessageCodec> Decoding handshake.")
 			}
+			//まだ秘密情報を共有できていないので、FrameCodec を経由せずにハンドシェイクを実行する。
 			decodeHandshake(ctx, in)
 		} else {
+			//まだ秘密情報を共有できているので、FrameCodec を経由してメッセージの再構築を行う。
 			decodeMessage(ctx, in, out)
 		}
 	}
@@ -156,22 +172,32 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		ctx.close()
 	}
 
+	/**
+	 * 渡されたメッセージに基いて、ハンドシェイクを実行します。
+	 * これが完了すれば、相手ノードとの間に秘密を共有できたことになります。
+	 */
 	private def decodeHandshake(ctx: ChannelHandlerContext, buffer: ByteBuf): Unit = {
-		if (this._handshake.isInitiator) {
-			if (this._frameCodec eq null) {
+		if (this.handshake.isInitiator) {
+			//こちらがクライアントである。
+			if (this.frameCodec eq null) {
+				//まだ FrameCodec も生成されていない、ということは、
+				//今回受け取ったのは、セッション開始要求に対する応答のはず。
 				val responsePacket = new Array[Byte](AuthResponseMessage.length + ECIESCoder.getOverhead)
 				if (!buffer.isReadable(responsePacket.length)) {
 					return
 				}
 				buffer.readBytes(responsePacket)
-				val response = this._handshake.handleAuthResponse(myKey, this._initiatePacket, responsePacket)
+				//応答を解釈し、秘密情報について合意する。
+				val response = this.handshake.handleAuthResponse(myKey, this._initiatePacket, responsePacket)
 				loggerNet.info("<MessageCodec> From: %s, Received: %s".format(ctx.channel.remoteAddress, response))
-				val secrets = this._handshake.secrets
+				val secrets = this.handshake.secrets
+				//合意された秘密情報を利用する FrameCodec を生成する。
 				this._frameCodec = new FrameCodec(secrets)
 				loggerNet.info("<MessageCodec> Key exchange is done.")
-				this._channel.sendHelloMessage(ctx, this._frameCodec, this._nodeId)
+				this.channel.sendHelloMessage(ctx, this.frameCodec, this.nodeId)
 			} else {
-				val frame = this._frameCodec.readFrame(buffer)
+				//FrameCodec は生成されている。今回受け取ったのは、HelloMessage もしくは DisconnectMessage のはずである。
+				val frame = this.frameCodec.readFrame(buffer)
 				if (frame eq null) {
 					return
 				}
@@ -179,19 +205,24 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 				if (frame.frameType == P2PMessageCode.Hello.asByte) {
 					val helloMessage = HelloMessage.decode(payload)
 					loggerNet.info("<MessageCodec> From: %s, Received: %s".format(ctx.channel.remoteAddress, helloMessage))
+					//ハンドシェイクが完了した。
 					this._isHandshakeDone = true
-					this._channel.publicTransportHandshakeFinished(ctx, helloMessage)
+					this.channel.publicTransportHandshakeFinished(ctx, helloMessage)
 				} else {
+					//さようなら。
 					val disconnect = DisconnectMessage.decode(payload)
 					loggerNet.info("<MessageCodec> From: %s, Received: %s".format(ctx.channel.remoteAddress, disconnect))
-					this._channel.nodeStatistics.nodeDisconnectedRemote(disconnect.reason)
+					this.channel.nodeStatistics.nodeDisconnectedRemote(disconnect.reason)
 				}
 			}
 		} else {
+			//こちらがサーバー側である。
 			if (loggerWire.isDebugEnabled) {
-				loggerWire.debug("<MessageCodec> Not initiator.")
+				loggerWire.debug("<MessageCodec> Responder.")
 			}
 			if (this._frameCodec eq null) {
+				//まだ FrameCodec も生成されていない、ということは、
+				//今回受け取ったのは、セッション開始要求であるはず。
 				val authInitPacket = new Array[Byte](AuthInitiateMessage.length + ECIESCoder.getOverhead)
 				if (!buffer.isReadable(authInitPacket.length)) {
 					return
@@ -199,24 +230,28 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 				buffer.readBytes(authInitPacket)
 				this._handshake = EncryptionHandshake.createResponder
 				try {
-					val initiateMessage = this._handshake.decryptAuthInitiate(authInitPacket, myKey)
+					val initiateMessage = this.handshake.decryptAuthInitiate(authInitPacket, myKey)
 					loggerNet.info("<MessageCodec> From: %s, Received: %s".format(ctx.channel.remoteAddress, initiateMessage))
-					val response: AuthResponseMessage = this._handshake.makeResponse(initiateMessage, myKey)
+					//受け取った要求メッセージに対する応答メッセージを生成する。
+					val response: AuthResponseMessage = this.handshake.makeResponse(initiateMessage, myKey)
 					loggerNet.info("<MessageCodec> To: %s, Sending: %s".format(ctx.channel.remoteAddress, response))
-					val responsePacket = this._handshake.encryptAuthResponse(response)
-					this._handshake.agreeSecret(authInitPacket, responsePacket)
-
-					val secrets = this._handshake.secrets
+					val responsePacket = this.handshake.encryptAuthResponse(response)
+					//要求および応答のペアから、秘密情報を共有する。
+					this.handshake.agreeSecrets(authInitPacket, responsePacket)
+					val secrets = this.handshake.secrets
+					//共有された秘密情報に基いて、FrameCodec を生成する。
 					this._frameCodec = new FrameCodec(secrets)
 
-					val remotePublicKey = this._handshake.remotePublicKey
+					val remotePublicKey = this.handshake.remotePublicKey
 					val compressed = remotePublicKey.getEncoded(true)
 
+					//判明した相手ノードの公開鍵から、相手ノードのノードIDを生成して記憶する。
 					val remoteIdBytes = new Array[Byte](compressed.length - 1)
 					System.arraycopy(compressed, 1, remoteIdBytes, 0, remoteIdBytes.length)
 					this._remoteNodeId = NodeId(remoteIdBytes)
-					this._channel.assignNode(this._remoteNodeId)
+					this.channel.assignNode(this.remoteNodeId)
 
+					//応答をネットワークに送信する。
 					val byteBuffer = ctx.alloc.buffer(responsePacket.length)
 					byteBuffer.writeBytes(responsePacket)
 					ctx.writeAndFlush(byteBuffer).sync()
@@ -226,7 +261,8 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 						loggerNet.warn("<MessageCodec> Failed to decrypt the auth initiate message.")
 				}
 			} else {
-				val frame = this._frameCodec.readFrame(buffer)
+				//FrameCodec は生成されている。今回受け取ったのは、HelloMessage もしくは DisconnectMessage のはずである。
+				val frame = this.frameCodec.readFrame(buffer)
 				if (frame eq null) {
 					return
 				}
@@ -234,47 +270,64 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 					case Some(message) =>
 						loggerNet.info("<MessageCodec> From: %s, Received: %s".format(ctx.channel.remoteAddress, message))
 						if (frame.frameType.toByte == P2PMessageCode.Disconnect.asByte) {
+							//さようなら。
 							loggerNet.info("<MessageCodec> Active remote peer disconnected right after the handshake.")
 							return
 						}
 						if (frame.frameType.toByte != P2PMessageCode.Hello.asByte) {
+							//不明なメッセージ。
 							loggerNet.info("<MessageCodec> Invalid message: %s".format(message))
 							return
 						}
+						//HelloMessageを受信した。
+						//ハンドシェイクは完了とする。
 						this._isHandshakeDone = true
-						this._channel.sendHelloMessage(ctx, this._frameCodec, this.nodeId)
-						this._channel.publicTransportHandshakeFinished(ctx, message.asInstanceOf[HelloMessage])
-					case None => ()
+						this.channel.sendHelloMessage(ctx, this.frameCodec, this.nodeId)
+						this.channel.publicTransportHandshakeFinished(ctx, message.asInstanceOf[HelloMessage])
+					case None =>
+						//
 				}
 			}
 		}
-		this._channel.nodeStatistics.transportInHello.add
+		//動作統計情報を更新する。
+		this.channel.nodeStatistics.transportInHello.add
 	}
 
+	/**
+	 * 渡されたバイト配列からメッセージを再構築し、nettyのパイプラインに流します。
+	 */
 	private def decodeMessage(ctx: ChannelHandlerContext, in: ByteBuf, out: util.List[AnyRef]): Unit = {
 		if (in.readableBytes == 0) {
 			return
 		}
-		Option(this._frameCodec.readFrame(in)) match {
+		Option(this.frameCodec.readFrame(in)) match {
 			case Some(frame) =>
+				//フレームの読み取りに成功した。
 				val payload = ByteStreams.toByteArray(frame.payload)
 				if (loggerWire.isDebugEnabled) {
 					loggerWire.debug("<MessageCodec> Received: %s [%,d bytes]".format(frame.frameType, payload.length))
 				}
+				//メッセージを生成する。
 				val messageOption = createMessage(frame.frameType.toByte, ImmutableBytes(payload))
 				messageOption.foreach {
 					message => {
 						loggerNet.info("<MessageCodec> From: %s, Received: %s".format(ctx.channel.remoteAddress, message))
+						//イベントをファイアする。
 						componentsMotherboard.listener.onReceiveMessage(message)
-
+						//nettyのパイプラインに流す。
 						out.add(message)
-						this._channel.nodeStatistics.transportInMessages.add
+						//稼働統計情報を更新する。
+						this.channel.nodeStatistics.transportInMessages.add
 					}
 				}
 			case None => ()
 		}
 	}
 
+	/**
+	 * 渡されたメッセージ種別とペイロードから、
+	 * メッセージオブジェクトを再構築して返します。
+	 */
 	private def createMessage(code: Byte, payload: ImmutableBytes): Option[Message] = {
 		MessageCodec.createMessage(
 			this._messageCodesResolver.resolveP2P(code),
@@ -317,12 +370,12 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 		}
 	}
 
-	def setRemoteNodeId(aRemoteNodeId: NodeId, channel: Channel): Unit = {
+	def assignRemoteNodeId(aRemoteNodeId: NodeId, channel: Channel): Unit = {
 		this._remoteNodeId = aRemoteNodeId
 		this._channel = channel
 	}
 
-	def generateTempKey(): Unit = {
+	def generateTemporaryKey(): Unit = {
 		this._myKey = new ECKey().decompress
 	}
 }

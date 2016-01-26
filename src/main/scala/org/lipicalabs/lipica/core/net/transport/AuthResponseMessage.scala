@@ -5,23 +5,12 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.spongycastle.math.ec.ECPoint
 
 /**
+ * セッション確立要求に対する応答を表現するメッセージです。
  *
  * @since 2015/12/17
  * @author YANAGISAWA, Kentaro
  */
-class AuthResponseMessage {
-
-	private var _ephemeralPublicKey: ECPoint = null//64 bytes.
-	def ephemeralPublicKey: ECPoint = this._ephemeralPublicKey
-	def ephemeralPublicKey_=(v: ECPoint): Unit = this._ephemeralPublicKey = v
-
-	private var _nonce: ImmutableBytes = null//32 bytes.
-	def nonce: ImmutableBytes = this._nonce
-	def nonce_=(v: ImmutableBytes): Unit = this._nonce = v
-
-	private var _isTokenUsed: Boolean = false//1 byte
-	def isTokenUsed: Boolean = this._isTokenUsed
-	def isTokenUsed_=(v: Boolean): Unit = this._isTokenUsed = v
+class AuthResponseMessage(val ephemeralPublicKey: ECPoint, val nonce: ImmutableBytes, val isTokenUsed: Boolean) {
 
 	def encode: Array[Byte] = {
 		val buffer = new Array[Byte](AuthResponseMessage.length)
@@ -46,22 +35,22 @@ object AuthResponseMessage {
 
 	def decode(wire: Array[Byte]): AuthResponseMessage = {
 		var offset = 0
-		val message = new AuthResponseMessage
 		val bytes = new Array[Byte](65)
 		System.arraycopy(wire, offset, bytes, 1, 64)
 		offset += 64
 		bytes(0) = 0x04
 
-		message.ephemeralPublicKey = ECKey.CURVE.getCurve.decodePoint(bytes)
+		val ephemeralPublicKey = ECKey.CURVE.getCurve.decodePoint(bytes)
 		val nonce = new Array[Byte](32)
 		System.arraycopy(wire, offset, nonce, 0, 32)
-		message.nonce = ImmutableBytes(nonce)
+		val immutableNonce = ImmutableBytes(nonce)
 
-		offset += message.nonce.length
+		offset += immutableNonce.length
 		val tokenUsed = wire(offset)
 		offset += 1
 		if (tokenUsed != 0x00 && tokenUsed != 0x01) throw new RuntimeException("invalid boolean")
-		message.isTokenUsed = tokenUsed == 0x01
-		message
+		val isTokenUsed = tokenUsed == 0x01
+
+		new AuthResponseMessage(ephemeralPublicKey, immutableNonce, isTokenUsed)
 	}
 }

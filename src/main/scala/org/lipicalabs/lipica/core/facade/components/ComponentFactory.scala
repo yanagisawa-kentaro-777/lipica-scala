@@ -66,14 +66,16 @@ object ComponentFactory {
 		put(contractDS)
 		val stateDS = openKeyValueDataSource("state_db")
 		put(stateDS)
-		//TODO
-		//new RepositoryImpl(contractDS, stateDS, new LevelDBDataSourceFactory("contract_dtl_storage"))
-		new RepositoryImpl(contractDS, stateDS, new BdbDataSourceFactory("contract_dtl_storage", this.bdbEnv))
+
+		if (true) {
+			//TODO leveldb or berkeley db.
+			new RepositoryImpl(contractDS, stateDS, new BdbDataSourceFactory("contract_dtl_storage", this.bdbEnv))
+		} else {
+			new RepositoryImpl(contractDS, stateDS, new LevelDBDataSourceFactory("contract_dtl_storage"))
+		}
 	}
 
 	def createWallet: Wallet = new Wallet
-
-	def createAdminInfo: AdminInfo = new AdminInfo
 
 	def createListener: CompositeLipicaListener = new CompositeLipicaListener
 
@@ -133,7 +135,7 @@ object ComponentFactory {
 	private def openKeyValueDataSource(name: String): KeyValueDataSource = {
 		val result =
 			if (true) {
-				//TODO
+				//TODO leveldb or berkeley db.
 				val configs = BdbJeDataSource.createDefaultConfig
 				new BdbJeDataSource(name, this.bdbEnv, configs)
 			} else {

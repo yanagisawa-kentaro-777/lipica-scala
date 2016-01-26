@@ -36,7 +36,7 @@ class EncryptionHandshakeTest extends Specification {
 			val remoteKey = new ECKey().decompress()
 			val initiator = EncryptionHandshake.createInitiator(remoteKey.getPubKeyPoint)
 			val myKey = new ECKey().decompress()
-			val initiateMessage = initiator.createAuthInitiate(null, myKey)
+			val initiateMessage = initiator.createAuthInitiate(myKey)
 			val initiatePacket = initiator.encryptAuthInitiate(initiateMessage)
 			val responsePacket = responder.handleAuthInitiate(initiatePacket, remoteKey)
 			initiator.handleAuthResponse(myKey, initiatePacket, responsePacket)

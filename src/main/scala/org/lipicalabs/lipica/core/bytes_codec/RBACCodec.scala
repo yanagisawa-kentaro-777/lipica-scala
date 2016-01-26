@@ -430,7 +430,6 @@ object RBACCodec {
 			if (b.length == 0) return 0
 			BigInt(1, b.toByteArray).intValue()
 		}
-
 	}
 
 }

@@ -14,14 +14,14 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.ECKey
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.lipicalabs.lipica.utils.MiscUtils
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
 
 /**
- * このシステムの設定を表すインターフェイスです。
+ * このノードの設定情報を定義する trait です。
  */
 trait NodePropertiesLike {
 

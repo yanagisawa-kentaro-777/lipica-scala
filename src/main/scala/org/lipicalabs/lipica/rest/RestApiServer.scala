@@ -7,6 +7,9 @@ import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.{ServletHolder, ServletContextHandler}
 
 /**
+ * API用のWebサーバーのインスタンス保持と、
+ * ライフサイクル管理を行うためのオブジェクトです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/28 13:46
  * YANAGISAWA, Kentaro
@@ -15,18 +18,37 @@ object RestApiServer {
 
 	private val serverRef = new AtomicReference[Server](null)
 
+	/**
+	 * 渡されたアドレスを bind するWebサーバーを起動し、
+	 * そのインスタンスを返します。
+	 */
+	def startup(bindAddress: InetSocketAddress): Option[Server] = {
+		this.synchronized {
+			if (Option(this.serverRef.get).isDefined) {
+				return None
+			}
 
-	def startup(bindAddress: InetSocketAddress): Unit = {
-		val httpServer = new Server(bindAddress)
-		val handler = createServletContextHandler("/api")
-		httpServer.setHandler(handler)
-		httpServer.start()
-		this.serverRef.set(httpServer)
+			val httpServer = new Server(bindAddress)
+			val handler = createServletContextHandler("/api")
+			httpServer.setHandler(handler)
+			httpServer.start()
+			this.serverRef.set(httpServer)
+			Option(httpServer)
+		}
 	}
 
-	def shutdown(): Unit = {
-		Option(this.serverRef.get).foreach {
-			server => server.stop()
+	/**
+	 * 現在Webサーバーが動作中であれば、
+	 * そのWebサーバーを停止させ、そのインスタンスを返します。
+	 */
+	def shutdown(): Option[Server] = {
+		this.synchronized {
+			val result = Option(this.serverRef.get)
+			result.foreach {
+				server => server.stop()
+			}
+			this.serverRef.set(null)
+			result
 		}
 	}
 
