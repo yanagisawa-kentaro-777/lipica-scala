@@ -215,7 +215,7 @@ class UnsignedTransaction(
 	override def senderAddress: Address = {
 		try {
 			if (this._sendAddress eq null) {
-				val key = ECPublicKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64).get
+				val key = ECPublicKey.recoverFromSignature(rawHash.toByteArray, signatureOption.get.toBase64).get
 				this._sendAddress = key.toAddress
 			}
 			this._sendAddress
@@ -272,7 +272,7 @@ class SignedTransaction(
 	override def senderAddress: Address = {
 		try {
 			if (this._sendAddress eq null) {
-				val key = ECPublicKey.signatureToKey(rawHash.toByteArray, signatureOption.get.toBase64).get
+				val key = ECPublicKey.recoverFromSignature(rawHash.toByteArray, signatureOption.get.toBase64).get
 				this._sendAddress = key.toAddress
 			}
 			this._sendAddress

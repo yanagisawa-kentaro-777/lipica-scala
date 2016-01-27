@@ -1,38 +1,30 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 
+import java.util.concurrent.atomic.AtomicLong
+
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
 
 
 /**
+ * Kademlia風のピアディスカバリーにおいて
+ * 管理されるノードの情報をまとめたクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/19 14:02
  * YANAGISAWA, Kentaro
  */
-class NodeEntry private() {
+class NodeEntry private(val ownerId: NodeId, val node: Node, val entryId: String, val distance: Int) {
 
-	private var _ownerId: NodeId = null
-	def ownerId: NodeId = this._ownerId
-
-	private var _node: Node = null
-	def node: Node = this._node
-
-	private var _entryId: String = null
-	def entryId: String = this._entryId
-	def id: String = this.entryId
-
-	private var _distance: Int = 0
-	def distance: Int = this._distance
-
-	private var _modified: Long = 0L
-	def modified: Long = this._modified
+	private val modifiedTimeRef = new AtomicLong(0L)
+	def modified: Long = this.modifiedTimeRef.get
 
 	def touch(): Unit = {
-		this._modified = System.currentTimeMillis
+		this.modifiedTimeRef.set(System.currentTimeMillis)
 	}
 
 	override def equals(o: Any): Boolean = {
 		try {
-			this.id == o.asInstanceOf[NodeEntry].id
+			this.entryId == o.asInstanceOf[NodeEntry].entryId
 		} catch {
 			case any: Throwable => false
 		}
@@ -44,30 +36,22 @@ class NodeEntry private() {
 
 object NodeEntry {
 
-	def apply(n: Node): NodeEntry = {
-		val result = new NodeEntry
-		result._node = n
-		result._ownerId = n.id
-		result._entryId = n.toString
-		result._distance = distance(result.ownerId, n.id)
-		result.touch()
-		result
-	}
-
+	/**
+	 * Kademliaで管理されるノード情報のインスタンスを生成します。
+	 *
+	 * @param ownerId 距離を計測する基準となるノードのID。
+	 * @param n このエントリーで管理されるノード。
+	 */
 	def apply(ownerId: NodeId, n: Node): NodeEntry = {
-		val result = new NodeEntry
-		result._node = n
-		result._ownerId = ownerId
-		result._entryId = n.toString
-		result._distance = distance(ownerId, n.id)
+		val result = new NodeEntry(ownerId, n, n.toCanonicalString, distance(ownerId, n.id))
 		result.touch()
 		result
 	}
 
-	def distance(ownerId: NodeId, targetId: NodeId): Int ={
+	def distance(node1: NodeId, node2: NodeId): Int ={
 		//２個のバイト配列の256ビットダイジェストのXORを新たなバイト配列に格納する。
-		val digest1 = ownerId.bytes.digest256.bytes
-		val digest2 = targetId.bytes.digest256.bytes
+		val digest1 = node1.bytes.digest256.bytes
+		val digest2 = node2.bytes.digest256.bytes
 		val xor = new Array[Byte](digest1.length)
 		for (i <- xor.indices) {
 			//等しいバイトはゼロになる。

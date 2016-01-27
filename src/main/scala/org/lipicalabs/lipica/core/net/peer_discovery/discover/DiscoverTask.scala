@@ -36,12 +36,12 @@ class DiscoverTask(val nodeManager: NodeManager) extends Runnable {
 		try {
 			if (round == KademliaOptions.MaxSteps) {
 				//今回のラウンドは、十分に情報を収集した。
-				logger.info("<DiscoverTask> %,d nodes found.".format(this.nodeManager.table.getNodeCount))
+				logger.info("<DiscoverTask> %,d nodes found.".format(this.nodeManager.table.nodeCount))
 				return
 			}
 
 			//自ノードの近傍のノードを取得する。
-			val closest = this.nodeManager.table.getClosestNodes(nodeId)
+			val closest = this.nodeManager.table.closedNodes(nodeId)
 			val tried: mutable.Buffer[Node] = new ArrayBuffer[Node]
 
 			val brk = new Breaks

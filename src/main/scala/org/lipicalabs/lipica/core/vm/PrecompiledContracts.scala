@@ -81,7 +81,7 @@ object PrecompiledContracts {
 				val sLength: Int = if (data.length < 128) data.length - 96 else 32
 				data.copyTo(96, s, 0, sLength)
 				val signature = ECDSASignature(r, s, v(31))
-				val key = ECPublicKey.signatureToKey(h, signature.toBase64).get
+				val key = ECPublicKey.recoverFromSignature(h, signature.toBase64).get
 				val addr = key.toAddress
 				ImmutableBytes.expand(addr.toByteArray, 0, addr.length, VMWord.NumberOfBytes)
 			} catch {

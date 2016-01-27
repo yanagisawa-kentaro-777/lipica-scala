@@ -136,7 +136,7 @@ class NodeHandler(val node: Node, val nodeManager: NodeManager) {
 			logger.debug("<NodeHandler> Received [FIND_NODE] %s".format(this))
 		}
 		this.nodeStatistics.discoverInFind.add
-		val closestNodes = this.nodeManager.table.getClosestNodes(message.target)
+		val closestNodes = this.nodeManager.table.closedNodes(message.target)
 		sendNeighbours(closestNodes)
 	}
 

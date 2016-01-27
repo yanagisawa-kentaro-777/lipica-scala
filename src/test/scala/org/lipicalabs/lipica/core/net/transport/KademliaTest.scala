@@ -27,7 +27,7 @@ class KademliaTest extends Specification {
 			val homeNode = table.nodes
 
 			Option(homeNode).isDefined mustEqual true
-			table.getAllNodes.isEmpty mustEqual true
+			table.allNodes.isEmpty mustEqual true
 		}
 	}
 
@@ -51,8 +51,8 @@ class KademliaTest extends Specification {
 			val r = getRandom
 			val table = getTestNodeTable(r, 5000)
 
-			val closest1 = table.getClosestNodes(table.node.id)
-			val closest2 = table.getClosestNodes(getNodeId(r))
+			val closest1 = table.closedNodes(table.node.id)
+			val closest2 = table.closedNodes(getNodeId(r))
 
 			(closest1 == closest2) mustEqual false
 		}
@@ -88,13 +88,13 @@ class KademliaTest extends Specification {
 			val table = getTestNodeTable(r, 0)
 			val homeNode = table.node
 
-			table.getBucketCount mustEqual 1
+			table.bucketCount mustEqual 1
 
 			for (i <- 1 until KademliaOptions.BucketSize) {
 				table.addNode(getNode(r, homeNode.id.toByteArray, i))
 			}
 
-			1 <= table.getBucketCount mustEqual true
+			1 <= table.bucketCount mustEqual true
 		}
 	}
 

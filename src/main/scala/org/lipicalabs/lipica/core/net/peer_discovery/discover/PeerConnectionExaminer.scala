@@ -29,7 +29,17 @@ class PeerConnectionExaminer {
 	private val connectedCandidates: mutable.Map[NodeHandler, NodeHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[NodeHandler, NodeHandler])
 
 	private val queue = new MutablePriorityQueue[Runnable, ConnectTask](new Comparator[ConnectTask] {
-		override def compare(o1: ConnectTask, o2: ConnectTask): Int = o2.nodeHandler.nodeStatistics.reputation - o1.nodeHandler.nodeStatistics.reputation
+		override def compare(o1: ConnectTask, o2: ConnectTask): Int = {
+			if ((o1 eq null) && (o2 eq null)) {
+				0
+			} else if (o1 eq null) {
+				1
+			} else if (o2 eq null) {
+				-1
+			} else {
+				o2.nodeHandler.nodeStatistics.reputation - o1.nodeHandler.nodeStatistics.reputation
+			}
+		}
 	})
 	private val peerConnectionPool = ExecutorPool.instance.peerConnectionExaminer(ConnectThreads, queue)
 
@@ -98,7 +108,14 @@ object PeerConnectionExaminer {
 	class MutablePriorityQueue[T, C <: T](val comparator: Comparator[C]) extends LinkedBlockingDeque[T] {
 
 		private def privateSelectFirst: T = {
-			Collections.min(this, comparator.asInstanceOf[Comparator[T]])
+			try {
+				Collections.min(this, comparator.asInstanceOf[Comparator[T]])
+			} catch {
+				case any: Throwable =>
+					//ノード終了時のインタラプション等。
+					null.asInstanceOf[T]
+			}
+
 		}
 
 		private def privateRemoveFirst: T = {

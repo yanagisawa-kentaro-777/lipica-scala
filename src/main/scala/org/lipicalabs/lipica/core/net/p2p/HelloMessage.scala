@@ -7,6 +7,8 @@ import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * 自ノードの情報を提供するメッセージです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/04 21:13
  * YANAGISAWA, Kentaro

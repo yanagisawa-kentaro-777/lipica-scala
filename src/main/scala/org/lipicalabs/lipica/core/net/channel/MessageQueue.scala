@@ -5,8 +5,8 @@ import java.util.concurrent._
 import io.netty.channel.ChannelHandlerContext
 import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
-import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, Message, ReasonCode}
-import org.lipicalabs.lipica.core.net.p2p.{DisconnectMessage, PingMessage}
+import org.lipicalabs.lipica.core.net.message.Message
+import org.lipicalabs.lipica.core.net.p2p.{ReasonCode, P2PMessageFactory, DisconnectMessage, PingMessage}
 import org.slf4j.LoggerFactory
 
 /**
@@ -55,7 +55,7 @@ class MessageQueue {
 
 	def disconnect(reason: ReasonCode): Unit = disconnect(DisconnectMessage(reason))
 
-	def disconnect(): Unit = disconnect(ImmutableMessages.DisconnectMessage)
+	def disconnect(): Unit = disconnect(P2PMessageFactory.DisconnectMessage)
 
 	def receiveMessage(message: Message): Unit = {
 		this.componentsMotherboard.listener.trace("[Recv: %s]".format(message))

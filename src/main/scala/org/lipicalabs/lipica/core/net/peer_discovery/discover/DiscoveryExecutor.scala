@@ -7,7 +7,7 @@ import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
 import org.lipicalabs.lipica.core.net.peer_discovery.discover.table.KademliaOptions
 
 /**
- * ノードディスカバリのための定期実行処理を実行するクラスです。
+ * ノードディスカバリのための処理を定期的に実行するクラスです。
  *
  * Created by IntelliJ IDEA.
  * 2015/12/20 15:24
@@ -19,9 +19,11 @@ class DiscoveryExecutor(val nodeManager: NodeManager) {
 	private val refresher = ExecutorPool.instance.refresher
 
 	def discover(): Unit = {
+		//自ノードの近傍のノードの情報を収集するタスク。
 		this.discoverer.scheduleWithFixedDelay(
 			new DiscoverTask(this.nodeManager), 0, KademliaOptions.DiscoverCycleSeconds, TimeUnit.SECONDS
 		)
+		//ランダムな地帯のノードの情報を収集するタスク。
 		this.refresher.scheduleWithFixedDelay(
 			new RefreshTask(this.nodeManager), 0, KademliaOptions.BucketRefreshIntervalMillis, TimeUnit.MILLISECONDS
 		)

@@ -1,10 +1,7 @@
 package org.lipicalabs.lipica.core.net.p2p
 
-import java.net.InetAddress
-
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.net.Capability
-import org.lipicalabs.lipica.core.net.message.ReasonCode
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.specs2.mutable.Specification

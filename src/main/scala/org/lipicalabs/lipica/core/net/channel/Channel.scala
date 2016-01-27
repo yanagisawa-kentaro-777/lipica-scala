@@ -15,8 +15,8 @@ import org.lipicalabs.lipica.core.net.lpc.LpcVersion
 import org.lipicalabs.lipica.core.net.lpc.handler.{Lpc, LpcAdaptor, LpcHandlerFactory}
 import org.lipicalabs.lipica.core.net.lpc.message.LpcMessageFactory
 import org.lipicalabs.lipica.core.sync.{SyncStateName, SyncStatistics}
-import org.lipicalabs.lipica.core.net.message.{ImmutableMessages, MessageFactory}
-import org.lipicalabs.lipica.core.net.p2p.{HelloMessage, P2PHandler, P2PMessageFactory}
+import org.lipicalabs.lipica.core.net.message.MessageFactory
+import org.lipicalabs.lipica.core.net.p2p.{P2PMessageFactory, HelloMessage, P2PHandler}
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, NodeStatistics, NodeManager, Node}
 import org.lipicalabs.lipica.core.net.shh.{ShhHandler, ShhMessageFactory}
 import org.lipicalabs.lipica.core.net.swarm.bzz.{BzzHandler, BzzMessageFactory}
@@ -98,14 +98,14 @@ class Channel {
 	def publicTransportHandshakeFinished(ctx: ChannelHandlerContext, helloMessage: HelloMessage): Unit = {
 		ctx.pipeline.addLast(Capability.P2P, this.p2pHandler)
 		this.p2pHandler.channel = this
-		this.p2pHandler.setHandshake(helloMessage, ctx)
+		this.p2pHandler.onHandshakeDone(helloMessage, ctx)
 
 		nodeStatistics.transportHandshake.add
 	}
 
 	def sendHelloMessage(ctx: ChannelHandlerContext, frameCodec: FrameCodec, nodeId: NodeId): Unit = {
 		//discovery modeでは、外部からの接続を受け付けないために嘘のポート番号を供給する。
-		val helloMessage = if (this._discoveryMode) ImmutableMessages.createHelloMessage(nodeId, 9) else ImmutableMessages.createHelloMessage(nodeId)
+		val helloMessage = if (this._discoveryMode) P2PMessageFactory.createHelloMessage(nodeId, 9) else P2PMessageFactory.createHelloMessage(nodeId)
 		val payload = helloMessage.toEncodedBytes
 
 		val byteBuffer = ctx.alloc.buffer

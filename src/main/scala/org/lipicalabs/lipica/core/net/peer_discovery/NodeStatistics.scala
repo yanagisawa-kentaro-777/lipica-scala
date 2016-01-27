@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReferenc
 
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.net.lpc.message.StatusMessage
-import org.lipicalabs.lipica.core.net.message.ReasonCode
+import org.lipicalabs.lipica.core.net.p2p.ReasonCode
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 
 /**

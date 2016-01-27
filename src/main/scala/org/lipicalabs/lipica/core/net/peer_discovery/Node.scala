@@ -45,16 +45,16 @@ object NodeId {
 	val NumBytes = 64
 
 	def apply(bytes: ImmutableBytes): NodeId = {
+		if (bytes.length != NumBytes) {
+			throw new IllegalArgumentException("Illegal length. Size of given bytes: %,d".format(bytes.length))
+		}
 		new NodeId(bytes)
 	}
 
-	def apply(bytes: Array[Byte]): NodeId = {
-		new NodeId(ImmutableBytes(bytes))
-	}
+	def apply(bytes: Array[Byte]): NodeId = NodeId(ImmutableBytes(bytes))
 
-	def parseHexString(s: String): NodeId = {
-		new NodeId(ImmutableBytes.parseHexString(s))
-	}
+	def parseHexString(s: String): NodeId = NodeId(ImmutableBytes.parseHexString(s))
+
 }
 
 /**
@@ -92,9 +92,13 @@ class Node(val id: NodeId, val address: InetSocketAddress) extends Serializable 
 		}
 	}
 
-	override def hashCode: Int = toString.hashCode
+	override def hashCode: Int = toCanonicalString.hashCode
 
-	override def toString: String = "Node[Id=%s; Address=%s]".format( this.id.toShortString, this.address)
+	def toCanonicalString: String = {
+		"Node[Id=%s; Address=%s]".format(this.id.toShortString, this.address)
+	}
+
+	override def toString: String = toCanonicalString
 
 }
 

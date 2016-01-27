@@ -1,11 +1,15 @@
 package org.lipicalabs.lipica.core.net.lpc.message
 
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
-import org.lipicalabs.lipica.core.net.message.ParsedMessage
+import org.lipicalabs.lipica.core.net.message.Message
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * 指定されたブロック番号に始まる、指定した個数のブロックハッシュ値の提供を
+ * 相手ノードに要求するためのメッセージです。
+ * 返信として BlockHashes メッセージを期待します。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/09 20:46
  * YANAGISAWA, Kentaro
@@ -20,13 +24,11 @@ case class GetBlockHashesByNumberMessage(blockNumber: Long, maxBlocks: Int) exte
 
 	override def code = LpcMessageCode.GetBlockHashesByNumber.asByte
 
-	override def answerMessage: Option[Class[_ <: ParsedMessage]] = Option(GetBlockHashesByNumberMessage.answerMessage)
+	override def answerMessage: Option[Class[_ <: Message]] = Option(classOf[BlockHashesMessage])
 
 }
 
 object GetBlockHashesByNumberMessage {
-
-	private val answerMessage = new BlockHashesMessage(Seq.empty).getClass
 
 	def decode(encodedBytes: ImmutableBytes): GetBlockHashesByNumberMessage = {
 		val items = RBACCodec.Decoder.decode(encodedBytes).right.get.items

@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.net.p2p.Peer
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, PeerInfo}
 import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory

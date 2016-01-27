@@ -169,7 +169,7 @@ object ECPublicKey {
 	/**
 	 * 渡された署名から、公開鍵を復元して返します。
 	 */
-	def signatureToKey(messageHash: Array[Byte], signatureBase64: String): Option[ECPublicKey] = {
+	def recoverFromSignature(messageHash: Array[Byte], signatureBase64: String): Option[ECPublicKey] = {
 		val signatureEncoded = Base64.decode(signatureBase64)
 		if (signatureEncoded.length < 65) {
 			return None
@@ -197,6 +197,7 @@ object ECPublicKey {
 /**
  * 非対称鍵暗号の一種である楕円曲線暗号の
  * 「鍵ペア」をモデル化したクラスです。
+ * 署名を付与することができます。
  *
  * @since 2016/01/24
  * @author YANAGISAWA, Kentaro

@@ -6,6 +6,10 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * ブロックの本体の集合を提供するためのメッセージです。
+ *
+ * このメッセージは、GetBlocksMessageに対する返信として送信されます。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/09 20:42
  * YANAGISAWA, Kentaro

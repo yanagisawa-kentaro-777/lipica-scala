@@ -6,6 +6,8 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * 自ノードのブロックチェーの状態に関する情報を提供するためのメッセージです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/08 20:34
  * YANAGISAWA, Kentaro

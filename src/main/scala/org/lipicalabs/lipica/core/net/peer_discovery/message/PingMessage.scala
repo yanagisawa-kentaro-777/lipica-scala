@@ -7,6 +7,8 @@ import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
+ * 相手ノードの生存を確認すると同時に、自ノードの情報を提供するためのメッセージです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/15 15:14
  * YANAGISAWA, Kentaro

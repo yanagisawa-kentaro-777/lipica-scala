@@ -6,6 +6,8 @@ import org.lipicalabs.lipica.core.net.peer_discovery.Node
 import org.lipicalabs.lipica.core.utils.ByteUtils
 
 /**
+ * 近傍のノードの情報を提供するメッセージです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/15 19:44
  * YANAGISAWA, Kentaro

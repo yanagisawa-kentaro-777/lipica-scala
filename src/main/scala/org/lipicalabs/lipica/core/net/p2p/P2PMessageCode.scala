@@ -11,8 +11,7 @@ sealed trait P2PMessageCode extends Command {
 
 
 /**
- * コマンドの集合。
- *
+ * コマンドの集合を定義するオブジェクトです。
  *
  * Created by IntelliJ IDEA.
  * 2015/12/04 20:53

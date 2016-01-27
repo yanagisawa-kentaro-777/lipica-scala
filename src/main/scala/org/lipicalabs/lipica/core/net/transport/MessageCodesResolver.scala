@@ -9,6 +9,9 @@ import org.lipicalabs.lipica.core.net.swarm.bzz.BzzMessageCode
 import scala.collection.mutable
 
 /**
+ * メッセージ種別を表すバイトから、
+ * アプリケーションにとってのメッセージ種別を解決するためのクラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/19 13:15
  * YANAGISAWA, Kentaro

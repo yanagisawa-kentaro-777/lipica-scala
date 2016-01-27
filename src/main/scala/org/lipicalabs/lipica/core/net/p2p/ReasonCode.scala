@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.net.message
+package org.lipicalabs.lipica.core.net.p2p
 
 import scala.collection.mutable
 

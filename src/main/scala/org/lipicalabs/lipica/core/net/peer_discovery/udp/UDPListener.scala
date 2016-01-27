@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 
 /**
  * UDPデータグラムの送受信機構です。
- * Peer Discovery における相互確認は、UDPによって行われます。
+ * Peer Discovery プロトコルは、UDPによって実装されています。
  * 自ノード全体で１個のインスタンスです。
  *
  * Created by IntelliJ IDEA.
@@ -28,6 +28,9 @@ class UDPListener {
 	private val address: String = NodeProperties.CONFIG.bindAddress
 	private val port: Int = NodeProperties.CONFIG.bindPort
 
+	/**
+	 * UDP通信機構の動作を開始します。
+	 */
 	def start(): Boolean = {
 		if (NodeProperties.CONFIG.peerDiscoveryEnabled) {
 			val task = new Runnable {
@@ -42,7 +45,6 @@ class UDPListener {
 				}
 			}
 			ExecutorPool.instance.udpStarter.execute(task)
-			//TODO bind完了をFutureで待てるようにする。
 			true
 		} else {
 			logger.info("<UDPListener> Peer discovery is not enabled. Not binding.")

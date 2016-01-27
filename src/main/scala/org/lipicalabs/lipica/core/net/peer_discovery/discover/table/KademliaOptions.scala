@@ -1,6 +1,9 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.discover.table
 
 /**
+ * Kademlia 的な距離モデルによるピアディスカバリーに
+ * 必要なパラメータをまとめたオブジェクトです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/19 14:41
  * YANAGISAWA, Kentaro

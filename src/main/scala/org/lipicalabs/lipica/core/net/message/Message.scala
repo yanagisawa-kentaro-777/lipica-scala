@@ -3,26 +3,31 @@ package org.lipicalabs.lipica.core.net.message
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
- * ノード間のあらゆる通信メッセージが実装すべき trait です。
+ * 確立された伝送路上での通信メッセージが実装すべき trait です。
  */
 trait Message {
-	def isParsed: Boolean
-	def toEncodedBytes: ImmutableBytes
-	def code: Byte
-	def command: Command
-	def answerMessage: Option[Class[_ <: ParsedMessage]] = None
-}
 
-/**
- * エンコードされた形ではなく、
- * プログラミング言語から扱える形に解析・変換されたメッセージを表す trait です。
- *
- * Created by IntelliJ IDEA.
- * 2015/12/03 21:02
- * YANAGISAWA, Kentaro
- */
-trait ParsedMessage extends Message {
-	override val isParsed: Boolean = true
+	/**
+	 * このメッセージの種別を表現する列挙型の値を返します。
+	 */
+	def command: Command
+
+	/**
+	 * このメッセージの種別を表現する１バイトを返します。
+	 */
+	def code: Byte
+
+	/**
+	 * このインスタンスの内容をバイト列に変換して返します。
+	 */
+	def toEncodedBytes: ImmutableBytes
+
+	/**
+	 * このメッセージが返信を期待するものである場合に、
+	 * その返信の型を返します。
+	 */
+	def answerMessage: Option[Class[_ <: Message]] = None
+
 }
 
 /**

@@ -80,7 +80,7 @@ class RestApiServlet extends ScalatraServlet {
 			peersPool.pendingCount,
 
 			nodeManager.numberOfKnownNodes,
-			nodeManager.table.getNodeCount,
+			nodeManager.table.nodeCount,
 
 			threads.length
 		)

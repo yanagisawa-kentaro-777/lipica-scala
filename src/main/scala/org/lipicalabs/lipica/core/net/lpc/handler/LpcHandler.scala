@@ -7,8 +7,8 @@ import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.lpc.{LpcMessageCode, LpcVersion}
 import org.lipicalabs.lipica.core.net.lpc.message._
+import org.lipicalabs.lipica.core.net.p2p.ReasonCode
 import org.lipicalabs.lipica.core.sync._
-import org.lipicalabs.lipica.core.net.message.ReasonCode
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
 import org.lipicalabs.lipica.core.utils.{ErrorLogger, ImmutableBytes}
 import org.slf4j.LoggerFactory

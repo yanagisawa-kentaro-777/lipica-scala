@@ -8,7 +8,6 @@ import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcVersion
-import org.lipicalabs.lipica.core.net.message.{ReasonCode, ImmutableMessages}
 import org.lipicalabs.lipica.core.net.p2p.P2PMessageCode._
 import org.lipicalabs.lipica.core.net.peer_discovery.PeerInfo
 import org.lipicalabs.lipica.core.net.channel.{MessageQueue, Channel}
@@ -19,13 +18,17 @@ import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
+ * 暗号化された通信経路の維持管理に関連するメッセージのハンドラクラスです。
+ *
  * Created by IntelliJ IDEA.
- * 2015/12/07 20:32
- * YANAGISAWA, Kentaro
+ * @since 2015/12/07 20:32
+ * @author YANAGISAWA, Kentaro
  */
 class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelInboundHandler[P2PMessage] {
 
 	import P2PHandler._
+
+	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
 
 	def messageQueue: MessageQueue = this._messageQueue
 	def messageQueue_=(v: MessageQueue): Unit = this._messageQueue = v
@@ -37,14 +40,15 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 	private var _handshakeHelloMessage: HelloMessage = null
 	def handshakeHelloMessage: HelloMessage = this._handshakeHelloMessage
 
-	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
-
 	private var _channel: Channel = null
 	def channel: Channel = this._channel
 	def channel_=(v: Channel): Unit = this._channel = v
 
 	private var pingTask: ScheduledFuture[_] = null
 
+	/**
+	 * 通信開始イベント。
+	 */
 	override def handlerAdded(ctx: ChannelHandlerContext): Unit = {
 		logger.info("<P2PHandler> P2P protocol activated.")
 		this.messageQueue.activate(ctx)
@@ -52,6 +56,9 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 		startTimers()
 	}
 
+	/**
+	 * メッセージの受信イベント。
+	 */
 	override def channelRead0(ctx: ChannelHandlerContext, message: P2PMessage): Unit = {
 		if (P2PMessageCode.inRange(message.command.asByte)) {
 			if (logger.isDebugEnabled) {
@@ -62,13 +69,13 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 		message.command match {
 			case Hello =>
 				this.messageQueue.receiveMessage(message)
-				setHandshake(message.asInstanceOf[HelloMessage], ctx)
+				onHandshakeDone(message.asInstanceOf[HelloMessage], ctx)
 			case Disconnect =>
 				this.messageQueue.receiveMessage(message)
 				this.channel.nodeStatistics.nodeDisconnectedRemote(message.asInstanceOf[DisconnectMessage].reason)
 			case Ping =>
 				this.messageQueue.receiveMessage(message)
-				ctx.writeAndFlush(ImmutableMessages.PongMessage)
+				ctx.writeAndFlush(P2PMessageFactory.PongMessage)
 			case Pong =>
 				this.messageQueue.receiveMessage(message)
 			case _ =>
@@ -76,16 +83,17 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 		}
 	}
 
-	private def disconnect(reasonCode: ReasonCode): Unit = {
-		this.messageQueue.sendMessage(DisconnectMessage(reasonCode))
-		this.channel.nodeStatistics.nodeDisconnectedLocal(reasonCode)
-	}
-
+	/**
+	 * 無通信検知イベント。
+	 */
 	override def channelInactive(ctx: ChannelHandlerContext): Unit = {
 		logger.info("<P2PHandler> Channel inactive: %s".format(ctx))
 		this.killTimers()
 	}
 
+	/**
+	 * 例外捕捉イベント。
+	 */
 	override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
 		ErrorLogger.logger.warn("<P2PHandler> Error caught: %s".format(cause))
 		logger.warn("<P2PHandler> Error caught: %s".format(cause))
@@ -93,13 +101,22 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 		killTimers()
 	}
 
-	def setHandshake(message: HelloMessage, ctx: ChannelHandlerContext): Unit = {
+	private def disconnect(reasonCode: ReasonCode): Unit = {
+		this.messageQueue.sendMessage(DisconnectMessage(reasonCode))
+		this.channel.nodeStatistics.nodeDisconnectedLocal(reasonCode)
+	}
+
+	/**
+	 * 伝送路の確立とハンドシェイクメッセージの授受が完了した際に呼び出されます。
+	 */
+	def onHandshakeDone(message: HelloMessage, ctx: ChannelHandlerContext): Unit = {
 		this.channel.nodeStatistics.clientId = message.clientId
 
 		this._handshakeHelloMessage = message
 		if (message.p2pVersion != Version) {
 			disconnect(ReasonCode.IncompatibleProtocol)
 		} else {
+			//両ノードが共有するプロトコルを有効化する。
 			val capsInCommon = HandshakeHelper.getSupportedCapabilities(message)
 			this.channel.initMessageCodes(capsInCommon)
 			for (capability <- capsInCommon) {
@@ -111,6 +128,7 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 					channel.activateBzz(ctx)
 				}
 			}
+			//ハンドシェイクが完了したピアの情報をコールバックする。
 			val address: InetAddress = ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress].getAddress
 			val port = message.listenPort
 			val confirmedPeer = new PeerInfo(new InetSocketAddress(address, port), message.nodeId)
@@ -122,23 +140,11 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 		}
 	}
 
-//	def sendTransaction(tx: TransactionLike): Unit = {
-//		val message = new TransactionsMessage(Seq(tx))
-//		this.messageQueue.sendMessage(message)
-//	}
-//
-//	def sendNewBlock(block: Block): Unit = {
-//		val message = new NewBlockMessage(block, block.difficulty)
-//		this.messageQueue.sendMessage(message)
-//	}
-
-//	def sendDisconnect(): Unit =  this.messageQueue.disconnect()
-
 	private def startTimers(): Unit = {
 		this.pingTask = pingTimer.scheduleAtFixedRate(
 			new Runnable {
 				override def run(): Unit = {
-					messageQueue.sendMessage(ImmutableMessages.PingMessage)
+					messageQueue.sendMessage(P2PMessageFactory.PingMessage)
 				}
 			},
 			2, 5, TimeUnit.SECONDS

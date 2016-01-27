@@ -6,6 +6,8 @@ import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 
 /**
+ * トランザクションの集合を提供するためのメッセージです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/09 21:07
  * YANAGISAWA, Kentaro

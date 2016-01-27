@@ -7,6 +7,8 @@ import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 
 /**
+ * 相手ノードのPingに応答するためのメッセージです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/15 18:21
  * YANAGISAWA, Kentaro

@@ -16,8 +16,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 受信側ではSyncQueueに登録されます。
  *
  * Created by IntelliJ IDEA.
- * 2015/12/09 20:36
- * YANAGISAWA, Kentaro
+ * @since 2015/12/09 20:36
+ * @author YANAGISAWA, Kentaro
  */
 case class BlockHashesMessage(blockHashes: Seq[DigestValue]) extends LpcMessage {
 

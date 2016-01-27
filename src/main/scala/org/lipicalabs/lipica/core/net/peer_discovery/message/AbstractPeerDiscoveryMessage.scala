@@ -69,7 +69,7 @@ abstract class AbstractPeerDiscoveryMessage {
 			val messageHash = DigestUtils.digest256(util.Arrays.copyOfRange(this._wire, 97, this._wire.length))
 
 			//署名から公開鍵を生成して返す。
-			Right(ECPublicKey.signatureToKey(messageHash, generatedSignature.toBase64).get)
+			Right(ECPublicKey.recoverFromSignature(messageHash, generatedSignature.toBase64).get)
 		} catch {
 			case e: SignatureException =>
 				ErrorLogger.logger.warn("<TransportMessage> Signature exception.", e)
