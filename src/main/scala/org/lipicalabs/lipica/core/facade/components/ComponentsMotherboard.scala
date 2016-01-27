@@ -38,7 +38,7 @@ class ComponentsMotherboard {
 
 	import ComponentsMotherboard._
 
-	private val dataStoreResource: Closeable = ComponentFactory.dataStoreResource
+	private val dataStoreResourceOrNone: Option[Closeable] = ComponentFactory.dataStoreResourceOrNone
 
 	val blockStore: BlockStore = ComponentFactory.createBlockStore
 
@@ -170,7 +170,7 @@ class ComponentsMotherboard {
 		//各種データストアをクローズする。
 		DataSourcePool.closeAll()
 		ComponentFactory.dataSources.values.foreach(MiscUtils.closeIfNotNull)
-		MiscUtils.closeIfNotNull(this.dataStoreResource)
+		this.dataStoreResourceOrNone.foreach(MiscUtils.closeIfNotNull)
 	}
 }
 

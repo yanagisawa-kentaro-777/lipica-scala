@@ -178,3 +178,13 @@ object LevelDbDataSource {
 		options
 	}
 }
+
+class LevelDBDataSourceFactory(override val categoryName: String) extends KeyValueDataSourceFactory {
+
+	private def dataSourceName(givenName: String) = "%s/%s".format(this.categoryName, givenName)
+
+	override def openDataSource(name: String) = DataSourcePool.levelDbByName(dataSourceName(name))
+
+	override def closeDataSource(name: String) = DataSourcePool.closeDataSource(dataSourceName(name))
+
+}

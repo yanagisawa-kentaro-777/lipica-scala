@@ -33,20 +33,19 @@ import scala.collection.JavaConversions
  */
 object ComponentFactory {
 
-	class LevelDBDataSourceFactory(override val categoryName: String) extends KeyValueDataSourceFactory {
-		private def dataSourceName(givenName: String) = "%s/%s".format(this.categoryName, givenName)
-		override def openDataSource(name: String) = DataSourcePool.levelDbByName(dataSourceName(name))
-		override def closeDataSource(name: String) = DataSourcePool.closeDataSource(dataSourceName(name))
-	}
+	val os = System.getProperty("os.name").toLowerCase.trim
+	private val isWindows = os.contains("windows")
 
-	class BdbDataSourceFactory(override val categoryName: String, env: Environment) extends KeyValueDataSourceFactory {
-		private def dataSourceName(givenName: String) = "%s/%s".format(this.categoryName, givenName)
-		override def openDataSource(name: String) = DataSourcePool.bdbByName(dataSourceName(name), env)
-		override def closeDataSource(name: String) = DataSourcePool.closeDataSource(dataSourceName(name))
-	}
 
-	private val bdbEnv = BdbJeDataSource.createDefaultEnvironment(Paths.get(NodeProperties.CONFIG.databaseDir))
-	def dataStoreResource: Closeable = this.bdbEnv
+	private val bdbEnvOrNone: Option[Environment] =
+		if (isWindows) {
+			//Windowsでは、JNI経由でLevelDBを使用するとバグを踏むので、回避のためにBDB JEを使う。
+			Some(BdbJeDataSource.createDefaultEnvironment(Paths.get(NodeProperties.CONFIG.databaseDir)))
+		} else {
+			None
+		}
+
+	def dataStoreResourceOrNone: Option[Closeable] = this.bdbEnvOrNone
 
 	val dataSources = JavaConversions.mapAsScalaConcurrentMap(new ConcurrentHashMap[String, KeyValueDataSource])
 	private def put(dataSource: KeyValueDataSource): Unit = {
@@ -67,9 +66,9 @@ object ComponentFactory {
 		val stateDS = openKeyValueDataSource("state_db")
 		put(stateDS)
 
-		if (true) {
-			//TODO leveldb or berkeley db.
-			new RepositoryImpl(contractDS, stateDS, new BdbDataSourceFactory("contract_dtl_storage", this.bdbEnv))
+		if (isWindows) {
+			//Windowsでは、JNI経由でLevelDBを使用するとバグを踏むので、回避のためにBDB JEを使う。
+			new RepositoryImpl(contractDS, stateDS, new BdbJeDataSourceFactory("contract_dtl_storage", this.bdbEnvOrNone.get))
 		} else {
 			new RepositoryImpl(contractDS, stateDS, new LevelDBDataSourceFactory("contract_dtl_storage"))
 		}
@@ -134,10 +133,10 @@ object ComponentFactory {
 
 	private def openKeyValueDataSource(name: String): KeyValueDataSource = {
 		val result =
-			if (true) {
-				//TODO leveldb or berkeley db.
+			if (isWindows) {
+				//Windowsでは、JNI経由でLevelDBを使用するとバグを踏むので、回避のためにBDB JEを使う。
 				val configs = BdbJeDataSource.createDefaultConfig
-				new BdbJeDataSource(name, this.bdbEnv, configs)
+				new BdbJeDataSource(name, this.bdbEnvOrNone.get, configs)
 			} else {
 				val options = LevelDbDataSource.createDefaultOptions
 				new LevelDbDataSource(name, options)

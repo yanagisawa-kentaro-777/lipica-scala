@@ -162,3 +162,11 @@ object BdbJeDataSource {
 
 
 }
+
+class BdbJeDataSourceFactory(override val categoryName: String, env: Environment) extends KeyValueDataSourceFactory {
+	private def dataSourceName(givenName: String) = "%s/%s".format(this.categoryName, givenName)
+
+	override def openDataSource(name: String) = DataSourcePool.bdbByName(dataSourceName(name), env)
+
+	override def closeDataSource(name: String) = DataSourcePool.closeDataSource(dataSourceName(name))
+}
