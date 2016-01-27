@@ -1,4 +1,4 @@
-package org.lipicalabs.lipica.core.crypto;
+package org.lipicalabs.lipica.core.crypto.elliptic_curve;
 
 import org.spongycastle.crypto.*;
 import org.spongycastle.crypto.generators.EphemeralKeyPairGenerator;
@@ -10,6 +10,11 @@ import org.spongycastle.util.Pack;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+
+/**
+ * この IESEngine.java ファイルの実装は、Bouncy Castle プロジェクトからコピーしてきたものです。
+ * This class is borrowed from Bouncy Castle Project.
+ */
 
 /**
  * Support class for constructing integrated encryption cipher
@@ -117,16 +122,6 @@ public class IESEngine {
             this.IV = null;
             this.param = (IESParameters)params;
         }
-    }
-
-    public BufferedBlockCipher getCipher()
-    {
-        return cipher;
-    }
-
-    public Mac getMac()
-    {
-        return mac;
     }
 
     private byte[] encryptBlock(

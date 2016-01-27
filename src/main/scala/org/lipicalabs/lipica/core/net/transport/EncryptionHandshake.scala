@@ -2,9 +2,8 @@ package org.lipicalabs.lipica.core.net.transport
 
 import java.security.SecureRandom
 
-import org.lipicalabs.lipica.core.crypto.ECIESCoder
 import org.lipicalabs.lipica.core.crypto.digest.DigestUtils
-import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECPublicKey, ECKeyPair}
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECIESCodec, ECPublicKey, ECKeyPair}
 import org.lipicalabs.lipica.core.utils.{ByteUtils, ImmutableBytes}
 import org.spongycastle.crypto.digests.KeccakDigest
 import org.spongycastle.math.ec.ECPoint
@@ -95,14 +94,14 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	 * 渡されたセッション確立要求メッセージを、暗号化されたバイト列に変換して返します。
 	 */
 	def encryptAuthInitiate(message: AuthInitiateMessage): Array[Byte] = {
-		ECIESCoder.encrypt(this.remotePublicKey, message.encode)
+		ECIESCodec.encrypt(this.remotePublicKey, message.encode)
 	}
 
 	/**
 	 * 渡された暗号化バイト列を、セッション確立要求メッセージに復号して返します。
 	 */
 	def decryptAuthInitiate(encryptedBytes: Array[Byte], myKey: ECKeyPair): AuthInitiateMessage = {
-		val plainBytes = ECIESCoder.decrypt(myKey.privateKey.bigInteger, encryptedBytes)
+		val plainBytes = ECIESCodec.decrypt(myKey.privateKey, encryptedBytes)
 		AuthInitiateMessage.decode(plainBytes)
 	}
 
@@ -110,14 +109,14 @@ class EncryptionHandshake private(val isInitiator: Boolean) {
 	 * 渡された応答メッセージを、暗号化されたバイト列に変換して返します。
 	 */
 	def encryptAuthResponse(message: AuthResponseMessage): Array[Byte] = {
-		ECIESCoder.encrypt(this.remotePublicKey, message.encode)
+		ECIESCodec.encrypt(this.remotePublicKey, message.encode)
 	}
 
 	/**
 	 * 渡された暗号化バイト列を、応答メッセージに復号して返します。
 	 */
 	def decryptAuthResponse(encryptedBytes: Array[Byte], myKey: ECKeyPair): AuthResponseMessage = {
-		val plainBytes = ECIESCoder.decrypt(myKey.privateKey.bigInteger, encryptedBytes)
+		val plainBytes = ECIESCodec.decrypt(myKey.privateKey, encryptedBytes)
 		AuthResponseMessage.decode(plainBytes)
 	}
 

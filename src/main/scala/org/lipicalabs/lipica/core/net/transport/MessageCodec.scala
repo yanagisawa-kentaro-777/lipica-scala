@@ -9,8 +9,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
 import io.netty.handler.codec.ByteToMessageCodec
 import org.lipicalabs.lipica.core.config.NodeProperties
-import org.lipicalabs.lipica.core.crypto.ECIESCoder
-import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECPublicKey, ECKeyPair}
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECIESCodec, ECPublicKey, ECKeyPair}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.Capability
 import org.lipicalabs.lipica.core.net.lpc.LpcMessageCode
@@ -184,7 +183,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 			if (this.frameCodec eq null) {
 				//まだ FrameCodec も生成されていない、ということは、
 				//今回受け取ったのは、セッション開始要求に対する応答のはず。
-				val responsePacket = new Array[Byte](AuthResponseMessage.length + ECIESCoder.getOverhead)
+				val responsePacket = new Array[Byte](AuthResponseMessage.length + ECIESCodec.getOverhead)
 				if (!buffer.isReadable(responsePacket.length)) {
 					return
 				}
@@ -225,7 +224,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 			if (this._frameCodec eq null) {
 				//まだ FrameCodec も生成されていない、ということは、
 				//今回受け取ったのは、セッション開始要求であるはず。
-				val authInitPacket = new Array[Byte](AuthInitiateMessage.length + ECIESCoder.getOverhead)
+				val authInitPacket = new Array[Byte](AuthInitiateMessage.length + ECIESCodec.getOverhead)
 				if (!buffer.isReadable(authInitPacket.length)) {
 					return
 				}
