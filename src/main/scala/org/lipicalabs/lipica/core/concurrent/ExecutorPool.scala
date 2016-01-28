@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.concurrent
 
-import java.io.Closeable
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicReference
 
@@ -11,11 +10,15 @@ import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
+ * 各種の処理を実行するためのスケジューラやスレッドプールのインスタンスを
+ * 集中的に管理するためのクラスです。
+ *
+ * このような集中管理は、特にノード全体のシャットダウンの実現のために有用です。
+ *
  * Created by IntelliJ IDEA.
- * 2016/01/20 11:00
- * YANAGISAWA, Kentaro
+ * @author YANAGISAWA, Kentaro
  */
-class ExecutorPool private() extends Closeable {
+class ExecutorPool private() {
 
 	val blockQueueOpener: ExecutorService = Executors.newSingleThreadExecutor(new CountingThreadFactory("block-queue-opener"))
 	val hashStoreOpener: ExecutorService = Executors.newSingleThreadExecutor(new CountingThreadFactory("hash-store-opener"))
@@ -68,7 +71,11 @@ class ExecutorPool private() extends Closeable {
 	val clientConnector: ExecutorService = Executors.newCachedThreadPool(new CountingThreadFactory("client-connector"))
 	val txExecutor: ExecutorService = Executors.newFixedThreadPool(1, new CountingThreadFactory("tx-executor"))
 
-	override def close(): Unit = {
+	/**
+	 * このオブジェクトにおいてプールされている ExecutorService を、
+	 * すべてシャットダウンします。
+	 */
+	def shutdown(): Unit = {
 		val seq = Seq(
 				this.txExecutor,
 				this.clientConnector,
@@ -106,7 +113,8 @@ class ExecutorPool private() extends Closeable {
 	}
 
 	private def isShutdown(seq: Seq[AnyRef]): Boolean = {
-		val result = seq.forall {
+		var result = true
+		seq.foreach {
 			each => {
 				each match {
 					case ex: ExecutorService =>
@@ -114,9 +122,8 @@ class ExecutorPool private() extends Closeable {
 						if (!ok) {
 							shutdown(ex, now = true)
 						}
-						ok
-					case any =>
-						true
+						result &= ok
+					case any => ()
 				}
 			}
 		}
@@ -132,7 +139,7 @@ class ExecutorPool private() extends Closeable {
 				case ex: ExecutorService =>
 					shutdown(ex, now = false)
 				case any =>
-					throw new RuntimeException
+					()
 			}
 		}
 	}
@@ -142,7 +149,7 @@ class ExecutorPool private() extends Closeable {
 			if (now) {
 				ex.shutdownNow()
 			} else {
-				ex.shutdownNow()
+				ex.shutdown()
 			}
 		}
 	}

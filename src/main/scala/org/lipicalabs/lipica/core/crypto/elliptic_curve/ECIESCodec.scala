@@ -27,6 +27,12 @@ object ECIESCodec {
 	private val KeySize: Int = 128
 	private val Curve = ECKeyLike.CURVE
 
+	/**
+	 * 暗号化を実行し、暗号化されたデータを返します。
+	 *
+	 * @param publicKeyPoint 利用する公開鍵。
+	 * @param plainData 暗号化対象の平文。
+	 */
 	def encrypt(publicKeyPoint: ECPoint, plainData: Array[Byte]): Array[Byte] = {
 		val eGen = new ECKeyPairGenerator
 		val random = new SecureRandom
@@ -36,9 +42,9 @@ object ECIESCodec {
 		val IV = new Array[Byte](KeySize / 8)
 		new SecureRandom().nextBytes(IV)
 
-		val ephemPair = eGen.generateKeyPair
-		val prv = ephemPair.getPrivate.asInstanceOf[ECPrivateKeyParameters].getD
-		val pub = ephemPair.getPublic.asInstanceOf[ECPublicKeyParameters].getQ
+		val ephemeralKeyPair = eGen.generateKeyPair
+		val prv = ephemeralKeyPair.getPrivate.asInstanceOf[ECPrivateKeyParameters].getD
+		val pub = ephemeralKeyPair.getPublic.asInstanceOf[ECPublicKeyParameters].getQ
 		val iesEngine: IESEngine = makeIESEngine(isEncrypt = true, publicKeyPoint, prv, IV)
 
 		val keygenParams = new ECKeyGenerationParameters(Curve, random)
@@ -59,6 +65,12 @@ object ECIESCodec {
 		}
 	}
 
+	/**
+	 * 暗号化されたデータを復号し、平文を返します。
+	 *
+	 * @param privateKey 復号に利用する秘密鍵。
+	 * @param encryptedData 暗号化されたデータ。
+	 */
 	def decrypt(privateKey: BigInt, encryptedData: Array[Byte]): Array[Byte] = {
 		val is = new ByteArrayInputStream(encryptedData)
 		val ephemBytes = new Array[Byte](2 * ((Curve.getCurve.getFieldSize + 7) / 8) + 1)
@@ -73,32 +85,35 @@ object ECIESCodec {
 		decrypt(ephem, privateKey, IV, cipherBody)
 	}
 
-	private def makeIESEngine(isEncrypt: Boolean, pub: ECPoint, prv: BigInteger, IV: Array[Byte]): IESEngine = {
-		val d = Array[Byte]()
-		val e = Array[Byte]()
-		val p = new IESWithCipherParameters(d, e, KeySize, KeySize)
-		val parametersWithIV = new ParametersWithIV(p, IV)
-
-		val aesFastEngine = new AESFastEngine
-		val iesEngine = new IESEngine(new ECDHBasicAgreement, new ConcatenationKDFGenerator(new SHA256Digest), new HMac(new SHA256Digest), new SHA256Digest, new BufferedBlockCipher(new SICBlockCipher(aesFastEngine)))
-		iesEngine.init(isEncrypt, new ECPrivateKeyParameters(prv, Curve), new ECPublicKeyParameters(pub, Curve), parametersWithIV)
-		iesEngine
-	}
-
-	private def decrypt(ephem: ECPoint, prv: BigInt, IV: Array[Byte], encryptedData: Array[Byte]): Array[Byte] = {
-		val d = Array[Byte]()
-		val e = Array[Byte]()
-		val p = new IESWithCipherParameters(d, e, KeySize, KeySize)
-		val parametersWithIV = new ParametersWithIV(p, IV)
-
-		val aesFastEngine = new AESFastEngine
-		val iesEngine = new IESEngine(new ECDHBasicAgreement, new ConcatenationKDFGenerator(new SHA256Digest), new HMac(new SHA256Digest), new SHA256Digest, new BufferedBlockCipher(new SICBlockCipher(aesFastEngine)))
-		iesEngine.init(false, new ECPrivateKeyParameters(prv.bigInteger, Curve), new ECPublicKeyParameters(ephem, Curve), parametersWithIV)
-		iesEngine.processBlock(encryptedData, 0, encryptedData.length)
-	}
-
+	/**
+	 * 空間面におけるオーバーヘッドのバイト数を返します。
+	 */
 	def getOverhead: Int = {
 		65 + KeySize / 8 + 32
 	}
-	
+
+	private def makeIESEngine(isEncrypt: Boolean, publicKey: ECPoint, privateKey: BigInteger, IV: Array[Byte]): IESEngine = {
+		val d = Array[Byte]()
+		val e = Array[Byte]()
+		val p = new IESWithCipherParameters(d, e, KeySize, KeySize)
+		val parametersWithIV = new ParametersWithIV(p, IV)
+
+		val aesFastEngine = new AESFastEngine
+		val iesEngine = new IESEngine(new ECDHBasicAgreement, new ConcatenationKDFGenerator(new SHA256Digest), new HMac(new SHA256Digest), new SHA256Digest, new BufferedBlockCipher(new SICBlockCipher(aesFastEngine)))
+		iesEngine.init(isEncrypt, new ECPrivateKeyParameters(privateKey, Curve), new ECPublicKeyParameters(publicKey, Curve), parametersWithIV)
+		iesEngine
+	}
+
+	private def decrypt(ephemeralKey: ECPoint, privateKey: BigInt, IV: Array[Byte], encryptedData: Array[Byte]): Array[Byte] = {
+		val d = Array[Byte]()
+		val e = Array[Byte]()
+		val p = new IESWithCipherParameters(d, e, KeySize, KeySize)
+		val parametersWithIV = new ParametersWithIV(p, IV)
+
+		val aesFastEngine = new AESFastEngine
+		val iesEngine = new IESEngine(new ECDHBasicAgreement, new ConcatenationKDFGenerator(new SHA256Digest), new HMac(new SHA256Digest), new SHA256Digest, new BufferedBlockCipher(new SICBlockCipher(aesFastEngine)))
+		iesEngine.init(false, new ECPrivateKeyParameters(privateKey.bigInteger, Curve), new ECPublicKeyParameters(ephemeralKey, Curve), parametersWithIV)
+		iesEngine.processBlock(encryptedData, 0, encryptedData.length)
+	}
+
 }

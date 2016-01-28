@@ -7,7 +7,6 @@ import java.util.Random
 import org.junit.runner.RunWith
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{BlockWrapper, Block, Genesis}
-import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.datasource.InMemoryDataSource
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
@@ -54,7 +53,7 @@ class BlockQueueTest extends Specification {
 		val r = BigInt(32, new Random)
 //		this.testDBName = "./work/database/test_db_" + r
 //		SystemProperties.CONFIG.databaseDir = this.testDBName
-		NodeProperties.CONFIG.databaseReset = false
+//		NodeProperties.CONFIG.shouldResetDataStore = false
 
 		this.blockQueue = new BlockQueueImpl(new InMemoryDataSource, new InMemoryDataSource)
 		this.blockQueue.open()

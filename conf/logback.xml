@@ -136,13 +136,13 @@
 	<root level="WARN">
 		<appender-ref ref="EXT_LIB"/>
 	</root>
-	<logger name="blockchain" level="DEBUG" additivity="false">
+	<logger name="blockchain" level="INFO" additivity="false">
 		<appender-ref ref="BLOCKCHAIN"/>
 	</logger>
 	<logger name="blocks_record" level="INFO" additivity="false">
 		<appender-ref ref="BLOCKS_RECORD"/>
 	</logger>
-	<logger name="datastore" level="DEBUG" additivity="false">
+	<logger name="datastore" level="INFO" additivity="false">
 		<appender-ref ref="DATASTORE_TRACE"/>
 	</logger>
 	<logger name="discovery" level="INFO" additivity="false">
@@ -151,7 +151,7 @@
 	<logger name="dump" level="DEBUG" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
-	<logger name="execute" level="DEBUG" additivity="false">
+	<logger name="execute" level="INFO" additivity="false">
 		<appender-ref ref="BLOCKCHAIN"/>
 	</logger>
 	<logger name="mana" level="INFO" additivity="false">
@@ -166,7 +166,7 @@
 	<logger name="repository" level="INFO" additivity="false">
 		<appender-ref ref="DATASTORE_TRACE"/>
 	</logger>
-	<logger name="sync" level="DEBUG" additivity="false">
+	<logger name="sync" level="INFO" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="trie" level="INFO" additivity="false">

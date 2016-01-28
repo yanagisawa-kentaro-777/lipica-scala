@@ -8,6 +8,16 @@ import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.spongycastle.crypto.Digest
 import org.spongycastle.crypto.digests.{KeccakDigest, RIPEMD160Digest}
 
+/**
+ * バイト配列に１方向ダイジェスト関数を適用してその結果を得るための
+ * ユーティリティオブジェクトです。
+ *
+ * ダイジェストアルゴリズムについては、
+ * 結果のビット数のみを指定することで、
+ * アルゴリズム自体は設定に基づいて一括でさしかえられるようにしています。
+ *
+ * @author YANAGISAWA, Kentaro.
+ */
 object DigestUtils {
 
 	val EmptyDataHash = ImmutableBytes.empty.digest256
@@ -41,7 +51,7 @@ object DigestUtils {
 		java.util.Arrays.copyOfRange(digest, 12, digest.length)
 	}
 
-	def digest256omit12(data: Array[Byte]): ImmutableBytes = {
+	private def digest256omit12(data: Array[Byte]): ImmutableBytes = {
 		val digest = digest256(data)
 		ImmutableBytes(digest, 12, digest.length)
 	}
@@ -55,11 +65,6 @@ object DigestUtils {
 		}
 	}
 
-//	def sha3_256(data: Array[Byte]): Array[Byte] = {
-//		val digest = new SHA3Digest(256)
-//		calculateDigest(digest, data)
-//	}
-
 	def ripemd160(data: Array[Byte]): Array[Byte] = {
 		val digest = new RIPEMD160Digest
 		calculateDigest(digest, data)
@@ -71,6 +76,10 @@ object DigestUtils {
 		Address160(digest256omit12(RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(encodedSender, encodedNonce)).toByteArray))
 	}
 
+	/**
+	 * 渡されたダイジェスト計算器の現在の内部状態に基づいたダイジェスト値を、
+	 * 渡された配列に出力します。
+	 */
 	def doSum(mac: KeccakDigest, out: Array[Byte]): Unit = {
 		new KeccakDigest(mac).doFinal(out, 0)
 	}

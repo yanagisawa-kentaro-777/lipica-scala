@@ -2,7 +2,6 @@ package org.lipicalabs.lipica.core.facade.components
 
 import java.io.{File, FileInputStream}
 import java.nio.charset.StandardCharsets
-import java.nio.file.Paths
 import java.util.Scanner
 
 import org.apache.commons.codec.binary.Hex
@@ -28,11 +27,11 @@ class BlocksLoader {
 	 * ブロック情報を読み取って、渡されたチェーンに連結します。
 	 */
 	def loadBlocks(chain: Blockchain): Unit = {
-		val path = NodeProperties.CONFIG.srcBlocksDir
-		if (path.isEmpty) {
+		val pathOrNone = NodeProperties.CONFIG.srcBlocksDir
+		if (pathOrNone.isEmpty) {
 			return
 		}
-		val dir = Paths.get(path).toAbsolutePath.toFile
+		val dir = pathOrNone.get.toAbsolutePath.toFile
 		if (!dir.exists) {
 			return
 		}

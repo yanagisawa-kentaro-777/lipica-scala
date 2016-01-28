@@ -158,7 +158,7 @@ class ComponentsMotherboard {
 	private[facade] def shutdown(): Unit = {
 		stopPeerDiscovery()
 		//動作中の ExecutorService 類を停止させる。
-		ExecutorPool.instance.close()
+		ExecutorPool.instance.shutdown()
 		//Repository および BlockStore を flush する。
 		this.blockchain.flush()
 

@@ -36,7 +36,7 @@ class HashStoreTest extends Specification {
 		val r = BigInt(32, new Random)
 		//this.testDBName = "./work/database/test_db_" + r
 		//SystemProperties.CONFIG.databaseDir = this.testDBName
-		NodeProperties.CONFIG.databaseReset = false
+		//NodeProperties.CONFIG.shouldResetDataStore = false
 		this.hashStore = new HashStoreImpl(new InMemoryDataSource)
 		this.hashStore.open()
 	}

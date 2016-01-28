@@ -17,8 +17,8 @@ import org.lipicalabs.lipica.core.vm.program.ProgramResult
  * この trait の実装を通じて行うべきものです。
  *
  * Created by IntelliJ IDEA.
- * 2015/12/02 20:50
- * YANAGISAWA, Kentaro
+ * @since 2015/12/02 20:50
+ * @author YANAGISAWA, Kentaro
  */
 trait Lipica {
 

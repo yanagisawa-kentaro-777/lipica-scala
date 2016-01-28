@@ -5,21 +5,21 @@
 
 １、既存環境との完全同期
 ・CallTransactionの変更に追随する。
-・Ping、Pong、Neighboursについて、UDPとTCPのポートを分ける。
-・Active Peerについて考えなおす。
 
-２、自前ノード間での動作＆トランザクション実行
+２、整備
+
 ・残高の確認。
 ・mana trackの確認。
 ・受信トランザクションの確認。
 ・walletの整備と新トランザクションの実行。
 
-３、整備
-
-・終了をもう少し上品に？
-・TransactionCostの場所。
-
 ・設定の詰め
+・バージョンのモデル
+
+//・終了をもう少し上品に？
+//・TransactionCostの場所。
+
+・git flowを入れる。
 
 ・通信方面のコメント。
 ・トランザクション署名の検証。
@@ -28,17 +28,13 @@
 ・著作権表記
 ・依存先のバージョン
 
-・アウトラインログを作る。
-・refactorする。（init() や start() の整備。future化。）
-・logging、refactor、comment。（不具合追跡用）
+・logging
 
 ・expirationによるdiscardを実装する。（replay attack対策）
 ・スレッドセイフティ
 
 ・nullを排除する。
 ・ImmutableBytes#toByteArray を排除する。
-
-git flowを入れる。
 
 BlockchainImplの精緻なテスト。
 VM関連のデバッグ用出力（ProgramTrace等）。

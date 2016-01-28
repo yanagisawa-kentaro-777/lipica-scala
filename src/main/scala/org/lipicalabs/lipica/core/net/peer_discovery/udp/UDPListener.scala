@@ -1,5 +1,6 @@
 package org.lipicalabs.lipica.core.net.peer_discovery.udp
 
+import java.net.InetAddress
 import java.util.concurrent.atomic.AtomicBoolean
 
 import io.netty.bootstrap.Bootstrap
@@ -25,7 +26,7 @@ class UDPListener {
 
 	import UDPListener._
 
-	private val address: String = NodeProperties.CONFIG.bindAddress
+	private val address: InetAddress = NodeProperties.CONFIG.bindAddress
 	private val port: Int = NodeProperties.CONFIG.bindPort
 
 	/**

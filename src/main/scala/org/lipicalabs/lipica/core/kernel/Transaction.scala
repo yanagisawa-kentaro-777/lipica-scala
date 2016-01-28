@@ -7,7 +7,6 @@ import org.lipicalabs.lipica.core.crypto.digest.{DigestValue, DigestUtils}
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
 import org.lipicalabs.lipica.core.bytes_codec.RBACCodec.Decoder.DecodedResult
 import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes, ByteUtils}
-import org.lipicalabs.lipica.core.vm.ManaCost
 import org.slf4j.LoggerFactory
 
 
@@ -91,15 +90,6 @@ trait TransactionLike {
 	def rawHash: DigestValue = toEncodedRawBytes.digest256
 
 	/**
-	 * このトランザクションにかかるマナの量を返します。
-	 */
-	def transactionCost: Long = {
-		val nonZeroes = nonZeroDataBytes
-		val zeroVals = data.length - nonZeroes
-		ManaCost.TRANSACTION + zeroVals * ManaCost.TX_ZERO_DATA + nonZeroes * ManaCost.TX_NO_ZERO_DATA
-	}
-
-	/**
 	 * このトランザクションが、コントラクト作成用トランザクションであるか否かを返します。
 	 */
 	def isContractCreation: Boolean = this.receiverAddress.isEmpty
@@ -114,7 +104,10 @@ trait TransactionLike {
 		Some(DigestUtils.computeNewAddress(this.senderAddress, this.nonce))
 	}
 
-	def getKey: Option[ECPublicKey] = {
+	/**
+	 * このトランザクションに付与された署名から、公開鍵を復元して返します。
+	 */
+	def recoverPublicKey: Option[ECPublicKey] = {
 		val hash = rawHash
 		this.signatureOption.flatMap {
 			signature => ECPublicKey.recoverFromSignature(signature.v, signature, hash.toByteArray, compressed = true)
@@ -174,11 +167,6 @@ trait TransactionLike {
 		} else {
 			RBACCodec.Encoder.encodeSeqOfByteArrays(Seq(nonce, manaPrice, manaLimit, receiveAddress, encodedValue, data))
 		}
-	}
-
-	private def nonZeroDataBytes: Int = {
-		if (ByteUtils.isNullOrEmpty(data)) return 0
-		this.data.count(each => each != 0)
 	}
 
 }

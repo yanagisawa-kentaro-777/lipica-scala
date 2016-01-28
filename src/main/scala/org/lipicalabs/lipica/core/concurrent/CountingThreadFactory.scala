@@ -6,8 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * スレッド数をカウントしながら、その数をスレッド名に反映させる ThreadFactory の実装です。
  *
  * Created by IntelliJ IDEA.
- * 2016/01/06 12:27
- * YANAGISAWA, Kentaro
+ * @author YANAGISAWA, Kentaro
  */
 class CountingThreadFactory(val prefix: String) extends java.util.concurrent.ThreadFactory {
 	private val count = new AtomicInteger(0)

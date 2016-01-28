@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicLong
 import org.lipicalabs.lipica.core.config.NodeProperties
 import org.lipicalabs.lipica.core.datastore.{RepositoryLike, RepositoryTrackLike, BlockStore}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
-import org.lipicalabs.lipica.core.utils.{ErrorLogger, UtilConsts, ImmutableBytes}
+import org.lipicalabs.lipica.core.utils.{ByteUtils, ErrorLogger, UtilConsts, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.PrecompiledContracts.PrecompiledContract
 import org.lipicalabs.lipica.core.vm._
 import org.lipicalabs.lipica.core.vm.program.Program.ProgramException
@@ -59,7 +59,7 @@ class TransactionExecutor(
 			))
 			return
 		}
-		this.basicTxCost = this.tx.transactionCost
+		this.basicTxCost = transactionCost(this.tx)
 		if (txManaLimit < this.basicTxCost) {
 			logger.info("<TxExecutor> Not enough mana for tx execution: %s < %s".format(txManaLimit, this.basicTxCost))
 			return
@@ -173,7 +173,7 @@ class TransactionExecutor(
 			return
 		}
 		try {
-			this.program.spendMana(this.tx.transactionCost, "Tx Cost")
+			this.program.spendMana(transactionCost(this.tx), "Tx Cost")
 			this.vm.play(this.program)
 			this.result = this.program.result
 			this.endMana = (this.tx.manaLimit.positiveBigInt - BigInt(this.result.manaUsed)).longValue()
@@ -277,4 +277,18 @@ class TransactionExecutor(
 object TransactionExecutor {
 	private val logger = LoggerFactory.getLogger("execute")
 	private val txRecordLogger = LoggerFactory.getLogger("tx_record")
+
+	/**
+	 * このトランザクションにかかるマナの量を返します。
+	 */
+	private def transactionCost(tx: TransactionLike): Long = {
+		val nonZeroes = nonZeroDataBytes(tx)
+		val zeroVals = tx.data.length - nonZeroes
+		ManaCost.TRANSACTION + zeroVals * ManaCost.TX_ZERO_DATA + nonZeroes * ManaCost.TX_NO_ZERO_DATA
+	}
+
+	private def nonZeroDataBytes(tx: TransactionLike): Int = {
+		if (ByteUtils.isNullOrEmpty(tx.data)) return 0
+		tx.data.count(each => each != 0)
+	}
 }

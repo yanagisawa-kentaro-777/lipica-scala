@@ -77,14 +77,11 @@ class PeerDiscovery {
 		}
 	}
 
-	private def parsePeerDiscoveryAddresses(addresses: Seq[String]): Seq[PeerInfo] = {
+	private def parsePeerDiscoveryAddresses(addresses: Seq[URI]): Seq[PeerInfo] = {
 		addresses.flatMap {
-			each => {
+			eachUri => {
 				try {
-					val trimmed = each.trim
-					val uri = URI.create(trimmed)
-
-					Option(new PeerInfo(new InetSocketAddress(InetAddress.getByName(uri.getHost), uri.getPort), NodeId.parseHexString(uri.getUserInfo)))
+					Option(new PeerInfo(new InetSocketAddress(InetAddress.getByName(eachUri.getHost), eachUri.getPort), NodeId.parseHexString(eachUri.getUserInfo)))
 				} catch {
 					case e: UnknownHostException =>
 						ErrorLogger.logger.warn("<PeerDiscovery> Unknown host.", e)

@@ -1,7 +1,7 @@
 package org.lipicalabs.lipica.core.config
 
 import java.io.InputStream
-import java.net.{Socket, URI}
+import java.net.{InetAddress, Socket, URI}
 import java.nio.file.{Paths, Path}
 import java.security.SecureRandom
 import java.util.Properties
@@ -25,70 +25,197 @@ import scala.annotation.tailrec
  */
 trait NodePropertiesLike {
 
-	def isFrontier: Boolean
-
+	/**
+	 * このモジュールのバージョンを表す文字列を返します。
+	 */
 	def moduleVersion: String
 
-	def activePeers: Seq[Node]
-
-	def vmTrace: Boolean
-	def vmTraceInitStorageLimit: Int
-	def dumpBlock: Long
-	def dumpDir: String
-
-	def detailsInMemoryStorageLimit: Int
-
-	def databaseDir: String
-	def databaseDir_=(v: String): Unit
-
-	def genesisResourceName: String
-
-	def databaseReset_=(v: Boolean): Unit
-	def databaseReset: Boolean
-
-	def blockchainOnly: Boolean
-
-	def recordBlocks: Boolean
-
-	def cacheFlushMemory: Double
-	def cacheFlushBlocks: Int
-
-	def txOutdatedThreshold: Int
-
+	/**
+	 * 接続するネットワークの識別子を返します。
+	 * （テスト用ネットワーク、本番用ネットワーク、等）
+	 */
 	def networkId: Int
+
+	/**
+	 * このノードの秘密鍵および公開鍵のペアを返します。
+	 */
 	def privateKey: ECKeyPair
+
+	/**
+	 * このノードの公開鍵から算出される、このノードのノードIDを返します。
+	 */
 	def nodeId: NodeId
-	def externalAddress: String
-	def bindAddress: String
+
+	/**
+	 * 外部のネットワーク（例えばインターネット）から
+	 * このノードにアクセスするためのアドレスを返します。
+	 */
+	def externalAddress: InetAddress
+
+	/**
+	 * このノードがbindするアドレス（＝ローカルネットワークのアドレス）を返します。
+	 */
+	def bindAddress: InetAddress
+
+	/**
+	 * このノードがTCPおよびUDPにおいてbindするポート番号を返します。
+	 */
 	def bindPort: Int
 
-	def coinbaseSecret: String
-
+	/**
+	 * このノードが他のノードに対して提示する自ノードの情報に付加する文字列を返します。
+	 */
 	def helloPhrase: String
 
-	def isSyncEnabled: Boolean
-	def maxHashesAsk: Int
-	def maxBlocksAsk: Int
-	def syncPeersCount: Int
+	/**
+	 * ローカルファイルシステム上のデータストア用ディレクトリのパスを返します。
+	 */
+	def dataStoreDir: Path
 
+	/**
+	 * コントラクトにおいて、独立したデータストアを定義せずに
+	 * ストレージ内のデータを保管する条件件数。
+	 * （0でも良い。むしろ0がおすすめかも知れない。）
+	 */
+	def detailsInMemoryStorageLimit: Int
+
+	/**
+	 * データストアを削除するか否か。
+	 * （実用性があまりないので削除を検討。）
+	 */
+	def shouldResetDataStore: Boolean
+
+	/**
+	 * genesisブロックの内容が記述されたリソースファイル名を返します。
+	 * （テストと実稼働とで変えている。）
+	 */
+	def genesisResourceName: String
+
+	/**
+	 * トランザクションの実行や状態の整合性検査を行わない動作モードであるか否かを返します。
+	 * （デバッグ等の便宜用。）
+	 */
+	def blockchainOnly: Boolean
+
+	/**
+	 * ブロックのシリアライズされた表現を、専用のログファイルに出力するか否かを返します。
+	 */
+	def recordBlocks: Boolean
+
+	/**
+	 * メモリ上に溜められた更新情報を、
+	 * 永続化用の領域にフラッシュするトリガーとなるメモリ消費率を返します。
+	 */
+	def cacheFlushMemory: Double
+
+	/**
+	 * メモリ上に溜められた更新情報を、
+	 * 永続化用の領域にフラッシュするトリガーとなる処理ブロック数を返します。
+	 */
+	def cacheFlushBlocks: Int
+
+	/**
+	 * 通信における接続タイムアウトミリ秒を返します。
+	 */
 	def connectionTimeoutMillis: Int
+
+	/**
+	 * 通信における読み取りタイムアウトミリ秒を返します。
+	 */
 	def readTimeoutMillis: Int
 
+	/**
+	 * ネットワークからブロックを取得して
+	 * 自ノードのブロックチェーンに同期させる処理を行うか否かを返します。
+	 */
+	def isSyncEnabled: Boolean
+
+	/**
+	 * ピアに対して一度に要求するブロックハッシュ値の数を返します。
+	 */
+	def maxHashesAsk: Int
+
+	/**
+	 * ピアに対して一度に要求するブロックの数を返します。
+	 */
+	def maxBlocksAsk: Int
+
+	/**
+	 * 同期処理において通信するノードの数を返します。
+	 */
+	def syncPeersCount: Int
+
+	/**
+	 * 自ノードの情報をKADEMLIAのテーブルに含めて
+	 * 他ノードに公開するか否かを返します。
+	 */
 	def isPublicHomeNode: Boolean
 
+	/**
+	 * 自動的なピアの発見を行うか否かを返します。
+	 */
 	def peerDiscoveryEnabled: Boolean
+
+	/**
+	 * 発見されたピアの情報を永続化するか否かを返します。
+	 */
 	def peerDiscoveryPersist: Boolean
+
+	/**
+	 * ピアの発見処理を行うスレッドの数を返します。
+	 */
 	def peerDiscoveryWorkers: Int
-	def seedNodes: Seq[String]
+
+	/**
+	 * ネットワークに参加する起点となるシードノードの並びを返します。
+	 */
+	def seedNodes: Seq[URI]
 
 	def peerDiscoveryTouchSeconds: Int
 	def peerDiscoveryTouchMaxNodes: Int
 
-	def srcBlocksDir: String
+	/**
+	 * ブロックをネットワークから取得するのではなく
+	 * ローカルのファイルから読み取る場合の、
+	 * ファイルが配置されているディレクトリのパスを返します。
+	 */
+	def srcBlocksDir: Option[Path]
 
+	def txOutdatedThreshold: Int
+
+	/**
+	 * このノードにおいて、REST APIサーバーを有効化するか否かを返します。
+	 */
 	def restApiEnabled: Boolean
-	def restApiBindAddress: String
+
+	/**
+	 * REST APIにおけるbindアドレスを返します。
+	 */
+	def restApiBindAddress: InetAddress
+
+	/**
+	 * REST APIにおけるbindポート番号を返します。
+	 */
 	def restApiBindPort: Int
+
+	/**
+	 * ブロック報酬を変えるフラグ。
+	 * （ユニットテスト用と実稼働用途で値を変えている。）
+	 */
+	def isFrontier: Boolean
+
+	def activePeers: Seq[Node]
+
+	def vmTrace: Boolean
+
+	def vmTraceInitStorageLimit: Int
+
+	def dumpBlock: Long
+
+	def dumpDir: String
+
+	//TODO 痕跡的。不要。
+	def coinbaseSecret: String
 
 }
 
@@ -140,19 +267,13 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 
 	override def detailsInMemoryStorageLimit: Int = this.config.getInt("details.inmemory.storage.limit")
 
-	private val databaseDirRef: AtomicReference[String] = new AtomicReference(this.config.getString("database.dir"))
-	override def databaseDir_=(v: String): Unit = {
-		this.databaseDirRef.set(v)
-	}
-	override def databaseDir: String = Paths.get(this.databaseDirRef.get).toAbsolutePath.toString
+	private val dataStoreDirRef: AtomicReference[Path] = new AtomicReference(Paths.get(this.config.getString("datastore.dir")).toAbsolutePath)
+	override def dataStoreDir: Path = this.dataStoreDirRef.get
+
+	private val resetDataStoreRef: AtomicBoolean = new AtomicBoolean(this.config.getBoolean("datastore.reset"))
+	override def shouldResetDataStore: Boolean = this.resetDataStoreRef.get
 
 	override def genesisResourceName: String = this.config.getString("genesis")
-
-	private val databaseResetRef: AtomicBoolean = new AtomicBoolean(this.config.getBoolean("database.reset"))
-	override def databaseReset_=(v: Boolean): Unit = {
-		this.databaseResetRef.set(v)
-	}
-	override def databaseReset: Boolean = this.databaseResetRef.get
 
 	//ブロック内のコード実行を行わない場合、blockchainOnlyとする。
 	private val blockchainOnlyRef: AtomicBoolean = new AtomicBoolean(this.config.getBoolean("blockchain.only"))
@@ -219,61 +340,61 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 	 * 他ノードに対して宣伝する、自ノードの体外部アドレスです。
 	 * （典型的には、他ノードがインターネット経由で自ノードに接続しようとする際に利用。）
 	 */
-	private val externalAddressRef: AtomicReference[String] = new AtomicReference[String](null)
-	override def externalAddress: String = {
+	private val externalAddressRef: AtomicReference[InetAddress] = new AtomicReference[InetAddress](null)
+	override def externalAddress: InetAddress = {
 		val result = this.externalAddressRef.get
-		if (!MiscUtils.isNullOrEmpty(result, trim = true)) {
+		if (result ne null) {
 			result
 		} else {
 			this.synchronized {
 				val key = "node.external.address"
-				val candidate =
+				val address: InetAddress =
 					if (this.config.hasPath(key)) {
 						//優先候補：直接設定。
-						this.config.getString(key)
+						InetAddress.getByName(this.config.getString(key))
 					} else {
 						//次善候補：外部サービスに訊いてみる。
-						httpGet(CheckAddressUri).getOrElse {
+						httpGet(CheckAddressUri).map(s => InetAddress.getByName(s)).getOrElse {
 							//最終候補：bindアドレス。
 							bindAddress
 						}
 					}
-				this.externalAddressRef.set(candidate)
-				logger.info("<SystemProperties> External address of this node is set to: %s".format(candidate))
-				candidate
+				this.externalAddressRef.set(address)
+				logger.info("<SystemProperties> External address of this node is set to: %s".format(address))
+				address
 			}
 		}
 	}
 
-	private val bindAddressRef: AtomicReference[String] = new AtomicReference[String](null)
-	override def bindAddress: String = {
+	private val bindAddressRef: AtomicReference[InetAddress] = new AtomicReference[InetAddress](null)
+	override def bindAddress: InetAddress = {
 		val result = this.bindAddressRef.get
-		if (!MiscUtils.isNullOrEmpty(result, trim = true)) {
+		if (result ne null) {
 			result
 		} else {
 			this.synchronized {
 				val key = "node.bind.address"
-				val candidate =
+				val address =
 					if (this.config.hasPath(key)) {
 						//優先候補：直接設定。
-						this.config.getString(key)
+						InetAddress.getByName(this.config.getString(key))
 					} else {
 						//次善候補：外部サービスに訊いてみる。
 						val socket = new Socket("www.google.com", 80)
 						try {
-							val address = socket.getLocalAddress.getHostAddress
-							if (!MiscUtils.isNullOrEmpty(address, trim = true)) {
+							val address = socket.getLocalAddress
+							if (address ne null) {
 								address
 							} else {
-								"0.0.0.0"
+								InetAddress.getByName("0.0.0.0")
 							}
 						} finally {
 							MiscUtils.closeIfNotNull(socket)
 						}
 					}
-				this.bindAddressRef.set(candidate)
-				logger.info("<SystemProperties> Bind address of this node is set to: %s".format(candidate))
-				candidate
+				this.bindAddressRef.set(address)
+				logger.info("<SystemProperties> Bind address of this node is set to: %s".format(address))
+				address
 			}
 		}
 	}
@@ -296,17 +417,32 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 	override def peerDiscoveryEnabled: Boolean = this.config.getBoolean("peer.discovery.enabled")
 	override def peerDiscoveryPersist: Boolean = this.config.getBoolean("peer.discovery.persist")
 	override def peerDiscoveryWorkers: Int = this.config.getInt("peer.discovery.workers")
-	override def seedNodes: Seq[String] = {
+	override def seedNodes: Seq[URI] = {
 		import scala.collection.JavaConversions._
-		this.config.getStringList("peer.discovery.seed.nodes")
+		val strings = this.config.getStringList("peer.discovery.seed.nodes")
+		strings.map(s => URI.create(s.trim))
 	}
 
 	override def peerDiscoveryTouchSeconds: Int = this.config.getInt("peer.discovery.touch.period")
 	override def peerDiscoveryTouchMaxNodes: Int = this.config.getInt("peer.discovery.touch.max.nodes")
-	override def srcBlocksDir: String = getOrElse(this.config, "src.blocks.dir", "")
+	override def srcBlocksDir: Option[Path] = {
+		val s = getOrElse(this.config, "src.blocks.dir", "")
+		if (s.nonEmpty) {
+			Option(Paths.get(s.trim).toAbsolutePath)
+		} else {
+			None
+		}
+	}
 
 	override def restApiEnabled: Boolean = this.config.getBoolean("api.rest.enabled")
-	override def restApiBindAddress: String = this.config.getString("api.rest.bind.address")
+	override def restApiBindAddress: InetAddress = {
+		val s = this.config.getString("api.rest.bind.address")
+		if (!MiscUtils.isNullOrEmpty(s, trim = true)) {
+			InetAddress.getByName(s)
+		} else {
+			InetAddress.getByName("0.0.0.0")
+		}
+	}
 	override def restApiBindPort: Int = this.config.getInt("api.rest.bind.port")
 
 }
@@ -330,13 +466,7 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 
 	override def vmTrace: Boolean = false
 
-	private var _databaseDir: String = "./work/database/"
-
-	override def databaseDir_=(v: String): Unit = {
-		this._databaseDir = v
-	}
-
-	override def databaseDir: String = Paths.get(this._databaseDir).toAbsolutePath.toString
+	override def dataStoreDir: Path = Paths.get("./work/database/").toAbsolutePath
 
 	override def activePeers: Seq[Node] = Seq.empty
 
@@ -356,7 +486,7 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 		ECKeyPair.fromPrivateKey(Hex.decodeHex("a43d867f16238b897428705cec855b0c5b0ddf3319c1b18f7a00915db83155d9".toCharArray)).decompress
 	}
 
-	override def externalAddress: String = "127.0.0.1"
+	override def externalAddress: InetAddress = InetAddress.getByName("127.0.0.1")
 
 	override def maxHashesAsk: Int = 10000
 
@@ -370,7 +500,7 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 
 	override def networkId: Int = 1
 
-	override def srcBlocksDir: String = ""
+	override def srcBlocksDir: Option[Path] = None
 
 	override def isFrontier: Boolean = false
 
@@ -380,23 +510,17 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 
 	override def peerDiscoveryEnabled: Boolean = true
 
-	override def bindAddress: String = "0.0.0.0"
+	override def bindAddress: InetAddress = InetAddress.getByName("0.0.0.0")
 
 	override def cacheFlushBlocks: Int = 10000
 
-	override def seedNodes: Seq[String] = Seq.empty
+	override def seedNodes: Seq[URI] = Seq.empty
 
 	override def detailsInMemoryStorageLimit: Int = 100
 
 	override def blockchainOnly: Boolean = false
 
-	private var _databaseReset: Boolean = false
-
-	override def databaseReset_=(v: Boolean): Unit = {
-		this._databaseReset = v
-	}
-
-	override def databaseReset: Boolean = this._databaseReset
+	override def shouldResetDataStore: Boolean = false
 
 	override def maxBlocksAsk: Int = 10000
 
@@ -407,7 +531,7 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 	override def helloPhrase: String = "hello"
 
 	override def restApiEnabled: Boolean = false
-	override def restApiBindAddress: String = ""
+	override def restApiBindAddress: InetAddress = InetAddress.getByName("0.0.0.0")
 	override def restApiBindPort: Int = 0
 }
 

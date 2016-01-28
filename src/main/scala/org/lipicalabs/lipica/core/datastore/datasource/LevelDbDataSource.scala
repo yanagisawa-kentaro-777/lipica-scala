@@ -1,6 +1,6 @@
 package org.lipicalabs.lipica.core.datastore.datasource
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Path}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import org.iq80.leveldb.{DBException, CompressionType, DB, Options}
@@ -37,7 +37,7 @@ class LevelDbDataSource(_name: String, private val options: Options) extends Key
 			if (logger.isDebugEnabled) {
 				logger.debug("<LevelDBDS> Opening database: %s".format(this.name))
 			}
-			val dbPath = Paths.get(NodeProperties.CONFIG.databaseDir, this.name)
+			val dbPath = NodeProperties.CONFIG.dataStoreDir.resolve(this.name)
 			Files.createDirectories(dbPath.getParent)
 
 			if (logger.isDebugEnabled) {

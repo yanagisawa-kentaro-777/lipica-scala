@@ -90,7 +90,7 @@ class NodeManager(val table: NodeTable, val key: ECKeyPair, val dataSource: KeyV
 
 	private def dbRead(): Unit = {
 		try {
-			if (NodeProperties.CONFIG.databaseReset) {
+			if (NodeProperties.CONFIG.shouldResetDataStore) {
 				this.dataSource.deleteAll()
 			}
 			val comparator = new Comparator[NodeStatistics.Persistent] {

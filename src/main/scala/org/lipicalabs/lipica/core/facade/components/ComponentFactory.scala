@@ -1,8 +1,6 @@
 package org.lipicalabs.lipica.core.facade.components
 
 import java.io.Closeable
-import java.net.URI
-import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 
 import com.sleepycat.je.Environment
@@ -40,7 +38,7 @@ object ComponentFactory {
 	private val bdbEnvOrNone: Option[Environment] =
 		if (isWindows) {
 			//Windowsでは、JNI経由でLevelDBを使用するとバグを踏むので、回避のためにBDB JEを使う。
-			Some(BdbJeDataSource.createDefaultEnvironment(Paths.get(NodeProperties.CONFIG.databaseDir)))
+			Some(BdbJeDataSource.createDefaultEnvironment(NodeProperties.CONFIG.dataStoreDir))
 		} else {
 			None
 		}
@@ -105,7 +103,7 @@ object ComponentFactory {
 		val dataSource = openKeyValueDataSource("nodestats_db")
 		put(dataSource)
 		val result = NodeManager.create(dataSource)
-		result.seedNodes = NodeProperties.CONFIG.seedNodes.map(s => URI.create(s)).map(uri => Node(uri))
+		result.seedNodes = NodeProperties.CONFIG.seedNodes.map(uri => Node(uri))
 		result
 	}
 
