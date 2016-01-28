@@ -15,7 +15,7 @@ import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
 import org.lipicalabs.lipica.core.utils.ErrorLogger
-import org.lipicalabs.lipica.utils.MiscUtils
+import org.lipicalabs.lipica.utils.{Version, MiscUtils}
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -28,7 +28,7 @@ trait NodePropertiesLike {
 	/**
 	 * このモジュールのバージョンを表す文字列を返します。
 	 */
-	def moduleVersion: String
+	def moduleVersion: Version
 
 	/**
 	 * 接続するネットワークの識別子を返します。
@@ -232,19 +232,16 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 	private val isFrontierRef = new AtomicBoolean(true)
 	override def isFrontier: Boolean = this.isFrontierRef.get
 
-	override def moduleVersion: String = {
+	override def moduleVersion: Version = {
 		val properties = new Properties()
 		withSystemResource[Unit]("lipica_version.properties") {
 			in => properties.load(in)
 		}
 		val version = properties.getProperty("version")
 		val modifier = properties.getProperty("modifier")
+		val build = properties.getProperty("build")
 
-		if (MiscUtils.isNullOrEmpty(modifier, trim = true)) {
-			version
-		} else {
-			version + "-" + modifier
-		}
+		Version.parse(version, option(modifier), option(build)).right.get
 	}
 
 	override def activePeers: Seq[Node] = {
@@ -454,7 +451,7 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 
 	override def dumpDir: String = "./work/dump"
 
-	override def moduleVersion: String = "0.5.0"
+	override def moduleVersion: Version = Version.zero
 
 	override def peerDiscoveryWorkers: Int = 8
 
@@ -602,6 +599,14 @@ object NodeProperties {
 			config.getString(key).trim
 		} else {
 			value
+		}
+	}
+
+	private def option(s: String): Option[String] = {
+		if (MiscUtils.isNullOrEmpty(s, trim = true)) {
+			None
+		} else {
+			Some(s.trim)
 		}
 	}
 

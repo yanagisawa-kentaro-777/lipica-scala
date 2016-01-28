@@ -63,7 +63,7 @@ object P2PMessageFactory {
 				osName
 			}
 		val helloPhrase = NodeProperties.CONFIG.helloPhrase
-		String.format("Lipica/%s/%s/%s/Scala".format(version, helloPhrase, system))
+		String.format("Lipica/%s/%s/%s/Scala".format(version.toCanonicalString, helloPhrase, system))
 	}
 
 }

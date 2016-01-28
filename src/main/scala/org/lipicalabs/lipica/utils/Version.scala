@@ -9,11 +9,52 @@ package org.lipicalabs.lipica.utils
  * 2016/01/28 17:43
  * YANAGISAWA, Kentaro
  */
-case class Version(major: Int, minor: Int, patch: Int, modifierOrNone: Option[String], buildLabelOrNone: Option[String]) {
-	//
+case class Version(major: Int, minor: Int, patch: Int, modifierOrNone: Option[String], buildLabelOrNone: Option[String]) extends Comparable[Version] {
+
+	override def compareTo(another: Version): Int = {
+		if (this.major < another.major) {
+			-1
+		} else if (this.major > another.major) {
+			1
+		} else if (this.minor < another.minor) {
+			-1
+		} else if (this.minor > another.minor) {
+			1
+		} else if (this.patch < another.patch) {
+			-1
+		} else if (this.patch > another.patch) {
+			1
+		} else {
+			this.buildLabelOrNone.getOrElse("").compareTo(another.buildLabelOrNone.getOrElse(""))
+		}
+	}
+
+	override def hashCode: Int = this.toCanonicalString.hashCode
+
+	override def equals(o: Any): Boolean = {
+		try {
+			val another = o.asInstanceOf[Version]
+			(this.major == another.major) && (this.minor == another.minor) && (this.patch == another.patch) &&
+				(this.modifierOrNone == another.modifierOrNone) && (this.buildLabelOrNone == another.buildLabelOrNone)
+		} catch {
+			case any: Throwable => false
+		}
+	}
+
+	def toCanonicalString: String = {
+		val version = "%d.%d.%d".format(this.major, this.minor, this.patch)
+		val modifier = this.modifierOrNone.map(s => "-" + s).getOrElse("")
+		val build = this.buildLabelOrNone.map(s => " BUILD:" + s).getOrElse("")
+		version + modifier + build
+	}
+
+	override def toString: String = toCanonicalString
+
 }
 
 object Version {
+
+	val zero = Version(0, 0, 0, None, None)
 
 	def parse(s: String): Either[Throwable, Version] = {
 		try {
@@ -23,24 +64,32 @@ object Version {
 				//modifierがある。
 				val versionPart = trimmed.substring(0, index)
 				val modifierPart = trimmed.substring(index + 1)
-				apply(versionPart, modifierPart)
+				parse(versionPart, modifierPart)
 			} else {
 				//modifierがない。
-				apply(trimmed, null)
+				parse(trimmed, null)
 			}
 		} catch {
 			case any: Throwable => Left(any)
 		}
 	}
 
-	def apply(version: String, modifier: String): Either[Throwable, Version] = {
-		apply(version, modifier, null)
+	def parse(version: String, modifier: String): Either[Throwable, Version] = {
+		parse(version, modifier, null)
 	}
 
-	def apply(version: String, modifier: String, build: String): Either[Throwable, Version] = {
+	def parse(version: String, modifier: String, build: String): Either[Throwable, Version] = {
 		parseDots(version) match {
 			case Right(versions) =>
 				Right(Version(versions.major, versions.minor, versions.patch, Option(modifier), Option(build)))
+			case Left(e) => Left(e)
+		}
+	}
+
+	def parse(version: String, modifier: Option[String], build: Option[String]): Either[Throwable, Version] = {
+		parseDots(version) match {
+			case Right(versions) =>
+				Right(Version(versions.major, versions.minor, versions.patch, modifier, build))
 			case Left(e) => Left(e)
 		}
 	}
