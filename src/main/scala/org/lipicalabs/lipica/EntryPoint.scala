@@ -53,7 +53,7 @@ object EntryPoint {
 			Lipica.startup()
 
 			//REST APIサーバーを起動する。
-			val config = NodeProperties.CONFIG
+			val config = NodeProperties.instance
 			if (config.restApiEnabled) {
 				val webBindAddress = new InetSocketAddress(config.restApiBindAddress, config.restApiBindPort)
 				RestApiServer.startup(webBindAddress)
@@ -66,6 +66,10 @@ object EntryPoint {
 
 			this.isStartedRef.set(true)
 			logger.info("<EntryPoint> STARTUP COMPLETE.")
+
+			//sample.
+			val lipica = Lipica.instance
+			lipica.addListener(new SampleListener(lipica))
 		}
 	}
 

@@ -37,12 +37,12 @@ class ProgramTrace(private val programContext: ProgramContext) {
 	private var storageSize: Int = 0
 	private var contractAddress: String = null
 
-	if (NodeProperties.CONFIG.vmTrace && (programContext ne null)) {
+	if (NodeProperties.instance.vmTrace && (programContext ne null)) {
 		this.contractAddress = programContext.ownerAddress.last20Bytes.toHexString
 		getContractDetails(programContext) match {
 			case Some(contractDetails) =>
 				this.storageSize = contractDetails.storageSize
-				if (this.storageSize <= NodeProperties.CONFIG.vmTraceInitStorageLimit) {
+				if (this.storageSize <= NodeProperties.instance.vmTraceInitStorageLimit) {
 					this.fullStorage = true
 					val address = programContext.ownerAddress.last20Bytes.toHexString
 					contractDetails.storageContent.foreach { entry => {

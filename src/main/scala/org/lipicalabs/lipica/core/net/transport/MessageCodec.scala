@@ -40,7 +40,7 @@ class MessageCodec extends ByteToMessageCodec[Message] {
 	private var _frameCodec: FrameCodec = null
 	def frameCodec: FrameCodec = this._frameCodec
 
-	private var _myKey = NodeProperties.CONFIG.privateKey
+	private var _myKey = NodeProperties.instance.privateKey
 	def myKey: ECKeyPair = this._myKey
 
 	private var _nodeId: NodeId = null

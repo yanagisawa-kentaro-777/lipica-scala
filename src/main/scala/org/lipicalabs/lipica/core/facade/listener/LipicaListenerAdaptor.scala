@@ -7,9 +7,12 @@ import org.lipicalabs.lipica.core.net.p2p.HelloMessage
 import org.lipicalabs.lipica.core.net.peer_discovery.Node
 
 /**
+ * 何もしないリスナーのクラスです。
+ * サブクラス継承用。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/25 15:27
- * YANAGISAWA, Kentaro
+ * @author YANAGISAWA, Kentaro
  */
 class LipicaListenerAdaptor extends LipicaListener {
 

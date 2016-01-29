@@ -7,6 +7,8 @@ import org.lipicalabs.lipica.core.net.p2p.HelloMessage
 import org.lipicalabs.lipica.core.net.peer_discovery.Node
 
 /**
+ * 外部アプリケーションが重要なイベントを捕捉するために実装すべきtraitです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/22 13:34
  * YANAGISAWA, Kentaro
@@ -35,14 +37,34 @@ trait LipicaListener {
 	 */
 	def onBlock(block: Block, receipts: Iterable[TransactionReceipt]): Unit
 
+	/**
+	 * 自ノード上でトランザクションが実行された際に呼びだされます。
+	 */
 	def onTransactionExecuted(summary: TransactionExecutionSummary): Unit
-	def onVMTraceCreated(txHash: String, trace: String): Unit
+
+	/**
+	 * Transactionsメッセージでトランザクションを受信した際に呼び出されます。
+	 */
 	def onPendingTransactionsReceived(transactions: Iterable[TransactionLike]): Unit
 
+	/**
+	 * メッセージ送信時に呼び出されます。
+	 */
 	def onSendMessage(message: Message): Unit
+
+	/**
+	 * メッセージ受信時に呼び出されます。
+	 */
 	def onReceiveMessage(message: Message): Unit
+
+	/**
+	 * Statusメッセージの受信時に呼び出されます。
+	 */
 	def onLpcStatusUpdated(node: Node, status: StatusMessage)
 
+	/**
+	 * P2Pハンドシェイク完了時に呼び出されます。
+	 */
 	def onHandshakePeer(node: Node, message: HelloMessage): Unit
 
 	/**
@@ -50,4 +72,9 @@ trait LipicaListener {
 	 * @param message 通知メッセージ。
 	 */
 	def trace(message: String): Unit
+
+	/**
+	 * VMの詳細出力が実行された際に呼び出されます。
+	 */
+	def onVMTraceCreated(txHash: String, trace: String): Unit
 }

@@ -40,12 +40,12 @@ class PeerServer {
 
 			b.option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.valueOf(true))
 			b.option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT)
-			b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf(NodeProperties.CONFIG.connectionTimeoutMillis))
+			b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf(NodeProperties.instance.connectionTimeoutMillis))
 
 			b.handler(new LoggingHandler)
 			b.childHandler(this.channelInitializer)
 
-			logger.info("<PeerServer> [%s] Listening for incoming connections on %s".format(NodeProperties.CONFIG.nodeId, address))
+			logger.info("<PeerServer> [%s] Listening for incoming connections on %s".format(NodeProperties.instance.nodeId, address))
 			val f = b.bind(address).sync()
 			f.channel.closeFuture.sync()
 

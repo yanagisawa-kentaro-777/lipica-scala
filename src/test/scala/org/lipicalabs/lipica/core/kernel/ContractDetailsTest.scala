@@ -157,7 +157,7 @@ class ContractDetailsTest extends Specification {
 			original.address = address
 			original.code = code
 
-			(0 until NodeProperties.CONFIG.detailsInMemoryStorageLimit + 10).foreach {
+			(0 until NodeProperties.instance.detailsInMemoryStorageLimit + 10).foreach {
 				_ => {
 					val key = randomWord
 					val value = randomWord
@@ -199,7 +199,7 @@ class ContractDetailsTest extends Specification {
 			original.address = address
 			original.code = code
 
-			(0 until NodeProperties.CONFIG.detailsInMemoryStorageLimit - 1).foreach {
+			(0 until NodeProperties.instance.detailsInMemoryStorageLimit - 1).foreach {
 				_ => {
 					val key = randomWord
 					val value = randomWord

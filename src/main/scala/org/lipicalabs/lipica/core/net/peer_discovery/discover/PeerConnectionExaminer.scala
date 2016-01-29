@@ -100,9 +100,9 @@ class PeerConnectionExaminer {
 object PeerConnectionExaminer {
 	private val logger = LoggerFactory.getLogger("discovery")
 
-	private val ConnectThreads = NodeProperties.CONFIG.peerDiscoveryWorkers
-	private val ReconnectPeriod = NodeProperties.CONFIG.peerDiscoveryTouchSeconds * 1000L
-	private val ReconnectMaxPeers = NodeProperties.CONFIG.peerDiscoveryTouchMaxNodes
+	private val ConnectThreads = NodeProperties.instance.peerDiscoveryWorkers
+	private val ReconnectPeriod = NodeProperties.instance.peerDiscoveryTouchSeconds * 1000L
+	private val ReconnectMaxPeers = NodeProperties.instance.peerDiscoveryTouchMaxNodes
 
 
 	class MutablePriorityQueue[T, C <: T](val comparator: Comparator[C]) extends LinkedBlockingDeque[T] {

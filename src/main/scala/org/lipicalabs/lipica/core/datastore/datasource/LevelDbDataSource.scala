@@ -37,7 +37,7 @@ class LevelDbDataSource(_name: String, private val options: Options) extends Key
 			if (logger.isDebugEnabled) {
 				logger.debug("<LevelDBDS> Opening database: %s".format(this.name))
 			}
-			val dbPath = NodeProperties.CONFIG.dataStoreDir.resolve(this.name)
+			val dbPath = NodeProperties.instance.dataStoreDir.resolve(this.name)
 			Files.createDirectories(dbPath.getParent)
 
 			if (logger.isDebugEnabled) {

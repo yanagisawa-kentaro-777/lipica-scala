@@ -26,14 +26,14 @@ class UDPListener {
 
 	import UDPListener._
 
-	private val address: InetAddress = NodeProperties.CONFIG.bindAddress
-	private val port: Int = NodeProperties.CONFIG.bindPort
+	private val address: InetAddress = NodeProperties.instance.bindAddress
+	private val port: Int = NodeProperties.instance.bindPort
 
 	/**
 	 * UDP通信機構の動作を開始します。
 	 */
 	def start(): Boolean = {
-		if (NodeProperties.CONFIG.peerDiscoveryEnabled) {
+		if (NodeProperties.instance.peerDiscoveryEnabled) {
 			val task = new Runnable {
 				override def run(): Unit = {
 					try {

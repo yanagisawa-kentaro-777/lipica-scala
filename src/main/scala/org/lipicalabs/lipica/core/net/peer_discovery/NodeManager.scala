@@ -53,7 +53,7 @@ class NodeManager(val table: NodeTable, val key: ECKeyPair, val dataSource: KeyV
 
 	private val inboundOnlyFromKnownNodes: Boolean = true
 
-	private val discoveryEnabled = NodeProperties.CONFIG.peerDiscoveryEnabled
+	private val discoveryEnabled = NodeProperties.instance.peerDiscoveryEnabled
 
 	private val listeners: mutable.Map[DiscoverListener, ListenerHandler] = JavaConversions.mapAsScalaMap(new util.IdentityHashMap[DiscoverListener, ListenerHandler])
 
@@ -83,14 +83,14 @@ class NodeManager(val table: NodeTable, val key: ECKeyPair, val dataSource: KeyV
 		for (node <- this.seedNodes) {
 			getNodeHandler(node)
 		}
-		for (node <- NodeProperties.CONFIG.activePeers) {
-			getNodeHandler(node).nodeStatistics.setPredefined(true)
-		}
+//		for (node <- NodeProperties.CONFIG.activePeers) {
+//			getNodeHandler(node).nodeStatistics.setPredefined(true)
+//		}
 	}
 
 	private def dbRead(): Unit = {
 		try {
-			if (NodeProperties.CONFIG.shouldResetDataStore) {
+			if (NodeProperties.instance.shouldResetDataStore) {
 				this.dataSource.deleteAll()
 			}
 			val comparator = new Comparator[NodeStatistics.Persistent] {
@@ -284,17 +284,17 @@ object NodeManager {
 	private val logger = LoggerFactory.getLogger("discovery")
 
 	private val DummyStat = new NodeStatistics(new Node(NodeId.empty, new InetSocketAddress(InetAddress.getByAddress(new Array[Byte](4)), 0)))
-	private val Persist: Boolean = NodeProperties.CONFIG.peerDiscoveryPersist
+	private val Persist: Boolean = NodeProperties.instance.peerDiscoveryPersist
 
 	private val ListenerRefreshRate = 1000L
 	private val DbCommitRate = 10000L
 	private val DbMaxLoadNodes = 100
 
 	def create(dataSource: KeyValueDataSource): NodeManager = {
-		val key = NodeProperties.CONFIG.privateKey
-		val homeNodeAddress = new InetSocketAddress(NodeProperties.CONFIG.externalAddress, NodeProperties.CONFIG.bindPort)
-		val homeNode = new Node(NodeProperties.CONFIG.nodeId, homeNodeAddress)
-		val table = new NodeTable(homeNode, NodeProperties.CONFIG.isPublicHomeNode)
+		val key = NodeProperties.instance.privateKey
+		val homeNodeAddress = new InetSocketAddress(NodeProperties.instance.externalAddress, NodeProperties.instance.bindPort)
+		val homeNode = new Node(NodeProperties.instance.nodeId, homeNodeAddress)
+		val table = new NodeTable(homeNode, NodeProperties.instance.isPublicHomeNode)
 		new NodeManager(table, key, dataSource)
 	}
 

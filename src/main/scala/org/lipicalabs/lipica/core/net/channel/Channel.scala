@@ -72,7 +72,7 @@ class Channel {
 	def isDiscoveryMode: Boolean = this._discoveryMode
 
 	def init(pipeline: ChannelPipeline, remoteNodeId: NodeId, aDiscoveryMode: Boolean): Unit = {
-		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(NodeProperties.CONFIG.readTimeoutMillis, TimeUnit.MILLISECONDS))
+		pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(NodeProperties.instance.readTimeoutMillis, TimeUnit.MILLISECONDS))
 		pipeline.addLast("initiator", messageCodec.initiator)
 		pipeline.addLast("messageCodec", messageCodec)
 
@@ -88,7 +88,7 @@ class Channel {
 		this.messageCodec.setP2PMessageFactory(new P2PMessageFactory)
 
 		this.shhHandler.messageQueue = this.messageQueue
-		this.shhHandler.privateKey = NodeProperties.CONFIG.privateKey
+		this.shhHandler.privateKey = NodeProperties.instance.privateKey
 		this.messageCodec.setShhMessageFactory(new ShhMessageFactory)
 
 		this.bzzHandler.messageQueue = this.messageQueue

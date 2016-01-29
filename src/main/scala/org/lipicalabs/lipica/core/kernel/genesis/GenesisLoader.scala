@@ -16,7 +16,7 @@ import org.lipicalabs.lipica.core.utils._
 object GenesisLoader {
 
 	def loadGenesisBlock: Genesis = {
-		loadGenesisBlock(NodeProperties.CONFIG.genesisResourceName)
+		loadGenesisBlock(NodeProperties.instance.genesisResourceName)
 	}
 
 	def loadGenesisBlock(genesisFileName: String): Genesis = {

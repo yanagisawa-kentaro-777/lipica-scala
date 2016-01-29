@@ -13,7 +13,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
-import org.lipicalabs.lipica.core.net.peer_discovery.{NodeId, Node}
+import org.lipicalabs.lipica.core.net.peer_discovery.NodeId
 import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.lipicalabs.lipica.utils.{Version, MiscUtils}
 import org.slf4j.LoggerFactory
@@ -215,19 +215,19 @@ trait NodePropertiesLike {
 	def isFrontier: Boolean
 
 	/**
-	 * ブロックチェーンに連結するブロックの中身を、特定のログファイルに出力するかを返します。
-	 * @return
+	 * トランザクション実行中に、特に詳細なダンプを出力すべきブロック番号があれば、それを返します。
 	 */
 	def dumpBlock: Long
 
-	def dumpDir: String
-
-	def activePeers: Seq[Node]
-
+	/**
+	 * トランザクション実行時に、特に詳細な記録を出力するか否かを返します。
+	 */
 	def vmTrace: Boolean
 
+	/**
+	 * トランザクション実行時に、特に詳細な記録を出力する場合の対象ストレージエントリ数の上限を返します。
+	 */
 	def vmTraceInitStorageLimit: Int
-
 
 	//TODO 痕跡的。不要。
 	def coinbaseSecret: String
@@ -259,23 +259,10 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 		Version.parse(version, option(modifier), option(build)).right.get
 	}
 
-	override def activePeers: Seq[Node] = {
-		import scala.collection.JavaConversions._
-		val key = "active.peers"
-		if (this.config.hasPath(key)) {
-			this.config.getStringList(key).map {
-				each => Node(new URI(each))
-			}
-		} else {
-			Seq.empty
-		}
-	}
-
 	override def vmTrace: Boolean = this.config.getBoolean("vm.structured.trace")
 	override def vmTraceInitStorageLimit: Int = this.config.getInt("vm.structured.init.storage.limit")
 
 	override def dumpBlock: Long = this.config.getLong("dump.block")
-	override def dumpDir: String = this.config.getString("dump.dir")
 
 	override def detailsInMemoryStorageLimit: Int = this.config.getInt("details.inmemory.storage.limit")
 
@@ -462,9 +449,7 @@ class NodeProperties(val config: Config) extends NodePropertiesLike {
 /**
  * ユニットテスト用のダミー設定クラスです。
  */
-object DummyNodeProperties$ extends NodePropertiesLike {
-
-	override def dumpDir: String = "./work/dump"
+object DummyNodeProperties extends NodePropertiesLike {
 
 	override def moduleVersion: Version = Version.zero
 
@@ -479,8 +464,6 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 	override def vmTrace: Boolean = false
 
 	override def dataStoreDir: Path = Paths.get("./work/database/").toAbsolutePath
-
-	override def activePeers: Seq[Node] = Seq.empty
 
 	override def isPublicHomeNode: Boolean = true
 
@@ -550,10 +533,17 @@ object DummyNodeProperties$ extends NodePropertiesLike {
 object NodeProperties {
 	private val logger = LoggerFactory.getLogger("general")
 
-	private val CheckAddressUri: String = "http://checkip.amazonaws.com"
+	/**
+	 * 外部ネットワークから見た自ノードのIPアドレスを確認するためのサービスのURI。
+	 */
+	private val CheckAddressUri: URI = URI.create("http://checkip.amazonaws.com")
 
-	private val configRef = new AtomicReference[NodePropertiesLike](null)
+	private val configRef = new AtomicReference[NodePropertiesLike](DummyNodeProperties)
 
+	/**
+	 * 渡された設定ファイルから属性を読み取り、NodePropertiesのインスタンスを生成し、
+	 * そのインスタンスを記憶した上で返します。
+	 */
 	def loadFromFile(path: Path): NodeProperties = {
 		this.synchronized {
 			val config = ConfigFactory.parseFile(path.toAbsolutePath.toFile)
@@ -563,17 +553,10 @@ object NodeProperties {
 		}
 	}
 
-	def CONFIG: NodePropertiesLike = {
-		val result = this.configRef.get
-		if (result eq null) {
-			//ユニットテスト用。
-			//TODO もう少しマシなやり方は？
-			DummyNodeProperties$
-		} else {
-			//通常ルート。
-			result
-		}
-	}
+	/**
+	 * 記憶されている、設定オブジェクトのインスタンスを返します。
+	 */
+	def instance: NodePropertiesLike = this.configRef.get
 
 	private def withSystemResource[T](resourceName: String)(proc: (InputStream) => T): T = {
 		val in = ClassLoader.getSystemResourceAsStream(resourceName)
@@ -584,7 +567,7 @@ object NodeProperties {
 		}
 	}
 
-	private def httpGet(uri: String): Option[String] = {
+	private def httpGet(uri: URI): Option[String] = {
 		val httpClient = HttpClients.createDefault
 		try {
 			val httpGet = new HttpGet(uri)

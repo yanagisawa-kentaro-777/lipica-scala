@@ -45,7 +45,7 @@ class PeerClient {
 			val b = (new Bootstrap).group(ExecutorPool.instance.clientGroup).channel(classOf[NioSocketChannel]).
 				option(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE).
 				option(ChannelOption.MESSAGE_SIZE_ESTIMATOR, DefaultMessageSizeEstimator.DEFAULT).
-				option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Integer.valueOf(NodeProperties.CONFIG.connectionTimeoutMillis)).
+				option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Integer.valueOf(NodeProperties.instance.connectionTimeoutMillis)).
 				remoteAddress(address).
 				handler(channelInitializer)
 			//クライアントとして接続する。

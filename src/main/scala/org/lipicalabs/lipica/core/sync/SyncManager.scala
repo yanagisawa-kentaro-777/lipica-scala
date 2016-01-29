@@ -69,7 +69,7 @@ class SyncManager {
 		val task = new Runnable {
 			override def run(): Unit = {
 				queue.init()
-				if (!NodeProperties.CONFIG.isSyncEnabled) {
+				if (!NodeProperties.instance.isSyncEnabled) {
 					logger.info("<SyncManager> SyncManager: OFF.")
 					return
 				}
@@ -95,7 +95,7 @@ class SyncManager {
 						}
 					}, WorkerTimeout, WorkerTimeout, TimeUnit.MILLISECONDS
 				)
-				NodeProperties.CONFIG.activePeers.foreach(each => pool.connect(each))
+				//NodeProperties.CONFIG.activePeers.foreach(each => pool.connect(each))
 				if (logger.isInfoEnabled) {
 					startLogWorker()
 				}
@@ -105,7 +105,7 @@ class SyncManager {
 	}
 
 	def addPeer(peer: Channel): Unit = {
-		if (!NodeProperties.CONFIG.isSyncEnabled) {
+		if (!NodeProperties.instance.isSyncEnabled) {
 			return
 		}
 		if (logger.isTraceEnabled) {
@@ -337,7 +337,7 @@ class SyncManager {
 	}
 
 	private def fillUpPeersPool(): Unit = {
-		val lackSize = NodeProperties.CONFIG.syncPeersCount - this.pool.activeCount
+		val lackSize = NodeProperties.instance.syncPeersCount - this.pool.activeCount
 		if (lackSize <= 0) {
 			return
 		}

@@ -36,7 +36,7 @@ class PeerDiscovery {
 		val monitorExecutor = ExecutorPool.instance.peerDiscoveryMonitor
 		monitorExecutor.execute(this.monitor)
 
-		val peerDataSeq = parsePeerDiscoveryAddresses(NodeProperties.CONFIG.seedNodes)
+		val peerDataSeq = parsePeerDiscoveryAddresses(NodeProperties.instance.seedNodes)
 		addPeers(peerDataSeq)
 
 		this.peers.foreach(each => startWorker(each))

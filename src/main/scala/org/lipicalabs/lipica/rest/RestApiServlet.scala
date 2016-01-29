@@ -52,9 +52,9 @@ class RestApiServlet extends ScalatraServlet {
 				"Active Peers:%,d\n%s\n\n" + "Banned Peers:%,d\n%s\n\n" + "Pending Peers:%,d\n\n" +
 				"NumNodeHandlers:%,d\nNumNodesInTable:%,d\n\n" +
 				"Threads: %,d\n\n").format(
-			NodeProperties.CONFIG.nodeId,
-			NodeProperties.CONFIG.externalAddress,
-			NodeProperties.CONFIG.bindAddress,
+			NodeProperties.instance.nodeId,
+			NodeProperties.instance.externalAddress,
+			NodeProperties.instance.bindAddress,
 			startedTime,
 
 			bestBlock.blockNumber, bestBlock.hash.toShortString,

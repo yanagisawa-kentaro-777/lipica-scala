@@ -43,9 +43,9 @@ class Wallet {
 		notifyListeners()
 	}
 
-	def importKey(privateKey: ImmutableBytes): Unit = {
+	def importPrivateKey(privateKey: ImmutableBytes): Unit = {
 		val account = new Account
-		account.init(ECKeyPair.fromPrivateKey(privateKey.toPositiveBigInt.bigInteger))
+		account.init(ECKeyPair.fromPrivateKey(privateKey.toPositiveBigInt))
 		val address = account.ecKey.toAddress
 		this.rows.put(address, account)
 		notifyListeners()
@@ -104,7 +104,7 @@ class Wallet {
 	}
 
 	/**
-	 * gethの方式に従ったwalletファイルを複合
+	 * gethの方式に従ったwalletファイルを復号して、平文のバイト列を返します。
 	 */
 	def decrypt(cipherText: ImmutableBytes, password: String, iv: ImmutableBytes, dklen: Int, N: Int, r: Int, p: Int, salt: ImmutableBytes): ImmutableBytes = {
 		val key = ImmutableBytes(SCrypt.scrypt(

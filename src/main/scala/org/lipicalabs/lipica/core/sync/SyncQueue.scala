@@ -233,7 +233,7 @@ class SyncQueue(private val hashStoreDataSource: KeyValueDataSource, private val
 	 * 設定によって決められた個数のハッシュ値を、
 	 * ブロック取得のために払い出します。
 	 */
-	def pollHashes: Seq[DigestValue] = this.hashStore.pollBatch(NodeProperties.CONFIG.maxBlocksAsk)
+	def pollHashes: Seq[DigestValue] = this.hashStore.pollBatch(NodeProperties.instance.maxBlocksAsk)
 
 	def logHashQueueSize(): Unit = logger.info("<SyncQueue> Block hashes list size = %,d".format(this.hashStore.size))
 

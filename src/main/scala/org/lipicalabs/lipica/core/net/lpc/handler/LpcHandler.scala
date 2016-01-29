@@ -1,5 +1,7 @@
 package org.lipicalabs.lipica.core.net.lpc.handler
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.{Block, Blockchain, TransactionLike}
@@ -16,9 +18,11 @@ import org.slf4j.LoggerFactory
 import scala.collection.{JavaConversions, mutable}
 
 /**
+ * ブロックやトランザクションを取り扱うプロトコルのハンドラクラスです。
+ *
  * Created by IntelliJ IDEA.
- * 2015/12/10 20:05
- * YANAGISAWA, Kentaro
+ * @since 2015/12/10 20:05
+ * @author YANAGISAWA, Kentaro
  */
 abstract class LpcHandler(override val version: LpcVersion) extends SimpleChannelInboundHandler[LpcMessage] with Lpc {
 
@@ -51,9 +55,10 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	protected var syncDone: Boolean = false
 
 
-	protected var _processTransactions: Boolean = false
-	override def enableTransactions() = this._processTransactions = true
-	override def disableTransactions() = this._processTransactions = false
+	protected val processTransactionsRef = new AtomicBoolean(false)
+	private def shouldProcessTransactions: Boolean = this.processTransactionsRef.get
+	override def enableTransactions() = this.processTransactionsRef.set(true)
+	override def disableTransactions() = this.processTransactionsRef.set(false)
 
 	protected var bestHash: DigestValue = null
 	override def bestKnownHash = this.bestHash
@@ -65,7 +70,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	override def lastHashToAsk = this._lastHashToAsk
 	override def lastHashToAsk_=(v: DigestValue) = this._lastHashToAsk = v
 
-	protected var _maxHashesAsk = NodeProperties.CONFIG.maxHashesAsk
+	protected var _maxHashesAsk = NodeProperties.instance.maxHashesAsk
 	override def maxHashesAsk = this._maxHashesAsk
 	override def maxHashesAsk_=(v: Int) = this._maxHashesAsk = v
 
@@ -149,7 +154,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 			ctx.pipeline().remove(this)
 			return
 		}
-		if (message.networkId != NodeProperties.CONFIG.networkId) {
+		if (message.networkId != NodeProperties.instance.networkId) {
 			this.lpcState = LpcState.Failed
 			disconnect(ReasonCode.NullIdentity)
 			return
@@ -171,7 +176,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 
 	protected def sendStatus(): Unit = {
 		val protocolVersion = this.version.code
-		val newtworkId = NodeProperties.CONFIG.networkId
+		val newtworkId = NodeProperties.instance.networkId
 		val totalDifficulty = this.blockchain.totalDifficulty
 		val bestHash = this.blockchain.bestBlockHash
 		val message = StatusMessage(protocolVersion, newtworkId, ImmutableBytes.asUnsignedByteArray(totalDifficulty), bestHash, Blockchain.GenesisHash)
@@ -196,7 +201,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	}
 
 	protected def processTransactions(message: TransactionsMessage): Unit = {
-		if (!this._processTransactions) {
+		if (!this.shouldProcessTransactions) {
 			return
 		}
 		this.blockchain.addPendingTransactions(message.transactions.toSet)
@@ -209,7 +214,7 @@ abstract class LpcHandler(override val version: LpcVersion) extends SimpleChanne
 	 * 他ノードからの GetBlockHashes メッセージを処理します。
 	 */
 	protected def processGetBlockHashes(message: GetBlockHashesMessage): Unit = {
-		val hashes = this.blockchain.getSeqOfHashesEndingWith(message.bestHash, message.maxBlocks max NodeProperties.CONFIG.maxHashesAsk)
+		val hashes = this.blockchain.getSeqOfHashesEndingWith(message.bestHash, message.maxBlocks max NodeProperties.instance.maxHashesAsk)
 		sendMessage(BlockHashesMessage(hashes))
 	}
 

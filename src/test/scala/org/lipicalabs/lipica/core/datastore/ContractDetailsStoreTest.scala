@@ -123,7 +123,7 @@ class ContractDetailsStoreTest extends Specification {
 			val addressWithExternalStorage = randomAddress
 			val addressWithInternalStorage = randomAddress
 
-			val limit = NodeProperties.CONFIG.detailsInMemoryStorageLimit
+			val limit = NodeProperties.instance.detailsInMemoryStorageLimit
 
 			val externalStorage = factory.openDataSource(addressWithExternalStorage.toHexString).asInstanceOf[InMemoryDataSource]
 			val internalStorage = new InMemoryDataSource

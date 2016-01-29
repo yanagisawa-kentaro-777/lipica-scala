@@ -14,6 +14,6 @@ object UtilConsts {
 
 	val MinimumDifficulty = BigInt(131072)
 	val DifficultyBoundDivisor: BigInt = BigInt(2048)
-	val DurationLimit = if (NodeProperties.CONFIG.isFrontier) 13 else 8
+	val DurationLimit = if (NodeProperties.instance.isFrontier) 13 else 8
 	val ExpDifficultyPeriod: Int = 100000
 }

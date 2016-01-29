@@ -27,7 +27,7 @@ class BlocksLoader {
 	 * ブロック情報を読み取って、渡されたチェーンに連結します。
 	 */
 	def loadBlocks(chain: Blockchain): Unit = {
-		val pathOrNone = NodeProperties.CONFIG.srcBlocksDir
+		val pathOrNone = NodeProperties.instance.srcBlocksDir
 		if (pathOrNone.isEmpty) {
 			return
 		}

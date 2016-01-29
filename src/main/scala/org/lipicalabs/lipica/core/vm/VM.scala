@@ -44,7 +44,7 @@ class VM {
 	}
 
 	private[vm] def step(program: Program): Unit = {
-		if (NodeProperties.CONFIG.vmTrace) {
+		if (NodeProperties.instance.vmTrace) {
 			program.saveOpTrace()
 		}
 		try {
@@ -90,7 +90,7 @@ class VM {
 				program.spendMana(copyMana, op.name + " (copy usage)")
 			}
 			//詳細デバッグ出力。
-			if (program.getBlockNumber.longValue == NodeProperties.CONFIG.dumpBlock) {
+			if (program.getBlockNumber.longValue == NodeProperties.instance.dumpBlock) {
 				dumpLine(op, manaBefore, manaCost, newMemoryWords, program)
 			}
 

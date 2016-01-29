@@ -241,7 +241,7 @@ class BlockchainImpl(
 	 * ブロックを、再生可能な状態で記録します。
 	 */
 	private def recordBlock(block: Block): Unit = {
-		if (!NodeProperties.CONFIG.recordBlocks) {
+		if (!NodeProperties.instance.recordBlocks) {
 			return
 		}
 		if (this.bestBlock.isGenesis) {
@@ -292,7 +292,7 @@ class BlockchainImpl(
 		}
 
 		//状態の整合性を検査する。
-		if (!NodeProperties.CONFIG.blockchainOnly) {
+		if (!NodeProperties.instance.blockchainOnly) {
 			if (block.stateRoot != this.repository.rootHash) {
 				val message = "<Blockchain> State conflict at %s: %s != %s".format(block.summaryString(short = true), block.stateRoot, this.repository.rootHash)
 				logger.warn(message)
@@ -376,7 +376,7 @@ class BlockchainImpl(
 	}
 
 	private def processBlock(block: Block): Seq[TransactionReceipt] = {
-		if (!block.isGenesis && !NodeProperties.CONFIG.blockchainOnly) {
+		if (!block.isGenesis && !NodeProperties.instance.blockchainOnly) {
 			this.wallet.addTransactions(block.transactions)
 			val result = applyBlock(block)
 			this.wallet.processBlock(block)
@@ -395,7 +395,7 @@ class BlockchainImpl(
 		} else {
 			if (logger.isDebugEnabled) {
 				logger.info("<Blockchain> Skipping block processing: %s (Genesis? %s, BlockchainOnly? %s).".format(
-					block.summaryString(short = true), block.isGenesis, NodeProperties.CONFIG.blockchainOnly)
+					block.summaryString(short = true), block.isGenesis, NodeProperties.instance.blockchainOnly)
 				)
 			}
 			Seq.empty
@@ -480,10 +480,10 @@ class BlockchainImpl(
 	}
 
 	private def needsFlushing(block: Block): Boolean = {
-		if (0d < NodeProperties.CONFIG.cacheFlushMemory) {
-			needsFlushingByMemory(NodeProperties.CONFIG.cacheFlushMemory)
-		} else if (0 < NodeProperties.CONFIG.cacheFlushBlocks) {
-			(block.blockNumber % NodeProperties.CONFIG.cacheFlushBlocks) == 0
+		if (0d < NodeProperties.instance.cacheFlushMemory) {
+			needsFlushingByMemory(NodeProperties.instance.cacheFlushMemory)
+		} else if (0 < NodeProperties.instance.cacheFlushBlocks) {
+			(block.blockNumber % NodeProperties.instance.cacheFlushBlocks) == 0
 		} else {
 			needsFlushingByMemory(0.7d)
 		}
@@ -622,7 +622,7 @@ class BlockchainImpl(
 		val transactions = new ArrayBuffer[TransactionLike]
 		this.pendingTransactionSet.synchronized {
 			for (tx <- this.pendingTransactionSet) {
-				if (NodeProperties.CONFIG.txOutdatedThreshold < blockNumber - tx.blockNumber) {
+				if (NodeProperties.instance.txOutdatedThreshold < blockNumber - tx.blockNumber) {
 					if (logger.isDebugEnabled) {
 						logger.debug("<BlockChainImpl> Deleting outdated tx: hash=%s".format(tx.hash.toShortString))
 					}

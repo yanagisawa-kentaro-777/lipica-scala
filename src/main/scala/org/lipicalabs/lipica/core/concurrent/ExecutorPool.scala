@@ -58,7 +58,7 @@ class ExecutorPool private() {
 	val peerDiscoveryWorker: ThreadPoolExecutor = {
 		val threadFactory = new CountingThreadFactory("peer-discovery-worker")
 		new ThreadPoolExecutor(
-			NodeProperties.CONFIG.peerDiscoveryWorkers, NodeProperties.CONFIG.peerDiscoveryWorkers, 10, TimeUnit.SECONDS,
+			NodeProperties.instance.peerDiscoveryWorkers, NodeProperties.instance.peerDiscoveryWorkers, 10, TimeUnit.SECONDS,
 			new ArrayBlockingQueue[Runnable](1000), threadFactory, new RejectionLogger
 		)
 	}

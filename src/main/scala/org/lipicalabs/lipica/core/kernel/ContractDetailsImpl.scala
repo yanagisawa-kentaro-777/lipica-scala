@@ -54,7 +54,7 @@ class ContractDetailsImpl(private val dataSourceFactory: KeyValueDataSourceFacto
 			if (this.useExternalStorageRef.get) {
 				return true
 			}
-			NodeProperties.CONFIG.detailsInMemoryStorageLimit < this.keys.size
+			NodeProperties.instance.detailsInMemoryStorageLimit < this.keys.size
 		}
 	}
 	//def useExternalStorage_=(v: Boolean): Unit = this.useExternalStorageRef.set(v)

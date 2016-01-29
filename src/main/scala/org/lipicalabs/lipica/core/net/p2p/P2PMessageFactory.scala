@@ -42,7 +42,7 @@ object P2PMessageFactory {
 	val DisconnectMessage: DisconnectMessage = new DisconnectMessage(ReasonCode.Requested)
 
 	def createHelloMessage(nodeId: NodeId): HelloMessage = {
-		createHelloMessage(nodeId, NodeProperties.CONFIG.bindPort)
+		createHelloMessage(nodeId, NodeProperties.instance.bindPort)
 	}
 
 	def createHelloMessage(nodeId: NodeId, listenPort: Int): HelloMessage = {
@@ -52,7 +52,7 @@ object P2PMessageFactory {
 	}
 
 	private def buildHelloAnnouncement: String = {
-		val version = NodeProperties.CONFIG.moduleVersion
+		val version = NodeProperties.instance.moduleVersion
 		val osName = System.getProperty("os.name").trim
 		val system =
 			if (osName.contains(" ")) {
@@ -62,7 +62,7 @@ object P2PMessageFactory {
 			} else {
 				osName
 			}
-		val helloPhrase = NodeProperties.CONFIG.helloPhrase
+		val helloPhrase = NodeProperties.instance.helloPhrase
 		String.format("Lipica/%s/%s/%s/Scala".format(version.toCanonicalString, helloPhrase, system))
 	}
 

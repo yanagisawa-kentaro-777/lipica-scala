@@ -148,7 +148,7 @@
 	<logger name="discovery" level="INFO" additivity="false">
 		<appender-ref ref="NET_TRACE"/>
 	</logger>
-	<logger name="dump" level="DEBUG" additivity="false">
+	<logger name="dump" level="INFO" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="execute" level="INFO" additivity="false">
@@ -175,7 +175,7 @@
 	<logger name="tx_record" level="INFO" additivity="false">
 		<appender-ref ref="TX_RECORD"/>
 	</logger>
-	<logger name="wallet" level="DEBUG" additivity="false">
+	<logger name="wallet" level="INFO" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 	<logger name="wire" level="INFO" additivity="false">
@@ -189,11 +189,11 @@
 		<appender-ref ref="ERRORS"/>
 	</logger>
 
-	<logger name="general" level="DEBUG" additivity="false">
+	<logger name="general" level="INFO" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 
-	<logger name="org.lipicalabs" level="DEBUG" additivity="false">
+	<logger name="org.lipicalabs" level="INFO" additivity="false">
 		<appender-ref ref="NODE_TRACE"/>
 	</logger>
 

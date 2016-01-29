@@ -61,7 +61,7 @@ class Lpc0 extends LpcHandler(V0) {
 	}
 
 	override protected def processGetBlockHashesByNumber(message: GetBlockHashesByNumberMessage): Unit = {
-		val hashes = this.blockchain.getSeqOfHashesStartingFromBlock(message.blockNumber, message.maxBlocks min NodeProperties.CONFIG.maxHashesAsk)
+		val hashes = this.blockchain.getSeqOfHashesStartingFromBlock(message.blockNumber, message.maxBlocks min NodeProperties.instance.maxHashesAsk)
 		sendMessage(BlockHashesMessage(hashes))
 	}
 

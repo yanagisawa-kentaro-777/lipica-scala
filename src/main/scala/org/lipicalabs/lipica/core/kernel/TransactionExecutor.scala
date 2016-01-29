@@ -253,7 +253,7 @@ class TransactionExecutor(
 			}
 		}
 		this.listener.onTransactionExecuted(summary)
-		if (NodeProperties.CONFIG.vmTrace) {
+		if (NodeProperties.instance.vmTrace) {
 			val trace = this.program.trace.result(this.result.hReturn).error(this.result.exception).toString
 			saveProgramTrace(this.tx.hash.toHexString, trace)
 			this.listener.onVMTraceCreated(this.tx.hash.toHexString, trace)

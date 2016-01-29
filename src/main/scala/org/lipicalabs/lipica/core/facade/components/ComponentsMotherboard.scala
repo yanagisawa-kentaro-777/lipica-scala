@@ -76,9 +76,9 @@ class ComponentsMotherboard {
 
 	private val peerServer: PeerServer = new PeerServer
 	private def startPeerServer(): Unit = {
-		val bindPort = NodeProperties.CONFIG.bindPort
+		val bindPort = NodeProperties.instance.bindPort
 		if (0 < bindPort) {
-			val socketAddress = new InetSocketAddress(NodeProperties.CONFIG.bindAddress, bindPort)
+			val socketAddress = new InetSocketAddress(NodeProperties.instance.bindAddress, bindPort)
 			Executors.newSingleThreadExecutor(new CountingThreadFactory("front-server")).submit(new Runnable {
 				override def run(): Unit = {
 					peerServer.start(socketAddress)
@@ -108,8 +108,8 @@ class ComponentsMotherboard {
 		this.blockchain.asInstanceOf[BlockchainImpl].programContextFactory = this.programContextFactory
 		this.programContextFactory.asInstanceOf[ProgramContextFactoryImpl].blockchain = this.blockchain
 
-		val coinbaseAddress = DigestUtils.digest256(NodeProperties.CONFIG.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
-		this.wallet.importKey(ImmutableBytes(coinbaseAddress))
+		val coinbasePrivateKey = DigestUtils.digest256(NodeProperties.instance.coinbaseSecret.getBytes(StandardCharsets.UTF_8))
+		this.wallet.importPrivateKey(ImmutableBytes(coinbasePrivateKey))
 
 		//データベースからブロックを読み込む。
 		loadBlockchain()

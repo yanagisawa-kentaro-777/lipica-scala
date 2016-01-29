@@ -56,7 +56,7 @@ class BlockQueueImpl(private val blocksDataSource: KeyValueDataSource, private v
 			override def run(): Unit = {
 				BlockQueueImpl.this.initLock.lock()
 				try {
-					if (NodeProperties.CONFIG.shouldResetDataStore) {
+					if (NodeProperties.instance.shouldResetDataStore) {
 						blocksDataSource.deleteAll()
 						hashesDataSource.deleteAll()
 					}

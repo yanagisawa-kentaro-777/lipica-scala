@@ -256,7 +256,7 @@ object Block {
 	private[kernel] val logger = LoggerFactory.getLogger("general")
 
 	val BlockReward =
-		if (NodeProperties.CONFIG.isFrontier) {
+		if (NodeProperties.instance.isFrontier) {
 			BigInt("5000000000000000000")
 		} else {
 			BigInt("1500000000000000000")

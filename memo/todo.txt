@@ -8,12 +8,12 @@
 
 ２、整備
 
+・active discovery 排除。
+
 ・残高の確認。
 ・mana trackの確認。
 ・受信トランザクションの確認。
 ・walletの整備と新トランザクションの実行。
-
-・設定の詰め
 
 ・git flowを入れる。
 

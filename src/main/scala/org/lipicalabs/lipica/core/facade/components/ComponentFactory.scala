@@ -38,7 +38,7 @@ object ComponentFactory {
 	private val bdbEnvOrNone: Option[Environment] =
 		if (isWindows) {
 			//Windowsでは、JNI経由でLevelDBを使用するとバグを踏むので、回避のためにBDB JEを使う。
-			Some(BdbJeDataSource.createDefaultEnvironment(NodeProperties.CONFIG.dataStoreDir))
+			Some(BdbJeDataSource.createDefaultEnvironment(NodeProperties.instance.dataStoreDir))
 		} else {
 			None
 		}
@@ -103,7 +103,7 @@ object ComponentFactory {
 		val dataSource = openKeyValueDataSource("nodestats_db")
 		put(dataSource)
 		val result = NodeManager.create(dataSource)
-		result.seedNodes = NodeProperties.CONFIG.seedNodes.map(uri => Node(uri))
+		result.seedNodes = NodeProperties.instance.seedNodes.map(uri => Node(uri))
 		result
 	}
 

@@ -45,7 +45,7 @@ class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStor
 					val buffer = new ArrayBuffer[Long](initialSize = indices.size)
 					buffer.appendAll(indices)
 					indexRef.set(buffer.sorted)
-					if (NodeProperties.CONFIG.shouldResetDataStore) {
+					if (NodeProperties.instance.shouldResetDataStore) {
 						dataSource.deleteAll()
 					}
 					initDoneRef.set(true)
