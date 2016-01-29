@@ -622,7 +622,7 @@ class BlockchainImpl(
 		val transactions = new ArrayBuffer[TransactionLike]
 		this.pendingTransactionSet.synchronized {
 			for (tx <- this.pendingTransactionSet) {
-				if (NodeProperties.CONFIG.txOutdatedThreshold < blockNumber - tx.blockNumer) {
+				if (NodeProperties.CONFIG.txOutdatedThreshold < blockNumber - tx.blockNumber) {
 					if (logger.isDebugEnabled) {
 						logger.debug("<BlockChainImpl> Deleting outdated tx: hash=%s".format(tx.hash.toShortString))
 					}

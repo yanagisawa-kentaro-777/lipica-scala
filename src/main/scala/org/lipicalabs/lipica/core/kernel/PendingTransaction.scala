@@ -8,12 +8,12 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * 2015/11/22 11:14
  * YANAGISAWA, Kentaro
  */
-class PendingTransaction private(val transaction: TransactionLike, val blockNumer: Long) {
+class PendingTransaction private(val transaction: TransactionLike, val blockNumber: Long) {
 
 	def hash: DigestValue = this.transaction.hash
 
 	def toBytes: ImmutableBytes = {
-		val blockNumberBytes = BigInt(this.blockNumer).toByteArray
+		val blockNumberBytes = BigInt(this.blockNumber).toByteArray
 		val txBytes = this.transaction.toEncodedBytes.toByteArray
 		val result = new Array[Byte](1 + blockNumberBytes.length + txBytes.length)
 		result(0) = blockNumberBytes.length.toByte
@@ -23,7 +23,7 @@ class PendingTransaction private(val transaction: TransactionLike, val blockNume
 	}
 
 	override def toString: String = {
-		"PendingTransaction[tx=%s, blockNumber=%,d]".format(this.transaction, this.blockNumer)
+		"PendingTransaction[tx=%s, blockNumber=%,d]".format(this.transaction, this.blockNumber)
 	}
 
 	override def equals(o: Any): Boolean = {

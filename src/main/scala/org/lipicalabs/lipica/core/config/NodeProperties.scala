@@ -171,7 +171,14 @@ trait NodePropertiesLike {
 	 */
 	def seedNodes: Seq[URI]
 
+	/**
+	 * ピアディスカバリーにおいて、ノードの情報を更新する間隔（秒）。
+	 */
 	def peerDiscoveryTouchSeconds: Int
+
+	/**
+	 * ピアディスカバリーにおいて、ノードの情報を更新する対象数。
+	 */
 	def peerDiscoveryTouchMaxNodes: Int
 
 	/**
@@ -181,6 +188,9 @@ trait NodePropertiesLike {
 	 */
 	def srcBlocksDir: Option[Path]
 
+	/**
+	 * 保留中トランザクションの時間切れ判定の基準とするブロック番号の差を返します。
+	 */
 	def txOutdatedThreshold: Int
 
 	/**
@@ -204,15 +214,20 @@ trait NodePropertiesLike {
 	 */
 	def isFrontier: Boolean
 
+	/**
+	 * ブロックチェーンに連結するブロックの中身を、特定のログファイルに出力するかを返します。
+	 * @return
+	 */
+	def dumpBlock: Long
+
+	def dumpDir: String
+
 	def activePeers: Seq[Node]
 
 	def vmTrace: Boolean
 
 	def vmTraceInitStorageLimit: Int
 
-	def dumpBlock: Long
-
-	def dumpDir: String
 
 	//TODO 痕跡的。不要。
 	def coinbaseSecret: String
