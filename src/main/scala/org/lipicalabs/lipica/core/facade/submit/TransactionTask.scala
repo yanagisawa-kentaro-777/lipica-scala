@@ -18,8 +18,9 @@ class TransactionTask(private val tx: TransactionLike, private val componentsMot
 
 	override def call: TransactionLike = {
 		try {
-			logger.info("<TxTask> Submitting tx: %s".format(this.tx))
-			this.componentsMotherboard.channelManager.sendTransaction(this.tx)
+			val channelManager = this.componentsMotherboard.channelManager
+			logger.info("<TxTask> Submitting tx to %,d peers: %s".format(channelManager.activePeersCount, this.tx))
+			channelManager.sendTransaction(this.tx)
 			this.tx
 		} catch {
 			case e: Throwable =>

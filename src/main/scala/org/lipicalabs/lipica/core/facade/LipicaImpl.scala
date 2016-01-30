@@ -4,12 +4,13 @@ import java.math.BigInteger
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 
+import org.lipicalabs.lipica.core.concurrent.ExecutorPool
 import org.lipicalabs.lipica.core.datastore.RepositoryLike
 import org.lipicalabs.lipica.core.kernel._
 import org.lipicalabs.lipica.core.facade.listener.{LipicaListenerAdaptor, ManaPriceTracker, LipicaListener}
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
-import org.lipicalabs.lipica.core.facade.submit.{TransactionExecutor, TransactionTask}
+import org.lipicalabs.lipica.core.facade.submit.TransactionTask
 import org.lipicalabs.lipica.core.utils.{BigIntBytes, ImmutableBytes}
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 import org.slf4j.LoggerFactory
@@ -62,7 +63,7 @@ private[facade] class LipicaImpl extends Lipica {
 
 	override def submitTransaction(tx: TransactionLike): Future[TransactionLike] = {
 		val task = new TransactionTask(tx, this.componentsMotherboard)
-		TransactionExecutor.submitTransaction(task)
+		ExecutorPool.instance.txExecutor.submit(task)
 	}
 
 	override def pendingTransactions: Set[TransactionLike] = this.componentsMotherboard.blockchain.pendingTransactions

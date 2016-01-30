@@ -29,6 +29,8 @@ class ChannelManager {
 	private val newPeers = new CopyOnWriteArrayList[Channel]()
 	private val activePeers = new CopyOnWriteArrayList[Channel]()
 
+	def activePeersCount: Int = this.activePeers.size
+
 	private val mainWorker: ScheduledExecutorService = ExecutorPool.instance.channelManagerProcessor
 
 	def init(): Unit = {
