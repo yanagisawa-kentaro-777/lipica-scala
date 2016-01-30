@@ -1,6 +1,5 @@
 package org.lipicalabs.lipica.core.facade
 
-import java.math.BigInteger
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -103,13 +102,8 @@ private[facade] class LipicaImpl extends Lipica {
 	 * @param data - コントラクトの初期化コード、もしくはメッセージの付随データ。
 	 * @return 作成されたトランザクション。
 	 */
-	override def createTransaction(nonce: BigInteger, manaPrice: BigInteger, mana: BigInteger, receiveAddress: Array[Byte], value: BigInteger, data: Array[Byte]): TransactionLike = {
-		val nonceBytes = BigIntBytes(nonce)
-		val manaPriceBytes = BigIntBytes(manaPrice)
-		val manaBytes = BigIntBytes(mana)
-		val valueBytes = BigIntBytes(ImmutableBytes.asUnsignedByteArray(value))
-
-		Transaction(nonceBytes, manaPriceBytes, manaBytes, Address160(receiveAddress), valueBytes, ImmutableBytes(data))
+	override def createTransaction(nonce: BigInt, manaPrice: BigInt, mana: BigInt, receiveAddress: Address, value: BigInt, data: ImmutableBytes): TransactionLike = {
+		LipicaImpl.createTransaction(nonce, manaPrice, mana, receiveAddress, value, data)
 	}
 
 	override def callConstantFunction(receiveAddress: String, function: CallTransaction.Function, funcArgs: Any*): Option[ProgramResult] = {
@@ -135,4 +129,13 @@ private[facade] class LipicaImpl extends Lipica {
 
 object LipicaImpl {
 	private val logger = LoggerFactory.getLogger("general")
+
+	def createTransaction(nonce: BigInt, manaPrice: BigInt, mana: BigInt, receiveAddress: Address, value: BigInt, data: ImmutableBytes): TransactionLike = {
+		val nonceBytes = BigIntBytes(nonce)
+		val manaPriceBytes = BigIntBytes(manaPrice)
+		val manaBytes = BigIntBytes(mana)
+		val valueBytes = BigIntBytes(ImmutableBytes.asUnsignedByteArray(value))
+
+		Transaction(nonceBytes, manaPriceBytes, manaBytes, receiveAddress, valueBytes, data)
+	}
 }

@@ -6,9 +6,10 @@ import java.util.concurrent.atomic.AtomicReference
 
 import org.lipicalabs.lipica.core.datastore.RepositoryLike
 import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
-import org.lipicalabs.lipica.core.kernel.{Blockchain, CallTransaction, TransactionLike}
+import org.lipicalabs.lipica.core.kernel.{Address, Blockchain, CallTransaction, TransactionLike}
 import org.lipicalabs.lipica.core.facade.listener.LipicaListener
 import org.lipicalabs.lipica.core.net.endpoint.PeerClient
+import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.ProgramResult
 
 /**
@@ -98,7 +99,7 @@ trait Lipica {
 	 * @param data - コントラクトの初期化コード、もしくはメッセージの付随データ。
 	 * @return 作成されたトランザクション。
 	 */
-	def createTransaction(nonce: BigInteger, manaPrice: BigInteger, mana: BigInteger, receiveAddress: Array[Byte], value: BigInteger, data: Array[Byte]): TransactionLike
+	def createTransaction(nonce: BigInt, manaPrice: BigInt, mana: BigInt, receiveAddress: Address, value: BigInt, data: ImmutableBytes): TransactionLike
 
 	/**
 	 * トランザクションを呼び出します。

@@ -8,6 +8,8 @@ import org.lipicalabs.lipica.core.utils.ErrorLogger
 import org.slf4j.LoggerFactory
 
 /**
+ * 外部アプリケーション等フロントエンドから、トランザクションを実行する処理者クラスです。
+ *
  * Created by IntelliJ IDEA.
  * 2015/11/30 20:47
  * YANAGISAWA, Kentaro
@@ -17,17 +19,10 @@ class TransactionTask(private val tx: TransactionLike, private val componentsMot
 	import TransactionTask._
 
 	override def call: TransactionLike = {
-		try {
-			val channelManager = this.componentsMotherboard.channelManager
-			logger.info("<TxTask> Submitting tx to %,d peers: %s".format(channelManager.activePeersCount, this.tx))
-			channelManager.sendTransaction(this.tx)
-			this.tx
-		} catch {
-			case e: Throwable =>
-				ErrorLogger.logger.warn("<TransactionTask> Exception caught: %s".format(e.getClass.getSimpleName), e)
-				logger.warn("<TransactionTask> Exception caught: %s".format(e.getClass.getSimpleName), e)
-				null
-		}
+		val channelManager = this.componentsMotherboard.channelManager
+		logger.info("<TxTask> Submitting tx to %,d peers: %s".format(channelManager.activePeersCount, this.tx))
+		channelManager.sendTransaction(this.tx)
+		this.tx
 	}
 }
 
