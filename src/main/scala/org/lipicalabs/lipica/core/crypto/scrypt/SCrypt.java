@@ -8,6 +8,11 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.lang.System.arraycopy;
 
 /**
+ * この Scrypt.java の実装は、https://github.com/wg/scrypt プロジェクトから借用しています。
+ * This class is borrowed from https://github.com/wg/scrypt Project.
+ */
+
+/**
  * Modified version of scrypt implementation at https://github.com/wg/scrypt v1.4.0 release
  *  modifications:
  *  * Consolidated into a single class

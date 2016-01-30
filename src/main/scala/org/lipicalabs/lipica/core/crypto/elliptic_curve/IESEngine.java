@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 /**
- * この IESEngine.java ファイルの実装は、Bouncy Castle プロジェクトからコピーしてきたものです。
+ * この IESEngine.java の実装は、Bouncy Castle プロジェクトからコピーしてきたものです。
  * This class is borrowed from Bouncy Castle Project.
  */
 
