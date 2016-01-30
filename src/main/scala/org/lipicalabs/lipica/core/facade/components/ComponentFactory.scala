@@ -10,7 +10,6 @@ import org.lipicalabs.lipica.core.datastore.datasource._
 import org.lipicalabs.lipica.core.facade.listener.CompositeLipicaListener
 import org.lipicalabs.lipica.core.kernel.Wallet
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
-import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
 import org.lipicalabs.lipica.core.net.peer_discovery.{Node, NodeManager}
 import org.lipicalabs.lipica.core.sync.{PeersPool, SyncManager, SyncQueue}
@@ -96,8 +95,6 @@ object ComponentFactory {
 		result.init()
 		result
 	}
-
-	def createPeerDiscovery: PeerDiscovery = new PeerDiscovery
 
 	def createNodeManager: NodeManager = {
 		val dataSource = openKeyValueDataSource("nodestats_db")

@@ -14,7 +14,6 @@ import org.lipicalabs.lipica.core.validator.parent_rules.ParentBlockHeaderValida
 import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 import org.slf4j.LoggerFactory
 
-import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -336,6 +335,7 @@ class BlockchainImpl(
 				//Bloom Filterが合わなければ、TransactionReceiptが合うことはない。よってこれ以上は試行する必要もない。
 				ErrorLogger.logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
 				logger.warn("<Blockchain> MODIFIED LOG BLOOM FILTER UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.logsBloomFilter, calculatedBloomFilter, block.encode))
+				//TODO 60万番台後半に、数ブロックだけログ情報が合わないものがある。世界の状態には影響しないが、、、
 				//false
 			}
 		}
@@ -345,6 +345,7 @@ class BlockchainImpl(
 			//Receiptが合致しなかった。原因はBloomFilterでないわけだから、深刻な事態。。
 			ErrorLogger.logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
 			logger.warn("<Blockchain> RECEIPT HASH UNMATCH [%d]: given: %s != calc: %s. Block is %s".format(block.blockNumber, block.receiptsRoot, calculatedReceiptsHash, block.encode))
+			//TODO 60万番台後半に、数ブロックだけログ情報が合わないものがある。世界の状態には影響しないが、、、
 			//false
 			true
 		} else {

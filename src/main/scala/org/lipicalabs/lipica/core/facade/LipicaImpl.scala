@@ -56,7 +56,7 @@ private[facade] class LipicaImpl extends Lipica {
 
 	override def repository: RepositoryLike = componentsMotherboard.repository
 
-	override def addListener(listener: LipicaListener) = componentsMotherboard.listener.addListener(listener)
+	override def addListener(listener: LipicaListener) = componentsMotherboard.addListener(listener)
 
 	override def client: PeerClient = this.componentsMotherboard.client
 

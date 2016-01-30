@@ -135,7 +135,6 @@ class P2PHandler(private var _messageQueue: MessageQueue) extends SimpleChannelI
 			confirmedPeer.online = false
 			confirmedPeer.addCapabilities(message.capabilities)
 
-			this.componentsMotherboard.peerDiscovery.addPeer(confirmedPeer)
 			this.componentsMotherboard.listener.onHandshakePeer(channel.node, message)
 		}
 	}

@@ -17,7 +17,6 @@ import org.lipicalabs.lipica.core.net.endpoint.{PeerServer, PeerClient}
 import org.lipicalabs.lipica.core.sync.{PeersPool, SyncQueue, SyncManager}
 import org.lipicalabs.lipica.core.net.channel.ChannelManager
 import org.lipicalabs.lipica.core.net.peer_discovery.NodeManager
-import org.lipicalabs.lipica.core.net.peer_discovery.active_discovery.PeerDiscovery
 import org.lipicalabs.lipica.core.net.peer_discovery.udp.UDPListener
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.vm.program.context.{ProgramContextFactoryImpl, ProgramContextFactory}
@@ -56,8 +55,6 @@ class ComponentsMotherboard {
 
 	val blockchain: Blockchain = new BlockchainImpl(this.blockStore, this.repository, this.wallet, this.listener, this.blockValidator, this.blockHeaderValidator, this.parentHeaderValidator)
 
-	val peerDiscovery: PeerDiscovery = ComponentFactory.createPeerDiscovery
-
 	val channelManager: ChannelManager = ComponentFactory.createChannelManager
 
 	val nodeManager: NodeManager = ComponentFactory.createNodeManager
@@ -87,19 +84,7 @@ class ComponentsMotherboard {
 		}
 	}
 
-	private def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
-
-	private def startPeerDiscovery(): Unit = {
-		if (!this.peerDiscovery.isStarted) {
-			this.peerDiscovery.start()
-		}
-	}
-
-	private def stopPeerDiscovery(): Unit = {
-		if (this.peerDiscovery.isStarted) {
-			this.peerDiscovery.stop()
-		}
-	}
+	def addListener(listener: LipicaListener): Unit = this.listener.addListener(listener)
 
 	private val clientRef = new AtomicReference[PeerClient](null)
 	def client: PeerClient = this.clientRef.get
@@ -156,7 +141,6 @@ class ComponentsMotherboard {
 	}
 
 	private[facade] def shutdown(): Unit = {
-		stopPeerDiscovery()
 		//動作中の ExecutorService 類を停止させる。
 		ExecutorPool.instance.shutdown()
 		//Repository および BlockStore を flush する。

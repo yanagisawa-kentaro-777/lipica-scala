@@ -1,21 +1,10 @@
-０、仕様
-・secp256k1 について学ぶ。
-
-０、不具合
-
-１、既存環境との完全同期
 ・CallTransactionの変更に追随する。
-
-２、整備
-
-・active discovery 排除。
+・expirationによるdiscardを実装する。（replay attack対策）
 
 ・残高の確認。
 ・mana trackの確認。
 ・受信トランザクションの確認。
 ・walletの整備と新トランザクションの実行。
-
-・git flowを入れる。
 
 ・通信方面のコメント。
 ・トランザクション署名の検証。
@@ -24,17 +13,3 @@
 ・著作権表記
 ・依存先のバージョン
 
-・logging
-
-・expirationによるdiscardを実装する。（replay attack対策）
-・スレッドセイフティ
-
-・nullを排除する。
-・ImmutableBytes#toByteArray を排除する。
-
-BlockchainImplの精緻なテスト。
-VM関連のデバッグ用出力（ProgramTrace等）。
-RepositoryImplのデバッグ用出力。
-TransactionExecutorのデバッグ用出力。
-LpcHandlerのデバッグ用出力。
-PeersPoolのデバッグ用出力。
