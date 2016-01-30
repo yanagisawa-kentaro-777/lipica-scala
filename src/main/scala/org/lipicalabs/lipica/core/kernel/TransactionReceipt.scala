@@ -10,9 +10,14 @@ import org.lipicalabs.lipica.core.vm.LogInfo
 /**
  * トランザクション実行後の情報の組み合わせクラスです。
  *
+ * @param logs VMのLOG命令によって記録されたログ情報の並び。
+ * @param bloomFilter ログ情報のトピックを記録したBloomFilter。
+ * @param cumulativeMana このブロック内で消費されたマナの累計値。
+ * @param postTxState このトランザクションを実行した直後の世界の状態。
+ *
  * Created by IntelliJ IDEA.
- * 2015/11/22 13:02
- * YANAGISAWA, Kentaro
+ * @since 2015/11/22 13:02
+ * @author YANAGISAWA, Kentaro
  */
 class TransactionReceipt private(val logs: Seq[LogInfo], val bloomFilter: BloomFilter, val cumulativeMana: ImmutableBytes, val postTxState: DigestValue) {
 

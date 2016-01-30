@@ -14,14 +14,30 @@ import org.lipicalabs.lipica.core.vm.program.context.ProgramContextFactory
 import org.slf4j.LoggerFactory
 
 /**
+ * 自ノードにおいてトランザクションを実行する実行者クラスです。
+ *
+ * 送信者アドレスから受信者アドレスへの送金処理と、
+ * VMの構築およびVM上でのコントラクトコードの実行を主宰します。
+ *
+ * １個のトランザクションを実行するために、
+ * このクラスのインスタンス１個が生成され、
+ * このインスタンスの内部において多くの可変の状態を保持します。
+ * そのため、このクラスを利用する際には、
+ * 複数のメソッドを意図された順序で、同一のスレッドからコールする必要があります。
+ *
  * Created by IntelliJ IDEA.
- * 2015/11/22 13:32
- * YANAGISAWA, Kentaro
+ * @since 2015/11/22 13:32
+ * @author YANAGISAWA, Kentaro
  */
 class TransactionExecutor(
-	private val tx: TransactionLike, private val coinbase: Address, private val track: RepositoryLike,
-	private val blockStore: BlockStore, private val programContextFactory: ProgramContextFactory,
-	private val currentBlock: Block, private val listener: LipicaListener, private val manaUsedInTheBlock: Long
+	private val tx: TransactionLike,
+	private val coinbase: Address,
+	private val track: RepositoryLike,
+	private val blockStore: BlockStore,
+	private val programContextFactory: ProgramContextFactory,
+	private val currentBlock: Block,
+	private val listener: LipicaListener,
+	private val manaUsedInTheBlock: Long
 ) {
 	import TransactionExecutor._
 
@@ -42,7 +58,12 @@ class TransactionExecutor(
 
 	private val startNanosRef = new AtomicLong(0L)
 
-	def init(): Unit = {
+	/**
+	 * トランザクションの実行を準備します。
+	 *
+	 * マナや残高の引当検査を行い、問題がない場合にのみ「実行可能フラグ」を立てる、という処理です。
+	 */
+	def prepare(): Unit = {
 		//実行開始日時。
 		this.startNanosRef.set(System.nanoTime)
 
@@ -59,17 +80,20 @@ class TransactionExecutor(
 			))
 			return
 		}
+		//トランザクションの基本コストを、指定された上限でまかなえるか。
 		this.basicTxCost = transactionCost(this.tx)
 		if (txManaLimit < this.basicTxCost) {
 			logger.info("<TxExecutor> Not enough mana for tx execution: %s < %s".format(txManaLimit, this.basicTxCost))
 			return
 		}
+		//送信者アカウントの累積トランザクション実行数と、このトランザクションの番号とは合っているか。
 		val reqNonce = this.track.getNonce(this.tx.senderAddress)
 		val txNonce = this.tx.nonce.positiveBigInt
 		if (reqNonce != txNonce) {
 			logger.info("<TxExecutor> Invalid nonce: Required: %s != Tx: %s".format(reqNonce, txNonce))
 			return
 		}
+		//送金額と、消費マナ上限分の金額とをまかなえるだけの送信者残高はあるか。
 		val txManaCost = this.tx.manaPrice.positiveBigInt * BigInt(txManaLimit)
 		val totalCost = this.tx.value.positiveBigInt + txManaCost
 		val senderBalance = this.track.getBalance(this.tx.senderAddress).getOrElse(UtilConsts.Zero)
@@ -80,12 +104,17 @@ class TransactionExecutor(
 		this.readyToExecute = true
 	}
 
+	/**
+	 * トランザクション実行の第一段階を処理します。
+	 */
 	def execute(): Unit = {
 		if (!this.readyToExecute) {
 			return
 		}
 		if (!localCall) {
-			this.track.increaseNonce(this.tx.senderAddress)
+			//送信者の累積トランザクション実行数を増加させる。
+			this.track.incrementNonce(this.tx.senderAddress)
+			//トランザクション実行コストを、送信者の残高から引き当てる。
 			val txManaPrice = this.tx.manaPrice.positiveBigInt
 			val txManaLimit = this.tx.manaLimit.positiveBigInt
 			val txManaCost = txManaPrice * txManaLimit
@@ -93,22 +122,35 @@ class TransactionExecutor(
 			logger.info("<TxExecutor> Withdraw in advance: TxManaCost: %,d, ManaPrice: %,d, ManaLimit: %,d".format(txManaCost, txManaPrice, txManaLimit))
 		}
 		if (this.tx.isContractCreation) {
+			//コントラクトを作成する。
 			create()
 		} else {
+			//トランザクションを実行する。
+			//これは単純送金かもしれないし、コントラクト呼び出しかもしれない。
 			call()
 		}
 	}
 
+	/**
+	 * コントラクト作成処理を実行します。
+	 */
 	private def create(): Unit = {
 		val newContractAddress = this.tx.contractAddress.get
 		if (this.tx.data.isEmpty) {
+			//コントラクト作成なのに入力データがない、というのは、
+			//コントラクトの内容を定義できないので無意味だが、
+			//いちおう基本料金だけ受け取って、アカウントを作っておく。
 			this.endMana = this.tx.manaLimit.positiveBigInt.longValue() - this.basicTxCost
 			this.cacheTrack.createAccount(newContractAddress)
 		} else {
+			//「コントラクト作成コード」を実行する。
+			//実行環境を定義して、VMを構築し、実行対象のプログラムを定義する。
 			val context = this.programContextFactory.createProgramContext(tx, currentBlock, cacheTrack, blockStore)
 			this.vm = new VM
+			//実行対象のプログラムは、入力データそのもの。
 			this.program = new Program(this.tx.data, context, this.tx)
 
+			//同一アドレスが既存だった場合のため、ストレージ項目をコピーしておく。
 			this.program.storage.getContractDetails(newContractAddress).foreach {
 				contractDetails => {
 					for (key <- contractDetails.storageKeys) {
@@ -117,18 +159,24 @@ class TransactionExecutor(
 				}
 			}
 		}
+		//送信者から、新たなコントラクトアカウントへの送金を実行する。
 		val endowment = this.tx.value.positiveBigInt
 		Payment.transfer(this.cacheTrack, this.tx.senderAddress, newContractAddress, endowment, Payment.ContractCreationTx)
 	}
 
+	/**
+	 * トランザクション実行の第一段階を行います。
+	 */
 	private def call(): Unit = {
 		if (!readyToExecute) {
 			return
 		}
 		val targetAddress = this.tx.receiverAddress
+		//システム定義済みのコントラクト呼び出しか？
 		this.precompiledContract = PrecompiledContracts.getContractForAddress(VMWord(targetAddress.bytes))
 		this.precompiledContract match {
 			case Some(contract) =>
+				//定義済みコントラクトの呼び出しだった。
 				if (logger.isDebugEnabled) {
 					logger.debug("<TxExecutor> Precompiled contract invocation: [%s]".format(targetAddress))
 				}
@@ -142,11 +190,14 @@ class TransactionExecutor(
 					contract.execute(this.tx.data)
 				}
 			case None =>
+				//システム定義済みコントラクトの呼び出しではない。
 				if (logger.isTraceEnabled) {
 					logger.trace("<TxExecutor> User defined contract invocation? [%s]".format(targetAddress))
 				}
+				//ユーザー定義されたコントラクトの呼び出しか？
 				this.track.getCode(targetAddress) match {
 					case Some(code) =>
+						//ユーザー定義されたコントラクトの呼び出しだった。
 						if (logger.isDebugEnabled) {
 							logger.debug("<TxExecutor> Contract loaded: [%s]=[%,d bytes]".format(targetAddress, code.length))
 						}
@@ -154,17 +205,22 @@ class TransactionExecutor(
 						this.vm = new VM
 						this.program = new Program(code, context, this.tx)
 					case None =>
+						//ユーザー定義されたコントラクトの呼び出しではなかった。
+						//つまり単純送金である。
 						if (logger.isTraceEnabled) {
 							logger.trace("<TxExecutor> Normal tx.")
 						}
 						this.endMana = this.tx.manaLimit.positiveBigInt.longValue() - this.basicTxCost
 				}
 		}
-
+		//相手が通常アカウントであれコントラクトアカウントであれ、送金を実行する。
 		val endowment = this.tx.value.positiveBigInt
 		Payment.transfer(this.cacheTrack, this.tx.senderAddress, targetAddress, endowment, Payment.TxSettlement)
 	}
 
+	/**
+	 * トランザクション実行の第２段階を実行します。
+	 */
 	def go(): Unit = {
 		if (!readyToExecute) {
 			return
@@ -173,6 +229,9 @@ class TransactionExecutor(
 			return
 		}
 		try {
+			//ここに来たということは、単純な送金トランザクションではなく、
+			//VMで実行すべきコードがあるということ。
+			//構築済みのVMでコードを再生する。
 			this.program.spendMana(transactionCost(this.tx), "Tx Cost")
 			this.vm.play(this.program)
 			this.result = this.program.result
@@ -214,11 +273,15 @@ class TransactionExecutor(
 		}
 	}
 
+	/**
+	 * 後始末処理を実行します。
+	 */
 	def finalization(): Unit = {
 		if (!this.readyToExecute) {
 			return
 		}
 		this.cacheTrack.commit()
+		//トランザクション実行結果のサマリーを構築する。
 		val summaryBuilder = TransactionExecutionSummary.builder(this.tx).manaLeftOver(this.endMana)
 		if (this.result ne null) {
 			this.result.addFutureRefund(this.result.deletedAccounts.size * ManaCost.SuicideRefund)
@@ -235,13 +298,13 @@ class TransactionExecutor(
 		}
 		val summary = summaryBuilder.build
 
-		//払い戻す。
+		//残余マナ分の料金等を、送信者に払い戻す。
 		val payback = summary.calculateLeftOver + summary.calculateRefund
 		Payment.txFee(this.track, this.tx.senderAddress, payback, Payment.TxFeeRefund)
 		logger.info("<TxExecutor> Payed total refund to sender: %s. RefundVal=%,d. (ManaLeftOver=%,d. ManaRefund=%,d. EndMana=%,d)".format(
 			this.tx.senderAddress, payback, summary.manaLeftOver, summary.manaRefund, this.endMana)
 		)
-		//採掘報酬。
+		//採掘者に、採掘報酬を支払う。
 		val txFee = summary.calculateFee
 		Payment.txFee(this.track, this.coinbase, txFee, Payment.TxFee)
 		logger.info("<TxExecutor> Payed fee to Miner[%s]; Fee=[%,d]; Block=[%,d]; Tx=[%s]".format(this.coinbase.toShortString, txFee, currentBlock.blockNumber, tx.hash.toShortString))

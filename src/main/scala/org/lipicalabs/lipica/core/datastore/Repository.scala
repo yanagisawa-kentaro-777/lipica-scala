@@ -46,7 +46,7 @@ trait RepositoryLike extends Closeable {
 	 * 指定されたアカウントのnonceを１増やします。
 	 * （アカウントが存在しなかったら作成します。）
 	 */
-	def increaseNonce(address: Address): BigInt
+	def incrementNonce(address: Address): BigInt
 
 	/**
 	 * 指定されたアカウントの現在のnonceを返します。

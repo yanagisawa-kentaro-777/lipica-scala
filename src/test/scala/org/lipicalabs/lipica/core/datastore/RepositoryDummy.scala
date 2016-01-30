@@ -81,7 +81,7 @@ class RepositoryDummy extends RepositoryImpl(new InMemoryDataSourceFactory) {
 		getAccountState(address).getOrElse(createAccount(address)).nonce
 	}
 
-	override def increaseNonce(address: Address) = {
+	override def incrementNonce(address: Address) = {
 		val account = getAccountState(address).getOrElse(createAccount(address))
 		account.incrementNonce()
 		this.worldState.put(address, account)

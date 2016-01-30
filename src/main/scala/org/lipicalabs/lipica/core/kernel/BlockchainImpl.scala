@@ -420,7 +420,7 @@ class BlockchainImpl(
 			}
 
 			val executor = new TransactionExecutor(tx, block.coinbase, this.track, this.blockStore, this.programContextFactory, block, this.listener, cumulativeManaUsed)
-			executor.init()
+			executor.prepare()
 			executor.execute()
 			executor.go()
 			executor.finalization()

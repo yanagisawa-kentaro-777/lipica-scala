@@ -1,72 +1,79 @@
 package org.lipicalabs.lipica.core.kernel
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
 import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.lipicalabs.lipica.core.crypto.scrypt.SCrypt
-import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.slf4j.LoggerFactory
 
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.{mutable, JavaConversions}
-
 /**
+ * 特定少数の鍵ペア（＝アドレス）の取引および残高を管理するクラスです。
+ *
  * Created by IntelliJ IDEA.
- * 2015/11/23 13:36
- * YANAGISAWA, Kentaro
+ * @since 2015/11/23 13:36
+ * @author YANAGISAWA, Kentaro
  */
 class Wallet {
 
 	import Wallet._
+	import scala.collection.JavaConversions._
 
-	private val walletTransactions = JavaConversions.mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, WalletTransaction])
+	/**
+	 * このインスタンスで保持しているトランザクションの集合を表す連想配列です。（txハッシュ値 -> tx）
+	 */
+	private val walletTransactions = mapAsScalaConcurrentMap(new ConcurrentHashMap[DigestValue, WalletTransaction])
 
-	private val rows = new mutable.HashMap[Address, Account]
+	/**
+	 * このインスタンスでの管理対象とするアカウントの集合です。
+	 */
+	private val accountsMap = mapAsScalaConcurrentMap(new ConcurrentHashMap[Address, Account])
 
-	private var high: Long = 0
+	private val listenersRef = new AtomicReference[Seq[WalletListener]](Seq.empty)
+	private def listeners: Seq[WalletListener] = this.listenersRef.get
 
-	private def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
-
-	private val listeners = new ArrayBuffer[WalletListener]
-
-	def addNewAccount(): Unit = {
+	/**
+	 * 新たなアカウントを生成して、そのアドレスを返します。
+	 */
+	def addNewAccount(): Address = {
 		val account = new Account
 		account.init()
 		val address = account.ecKey.toAddress
-		this.rows.put(address, account)
+		this.accountsMap.put(address, account)
 		notifyListeners()
-	}
-
-	def importPrivateKey(privateKey: ImmutableBytes): Unit = {
-		val account = new Account
-		account.init(ECKeyPair.fromPrivateKey(privateKey.toPositiveBigInt))
-		val address = account.ecKey.toAddress
-		this.rows.put(address, account)
-		notifyListeners()
-	}
-
-	def totalBalance: BigInt = this.rows.values.foldLeft(UtilConsts.Zero)((accum, account) => accum + account.balance)
-
-	def addByWalletTransaction(transaction: TransactionLike): WalletTransaction = {
-		val result = new WalletTransaction(transaction)
-		this.walletTransactions.put(transaction.hash, result)
-		result
+		address
 	}
 
 	/**
-	 * トランザクションを承認します。
+	 * 渡された秘密鍵からアドレスを生成して、それをこのインスタンスに記録します。
+	 */
+	def importPrivateKey(privateKey: ImmutableBytes): Address = {
+		val account = new Account
+		account.init(ECKeyPair.fromPrivateKey(privateKey.toPositiveBigInt.bigInteger))
+		val address = account.ecKey.toAddress
+		this.accountsMap.put(address, account)
+		notifyListeners()
+		address
+	}
+
+	/**
+	 * このインスタンスで管理しているアドレスの残高総額を返します。
+	 */
+	def totalBalance: BigInt = this.accountsMap.values.foldLeft(UtilConsts.Zero)((accum, account) => accum + account.balance)
+
+	/**
+	 * トランザクションをこのインスタンスに記録します。
 	 */
 	def addTransaction(tx: TransactionLike): WalletTransaction = {
 		val result =
 			this.walletTransactions.get(tx.hash) match {
 				case Some(walletTx) =>
-					walletTx.inrementApproved()
+					walletTx.incrementApproved
 					walletTx
 				case None =>
 					val walletTx = new WalletTransaction(tx)
@@ -85,16 +92,16 @@ class Wallet {
 
 	def removeTransactions(txs: Iterable[TransactionLike]): Unit = txs.foreach(this.removeTransaction)
 
-	def applyTransaction(tx: TransactionLike): Unit = {
+	private def applyTransaction(tx: TransactionLike): Unit = {
 		val senderAddress = tx.senderAddress
-		this.rows.get(senderAddress).foreach {
+		this.accountsMap.get(senderAddress).foreach {
 			sender => {
 				sender.addPendingTransaction(tx)
 				logger.info("<Wallet> Pending tx added to account [%s], tx [%s]".format(sender.address, tx.hash))
 			}
 		}
 		val receiverAddress = tx.receiverAddress
-		this.rows.get(receiverAddress).foreach {
+		this.accountsMap.get(receiverAddress).foreach {
 			receiver => {
 				receiver.addPendingTransaction(tx)
 				logger.info("<Wallet> Pending tx added to account [%s], tx [%s]".format(receiver.address, tx.hash))
@@ -103,8 +110,28 @@ class Wallet {
 		notifyListeners()
 	}
 
+	def processBlock(block: Block): Unit = {
+		accounts.foreach(_.clearPendingTransactions())
+		notifyListeners()
+	}
+
+	def accounts: Iterable[Account] = this.accountsMap.values
+
+	def addListener(listener: WalletListener): Unit = {
+		val currentListeners = this.listeners
+		this.listenersRef.set(listener +: currentListeners)
+	}
+	private def notifyListeners(): Unit = {
+		this.listeners.foreach(_.valueChanged())
+	}
+
+}
+
+object Wallet {
+	private val logger = LoggerFactory.getLogger("wallet")
+
 	/**
-	 * gethの方式に従ったwalletファイルを復号して、平文のバイト列を返します。
+	 * gethの方式に従ったwalletファイルを復号します。
 	 */
 	def decrypt(cipherText: ImmutableBytes, password: String, iv: ImmutableBytes, dklen: Int, N: Int, r: Int, p: Int, salt: ImmutableBytes): ImmutableBytes = {
 		val key = ImmutableBytes(SCrypt.scrypt(
@@ -119,68 +146,13 @@ class Wallet {
 		val result = cipher.doFinal(cipherText.toByteArray)
 		ImmutableBytes(result)
 	}
-
-	def load(path: Path): Unit = {
-		//TODO 未実装。
-		/*
-		         <wallet high="8933">
-             <row id=1>
-                 <address nonce="1" >7c63d6d8b6a4c1ec67766ae123637ca93c199935<address/>
-                 <privkey>roman<privkey/>
-                 <value>20000000<value/>
-             </row>
-             <row id=2>
-                 <address nonce="6" >b5da3e0ba57da04f94793d1c334e476e7ce7b873<address/>
-                 <privkey>cow<privkey/>
-                 <value>900099909<value/>
-             </row>
-         </wallet>
-		 */
-	}
-
-	def save(path: Path): Unit = {
-		//TODO 未実装。
-		/*
-		         <wallet high="8933">
-             <row id=1>
-                 <address nonce="1" >7c63d6d8b6a4c1ec67766ae123637ca93c199935<address/>
-                 <privkey>roman<privkey/>
-                 <value>20000000<value/>
-             </row>
-             <row id=2>
-                 <address nonce="6" >b5da3e0ba57da04f94793d1c334e476e7ce7b873<address/>
-                 <privkey>cow<privkey/>
-                 <value>900099909<value/>
-             </row>
-         </wallet>
-		 */
-	}
-
-	def processBlock(block: Block): Unit = {
-		accounts.foreach(_.clearPendingTransactions())
-		notifyListeners()
-	}
-
-	def accounts: Iterable[Account] = this.rows.values
-
-	def addListener(listener: WalletListener): Unit = {
-		this.listeners.append(listener)
-	}
-	private def notifyListeners(): Unit = {
-		this.listeners.foreach(_.valueChanged())
-	}
-
-}
-
-object Wallet {
-	private val logger = LoggerFactory.getLogger("wallet")
 }
 
 class WalletTransaction(private val tx: TransactionLike) {
-	private var _approved: Int = 0
+	private val approvedRef = new AtomicInteger(0)
 
-	def inrementApproved(): Unit = this._approved += 1
-	def approved: Int = this._approved
+	def incrementApproved: Int = this.approvedRef.incrementAndGet
+	def approved: Int = this.approvedRef.get
 }
 
 trait WalletListener {

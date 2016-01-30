@@ -249,7 +249,7 @@ class Program(private val ops: ImmutableBytes, private val context: ProgramConte
 		val newAddress = DigestUtils.computeNewAddress(getOwnerAddress.last20Bytes, nonce)
 
 		//nonceを更新する。
-		this.storage.increaseNonce(senderAddress)
+		this.storage.incrementNonce(senderAddress)
 
 		val track = this.storage.startTracking
 		//既存だったら、残高を受け継ぐ。

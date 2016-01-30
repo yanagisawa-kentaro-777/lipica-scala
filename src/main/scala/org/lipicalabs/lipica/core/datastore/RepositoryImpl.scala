@@ -268,7 +268,7 @@ class RepositoryImpl(_contractDS: KeyValueDataSource, _stateDS: KeyValueDataSour
 
 	override def getNonce(address: Address): BigInt = loadAccountStateOrCreateNew(address).nonce
 
-	override def increaseNonce(address: Address): BigInt = {
+	override def incrementNonce(address: Address): BigInt = {
 		val account = loadAccountStateOrCreateNew(address)
 		account.incrementNonce()
 		updateAccountState(address, account)

@@ -92,7 +92,7 @@ class RepositoryTrack private[datastore](private val repository: RepositoryLike)
 		getContractDetails(address).foreach(_.isDeleted = true)
 	}
 
-	override def increaseNonce(address: Address) = {
+	override def incrementNonce(address: Address) = {
 		val accountState = getAccountState(address).getOrElse(createAccount(address))
 		getContractDetails(address).foreach(_.isDirty = true)
 

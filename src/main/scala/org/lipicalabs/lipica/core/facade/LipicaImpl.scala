@@ -122,7 +122,7 @@ private[facade] class LipicaImpl extends Lipica {
 		)
 		executor.localCall = true
 
-		executor.init()
+		executor.prepare()
 		executor.execute()
 		executor.go()
 		executor.finalization()

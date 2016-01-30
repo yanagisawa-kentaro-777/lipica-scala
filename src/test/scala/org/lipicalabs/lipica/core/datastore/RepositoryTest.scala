@@ -25,11 +25,11 @@ class RepositoryTest extends Specification {
 				val cow = Address.parseHexString("CD2A3D9F938E13CD947EC05ABC7FE734DF8DD826")
 				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
-				repository.increaseNonce(cow)
-				repository.increaseNonce(horse)
+				repository.incrementNonce(cow)
+				repository.incrementNonce(horse)
 
 				repository.getNonce(cow) mustEqual UtilConsts.One
-				repository.increaseNonce(cow)
+				repository.incrementNonce(cow)
 
 				repository.getNonce(cow) mustEqual BigInt(2)
 			} finally {
@@ -112,9 +112,9 @@ class RepositoryTest extends Specification {
 				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				(0 until 10).foreach {
-					_ => track.increaseNonce(cow)
+					_ => track.incrementNonce(cow)
 				}
-				track.increaseNonce(horse)
+				track.incrementNonce(horse)
 
 				track.getNonce(cow) mustEqual BigInt(10)
 				track.getNonce(horse) mustEqual BigInt(1)
@@ -142,9 +142,9 @@ class RepositoryTest extends Specification {
 				val horse = Address.parseHexString("13978AEE95F38490E9769C39B2773ED763D9CD5F")
 
 				(0 until 10).foreach {
-					_ => track.increaseNonce(cow)
+					_ => track.incrementNonce(cow)
 				}
-				track.increaseNonce(horse)
+				track.incrementNonce(horse)
 
 				track.getNonce(cow) mustEqual BigInt(10)
 				track.getNonce(horse) mustEqual BigInt(1)

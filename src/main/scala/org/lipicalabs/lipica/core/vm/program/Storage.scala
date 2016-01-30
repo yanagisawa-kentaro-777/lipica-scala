@@ -38,7 +38,7 @@ class Storage private(private val address: VMWord, private val repository: Repos
 		this.repository.delete(address)
 	}
 
-	override def increaseNonce(address: Address) = this.repository.increaseNonce(address)
+	override def incrementNonce(address: Address) = this.repository.incrementNonce(address)
 
 	override def getNonce(address: Address) = this.repository.getNonce(address)
 
