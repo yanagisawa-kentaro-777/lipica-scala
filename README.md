@@ -7,9 +7,17 @@ A decentralized Turing-complete application platform.
 [![Coverage Status](https://coveralls.io/repos/yanagisawa-kentaro/lipica-scala/badge.svg?branch=master&service=github)](https://coveralls.io/github/yanagisawa-kentaro/lipica-scala?branch=master)
 [![License](https://img.shields.io/:license-GPL%20v3-blue.svg)](https://raw.githubusercontent.com/yanagisawa-kentaro/lipica-scala/master/LICENSE)
 
+## Building the source
+
+Building this project requires sbt.
+You can get and install it from http://www.scala-sbt.org/.
+Once sbt is installed, run
+
+    sbt clean assembly
+
 ## Licence
 
-Lipica Node Core Implementation by Scala Language.
+Lipica Node Implementation by Scala Language.
 Copyright (C) 2016 YANAGISAWA, Kentaro.
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation.
