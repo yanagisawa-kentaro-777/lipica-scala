@@ -18,8 +18,7 @@ import scala.collection.mutable
  * HashStore の実装クラスです。
  *
  * Created by IntelliJ IDEA.
- * 2015/11/26 19:33
- * YANAGISAWA, Kentaro
+ * @author YANAGISAWA, Kentaro
  */
 class HashStoreImpl(private val dataSource: KeyValueDataSource) extends HashStore {
 

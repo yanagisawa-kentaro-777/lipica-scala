@@ -9,6 +9,9 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.slf4j.LoggerFactory
 
 /**
+ * ブロックやトランザクションを授受するプロトコルの
+ * ハンドラクラスの実装です。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/10 20:06
  * YANAGISAWA, Kentaro

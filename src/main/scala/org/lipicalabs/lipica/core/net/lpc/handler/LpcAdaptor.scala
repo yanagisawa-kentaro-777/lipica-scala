@@ -6,6 +6,9 @@ import org.lipicalabs.lipica.core.net.lpc.V0
 import org.lipicalabs.lipica.core.sync.{SyncStateName, SyncStatistics}
 
 /**
+ * ブロックやトランザクションを授受するプロトコルの
+ * ハンドラクラスの何もしない実装です。
+ *
  * Created by IntelliJ IDEA.
  * 2015/12/10 19:59
  * YANAGISAWA, Kentaro

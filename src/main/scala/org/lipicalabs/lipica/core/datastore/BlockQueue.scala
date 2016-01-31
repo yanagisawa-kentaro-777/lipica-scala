@@ -4,9 +4,10 @@ import org.lipicalabs.lipica.core.crypto.digest.DigestValue
 import org.lipicalabs.lipica.core.kernel.BlockWrapper
 
 /**
+ * 同期対象とするブロックを蓄積するキューです。
+ *
  * Created by IntelliJ IDEA.
- * 2015/11/25 18:44
- * YANAGISAWA, Kentaro
+ * @author YANAGISAWA, Kentaro
  */
 trait BlockQueue extends DiskStore {
 

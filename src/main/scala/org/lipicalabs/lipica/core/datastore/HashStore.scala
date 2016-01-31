@@ -7,8 +7,7 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * ブロックのダイジェスト値を永続化して記録するクラスが実装すべき trait です。
  *
  * Created by IntelliJ IDEA.
- * 2015/11/25 18:20
- * YANAGISAWA, Kentaro
+ * @author YANAGISAWA, Kentaro
  */
 trait HashStore extends DiskStore {
 

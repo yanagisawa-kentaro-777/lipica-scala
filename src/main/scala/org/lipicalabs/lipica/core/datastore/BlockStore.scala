@@ -11,8 +11,8 @@ import org.lipicalabs.lipica.core.utils.ImmutableBytes
  * コンポーネントが実装すべきインターフェイスです。
  *
  * Created by IntelliJ IDEA.
- * 2015/10/25 14:08
- * YANAGISAWA, Kentaro
+ * @since 2015/10/25 14:08
+ * @author YANAGISAWA, Kentaro
  */
 trait BlockStore extends Closeable {
 
