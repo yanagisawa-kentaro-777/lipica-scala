@@ -1,4 +1,4 @@
-version in ThisBuild := "0.5.0.0-SNAPSHOT" // バージョン変更時はここだけ変更すればOK。
+version in ThisBuild := "0.7.0-SNAPSHOT"
 
 organization in ThisBuild := "org.lipicalabs"
 
