@@ -1,14 +1,17 @@
 package org.lipicalabs.lipica.core.kernel
 
 import java.nio.charset.StandardCharsets
+import java.security.SecureRandom
+import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
 import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 import org.lipicalabs.lipica.core.crypto.digest.DigestValue
-import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.{ECKeyLike, ECKeyPair}
 import org.lipicalabs.lipica.core.crypto.scrypt.SCrypt
+import org.lipicalabs.lipica.core.facade.components.ComponentsMotherboard
 import org.lipicalabs.lipica.core.utils.{ImmutableBytes, UtilConsts}
 import org.slf4j.LoggerFactory
 
@@ -41,9 +44,8 @@ class Wallet {
 	 * 新たなアカウントを生成して、そのアドレスを返します。
 	 */
 	def addNewAccount(): Address = {
-		val account = new Account
-		account.init()
-		val address = account.ecKey.toAddress
+		val account = new Account(ECKeyPair(new SecureRandom))
+		val address = account.address
 		this.accountsMap.put(address, account)
 		notifyListeners()
 		address
@@ -53,9 +55,8 @@ class Wallet {
 	 * 渡された秘密鍵からアドレスを生成して、それをこのインスタンスに記録します。
 	 */
 	def importPrivateKey(privateKey: ImmutableBytes): Address = {
-		val account = new Account
-		account.init(ECKeyPair.fromPrivateKey(privateKey.toPositiveBigInt.bigInteger))
-		val address = account.ecKey.toAddress
+		val account = new Account(ECKeyPair.fromPrivateKey(privateKey.toPositiveBigInt))
+		val address = account.address
 		this.accountsMap.put(address, account)
 		notifyListeners()
 		address
@@ -157,4 +158,58 @@ class WalletTransaction(private val tx: TransactionLike) {
 
 trait WalletListener {
 	def valueChanged(): Unit
+}
+
+/**
+ * Walletで利用されるアカウント情報を表すクラスです。
+ *
+ * Created by IntelliJ IDEA.
+ * @since 2015/11/21 16:00
+ * @author YANAGISAWA, Kentaro
+ */
+class Account(private val ecKey: ECKeyLike) {
+
+	import scala.collection.JavaConversions._
+
+	val address: Address = this.ecKey.toAddress
+
+	private val _pendingTransactions = asScalaSet(java.util.Collections.synchronizedSet(new util.HashSet[TransactionLike]))
+
+	def componentsMotherboard: ComponentsMotherboard = ComponentsMotherboard.instance
+
+
+	def pendingTransactions: Set[TransactionLike] = this._pendingTransactions.toSet
+
+	def nonce: BigInt = this.componentsMotherboard.repository.getNonce(this.address)
+
+	def balance: BigInt = {
+		var result = this.componentsMotherboard.repository.getBalance(this.address).getOrElse(UtilConsts.Zero)
+		this._pendingTransactions.synchronized {
+			if (this._pendingTransactions.nonEmpty) {
+				for (tx <- this._pendingTransactions) {
+					if (tx.senderAddress == this.address) {
+						result -= tx.value.positiveBigInt
+					}
+					if (tx.receiverAddress == this.address) {
+						result += tx.value.positiveBigInt
+					}
+				}
+				//TODO feeの計算。
+			}
+		}
+		result
+	}
+
+	def addPendingTransaction(tx: TransactionLike): Unit = {
+		this._pendingTransactions.synchronized {
+			this._pendingTransactions.add(tx)
+		}
+	}
+
+	def clearPendingTransactions(): Unit = {
+		this._pendingTransactions.synchronized {
+			this._pendingTransactions.clear()
+		}
+	}
+
 }

@@ -1,12 +1,13 @@
 package org.lipicalabs.lipica.core.kernel
 
 
+import java.security.SecureRandom
+
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.datastore.{BlockInfo, IndexedBlockStore, RepositoryImpl}
+import org.lipicalabs.lipica.core.crypto.elliptic_curve.ECKeyPair
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 
-import scala.collection.mutable
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,8 +21,7 @@ class AccountTest extends Specification {
 
 	"test (1)" should {
 		"be right" in {
-			val account = new Account
-			account.init()
+			val account = new Account(ECKeyPair(new SecureRandom))
 			account.address.length mustEqual 20
 		}
 

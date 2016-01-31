@@ -58,9 +58,6 @@ class BlockchainImpl(
 	override def totalDifficulty: BigInt = this.totalDifficultyRef.get
 	override def totalDifficulty_=(v: BigInt): Unit = this.totalDifficultyRef.set(v)
 
-	private val altChainsBuffer: mutable.Buffer[Chain] = new ArrayBuffer[Chain]
-	override def altChains: Iterable[Chain] = this.altChainsBuffer.toIterable
-
 	private val repositoryRef: AtomicReference[Repository] = new AtomicReference[Repository](_repository)
 	def repository: Repository = this.repositoryRef.get
 	def repository_=(v: Repository): Unit = this.repositoryRef.set(v)

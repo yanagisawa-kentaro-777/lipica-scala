@@ -46,7 +46,7 @@ class BlockchainTest extends Specification {
 			val lines = java.nio.file.Files.readAllLines(Paths.get(uri.toURI), StandardCharsets.UTF_8)
 
 			import scala.collection.JavaConversions._
-			val chain = new Chain
+
 			var root: DigestValue = EmptyDigest
 			for (each <- lines) {
 				val block = Block.decode(ImmutableBytes.parseHexString(each))
@@ -61,12 +61,9 @@ class BlockchainTest extends Specification {
 				root = block.stateRoot
 
 				after mustEqual root
-				chain.tryToConnect(block)
 			}
 			blockchain.size mustEqual 40
 			repos.rootHash mustEqual root
-
-			chain.size mustEqual blockchain.size
 		}
 	}
 

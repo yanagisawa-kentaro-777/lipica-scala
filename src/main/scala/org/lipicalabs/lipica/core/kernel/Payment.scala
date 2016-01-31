@@ -4,11 +4,12 @@ import org.lipicalabs.lipica.core.datastore.RepositoryLike
 import org.slf4j.LoggerFactory
 
 /**
- * 通貨の移動ないし採掘の処理を一元的に実行するためのオブジェクトです。
+ * 通貨の移動ないし採掘による通貨の発行処理を、
+ * 一元的に実行するためのオブジェクトです。
  *
  * Created by IntelliJ IDEA.
- * 2015/11/22 12:28
- * YANAGISAWA, Kentaro
+ * @since 2015/11/22 12:28
+ * @author YANAGISAWA, Kentaro
  */
 object Payment {
 
