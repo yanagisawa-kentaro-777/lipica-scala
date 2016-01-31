@@ -582,51 +582,6 @@ class TrieTest extends Specification {
 		}
 	}
 
-	"fat trie" should {
-		"be right" in {
-			val mockDb = new InMemoryDataSource
-			val mockDb2 = new InMemoryDataSource
-			val fatTrie = new FatTrie(mockDb, mockDb2)
-
-			val k1 = "do".getBytes
-			val v1 = "verb".getBytes
-
-			val k2 = "ether".getBytes
-			val v2 = "wookiedoo".getBytes
-
-			val k3 = "horse".getBytes
-			val v3 = "stallion".getBytes
-
-			val k4 = "shaman".getBytes
-			val v4 = "horse".getBytes
-
-			val k5 = "doge".getBytes
-			val v5 = "coin".getBytes
-
-			val k6 = "ether".getBytes
-			val v6 = "".getBytes
-
-			val k7 = "dog".getBytes
-			val v7 = "puppy".getBytes
-
-			val k8 = "shaman".getBytes
-			val v8 = "".getBytes
-
-			fatTrie.update(ImmutableBytes(k1), ImmutableBytes(v1))
-			fatTrie.update(ImmutableBytes(k2), ImmutableBytes(v2))
-			fatTrie.update(ImmutableBytes(k3), ImmutableBytes(v3))
-			fatTrie.update(ImmutableBytes(k4), ImmutableBytes(v4))
-			fatTrie.update(ImmutableBytes(k5), ImmutableBytes(v5))
-			fatTrie.update(ImmutableBytes(k6), ImmutableBytes(v6))
-			fatTrie.update(ImmutableBytes(k7), ImmutableBytes(v7))
-			fatTrie.update(ImmutableBytes(k8), ImmutableBytes(v8))
-
-			fatTrie.rootHash.toHexString mustEqual "29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"
-			fatTrie.secureTrie.rootHash.toHexString mustEqual "29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"
-			fatTrie.origTrie.rootHash.toHexString mustEqual "5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"
-		}
-	}
-
 	val randomDictionary = "spinneries, archipenko, prepotency, herniotomy, preexpress, relaxative, insolvably, debonnaire, apophysate, virtuality, cavalryman, utilizable, diagenesis, vitascopic, governessy, abranchial, cyanogenic, gratulated, signalment, predicable, subquality, crystalize, prosaicism, oenologist, repressive, impanelled, cockneyism, bordelaise, compigne, konstantin, predicated, unsublimed, hydrophane, phycomyces, capitalise, slippingly, untithable, unburnable, deoxidizer, misteacher, precorrect, disclaimer, solidified, neuraxitis, caravaning, betelgeuse, underprice, uninclosed, acrogynous, reirrigate, dazzlingly, chaffiness, corybantes, intumesced, intentness, superexert, abstrusely, astounding, pilgrimage, posttarsal, prayerless, nomologist, semibelted, frithstool, unstinging, ecalcarate, amputating, megascopic, graphalloy, platteland, adjacently, mingrelian, valentinus, appendical, unaccurate, coriaceous, waterworks, sympathize, doorkeeper, overguilty, flaggingly, admonitory, aeriferous, normocytic, parnellism, catafalque, odontiasis, apprentice, adulterous, mechanisma, wilderness, undivorced, reinterred, effleurage, pretrochal, phytogenic, swirlingly, herbarized, unresolved, classifier, diosmosing, microphage, consecrate, astarboard, predefying, predriving, lettergram, ungranular, overdozing, conferring, unfavorite, peacockish, coinciding, erythraeum, freeholder, zygophoric, imbitterer, centroidal, appendixes, grayfishes, enological, indiscreet, broadcloth, divulgated, anglophobe, stoopingly, bibliophil, laryngitis, separatist, estivating, bellarmine, greasiness, typhlology, xanthation, mortifying, endeavorer, aviatrices, unequalise, metastatic, leftwinger, apologizer, quatrefoil, nonfouling, bitartrate, outchiding, undeported, poussetted, haemolysis, asantehene, montgomery, unjoinable, cedarhurst, unfastener, nonvacuums, beauregard, animalized, polyphides, cannizzaro, gelatinoid, apologised, unscripted, tracheidal, subdiscoid, gravelling, variegated, interabang, inoperable, immortelle, laestrygon, duplicatus, proscience, deoxidised, manfulness, channelize, nondefense, ectomorphy, unimpelled, headwaiter, hexaemeric, derivation, prelexical, limitarian, nonionized, prorefugee, invariably, patronizer, paraplegia, redivision, occupative, unfaceable, hypomnesia, psalterium, doctorfish, gentlefolk, overrefine, heptastich, desirously, clarabelle, uneuphonic, autotelism, firewarden, timberjack, fumigation, drainpipes, spathulate, novelvelle, bicorporal, grisliness, unhesitant, supergiant, unpatented, womanpower, toastiness, multichord, paramnesia, undertrick, contrarily, neurogenic, gunmanship, settlement, brookville, gradualism, unossified, villanovan, ecospecies, organising, buckhannon, prefulfill, johnsonese, unforegone, unwrathful, dunderhead, erceldoune, unwadeable, refunction, understuff, swaggering, freckliest, telemachus, groundsill, outslidden, bolsheviks, recognizer, hemangioma, tarantella, muhammedan, talebearer, relocation, preemption, chachalaca, septuagint, ubiquitous, plexiglass, humoresque, biliverdin, tetraploid, capitoline, summerwood, undilating, undetested, meningitic, petrolatum, phytotoxic, adiphenine, flashlight, protectory, inwreathed, rawishness, tendrillar, hastefully, bananaquit, anarthrous, unbedimmed, herborized, decenniums, deprecated, karyotypic, squalidity, pomiferous, petroglyph, actinomere, peninsular, trigonally, androgenic, resistance, unassuming, frithstool, documental, eunuchised, interphone, thymbraeus, confirmand, expurgated, vegetation, myographic, plasmagene, spindrying, unlackeyed, foreknower, mythically, albescence, rebudgeted, implicitly, unmonastic, torricelli, mortarless, labialized, phenacaine, radiometry, sluggishly, understood, wiretapper, jacobitely, unbetrayed, stadholder, directress, emissaries, corelation, sensualize, uncurbable, permillage, tentacular, thriftless, demoralize, preimagine, iconoclast, acrobatism, firewarden, transpired, bluethroat, wanderjahr, groundable, pedestrian, unulcerous, preearthly, freelanced, sculleries, avengingly, visigothic, preharmony, bressummer, acceptable, unfoolable, predivider, overseeing, arcosolium, piriformis, needlecord, homebodies, sulphation, phantasmic, unsensible, unpackaged, isopiestic, cytophagic, butterlike, frizzliest, winklehawk, necrophile, mesothorax, cuchulainn, unrentable, untangible, unshifting, unfeasible, poetastric, extermined, gaillardia, nonpendent, harborside, pigsticker, infanthood, underrower, easterling, jockeyship, housebreak, horologium, undepicted, dysacousma, incurrable, editorship, unrelented, peritricha, interchaff, frothiness, underplant, proafrican, squareness, enigmatise, reconciled, nonnumeral, nonevident, hamantasch, victualing, watercolor, schrdinger, understand, butlerlike, hemiglobin, yankeeland"
 	"massive update" should {
 		"be right" in {

@@ -1,8 +1,7 @@
 package org.lipicalabs.lipica.core.mining
 
 import org.junit.runner.RunWith
-import org.lipicalabs.lipica.core.kernel.{Block, BlockHeader}
-import org.lipicalabs.lipica.core.bytes_codec.RBACCodec
+import org.lipicalabs.lipica.core.kernel.Block
 import org.lipicalabs.lipica.core.utils.ImmutableBytes
 import org.lipicalabs.lipica.core.validator.block_header_rules.ProofOfWorkRule
 import org.specs2.mutable.Specification
@@ -18,16 +17,6 @@ import org.specs2.runner.JUnitRunner
 class MiningTest extends Specification {
 	sequential
 
-	"test (1)" should {
-		"be right" in {
-			val bytes = new Array[Byte](32).map(_ => 0xFF.toByte)
-			//1足したら、オーバーフローしてゼロに戻るはず。
-			Miner.increment(bytes) mustEqual false
-			bytes mustEqual new Array[Byte](32)
-			//今度は大丈夫なはず。
-			Miner.increment(bytes) mustEqual true
-		}
-	}
 
 	"test (2)" should {
 		"be right" in {
